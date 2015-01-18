@@ -149,7 +149,7 @@ component access="package"{
 	  var nextValue = "";
 		var isEmbeddedValue = false;
 		var values = [];
-		var buffer = CreateObject( "java.lang.StringBuilder" ).init();
+		var buffer = CreateObject( "Java","java.lang.StringBuilder" ).init();
 		var maxElem = elements.Len();
 		for( var i=1; i <= maxElem; i++ ){
 		  currentValue = elements[ i ].Trim();
