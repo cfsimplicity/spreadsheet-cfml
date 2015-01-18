@@ -136,53 +136,55 @@ component access="package"{
 	}
 
 	array function parseRowData( required string line,required string delimiter,boolean handleEmbeddedCommas=true ){
-		var elements = ListToArray( line,delimiter );
+		var elements = ListToArray( arguments.line,arguments.delimiter );
 		var potentialQuotes = 0;
-		arguments.line = line.ToString();
-		if( delimiter EQ "," AND handleEmbeddedCommas )
-			potentialQuotes = line.ReplaceAll( "[^']", "" ).length();
-		if( potentialQuotes <= 1 )
+		arguments.line = ToString( arguments.line );
+		if( arguments.delimiter EQ "," AND arguments.handleEmbeddedCommas )
+			potentialQuotes = arguments.line.replaceAll("[^']", "").length();		
+		if (potentialQuotes <= 1)
 		  return elements;
 		/*
 			For ACF compatibility, find any values enclosed in single 
 			quotes and treat them as a single element.
 		*/ 
-	  var currentValue = 0;
-	  var nextValue = "";
+  	var currentValue = 0;
+  	var nextValue = "";
 		var isEmbeddedValue = false;
 		var values = [];
-		var buffer = CreateObject( "Java","java.lang.StringBuilder" ).init();
-		var maxElem = elements.Len();
-		for( var i=1; i <= maxElem; i++ ){
-		  currentValue = elements[ i ].Trim();
-		  nextValue = i < maxElem ? elements[ i + 1 ] : "";
+		var buffer = CreateObject( "Java","java.lang.StringBuilder").init();
+		var maxElements = ArrayLen( elements );
+		
+		for( var i=1; i LTE maxElements; i++) {
+		  currentValue = Trim( elements[ i ] );
+		  nextValue = i < maxElements ? elements[ i + 1 ] : "";
 		  var isComplete = false;
 		  var hasLeadingQuote = currentValue.startsWith( "'" );
 		  var hasTrailingQuote = currentValue.endsWith( "'" );
-		  var isFinalElem = ( i == maxElem );
-			isEmbeddedValue = hasLeadingQuote;
-		  isComplete	=	( isEmbeddedValue AND hasTrailingQuote );
+		  var isFinalElement = ( i==maxElements );
+		  if( hasLeadingQuote )
+			  isEmbeddedValue = true;
+		  if( isEmbeddedValue AND hasTrailingQuote )
+			  isComplete = true;
 		  // We are finished with this value if:  
 		  // * no quotes were found OR
 		  // * it is the final value OR
 		  // * the next value is embedded in quotes
-		  isComplete	=	(!isEmbeddedValue || isFinalElem || nextValue.startsWith( "'" ) );
+		  if( !isEmbeddedValue || isFinalElement || nextValue.startsWith( "'" ) )
+			  isComplete = true;		  
 		  if( isEmbeddedValue || isComplete ){
 			  // if this a partial value, append the delimiter
-			  if( isEmbeddedValue AND buffer.length() > 0 )
-				  buffer.Append( "," ); 
-			  buffer.Append( elements[ i ] );
+			  if( isEmbeddedValue AND buffer.length() GT 0 )
+				  buffer.append( "," ); 
+			  buffer.append( elements[i] );
 		  }
-		  //WriteOutput("[#i#] value=#currentValue# isEmbedded=#isEmbeddedValue# isComplete=#isComplete#"
-		  //	  &" (start/end #hasLeadingQuote#/#hasTrailingQuote#) <br>");
 		  if( isComplete ){
-			  var finalValue = buffer.ToString();
+			  var finalValue = buffer.toString();
 			  var startAt = finalValue.indexOf( "'" );
 			  var endAt = finalValue.lastIndexOf( "'" );
-			  if( isEmbeddedValue AND startAt >= 0 AND endAt > startAt )
+			  if( isEmbeddedValue AND startAt GTE 0 AND endAt GT startAt )
 				  finalValue = finalValue.substring( startAt+1,endAt );
 			  values.add( finalValue );
-			  buffer.setLength( 0 );
+			  buffer.setLength(0);
 			  isEmbeddedValue = false;
 		  }	  
 	  }

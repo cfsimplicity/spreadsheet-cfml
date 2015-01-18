@@ -39,7 +39,7 @@ component{
 		,numeric startRow
 		,numeric column
 		,boolean insert=true
-		,required string delimiter
+		,string delimiter=","
 	){
 		var row 				= 0;
 		var cell 				= 0;
@@ -61,7 +61,7 @@ component{
 			else
 				cellNum = 0;
 		}
-		var columnData = data.ToArray( delimiter );
+		var columnData = ListToArray( data,delimiter );
 		for( var cellValue in columnData ){
 			/* if rowNum is greater than the last row of the sheet, need to create a new row  */
 			if( rowNum GT tools.getActiveSheet().getLastRowNum() OR IsNull( tools.getActiveSheet().getRow( rowNum ) ) )
