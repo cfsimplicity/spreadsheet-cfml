@@ -1,7 +1,9 @@
 component access="package"{
 
-	function init( required workbook,required string exceptionType ){
+	function init( required workbook,required formatting,required struct defaultFormats,required string exceptionType ){
 		variables.workbook	=	workbook;
+		variables.formatting = formatting;
+		variables.defaultFormats	=	defaultFormats;
 		variables.exceptionType	=	exceptionType;
 		return this;
 	}
@@ -103,11 +105,11 @@ component access="package"{
 				/* apply basic formatting to dates and times for increased readability */
 				case "DATE": case "TIMESTAMP":
 					col.cellDataType = "DATE";
-					//col.defaultCellStyle 	= buildCellStyle( { dataFormat = variables.defaultFormats[ col.typeName ] } );
+					col.defaultCellStyle 	= formatting.buildCellStyle( { dataFormat = variables.defaultFormats[ col.typeName ] } );
 				break;
 				case "TIME":
 					col.cellDataType = "TIME";
-					//col.defaultCellStyle 	= buildCellStyle( { dataFormat = variables.defaultFormats[ col.typeName ] } );
+					col.defaultCellStyle 	= formatting.buildCellStyle( { dataFormat = variables.defaultFormats[ col.typeName ] } );
 				break;
 				/* Note: Excel only supports "double" for numbers. Casting very large DECIMIAL/NUMERIC
 				    or BIGINT values to double may result in a loss of precision or conversion to 

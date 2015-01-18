@@ -1,6 +1,7 @@
 ## 0.0.1 - 18 January 2015
 
 - Initial release with support for the following standard CFML functions only:
+ - addColumn
  - addRow
  - addRows
  - deleteRow

@@ -1,12 +1,12 @@
 component{
 
 	variables.defaultFormats = { DATE = "m/d/yy", TIMESTAMP = "m/d/yy h:mm", TIME = "h:mm:ss" };
-	variables.exceptionType	=	"railo-spreadsheet";
+	variables.exceptionType	=	"cfsimplicity.Railo.Spreadsheet";
 
 	function init( string sheetName="Sheet1" ){
 		variables.workbook = createWorkBook( sheetName.Left( 31 ) );
-		variables.tools = New tools( workbook,exceptionType );
 		variables.formatting = New formatting( workbook,exceptionType );
+		variables.tools = New tools( workbook,formatting,defaultFormats,exceptionType );
 		tools.createSheet( sheetName );
 		tools.setActiveSheet( sheetName );
 		return this;
@@ -33,6 +33,64 @@ component{
 	}
 
 	/* STANDARD CFML API */
+
+	void function addColumn(
+		required string data /* Delimited list of cell values */
+		,numeric startRow
+		,numeric column
+		,boolean insert=true
+		,required string delimiter
+	){
+		var row 				= 0;
+		var cell 				= 0;
+		var oldCell 		= 0;
+		var rowNum 			= 0;
+		var cellNum 		= 0;
+		var lastCellNum = 0;
+		var cellValue 	= 0;
+		if( arguments.KeyExists( "startRow" ) )
+			rowNum = startRow-1;
+		if( arguments.KeyExists( "column" ) ){
+			cellNum = column-1;
+		} else {
+			row = tools.getActiveSheet().getRow( rowNum );
+			/* if this row exists, find the next empty cell number. note: getLastCellNum() 
+				returns the cell index PLUS ONE or -1 if not found */
+			if( !IsNull( row ) AND row.getLastCellNum() GT 0 )
+				cellNum = row.getLastCellNum();
+			else
+				cellNum = 0;
+		}
+		var columnData = data.ToArray( delimiter );
+		for( var cellValue in columnData ){
+			/* if rowNum is greater than the last row of the sheet, need to create a new row  */
+			if( rowNum GT tools.getActiveSheet().getLastRowNum() OR IsNull( tools.getActiveSheet().getRow( rowNum ) ) )
+				row = tools.createRow( rowNum );
+			else
+				row = tools.getActiveSheet().getRow( rowNum );
+			/* POI doesn't have any 'shift column' functionality akin to shiftRows() so inserts get interesting */
+			/* ** Note: row.getLastCellNum() returns the cell index PLUS ONE or -1 if not found */
+			if( insert AND cellNum LT row.getLastCellNum() ){
+				/*  need to get the last populated column number in the row, figure out which 
+						cells are impacted, and shift the impacted cells to the right to make 
+						room for the new data */
+				lastCellNum = row.getLastCellNum();
+				for( var i=lastCellNum; i EQ cellNum; i-- ){
+					oldCell	=	row.getCell( JavaCast( "int",i-1 ) );
+					if( !IsNull( oldCell ) ){
+						/* TODO: Handle other cell types ?  */
+						cell = tools.createCell( row,i );
+						cell.setCellStyle( oldCell.getCellStyle() );
+						cell.setCellValue( oldCell.getStringCellValue() );
+						cell.setCellComment( oldCell.getCellComment() );
+					}
+				}
+			}
+			cell = tools.createCell( row,cellNum );
+			cell.setCellValue( JavaCast( "string",cellValue ) );
+			rowNum++;
+		}
+	}
 
 	void function addRow(
 		required string data /* Delimited list of data */
@@ -205,7 +263,6 @@ component{
 		throw( type=exceptionType,message="Function not yet implemented" );
 	}
 
-	function addColumn(){ notYetImplemented(); }
 	function addFreezePane(){ notYetImplemented(); }
 	function addImage(){ notYetImplemented(); }
 	function addInfo(){ notYetImplemented(); }
