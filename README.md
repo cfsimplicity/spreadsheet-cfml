@@ -19,8 +19,7 @@ I was dissatisfied with the official Railo spreadsheet extension for two main re
 ##Downsides
 
 - Currently only a limited sub-set of functions. More will be implemented in due course.
-- Existing code needs adapting to invoke the library. Existing function calls won't work with it unlike the extension.
-- No tag support.
+- Existing code needs adapting to invoke the library. Existing CFML spreadsheet functions and the `<cfspreadsheet>` tag won't work with it unlike the extension.
 
 ##Usage
 
