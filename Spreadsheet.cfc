@@ -173,7 +173,7 @@ component{
 		var queryColumns = tools.getQueryColumnFormats( data );
 		var dateUtil = tools.getDateUtil();
 		var dateColumns  = {};
-		for( dataRow in data ){
+		for( var dataRow in data ){
 			/* can't just call addRow() here since that function expects a comma-delimited 
 					list of data (probably not the greatest limitation ...) and the query 
 					data may have commas in it, so this is a bit redundant with the addRow() 
