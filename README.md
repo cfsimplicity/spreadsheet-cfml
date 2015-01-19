@@ -1,6 +1,6 @@
 #Spreadsheet library for Railo 4.x
 
-Adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo extension, this is a standalone library for creating and working with spreadsheets in Railo 4.x which does not require installation into each web context.
+Adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo extension, this is a standalone library for creating and formatting spreadsheets in Railo 4.x which does not require installation into each web context.
 
 ##Rationale
 
@@ -13,13 +13,24 @@ I was dissatisfied with the official Railo spreadsheet extension for two main re
 
 - No installation required, either at the server or individual web context level.
 - No additional java classes need installing/loading: it uses jars already loaded by the core Railo 4.x engine.
-- Offers additional convenience methods, e.g. `binaryFromQuery()`.
+- Offers additional convenience methods, e.g. `downloadFileFromQuery()`.
 - Written entirely in Railo 4.x script.
 
 ##Downsides
 
-- Currently only a limited sub-set of functions. More will be implemented in due course.
-- Existing code needs adapting to invoke the library. Existing CFML spreadsheet functions and the `<cfspreadsheet>` tag won't work with it unlike the extension.
+- Limited sub-set of functions for generating spreadsheets only.
+- Existing code needs adapting to invoke the library. Existing CFML spreadsheet functions and the `<cfspreadsheet>` tag won't work with it.
+
+##Currently supported standard functions
+
+- `addColumn`
+- `addRow`
+- `addRows`
+- `deleteRow`
+- `formatCell`
+- `formatRow`
+- `shiftRows`
+- `readBinary`
 
 ##Usage
 
@@ -27,21 +38,46 @@ I was dissatisfied with the official Railo spreadsheet extension for two main re
 data = QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Julian","Halliwell" ] ] );
 spreadsheet	=	New Spreadsheet();
 spreadsheet.addRows( data );
-binary = spreadsheet.readBinary();
-header name="Content-Disposition" value="attachment; filename=#Chr( 34 )#report.xls#Chr( 34 )#";
-content type="application/msexcel" variable="#binary#" reset="true";
 ```
 
-###Convenience method `binaryFromQuery()`.
+To specify the sheet name, include it when instantiating the spreadsheet:
 
-Provides a quick way of transforming a query into a downloadable spreadsheet with the column names as a header row
+```
+spreadsheet	=	New Spreadsheet( "CustomSheetName" );
+```
+
+###Convenience methods
+
+####downloadFileFromQuery
+
+Provides a quick way of downloading a spreadsheet to the browser by passing a query and a filename. The query column names are included by default as a bold header row.
+
+```
+data = QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Julian","Halliwell" ] ] );
+spreadsheet	=	New Spreadsheet();
+filename = "report";
+spreadsheet.downloadFileFromQuery( data,filename );
+```
+
+If you don't want the header row:
+
+```
+spreadsheet.downloadFileFromQuery( data,filename,addHeaderRow=false );
+```
+
+If you want the header row, but not bold:
+
+```
+spreadsheet.downloadFileFromQuery( data,filename,boldHeaderRow=false );
+```
+
+####binaryFromQuery
+Similar to `downloadFileFromQuery`, but without downloading the file.
 
 ```
 data = QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Julian","Halliwell" ] ] );
 spreadsheet	=	New Spreadsheet();
 binary = spreadsheet.binaryFromQuery( data );
-header name="Content-Disposition" value="attachment; filename=#Chr( 34 )#report.xls#Chr( 34 )#";
-content type="application/msexcel" variable="#binary#" reset="true";
 ```
 
 ##Credits

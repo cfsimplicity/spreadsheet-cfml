@@ -32,6 +32,20 @@ component{
 		return this.readBinary();
 	}
 
+	void function downloadFileFromQuery(
+		required query data
+		,required string filename
+		,boolean addHeaderRow=true
+		,boldHeaderRow=true
+		,contentType="application/msexcel"
+	){
+		var safeFilename	=	tools.filenameSafe( filename );
+		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$","" );
+		var binary = binaryFromQuery( data,addHeaderRow,boldHeaderRow );
+		header name="Content-Disposition" value="attachment; filename=#Chr(34)##filenameWithoutExtension#.xls#Chr(34)#";
+		content type=contentType variable="#binary#" reset="true";
+	}
+
 	/* STANDARD CFML API */
 
 	void function addColumn(

@@ -49,6 +49,14 @@ component access="package"{
 		return newSheet;
 	}
 
+	string function filenameSafe( required string input ){
+		var charsToRemove	=	"\|\\\*\/\:""<>~&";
+		var result = input.REReplace( "[#charsToRemove#]+","","ALL" ).Left( 255 );
+		if( result.isEmpty() )
+			return	"renamed"; // in case all chars have been replaced (unlikely but possible)
+		return result;
+	}
+
 	function getActiveSheet(){
 		return workbook.getSheetAt( JavaCast( "int",workbook.getActiveSheetIndex() ) );
 	}
