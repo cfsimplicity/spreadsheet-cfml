@@ -3,33 +3,27 @@ component{
 	variables.defaultFormats = { DATE = "m/d/yy", TIMESTAMP = "m/d/yy h:mm", TIME = "h:mm:ss" };
 	variables.exceptionType	=	"cfsimplicity.Railo.Spreadsheet";
 
-	function init( string sheetName="Sheet1" ){
-		variables.workbook = createWorkBook( sheetName.Left( 31 ) );
-		variables.formatting = New formatting( workbook,exceptionType );
-		variables.tools = New tools( workbook,formatting,defaultFormats,exceptionType );
-		tools.createSheet( sheetName );
-		tools.setActiveSheet( sheetName );
+	function init(){
+		variables.formatting = New formatting( exceptionType );
+		variables.tools = New tools( formatting,defaultFormats,exceptionType );
 		return this;
-	}
-
-	private function createWorkBook( required string sheetName ){
-		return CreateObject( "Java","org.apache.poi.hssf.usermodel.HSSFWorkbook" );
 	}
 
 	/* CUSTOM METHODS */
 
 	binary function binaryFromQuery( required query data,boolean addHeaderRow=true,boldHeaderRow=true ){
 		/* Pass in a query and get a spreadsheet binary file ready to stream to the browser */
+		var workbook = this.new();
 		if( addHeaderRow ){
 			var columns	=	QueryColumnArray( data );
-			this.addRow( columns.ToList() );
+			this.addRow( workbook,columns.ToList() );
 			if( boldHeaderRow )
-				this.formatRow( { bold=true },1 );
-			this.addRows( data,2,1 );
+				this.formatRow( workbook,{ bold=true },1 );
+			this.addRows( workbook,data,2,1 );
 		} else {
-			this.addRows( data );
+			this.addRows( workbook,data );
 		}
-		return this.readBinary();
+		return this.readBinary( workbook );
 	}
 
 	void function downloadFileFromQuery(
@@ -49,7 +43,8 @@ component{
 	/* STANDARD CFML API */
 
 	void function addColumn(
-		required string data /* Delimited list of cell values */
+		required workbook
+		,required string data /* Delimited list of cell values */
 		,numeric startRow
 		,numeric column
 		,boolean insert=true
@@ -67,7 +62,7 @@ component{
 		if( arguments.KeyExists( "column" ) ){
 			cellNum = column-1;
 		} else {
-			row = tools.getActiveSheet().getRow( rowNum );
+			row = tools.getActiveSheet( workbook ).getRow( rowNum );
 			/* if this row exists, find the next empty cell number. note: getLastCellNum() 
 				returns the cell index PLUS ONE or -1 if not found */
 			if( !IsNull( row ) AND row.getLastCellNum() GT 0 )
@@ -78,10 +73,10 @@ component{
 		var columnData = ListToArray( data,delimiter );
 		for( var cellValue in columnData ){
 			/* if rowNum is greater than the last row of the sheet, need to create a new row  */
-			if( rowNum GT tools.getActiveSheet().getLastRowNum() OR IsNull( tools.getActiveSheet().getRow( rowNum ) ) )
-				row = tools.createRow( rowNum );
+			if( rowNum GT tools.getActiveSheet( workbook ).getLastRowNum() OR IsNull( tools.getActiveSheet( workbook ).getRow( rowNum ) ) )
+				row = tools.createRow( workbook,rowNum );
 			else
-				row = tools.getActiveSheet().getRow( rowNum );
+				row = tools.getActiveSheet( workbook ).getRow( rowNum );
 			/* POI doesn't have any 'shift column' functionality akin to shiftRows() so inserts get interesting */
 			/* ** Note: row.getLastCellNum() returns the cell index PLUS ONE or -1 if not found */
 			if( insert AND cellNum LT row.getLastCellNum() ){
@@ -107,27 +102,28 @@ component{
 	}
 
 	void function addRow(
-		required string data /* Delimited list of data */
+		required workbook
+		,required string data /* Delimited list of data */
 		,numeric startRow
 		,numeric startColumn=1
 		,boolean insert=true
 		,string delimiter=","
 		,boolean handleEmbeddedCommas=true /* When true, values enclosed in single quotes are treated as a single element like in ACF. Only applies when the delimiter is a comma. */
 	){
-		var lastRow = tools.getNextEmptyRow();
+		var lastRow = tools.getNextEmptyRow( workbook );
 		//If the requested row already exists ...
 		if( arguments.KeyExists( "startRow" ) AND startRow LTE lastRow ){
 			shiftRows( startRow,lastRow,1 );//shift the existing rows down (by one row)
 		else
 			deleteRow( startRow );//otherwise, clear the entire row
 		}
-		var theRow = arguments.KeyExists( "startRow" )? tools.createRow( arguments.startRow-1 ): tools.createRow();
+		var theRow = arguments.KeyExists( "startRow" )? tools.createRow( workbook,arguments.startRow-1 ): tools.createRow( workbook );
 		var rowValues = tools.parseRowData( data,delimiter,handleEmbeddedCommas );
 		var cellNum = startColumn - 1;
 		var dateUtil = tools.getDateUtil();
 		for( var cellValue in rowValues ){
 			cellValue=cellValue.Trim();
-			var oldWidth = tools.getActiveSheet().getColumnWidth( cellNum );
+			var oldWidth = tools.getActiveSheet( workbook ).getColumnWidth( cellNum );
 			var cell = tools.createCell( theRow,cellNum );
 			var isDateColumn  = false;
 			var dateMask  = "";
@@ -139,7 +135,7 @@ component{
 			} else if( IsDate( cellValue ) ){
 				/*  DATE  */
 				cellFormat = tools.getDateTimeValueFormat( cellValue );
-				cell.setCellStyle( formatting.buildCellStyle( { dataFormat=cellFormat } ) );
+				cell.setCellStyle( formatting.buildCellStyle( { workbook,dataFormat=cellFormat } ) );
 				cell.setCellType( cell.CELL_TYPE_NUMERIC );
 				/*  Excel's uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" 
 				only values will not display properly without special handling - */
@@ -160,17 +156,17 @@ component{
 				cell.setCellType( cell.CELL_TYPE_BLANK );
 				cell.setCellValue( "" );
 			}
-			tools.autoSizeColumnFix( cellNum,isDateColumn,dateMask );
+			tools.autoSizeColumnFix( workbook,cellNum,isDateColumn,dateMask );
 			cellNum++;
 		}
 	}
 
-	void function addRows( required query data,numeric row,numeric column=1,boolean insert=true ){
-		var lastRow = tools.getNextEmptyRow();
+	void function addRows( required workbook,required query data,numeric row,numeric column=1,boolean insert=true ){
+		var lastRow = tools.getNextEmptyRow( workbook );
 		if( arguments.KeyExists( "row" ) AND row LTE lastRow AND insert )
 			shiftRows( row,lastRow,data.recordCount );
-		var rowNum	=	arguments.keyExists( "row" )? row-1: tools.getNextEmptyRow();
-		var queryColumns = tools.getQueryColumnFormats( data );
+		var rowNum	=	arguments.keyExists( "row" )? row-1: tools.getNextEmptyRow( workbook );
+		var queryColumns = tools.getQueryColumnFormats( workbook,data );
 		var dateUtil = tools.getDateUtil();
 		var dateColumns  = {};
 		for( var dataRow in data ){
@@ -178,7 +174,7 @@ component{
 					list of data (probably not the greatest limitation ...) and the query 
 					data may have commas in it, so this is a bit redundant with the addRow() 
 					function */
-			var theRow = tools.createRow( rowNum,false );
+			var theRow = tools.createRow( workbook,rowNum,false );
 			var cellNum = ( arguments.column-1 );
 			/* Note: To properly apply date/number formatting:
    				- cell type must be CELL_TYPE_NUMERIC
@@ -230,40 +226,47 @@ component{
 		}
 	}
 
-	void function deleteRow( required numeric rowNum ){
+	void function deleteRow( required workbook,required numeric rowNum ){
 		/* Deletes the data from a row. Does not physically delete the row. */
 		var rowToDelete = rowNum - 1;
-		if( rowToDelete GTE tools.getFirstRowNum() AND rowToDelete LTE tools.getLastRowNum() ) //If this is a valid row, remove it
-			tools.getActiveSheet().removeRow( tools.getActiveSheet().getRow( JavaCast( "int",rowToDelete ) ) );
+		if( rowToDelete GTE tools.getFirstRowNum( workbook ) AND rowToDelete LTE tools.getLastRowNum( workbook ) ) //If this is a valid row, remove it
+			tools.getActiveSheet( workbook ).removeRow( tools.getActiveSheet( workbook ).getRow( JavaCast( "int",rowToDelete ) ) );
 	}
 
-	void function formatCell( required struct format,required numeric row,required numeric column,any cellStyle ){
-		var cell = tools.initializeCell( row,column );
+	void function formatCell( required workbook,required struct format,required numeric row,required numeric column,any cellStyle ){
+		var cell = tools.initializeCell( workbook,row,column );
 		if( arguments.KeyExists( "cellStyle" ) )
 			cell.setCellStyle( cellStyle );// reuse an existing style
 		else
-			cell.setCellStyle( formatting.buildCellStyle( format ) );
+			cell.setCellStyle( formatting.buildCellStyle( workbook,format ) );
 	}
 
-	void function formatRow( required struct format,required numeric rowNum ){
-		var theRow = tools.getActiveSheet().getRow( arguments.rowNum-1 );
+	void function formatRow( required workbook,required struct format,required numeric rowNum ){
+		var theRow = tools.getActiveSheet( workbook ).getRow( arguments.rowNum-1 );
 		if( IsNull( theRow ) )
 			return;
 		var cellIterator = theRow.cellIterator();
 		while( cellIterator.hasNext() ){
-			formatCell( format,rowNum,cellIterator.next().getColumnIndex()+1 );
+			formatCell( workbook,format,rowNum,cellIterator.next().getColumnIndex()+1 );
 		}
 	}
 
-	void function shiftRows( required numeric startRow,numeric endRow=startRow,numeric offest=1 ){
-		tools.getActiveSheet().shiftRows(
+	function new( string sheetName="Sheet1" ){
+		var workbook = tools.createWorkBook( sheetName.Left( 31 ) );
+		tools.createSheet( workbook,sheetName );
+		tools.setActiveSheet( workbook,sheetName );
+		return workbook;
+	}
+
+	void function shiftRows( required workbook,required numeric startRow,numeric endRow=startRow,numeric offest=1 ){
+		tools.getActiveSheet( workbook ).shiftRows(
 			JavaCast( "int",arguments.startRow - 1 )
 			,JavaCast( "int",arguments.endRow - 1 )
 			,JavaCast( "int",arguments.offset )
 		);
 	}
 
-	binary function readBinary(){
+	binary function readBinary( required workbook ){
 		var baos = CreateObject( "Java","org.apache.commons.io.output.ByteArrayOutputStream" ).init();
 		workbook.write( baos );
 		baos.flush();

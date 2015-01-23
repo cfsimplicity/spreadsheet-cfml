@@ -1,7 +1,6 @@
 component access="package"{
 
-	function init( required workbook,required formatting,required struct defaultFormats,required string exceptionType ){
-		variables.workbook	=	workbook;
+	function init( required formatting,required struct defaultFormats,required string exceptionType ){
 		variables.formatting = formatting;
 		variables.defaultFormats	=	defaultFormats;
 		variables.exceptionType	=	exceptionType;
@@ -12,15 +11,16 @@ component access="package"{
 		date cells properly. It measures the length of the date "number", instead of 
 		the  visible date string ie mm//dd/yyyy. As a result columns are too narrow */
 	void function autoSizeColumnFix(
-		required numeric columnIndex /* Base-0 */
+		required workbook
+		,required numeric columnIndex /* Base-0 */
 		,boolean isDateColumn=false
 		,string dateMask=variables.defaultFormats[ "TIMESTAMP" ]
 	){
 		if( isDateColumn ){
 			newWidth = estimateColumnWidth( dateMask & "00000" );
-			getActiveSheet().setColumnWidth( columnIndex,newWidth );
+			getActiveSheet( workbook ).setColumnWidth( columnIndex,newWidth );
 		} else {
-			getActiveSheet().autoSizeColumn( JavaCast( "int",columnIndex),true );
+			getActiveSheet( workbook ).autoSizeColumn( JavaCast( "int",columnIndex),true );
 		}
 	}
 
@@ -34,19 +34,23 @@ component access="package"{
 		return cell;
 	}
 
-	function createRow( numeric rowNum=getNextEmptyRow(),boolean overwrite=true ){
+	function createRow( required workbook,numeric rowNum=getNextEmptyRow( workbook ),boolean overwrite=true ){
 		/* get existing row (if any)  */
-		var row = getActiveSheet().getRow( JavaCast( "int",rowNum ) );
+		var row = getActiveSheet( workbook ).getRow( JavaCast( "int",rowNum ) );
 		if( overwrite AND !IsNull( row ) )
-			getActiveSheet().removeRow( row ) /* forcibly remove existing row and all cells  */
-		if( overwrite OR IsNull( getActiveSheet().getRow( JavaCast( "int",rowNum ) ) ) )
-			row = getActiveSheet().createRow( JavaCast("int", rowNum ) );
+			getActiveSheet( workbook ).removeRow( row ) /* forcibly remove existing row and all cells  */
+		if( overwrite OR IsNull( getActiveSheet( workbook ).getRow( JavaCast( "int",rowNum ) ) ) )
+			row = getActiveSheet( workbook ).createRow( JavaCast("int", rowNum ) );
 		return row;
 	}
 
-	function createSheet( required string sheetName ){
+	function createSheet( required workbook,required string sheetName ){
 		newSheet = workbook.createSheet( JavaCast( "String", sheetName ) );
 		return newSheet;
+	}
+
+	function createWorkBook( required string sheetName ){
+		return CreateObject( "Java","org.apache.poi.hssf.usermodel.HSSFWorkbook" );
 	}
 
 	string function filenameSafe( required string input ){
@@ -57,9 +61,9 @@ component access="package"{
 		return result;
 	}
 
-	function getActiveSheet(){
+	function getActiveSheet( required workbook ){
 		return workbook.getSheetAt( JavaCast( "int",workbook.getActiveSheetIndex() ) );
-	}
+	} 
 
 	function getCellUtil(){
 		if( IsNull( variables.cellUtil ) )
@@ -76,7 +80,7 @@ component access="package"{
 	string function getDateTimeValueFormat( required any value ){
 		/* Returns the default date mask for the given value: DATE (only), TIME (only) or TIMESTAMP */
 		var dateTime = ParseDateTime( value );
-		var dateOnly = CreateDate( Year( dateTime ),Month(  dateTime ),Day( dateTime ) );
+		var dateOnly = CreateDate( Year( dateTime ),Month( dateTime ),Day( dateTime ) );
 		if( DateCompare( value,dateOnly,"s" ) EQ 0 )
 			return variables.defaultFormats.DATE;
 		if( DateCompare( "1899-12-30",dateOnly,"d" ) EQ 0 )
@@ -84,25 +88,25 @@ component access="package"{
 		return variables.defaultFormats.TIMESTAMP;
 	}
 
-	numeric function getFirstRowNum(){
-		var firstRow = getActiveSheet().getFirstRowNum();
-		if( firstRow EQ 0 AND getActiveSheet().getPhysicalNumberOfRows() EQ 0 )
+	numeric function getFirstRowNum( required workbook ){
+		var firstRow = getActiveSheet( workbook ).getFirstRowNum();
+		if( firstRow EQ 0 AND getActiveSheet( workbook ).getPhysicalNumberOfRows() EQ 0 )
 			return -1;
 		return firstRow;
 	}
 
-	numeric function getLastRowNum(){
-		var lastRow = getActiveSheet().getLastRowNum();
-		if( lastRow EQ 0 AND getActiveSheet().getPhysicalNumberOfRows() EQ 0 )
+	numeric function getLastRowNum( required workbook ){
+		var lastRow = getActiveSheet( workbook ).getLastRowNum();
+		if( lastRow EQ 0 AND getActiveSheet( workbook ).getPhysicalNumberOfRows() EQ 0 )
 			return -1;//The sheet is empty. Return -1 instead of 0
 		return lastRow;
 	}
 
-	numeric function getNextEmptyRow(){
-		return getLastRowNum()+1;
+	numeric function getNextEmptyRow( workbook ){
+		return getLastRowNum( workbook )+1;
 	}
 
-	array function getQueryColumnFormats( required query query ){
+	array function getQueryColumnFormats( required workbook,required query query ){
 		/* extract the query columns and data types  */
 		//var cell	  	= CreateObject( "Java","org.apache.poi.ss.usermodel.Cell" );
 		var formatter	= workbook.getCreationHelper().createDataFormat();
@@ -113,11 +117,11 @@ component access="package"{
 				/* apply basic formatting to dates and times for increased readability */
 				case "DATE": case "TIMESTAMP":
 					col.cellDataType = "DATE";
-					col.defaultCellStyle 	= formatting.buildCellStyle( { dataFormat = variables.defaultFormats[ col.typeName ] } );
+					col.defaultCellStyle 	= formatting.buildCellStyle( workbook,{ dataFormat = variables.defaultFormats[ col.typeName ] } );
 				break;
 				case "TIME":
 					col.cellDataType = "TIME";
-					col.defaultCellStyle 	= formatting.buildCellStyle( { dataFormat = variables.defaultFormats[ col.typeName ] } );
+					col.defaultCellStyle 	= formatting.buildCellStyle( workbook,{ dataFormat = variables.defaultFormats[ col.typeName ] } );
 				break;
 				/* Note: Excel only supports "double" for numbers. Casting very large DECIMIAL/NUMERIC
 				    or BIGINT values to double may result in a loss of precision or conversion to 
@@ -135,10 +139,10 @@ component access="package"{
 		return metadata;
 	}
 
-	function initializeCell( required numeric row,required numeric column ){
+	function initializeCell( required workbook,required numeric row,required numeric column ){
 		var jRow = JavaCast( "int",row-1 );
 		var jColumn = JavaCast( "int",column-1 );
-		var rowObject = getCellUtil().getRow( jRow,getActiveSheet() );
+		var rowObject = getCellUtil().getRow( jRow,getActiveSheet( workbook ) );
 		var cellObject = getCellUtil().getCell( rowObject,jColumn );
 		return cellObject; 
 	}
@@ -199,7 +203,7 @@ component access="package"{
 	  return values;
 	}
 
-	function setActiveSheet( string sheetName ){
+	function setActiveSheet( required workbook,string sheetName ){
 		var sheetIndex = workbook.getSheetIndex( JavaCast( "string", sheetName ) ) + 1;
 		workbook.setActiveSheet( JavaCast( "int",sheetIndex - 1 ) );
 	}

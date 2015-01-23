@@ -1,12 +1,11 @@
 component access="package"{
 
-	function init( required workbook,required string exceptionType ){
-		variables.workbook	=	workbook;
+	function init( required string exceptionType ){
 		variables.exceptionType	=	exceptionType;
 		return this;
 	}
 
-	any function buildCellStyle( required struct format ){
+	any function buildCellStyle( required workbook,required struct format ){
 		/*  TODO: Reuse styles  */
 		var cellStyle = workbook.createCellStyle();
 		var formatter = workbook.getCreationHelper().createDataFormat();
@@ -49,7 +48,7 @@ component access="package"{
 					cellStyle.setAlignment( cellStyle[ "ALIGN_" & settingValue ] );
 				break;
 				case "bold":
-					font = cloneFont( workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
 					if( format.KeyExists( setting ) )
 						font.setBoldweight( font.BOLDWEIGHT_BOLD );
 					else
@@ -63,7 +62,7 @@ component access="package"{
 					cellStyle.setBottomBorderColor( JavaCast( "int",getColorIndex( StructFind( format,setting ) ) ) );
 				break;
 				case "color":
-					font = cloneFont( workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
 					font.setColor( getColorIndex( StructFind( format,setting ) ) );
 					cellStyle.setFont( font );
 				break;
@@ -86,12 +85,12 @@ component access="package"{
 					cellStyle.setFillPattern( Evaluate( "cellStyle." & UCase( StructFind( format,setting ) ) ) );
 				break;
 				case font:
-					font = cloneFont( workbook.getFontAt( cellStyle.getFontIndex() ) );					
+					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );					
 					font.setFontName( JavaCast( "string",StructFind( format,setting ) ) );
 					cellStyle.setFont( font );
 				break;
 				case "fontsize":
-					font = cloneFont( workbook.getFontAt( cellStyle.getFontIndex() ) );					
+					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );					
 					font.setFontHeightInPoints( JavaCast( "int",StructFind( format,setting ) ) );
 					cellStyle.setFont( font );
 				break;
@@ -104,7 +103,7 @@ component access="package"{
 					cellStyle.setIndention( JavaCast( "int",StructFind( format, setting ) ) );
 				break;
 				case "italic":
-					font = cloneFont( workbook.getFontAt( cellStyle.getFontIndex ( ) ) );
+					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex ( ) ) );
 					if( StructFind( format,setting ) )
 						font.setItalic( JavaCast( "boolean",true ) );
 					else
@@ -131,7 +130,7 @@ component access="package"{
 					cellStyle.setRotation( JavaCast( "int",StructFind( format,setting ) ) );
 				break;
 				case "strikeout":
-					font = cloneFont( workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
 					if( StructFind( format,setting ) )
 						font.setStrikeout( JavaCast( "boolean",true ) );
 					else
@@ -148,7 +147,7 @@ component access="package"{
 					cellStyle.setTopBorderColor( getColorIndex( StructFind( format,setting ) ) );
 				break;
 				case "underline":
-					font = cloneFont( workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
 					if( StructFind( format,setting ) )
 						font.setUnderline( JavaCast( "boolean",true ) );
 					else
@@ -163,7 +162,7 @@ component access="package"{
 		return cellStyle;
 	}
 
-	private any function cloneFont( required fontToClone ){
+	private any function cloneFont( required workbook,required fontToClone ){
 		var newFont = workbook.createFont();
 		/*  copy the existing cell's font settings to the new font  */
 		newFont.setBoldweight( fontToClone.getBoldweight() );
