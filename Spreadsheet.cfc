@@ -274,6 +274,8 @@ component{
 		,boolean excludeHeaderRow=false
 		,boolean readAllSheets=false
 	){
+		if( arguments.KeyExists( "query" ) )
+			throw( type=exceptionType,message="Invalid argument 'query'.",details="Just use format='query' to return a query object" );
 		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query,csv,html,tab,pipe" ,format ) )
 			throw( type=exceptionType,message="Invalid Format",detail="Supported formats are: QUERY, HTML, CSV, TAB and PIPE" );
 		if( arguments.KeyExists( "sheetname" ) AND arguments.KeyExists( "sheet" ) )
