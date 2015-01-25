@@ -49,8 +49,9 @@ component access="package"{
 		return newSheet;
 	}
 
-	function createWorkBook( required string sheetName ){
-		return CreateObject( "Java","org.apache.poi.hssf.usermodel.HSSFWorkbook" );
+	function createWorkBook( required string sheetName,boolean useXmlFormat=false ){
+		var className = useXmlFormat? "org.apache.poi.xssf.usermodel.XSSFWorkbook": "org.apache.poi.hssf.usermodel.HSSFWorkbook";
+		return loadPoi( className ).init();
 	}
 
 	string function filenameSafe( required string input ){
@@ -67,13 +68,13 @@ component access="package"{
 
 	function getCellUtil(){
 		if( IsNull( variables.cellUtil ) )
-			variables.cellUtil = CreateObject( "Java","org.apache.poi.ss.util.CellUtil" );
+			variables.cellUtil = loadPoi( "org.apache.poi.ss.util.CellUtil" );
 		return variables.cellUtil;
 	}
 
 	function getDateUtil(){
 		if( IsNull( variables.dateUtil ) )
-			variables.dateUtil = CreateObject( "Java","org.apache.poi.ss.usermodel.DateUtil" );
+			variables.dateUtil = loadPoi( "org.apache.poi.ss.usermodel.DateUtil" );
 		return variables.dateUtil;
 	}
 
@@ -147,6 +148,24 @@ component access="package"{
 		return cellObject; 
 	}
 
+	function loadPoi( required string javaclass ){
+		if( !server.KeyExists( "_poiLoader" ) ){
+			var paths = [];
+			var libPath = ExpandPath( GetDirectoryFromPath( GetCurrentTemplatePath() ) & "lib/" );
+			paths.Append( libPath & "poi-3.7-20101029.jar" );
+			paths.Append( libPath & "poi-ooxml-3.7-20101029.jar" );
+			paths.Append( libPath & "poi-ooxml-schemas-3.7-20101029.jar" );
+			paths.Append( libPath & "dom4j-1.6.1.jar" );
+			paths.Append( libPath & "geronimo-stax-api_1.0_spec-1.0.jar" );
+			paths.Append( libPath & "xmlbeans-2.3.0.jar" );
+			paths.Append( libPath & "poi-export-utility.jar" );
+			if( !server.KeyExists( "_poiLoader" ) ){
+				server._poiLoader = CreateObject( "component","javaLoader.JavaLoader" ).init( loadPaths=paths,loadColdFusionClassPath=true,trustedSource=true );
+			}
+		}
+		return server._poiLoader.create( arguments.javaclass );
+	}
+
 	array function parseRowData( required string line,required string delimiter,boolean handleEmbeddedCommas=true ){
 		var elements = ListToArray( arguments.line,arguments.delimiter );
 		var potentialQuotes = 0;
@@ -203,9 +222,33 @@ component access="package"{
 	  return values;
 	}
 
-	function setActiveSheet( required workbook,string sheetName ){
-		var sheetIndex = workbook.getSheetIndex( JavaCast( "string", sheetName ) ) + 1;
-		workbook.setActiveSheet( JavaCast( "int",sheetIndex - 1 ) );
+	boolean function sheetExists( required workbook,string function sheetName,numeric sheetIndex ){
+		validateSheetNameOrIndexWasProvided( argumentCollection=arguments );
+		if( arguments.KeyExists( "sheetName" ) )
+			arguments.sheetIndex = workbook.getSheetIndex( JavaCast("string", arguments.sheetName) ) + 1;
+			//the position is valid if it an integer between 1 and the total number of sheets in the workbook
+		if( sheetIndex GT 0 AND sheetIndex EQ Round( sheetIndex ) AND sheetIndex LTE workbook.getNumberOfSheets() )
+			return true;
+		return false;
+	}
+
+	void function validateSheetName( required workbook,required string sheetName ){
+		if( !sheetExists( workbook=workbook,sheetName=sheetName ) )
+			throw( type=exceptionType,message="Invalid Sheet Name [#arguments.SheetName#]", detail="The requested sheet was not found in the current workbook." );
+	}
+
+	void function validateSheetIndex( required workbook,required numeric sheetIndex ){
+		if( !sheetExists( workbook=workbook,sheetIndex=sheetIndex ) ){
+			var sheetCount = workbook.getNumberOfSheets();
+			throw( type=exceptionType,message="Invalid Sheet Index [#arguments.sheetIndex#]",detail="The SheetIndex must a whole number between 1 and the total number of sheets in the workbook [#Local.sheetCount#]" );
+		}
+	}
+
+	void function validateSheetNameOrIndexWasProvided( string sheetName,numeric sheetIndex ){
+		if( !arguments.KeyExists( "sheetName" ) AND !arguments.KeyExists( "sheetIndex" ) )
+			throw( type=exceptionType,message="Missing Required Argument", detail="Either sheetName or sheetIndex must be provided" );
+		if( arguments.KeyExists( "sheetName" ) AND arguments.KeyExists( "sheetIndex" ) )
+			throw( type=exceptionType,message="Too Many Arguments", detail="Only one argument is allowed. Specify either a SheetName or SheetIndex, not both" );
 	}
 
 }

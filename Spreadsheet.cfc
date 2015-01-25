@@ -11,9 +11,9 @@ component{
 
 	/* CUSTOM METHODS */
 
-	binary function binaryFromQuery( required query data,boolean addHeaderRow=true,boldHeaderRow=true ){
+	binary function binaryFromQuery( required query data,boolean addHeaderRow=true,boldHeaderRow=true,xmlformat=false ){
 		/* Pass in a query and get a spreadsheet binary file ready to stream to the browser */
-		var workbook = this.new();
+		var workbook = this.new( xmlformat=xmlformat );
 		if( addHeaderRow ){
 			var columns	=	QueryColumnArray( data );
 			this.addRow( workbook,columns.ToList() );
@@ -31,12 +31,16 @@ component{
 		,required string filename
 		,boolean addHeaderRow=true
 		,boldHeaderRow=true
-		,contentType="application/msexcel"
+		,xmlformat=false
+		,contentType
 	){
 		var safeFilename	=	tools.filenameSafe( filename );
 		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$","" );
-		var binary = binaryFromQuery( data,addHeaderRow,boldHeaderRow );
-		header name="Content-Disposition" value="attachment; filename=#Chr(34)##filenameWithoutExtension#.xls#Chr(34)#";
+		var binary = binaryFromQuery( data,addHeaderRow,boldHeaderRow,xmlformat );
+		if( !arguments.KeyExists( "contentType" ) )
+			arguments.contentType = xmlformat? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/msexcel";
+		var extension = xmlFormat? "xlsx": "xls";
+		header name="Content-Disposition" value="attachment; filename=#Chr(34)##filenameWithoutExtension#.#extension##Chr(34)#";
 		content type=contentType variable="#binary#" reset="true";
 	}
 
@@ -251,19 +255,81 @@ component{
 		}
 	}
 
-	function new( string sheetName="Sheet1" ){
+	function new( string sheetName="Sheet1",boolean xmlformat=false ){
 		var workbook = tools.createWorkBook( sheetName.Left( 31 ) );
-		tools.createSheet( workbook,sheetName );
-		tools.setActiveSheet( workbook,sheetName );
+		tools.createSheet( workbook,sheetName,xmlformat );
+		setActiveSheet( workbook,sheetName );
 		return workbook;
 	}
 
-	void function shiftRows( required workbook,required numeric startRow,numeric endRow=startRow,numeric offest=1 ){
-		tools.getActiveSheet( workbook ).shiftRows(
-			JavaCast( "int",arguments.startRow - 1 )
-			,JavaCast( "int",arguments.endRow - 1 )
-			,JavaCast( "int",arguments.offset )
-		);
+	function read(
+		required string src
+		,required string format
+		,string columns
+		,string columnnames=""
+		,numeric headerrow
+		,string rows
+		,numeric sheet
+		,string sheetname
+		,boolean excludeHeaderRow=false
+		,boolean readAllSheets=false
+	){
+		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query,csv,html,tab,pipe" ,format ) )
+			throw( type=exceptionType,message="Invalid Format",detail="Supported formats are: QUERY, HTML, CSV, TAB and PIPE" );
+		if( arguments.KeyExists( "sheetname" ) AND arguments.KeyExists( "sheet" ) )
+			throw( type=exceptionType,message="Cannot Provide Both Sheet and sheetname Attributes",detail="Only one of either 'sheet' or 'sheetname' attributes may be provided." );
+		var returnValue = 0;
+		var exportUtil = 0;
+		var outFile = "";
+		/* create an exporter for the selected format */
+		switch( format ){
+			case "csv": case "tab": case "pipe":
+				outFile = GetTempFile( ExpandPath( "." ),"cfpoi" );
+				exportUtil = tools.loadPOI( "org.cfsearching.poi.WorkbookExportFactory" ).createCSVExport( src,outFile );
+				exportUtil.setSeparator( exportUtil[ UCase( format ) ] );
+				break;
+			case "html":
+				outFile = GetTempFile( ExpandPath( "." ),"cfpoi" );
+				exportUtil = tools.loadPOI( "org.cfsearching.poi.WorkbookExportFactory" ).crecreateSimpleHTMLExportateCSVExport( src,outFile );
+				break;
+			case "query":
+				exportUtil = tools.loadPOI( "org.cfsearching.poi.WorkbookExportFactory" ).createQueryExport( src,"q" );
+				exportUtil.setColumnNames( JavaCast( "string",columnNames ) );
+				break;
+		}
+		/* read a specific sheet */
+		if( !readAllSheets ){
+			if( arguments.KeyExists( "sheetname" ) )
+				exportUtil.setSheetToRead( JavaCast( "string", sheetname ) );
+			else if( arguments.KeyExists( "sheet" ) )
+				exportUtil.setSheetToRead( JavaCast( "int",sheet-1 ) );
+			else
+				exportUtil.setSheetToRead( JavaCast( "int",0 ) );
+		}
+		/*  read a specific range of rows */
+		if( arguments.KeyExists( "rows" ) )
+			exportUtil.setRowsToProcess( JavaCast( "string",rows ) );
+			/* read a specific range of columns */
+		if( arguments.KeyExists( "columns" ) )
+			exportUtil.setColumnsToProcess( JavaCast( "string",columns ) );
+		/* identify header row */
+		if( arguments.KeyExists( "headerrow" ) )
+			exportUtil.setHeaderRow( JavaCast( "int",headerRow-1 ) );
+		/* for ACF compatibility */
+		if( arguments.KeyExists( "excludeHeaderRow" ) AND excludeHeaderRow )
+			exportUtil.setExcludeHeaderRow( JavaCast( "boolean",true ) );
+		try{
+			exportUtil.process();
+			if( format IS "query" )
+				returnValue = exportUtil.getQuery();
+			else
+				returnValue = FileRead( outFile,"UTF-8" );
+		}
+		finally{
+			if( FileExists( outFile ) )
+				FileDelete( outfile );
+		}
+		return returnValue;
 	}
 
 	binary function readBinary( required workbook ){
@@ -273,6 +339,23 @@ component{
 		return baos.toByteArray();
 	}
 
+	void function setActiveSheet( required workbook,string sheetName,numeric sheetIndex ){
+		tools.validateSheetNameOrIndexWasProvided( argumentCollection=arguments );
+		if( arguments.KeyExists( "sheetName" ) ){
+			tools.validateSheetName( workbook,sheetName );
+			arguments.sheetIndex = workbook.getSheetIndex( JavaCast( "string",arguments.sheetName ) ) + 1;
+		}
+		tools.validateSheetIndex( workbook,arguments.sheetIndex )
+		workbook.setActiveSheet( JavaCast( "int",arguments.sheetIndex - 1 ) );
+	}
+
+	void function shiftRows( required workbook,required numeric startRow,numeric endRow=startRow,numeric offest=1 ){
+		tools.getActiveSheet( workbook ).shiftRows(
+			JavaCast( "int",arguments.startRow - 1 )
+			,JavaCast( "int",arguments.endRow - 1 )
+			,JavaCast( "int",arguments.offset )
+		);
+	}
 
 	/* NOT YET IMPLEMENTED */
 
@@ -299,10 +382,8 @@ component{
 	function getCellValue(){ notYetImplemented(); }
 	function info(){ notYetImplemented(); }
 	function mergeCells(){ notYetImplemented(); }
-	function read(){ notYetImplemented(); }
 	function removeSheet(){ notYetImplemented(); }
 	function removeSheetNumber(){ notYetImplemented(); }
-	function setActiveSheet(){ notYetImplemented(); }
 	function setActiveSheetNumber(){ notYetImplemented(); }
 	function setCellComment(){ notYetImplemented(); }
 	function setCellFormula(){ notYetImplemented(); }
