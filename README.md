@@ -46,7 +46,7 @@ spreadsheet.addRows( workbook,data );
 
 ###Enhanced Read method
 
-In ACF, the `SpreadsheetRead()` script function is limited to just returning a spreadsheet object, whereas the `cfspreadsheet action="read"` tag has a range of options for reading and returning data from a spreadsheet file. The `read()` method in this library can take the `cfspreadsheet` attributes as arguments, with the exception of the `query` attribute. To return a query simply specify "query" in the `format` argument:
+In Adobe ColdFusion, the `SpreadsheetRead()` script function is limited to just returning a spreadsheet object, whereas the `<cfspreadsheet action="read">` tag has a range of options for reading and returning data from a spreadsheet file. The `read()` method in this library can take the `cfspreadsheet` attributes as arguments, with the exception of the `query` attribute which is unnecessary in script. To return a query simply specify "query" in the `format` argument:
 
 ```
 myQuery = spreadsheet.read( src=mypath,format="query" );
