@@ -1,6 +1,6 @@
 #Spreadsheet library for Railo 4.x
 
-Adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo extension, this is a standalone library for creating and formatting spreadsheets in Railo 4.x which does not require installation into each web context.
+Adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo extension, this is a standalone library for reading, creating and formatting spreadsheets in Railo 4.x which does not require installation into each web context.
 
 ##Rationale
 
@@ -11,14 +11,14 @@ I was dissatisfied with the official Railo spreadsheet extension for two main re
 
 ##Benefits over the official extension
 
-- No installation required, either at the server or individual web context level.
-- No additional java classes need installing/loading: it uses jars already loaded by the core Railo 4.x engine.
+- No installation/restart required, either at the server or individual web context level.
+- `read` method offers features of `<cfspreadsheet action="read">` tag in script rather than the more limited options with `SpreadsheetNew()`.
 - Offers additional convenience methods, e.g. `downloadFileFromQuery()`.
 - Written entirely in Railo 4.x script.
 
 ##Downsides
 
-- Limited sub-set of functions for generating spreadsheets only.
+- Not all spreadsheet functions implemented
 - Existing code needs adapting to invoke the library. Existing CFML spreadsheet functions and the `<cfspreadsheet>` tag won't work with it.
 
 ##Currently supported standard functions
@@ -29,21 +29,27 @@ I was dissatisfied with the official Railo spreadsheet extension for two main re
 - `deleteRow`
 - `formatCell`
 - `formatRow`
-- `shiftRows`
+- `new`
+- `read`
 - `readBinary`
+- `setActiveSheet`
+- `shiftRows`
 
 ##Usage
 
 ```
+spreadsheet	=	New spreadsheet();
 data = QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Julian","Halliwell" ] ] );
-spreadsheet	=	New Spreadsheet();
-spreadsheet.addRows( data );
+workbook = spreadsheet.new();
+spreadsheet.addRows( workbook,data );
 ```
 
-To specify the sheet name, include it when instantiating the spreadsheet:
+###Enhanced Read method
+
+In ACF, the `SpreadsheetRead()` script function is limited to just returning a spreadsheet object, whereas the `cfspreadsheet action="read"` tag has a range of options for reading and returning data from a spreadsheet file. The `read()` method in this library can take the `cfspreadsheet` attributes as arguments, with the exception of the `query` attribute. To return a query simply specify "query" in the `format` argument:
 
 ```
-spreadsheet	=	New Spreadsheet( "CustomSheetName" );
+myQuery = spreadsheet.read( src=mypath,format="query" );
 ```
 
 ###Convenience methods
@@ -53,8 +59,8 @@ spreadsheet	=	New Spreadsheet( "CustomSheetName" );
 Provides a quick way of downloading a spreadsheet to the browser by passing a query and a filename. The query column names are included by default as a bold header row.
 
 ```
+spreadsheet	=	New spreadsheet();
 data = QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Julian","Halliwell" ] ] );
-spreadsheet	=	New Spreadsheet();
 filename = "report";
 spreadsheet.downloadFileFromQuery( data,filename );
 ```
@@ -76,13 +82,15 @@ Similar to `downloadFileFromQuery`, but without downloading the file.
 
 ```
 data = QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Julian","Halliwell" ] ] );
-spreadsheet	=	New Spreadsheet();
+spreadsheet	=	New spreadsheet();
 binary = spreadsheet.binaryFromQuery( data );
 ```
 
 ##Credits
 
 The code is very largely based on the work of [TeamCfAdvance](https://github.com/teamcfadvance/), to whom credit and thanks are due.
+
+[JavaLoader](https://github.com/markmandel/JavaLoader) is by Mark Mandel.
 
 ##Legal
 
