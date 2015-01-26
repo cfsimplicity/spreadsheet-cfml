@@ -1,20 +1,24 @@
-#Spreadsheet library for Railo 4.x
+#Spreadsheet library for Railo 4.2
 
-Adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo extension, this is a standalone library for reading, creating and formatting spreadsheets in Railo 4.x which does not require installation into each web context.
+Adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo extension, this is a standalone library for reading, creating and formatting spreadsheets in Railo 4.2 which does not require installation into each web context.
 
 ##Rationale
 
 I was dissatisfied with the official Railo spreadsheet extension for two main reasons:
 
-1. It was designed for an older version of Railo and (at the time of writing) installation as an extension fails in version 4.x
+1. It was designed for an older version of Railo and (at the time of writing) installation as an extension fails in version 4.2
 2. It can be installed manually, but this needs doing in each web context, followed by a server restart
 
 ##Benefits over the official extension
 
 - No installation/restart required, either at the server or individual web context level.
-- `read` method offers features of `<cfspreadsheet action="read">` tag in script rather than the more limited options with `SpreadsheetNew()`.
+- `read()` method offers features of `<cfspreadsheet action="read">` tag in script rather than the more limited options with `SpreadsheetNew()`.
+- Invoking the library doesn't create a workbook instance (a.k.a *Spreadsheet Object*), meaning:
+ - a blank workbook isn't created unnecessarily when reading an existing spreadsheet
+ - the library can be stored as a singleton in application scope
+ - the functions work more like those in ACF: you pass in an existing workbook explicitly as the first argument.
 - Offers additional convenience methods, e.g. `downloadFileFromQuery()`.
-- Written entirely in Railo 4.x script.
+- Written entirely in Railo 4.2 script.
 
 ##Downsides
 
@@ -44,7 +48,7 @@ workbook = spreadsheet.new();
 spreadsheet.addRows( workbook,data );
 ```
 
-###Enhanced Read method
+###Enhanced Read() method
 
 In Adobe ColdFusion, the `SpreadsheetRead()` script function is limited to just returning a spreadsheet object, whereas the `<cfspreadsheet action="read">` tag has a range of options for reading and returning data from a spreadsheet file. The `read()` method in this library can take the `cfspreadsheet` attributes as arguments, with the exception of the `query` attribute which is unnecessary in script. To return a query simply specify "query" in the `format` argument:
 
@@ -54,7 +58,7 @@ myQuery = spreadsheet.read( src=mypath,format="query" );
 
 ###Convenience methods
 
-####downloadFileFromQuery
+####downloadFileFromQuery()
 
 Provides a quick way of downloading a spreadsheet to the browser by passing a query and a filename. The query column names are included by default as a bold header row.
 
@@ -77,7 +81,7 @@ If you want the header row, but not bold:
 spreadsheet.downloadFileFromQuery( data,filename,boldHeaderRow=false );
 ```
 
-####binaryFromQuery
+####binaryFromQuery()
 Similar to `downloadFileFromQuery`, but without downloading the file.
 
 ```
