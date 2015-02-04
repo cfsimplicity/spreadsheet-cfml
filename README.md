@@ -41,6 +41,10 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 
 ##Usage
 
+The following examples assume the file containing the script is in the same location as the spreadsheet.cfc.
+
+You will probably want to place the spreadsheet library files in a central location with an application mapping, and instantiate the component using its dot path (e.g. `New myLibrary.spreadsheet.spreadsheet();`).
+
 ```
 spreadsheet	=	New spreadsheet();
 data = QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Julian","Halliwell" ] ] );
