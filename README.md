@@ -1,12 +1,12 @@
-#Spreadsheet library for Railo 4.2
+#Spreadsheet library for Lucee
 
-Adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo extension, this is a standalone library for reading, creating and formatting spreadsheets in Railo 4.2 which does not require installation into each web context.
+Adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo extension, this is a standalone library for reading, creating and formatting spreadsheets in [Lucee Server](http://lucee.org/) which does not require installation into each web context.
 
 ##Rationale
 
-I was dissatisfied with the official Railo spreadsheet extension for two main reasons:
+I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for two main reasons:
 
-1. It was designed for an older version of Railo and (at the time of writing) installation as an extension fails in version 4.2
+1. It was designed for an older version of Railo (Lucee) and (at the time of writing) installation as an extension fails in the current version
 2. It can be installed manually, but this needs doing in each web context, followed by a server restart
 
 ##Benefits over the official extension
@@ -18,7 +18,7 @@ I was dissatisfied with the official Railo spreadsheet extension for two main re
  - the library can be stored as a singleton in application scope
  - the functions work more like those in ACF: you pass in an existing workbook explicitly as the first argument.
 - Offers additional convenience methods, e.g. `downloadFileFromQuery()`.
-- Written entirely in Railo 4.2 script.
+- Written entirely in Lucee script.
 
 ##Downsides
 
