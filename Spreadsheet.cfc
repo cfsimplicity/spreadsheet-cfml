@@ -1,7 +1,7 @@
 component{
 
 	variables.defaultFormats = { DATE = "m/d/yy", TIMESTAMP = "m/d/yy h:mm", TIME = "h:mm:ss" };
-	variables.exceptionType	=	"cfsimplicity.Railo.Spreadsheet";
+	variables.exceptionType	=	"cfsimplicity.lucee.spreadsheet";
 
 	function init(){
 		variables.formatting = New formatting( exceptionType );
@@ -11,8 +11,7 @@ component{
 
 	/* CUSTOM METHODS */
 
-	binary function binaryFromQuery( required query data,boolean addHeaderRow=true,boldHeaderRow=true,xmlformat=false ){
-		/* Pass in a query and get a spreadsheet binary file ready to stream to the browser */
+	any function workbookFromQuery( required query data,boolean addHeaderRow=true,boldHeaderRow=true,xmlformat=false ){
 		var workbook = this.new( xmlformat=xmlformat );
 		if( addHeaderRow ){
 			var columns	=	QueryColumnArray( data );
@@ -23,6 +22,12 @@ component{
 		} else {
 			this.addRows( workbook,data );
 		}
+		return workbook;
+	}
+
+	binary function binaryFromQuery( required query data,boolean addHeaderRow=true,boldHeaderRow=true,xmlformat=false ){
+		/* Pass in a query and get a spreadsheet binary file ready to stream to the browser */
+		var workbook = this.workbookFromQuery( argumentCollection=arguments );
 		return this.readBinary( workbook );
 	}
 
@@ -30,18 +35,30 @@ component{
 		required query data
 		,required string filename
 		,boolean addHeaderRow=true
-		,boldHeaderRow=true
-		,xmlformat=false
-		,contentType
+		,boolean boldHeaderRow=true
+		,boolean xmlformat=false
+		,string contentType
 	){
 		var safeFilename	=	tools.filenameSafe( filename );
 		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$","" );
-		var binary = binaryFromQuery( data,addHeaderRow,boldHeaderRow,xmlformat );
+		var binary = this.binaryFromQuery( data,addHeaderRow,boldHeaderRow,xmlformat );
 		if( !arguments.KeyExists( "contentType" ) )
 			arguments.contentType = xmlformat? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/msexcel";
 		var extension = xmlFormat? "xlsx": "xls";
 		header name="Content-Disposition" value="attachment; filename=#Chr(34)##filenameWithoutExtension#.#extension##Chr(34)#";
 		content type=contentType variable="#binary#" reset="true";
+	}
+
+	void function writeFileFromQuery(
+		required query data
+		,required string filepath
+		,boolean overwrite=false
+		,boolean addHeaderRow=true
+		,boldHeaderRow=true
+		,xmlformat=false
+	){
+		var workbook = this.workbookFromQuery( data,addHeaderRow,boldHeaderRow,xmlFormat );
+		this.write( workbook=workbook,filepath=filepath,overwrite=overwrite );
 	}
 
 	/* STANDARD CFML API */
@@ -359,6 +376,24 @@ component{
 		);
 	}
 
+	void function write( required workbook,required string filepath,boolean overwrite=false,string password ){
+		if( !overwrite AND FileExists( filepath ) )
+			throw( type=exceptionType,message="File already exists",detail="The file path specified already exists. Use 'overwrite=true' if you wish to overwrite it." );
+		// writeProtectWorkbook takes both a user name and a password, but since CF 9 tag only takes a password, just making up a user name 
+		// TODO: workbook.isWriteProtected() returns true but the workbook opens without prompting for a password
+		if( arguments.KeyExists( "password" ) AND !password.Trim().IsEmpty() )
+			workbook.writeProtectWorkbook( JavaCast( "string",password),JavaCast( "string","user" ) );
+		var outputStream = CreateObject( "java","java.io.FileOutputStream" ).init( filepath );
+		try{
+			workbook.write( outputStream );
+			outputStream.flush();
+		}
+		finally{
+			// always close the stream. otherwise file may be left in a locked state if an unexpected error occurs
+			outputStream.close();
+		}
+	}
+
 	/* NOT YET IMPLEMENTED */
 
 	private void function notYetImplemented(){
@@ -394,6 +429,5 @@ component{
 	function setHeader(){ notYetImplemented(); }
 	function setRowHeight(){ notYetImplemented(); }
 	function shiftColumns(){ notYetImplemented(); }
-	function write(){ notYetImplemented(); }
 
 }

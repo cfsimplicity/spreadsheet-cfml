@@ -38,6 +38,7 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 - `readBinary`
 - `setActiveSheet`
 - `shiftRows`
+- `write`
 
 ##Usage
 
@@ -73,17 +74,15 @@ filename = "report";
 spreadsheet.downloadFileFromQuery( data,filename );
 ```
 
-If you don't want the header row:
+#####Required arguments
+- `data` query: the data you want to download
+- `filename` string: name of the file to download, without the file extension
 
-```
-spreadsheet.downloadFileFromQuery( data,filename,addHeaderRow=false );
-```
-
-If you want the header row, but not bold:
-
-```
-spreadsheet.downloadFileFromQuery( data,filename,boldHeaderRow=false );
-```
+#####Optional arguments
+- `addHeaderRow` boolean default=true: whether to include the query column names as a header row
+- `boldHeaderRow` boolean default=true: whether to make the header row bold
+- `xmlformat` boolean default=false: whether to create an XML spreadsheet (.xlsx)
+- `contentType` string: specify if you wish, otherwise an appropriate MIME type for the spreadsheet will be used
 
 ####binaryFromQuery()
 Similar to `downloadFileFromQuery`, but without downloading the file.
@@ -93,6 +92,32 @@ data = QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Julian
 spreadsheet	=	New spreadsheet();
 binary = spreadsheet.binaryFromQuery( data );
 ```
+#####Required arguments
+- `data` query: the data you want to download
+
+#####Optional arguments
+- `addHeaderRow` boolean default=true: whether to include the query column names as a header row
+- `boldHeaderRow` boolean default=true: whether to make the header row bold
+- `xmlformat` boolean default=false: whether to create an XML spreadsheet (.xlsx)
+
+####writeFileFromQuery()
+Similar to `downloadFileFromQuery` but writes the spreadsheet to a file.
+
+```
+spreadsheet	=	New spreadsheet();
+data = QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Julian","Halliwell" ] ] );
+filepath = ExpandPath( "report.xls" );
+spreadsheet.writeFileFromQuery( data,filepath,true );
+```
+#####Required arguments
+- `data` query: the data you want to download
+- `filepath` string: full path of the file to be written, including filename and extension
+
+#####Optional arguments
+- `overwrite` boolean default=false: whether or not to overwrite an existing file
+- `addHeaderRow` boolean default=true: whether to include the query column names as a header row
+- `boldHeaderRow` boolean default=true: whether to make the header row bold
+- `xmlformat` boolean default=false: whether to create an XML spreadsheet (.xlsx)
 
 ##Credits
 

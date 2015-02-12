@@ -1,3 +1,10 @@
+## 0.0.4 - 12 February
+
+- Adds
+ - `write` method matching `SpreadSheetWrite()`
+ - `writeFileFromQuery` custom method
+
+
 ## 0.0.3 - 25 January 2015
 - Workbook creation separated from instantiation. Create a workbook using `new()` and then pass it to other functions. Same as ACF functions.
 - Use JavaLoader to load newer POI jars to allow support for `read()`
