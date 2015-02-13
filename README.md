@@ -12,7 +12,7 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 ##Benefits over the official extension
 
 - No installation/restart required, either at the server or individual web context level.
-- `read()` method offers features of `<cfspreadsheet action="read">` tag in script rather than the more limited options with `SpreadsheetRead()`.
+- `read()` method offers some of the features of the `<cfspreadsheet action="read">` tag in script over in addition to the basic options of `SpreadsheetRead()`.
 - Invoking the library doesn't create a workbook instance (a.k.a *Spreadsheet Object*), meaning:
  - a blank workbook isn't created unnecessarily when reading an existing spreadsheet
  - the library can be stored as a singleton in application scope
@@ -55,11 +55,21 @@ spreadsheet.addRows( workbook,data );
 
 ###Enhanced Read() method
 
-In Adobe ColdFusion, the `SpreadsheetRead()` script function is limited to just returning a spreadsheet object, whereas the `<cfspreadsheet action="read">` tag has a range of options for reading and returning data from a spreadsheet file. The `read()` method in this library can take the `cfspreadsheet` attributes as arguments, with the exception of the `query` attribute which is unnecessary in script. To return a query simply specify "query" in the `format` argument:
+In Adobe ColdFusion, the `SpreadsheetRead()` script function is limited to just returning a spreadsheet object, whereas the `<cfspreadsheet action="read">` tag has a range of options for reading and returning data from a spreadsheet file. 
+
+Not all of these options are available yet, but with the `read()` method in this library you can currently read a spreadsheet file into a query and return that instead of a spreadsheet object.
 
 ```
 myQuery = spreadsheet.read( src=mypath,format="query" );
 ```
+#####Required arguments
+- `src` string: full path to the file to read
+
+#####Optional arguments
+- `format` string: currently only "query" supported
+- `headerRow` numeric: specify which row is the header to be used for the query column names
+- `sheet` numeric default=1: which sheet to read (1 based, not zero-based)
+- `excludeHeaderRow` boolean default=true: whether to exclude the header row from the spreadsheet (NB: the default is the opposite to Adobe ColdFusion 9). 
 
 ###Convenience methods
 
@@ -121,7 +131,7 @@ spreadsheet.writeFileFromQuery( data,filepath,true );
 
 ##Credits
 
-The code is very largely based on the work of [TeamCfAdvance](https://github.com/teamcfadvance/), to whom credit and thanks are due.
+The code is very largely based on the work of [TeamCfAdvance](https://github.com/teamcfadvance/), to whom credit and thanks are due. Ben Nadel's [POI Utility](https://github.com/bennadel/POIUtility.cfc) was also used as a basis for parts of the `read` functionality.
 
 [JavaLoader](https://github.com/markmandel/JavaLoader) is by Mark Mandel.
 
