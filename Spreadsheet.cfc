@@ -9,6 +9,10 @@ component{
 		return this;
 	}
 
+	void function flushPoiLoader(){
+		tools.flushPoiLoader();
+	}
+
 	/* CUSTOM METHODS */
 
 	any function workbookFromQuery( required query data,boolean addHeaderRow=true,boldHeaderRow=true,xmlformat=false ){
@@ -281,74 +285,50 @@ component{
 
 	function read(
 		required string src
-		,required string format
-		,string columns
-		,string columnnames=""
-		,numeric headerrow
-		,string rows
-		,numeric sheet
-		,string sheetname
+		,string format
+		,string columns //TODO
+		,string columnNames //TODO
+		,numeric headerRow
+		,string rows //TODO
+		,numeric sheet // 1-based
+		,string sheetName  //TODO
 		,boolean excludeHeaderRow=false
-		,boolean readAllSheets=false
 	){
 		if( arguments.KeyExists( "query" ) )
 			throw( type=exceptionType,message="Invalid argument 'query'.",details="Just use format='query' to return a query object" );
-		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query,csv,html,tab,pipe" ,format ) )
+		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query,csv,html,tab,pipe",format ) )
 			throw( type=exceptionType,message="Invalid Format",detail="Supported formats are: QUERY, HTML, CSV, TAB and PIPE" );
 		if( arguments.KeyExists( "sheetname" ) AND arguments.KeyExists( "sheet" ) )
 			throw( type=exceptionType,message="Cannot Provide Both Sheet and sheetname Attributes",detail="Only one of either 'sheet' or 'sheetname' attributes may be provided." );
-		var returnValue = 0;
-		var exportUtil = 0;
-		var outFile = "";
-		/* create an exporter for the selected format */
+		 //TODO
+		if( arguments.KeyExists( "columns" ) )
+			throw( type=exceptionType,message="Attribute not yet supported",detail="Sorry the 'columns' attribute is not yet supported." );
+		if( arguments.KeyExists( "columnNames" ) )
+			throw( type=exceptionType,message="Attribute not yet supported",detail="Sorry the 'columnNames' attribute is not yet supported." );
+		if( arguments.KeyExists( "rows" ) )
+			throw( type=exceptionType,message="Attribute not yet supported",detail="Sorry the 'rows' attribute is not yet supported." );
+		if( arguments.KeyExists( "sheetName" ) )
+			throw( type=exceptionType,message="Attribute not yet supported",detail="Sorry the 'sheetName' attribute is not yet supported." );
+		//END TODO
+		var workbook = tools.workbookFromFile( src );
 		switch( format ){
 			case "csv": case "tab": case "pipe":
-				outFile = GetTempFile( ExpandPath( "." ),"cfpoi" );
-				exportUtil = tools.loadPOI( "org.cfsearching.poi.WorkbookExportFactory" ).createCSVExport( src,outFile );
-				exportUtil.setSeparator( exportUtil[ UCase( format ) ] );
+				throw( type=exceptionType,message="Format not yet supported",detail="Sorry #format# is not yet supported as an ouput format" );
 				break;
 			case "html":
-				outFile = GetTempFile( ExpandPath( "." ),"cfpoi" );
-				exportUtil = tools.loadPOI( "org.cfsearching.poi.WorkbookExportFactory" ).crecreateSimpleHTMLExportateCSVExport( src,outFile );
+				throw( type=exceptionType,message="Format not yet supported",detail="Sorry #format# is not yet supported as an ouput format" );
 				break;
 			case "query":
-				exportUtil = tools.loadPOI( "org.cfsearching.poi.WorkbookExportFactory" ).createQueryExport( src,"q" );
-				exportUtil.setColumnNames( JavaCast( "string",columnNames ) );
-				break;
+				var args = {
+					workbook = workbook
+					,sheetIndex = arguments.KeyExists( "sheet" )? sheet-1: 0
+					,excludeHeaderRow = excludeHeaderRow
+				}
+				if( arguments.KeyExists( "headerRow" ) )
+					args.headerRow=headerRow;
+				return tools.sheetToQuery( argumentCollection=args );
 		}
-		/* read a specific sheet */
-		if( !readAllSheets ){
-			if( arguments.KeyExists( "sheetname" ) )
-				exportUtil.setSheetToRead( JavaCast( "string", sheetname ) );
-			else if( arguments.KeyExists( "sheet" ) )
-				exportUtil.setSheetToRead( JavaCast( "int",sheet-1 ) );
-			else
-				exportUtil.setSheetToRead( JavaCast( "int",0 ) );
-		}
-		/*  read a specific range of rows */
-		if( arguments.KeyExists( "rows" ) )
-			exportUtil.setRowsToProcess( JavaCast( "string",rows ) );
-			/* read a specific range of columns */
-		if( arguments.KeyExists( "columns" ) )
-			exportUtil.setColumnsToProcess( JavaCast( "string",columns ) );
-		/* identify header row */
-		if( arguments.KeyExists( "headerrow" ) )
-			exportUtil.setHeaderRow( JavaCast( "int",headerRow-1 ) );
-		/* for ACF compatibility */
-		if( arguments.KeyExists( "excludeHeaderRow" ) AND excludeHeaderRow )
-			exportUtil.setExcludeHeaderRow( JavaCast( "boolean",true ) );
-		try{
-			exportUtil.process();
-			if( format IS "query" )
-				returnValue = exportUtil.getQuery();
-			else
-				returnValue = FileRead( outFile,"UTF-8" );
-		}
-		finally{
-			if( FileExists( outFile ) )
-				FileDelete( outfile );
-		}
-		return returnValue;
+		return workbook;
 	}
 
 	binary function readBinary( required workbook ){

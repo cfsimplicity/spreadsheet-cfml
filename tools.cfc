@@ -148,6 +148,12 @@ component access="package"{
 		return cellObject; 
 	}
 
+	void function flushPoiLoader(){
+		lock scope="server" timeout="10"{
+			StructDelete( server,"_poiLoader" );
+		};
+	}
+
 	function loadPoi( required string javaclass ){
 		if( !server.KeyExists( "_poiLoader" ) ){
 			var paths = [];
@@ -158,7 +164,6 @@ component access="package"{
 			paths.Append( libPath & "dom4j-1.6.1.jar" );
 			paths.Append( libPath & "geronimo-stax-api_1.0_spec-1.0.jar" );
 			paths.Append( libPath & "xmlbeans-2.3.0.jar" );
-			paths.Append( libPath & "poi-export-utility.jar" );
 			if( !server.KeyExists( "_poiLoader" ) ){
 				server._poiLoader = CreateObject( "component","javaLoader.JavaLoader" ).init( loadPaths=paths,loadColdFusionClassPath=true,trustedSource=true );
 			}
@@ -232,6 +237,95 @@ component access="package"{
 		return false;
 	}
 
+	query function sheetToQuery( required workbook,required numeric sheetIndex,numeric headerRow,boolean excludeHeaderRow=false ){
+		/* Based on https://github.com/bennadel/POIUtility.cfc */
+		var hasHeaderRow = arguments.KeyExists( "headerRow" );
+		var poiHeaderRow = ( hasHeaderRow AND headerRow )? headerRow-1: 0;
+		var columnNames=[];
+		var totalColumnCount=0
+		var sheet = workbook.GetSheetAt( JavaCast( "int",sheetIndex ) );
+		var sheetData = [];
+		var lastRowNumber = sheet.GetLastRowNum();
+		// Loop over the rows in the Excel sheet. This time, we already have a query built, so we just want to start capturing the cell data.
+		for( rowIndex=0; rowIndex LTE lastRowNumber; rowIndex++ ){
+			var row = sheet.GetRow( JavaCast( "int",rowIndex ) );
+			var rowData	=	[];
+			if( IsNull( row ) )
+				continue;
+			var isHeaderRow = ( hasHeaderRow AND ( rowIndex EQ poiHeaderRow ) );
+			var columnCount = row.GetLastCellNum();
+			totalColumnCount = Max( totalColumnCount,columnCount );
+			for( colIndex=0; colIndex LT columnCount; colIndex++ ){
+				var cell = row.GetCell( JavaCast( "int",colIndex ) );
+				if( IsNull( cell ) )
+					continue;
+				if( isHeaderRow ){
+					/* Try to get a header column name (it might throw an error). We want to take that cell value and add it to the array of header values that we will return with the sheet data. */
+					try{
+						var value = cell.getStringCellValue();
+					}
+					catch ( any exception ) {
+						/* There was an error grabbing the text of the header column type. */
+						var value="column#( colIndex+1 )#";
+					}
+					columnNames.append( value );
+					if( excludeHeaderRow )
+						continue;
+				}
+				/* When getting the value of a cell, it is important to know what type of cell value we are dealing with. If you try to grab the wrong value type, an error might be thrown. For that reason, we must check to see what type of cell we are working with. These are the cell types and they are constants of the cell object itself:
+			 		
+					0 - CELL_TYPE_NUMERIC
+					1 - CELL_TYPE_STRING
+					2 - CELL_TYPE_FORMULA
+					3 - CELL_TYPE_BLANK
+					4 - CELL_TYPE_BOOLEAN
+					5 - CELL_TYPE_ERROR */
+				
+				var cellType = cell.GetCellType();
+				var cellValue = "";
+				/* Get the value of the cell based on the data type. The thing to worry about here is cell forumlas and cell dates. Formulas  can be strange and dates are stored as numeric types. For  this demo, I am not going to worry about that at all. I will  just grab dates as floats and formulas I will try to grab as numeric values. */
+				if( cellType EQ cell.CELL_TYPE_NUMERIC ) {
+					/* Get numeric cell data. This could be a standard number, could also be a date value. I am going to leave it up to the calling program to decide. */
+					cellValue = cell.GetNumericCellValue();
+				} else if( cellType EQ cell.CELL_TYPE_STRING ){
+					cellValue = cell.GetStringCellValue();
+				} else if( cellType EQ cell.CELL_TYPE_FORMULA ){
+					/* 	Since most forumlas deal with numbers, I am going to try to grab the value as a number. If that throws an error, I will just grab it as a string value. */
+					try{
+						cellValue = cell.GetNumericCellValue();
+					}
+					catch( any exception1 ){
+						// The numeric grab failed. Try to get the value as a string. If this fails, just force the empty string.
+						try{
+							cellValue = cell.GetStringCellValue();
+						} catch( any exception2 ){
+							// Force empty string.
+							cellValue = "";
+		 				}
+					}
+				} else if( cellType EQ cell.CELL_TYPE_BLANK ){
+					cellValue = "";
+				} else if( cellType EQ cell.CELL_TYPE_BOOLEAN ){
+					cellValue = cell.GetBooleanCellValue();
+				}
+				rowData.append( JavaCast( "string",cellValue ) );
+			}//end column loop
+			if( !isHeaderRow OR !excludeHeaderRow )
+				sheetData.Append( rowData );
+		}//end row loop
+		if( !columnNames.Len() ){
+			for( var i=1; totalColumnCount; i++ ){
+				columnNames.Append( "column" & i );
+			}
+		}
+		var columnTypes = [];
+		for( var columnName in columnNames ){
+			columnTypes.Append( "VarChar" );
+		}
+		var result = QueryNew( columnNames,columnTypes,sheetData );
+		return result;
+	}
+
 	void function validateSheetName( required workbook,required string sheetName ){
 		if( !sheetExists( workbook=workbook,sheetName=sheetName ) )
 			throw( type=exceptionType,message="Invalid Sheet Name [#arguments.SheetName#]", detail="The requested sheet was not found in the current workbook." );
@@ -249,6 +343,20 @@ component access="package"{
 			throw( type=exceptionType,message="Missing Required Argument", detail="Either sheetName or sheetIndex must be provided" );
 		if( arguments.KeyExists( "sheetName" ) AND arguments.KeyExists( "sheetIndex" ) )
 			throw( type=exceptionType,message="Too Many Arguments", detail="Only one argument is allowed. Specify either a SheetName or SheetIndex, not both" );
+	}
+
+	function workbookFromFile( required string path ){
+		try{
+			var inputStream 		= CreateObject( "Java","java.io.FileInputStream" ).init( path );
+			//var excelFileSystem = CreateObject( "Java","org.apache.poi.poifs.filesystem.POIFSFileSystem" ).init( inputStream );
+			var excelFileSystem = loadPoi( "org.apache.poi.poifs.filesystem.POIFSFileSystem" ).init( inputStream );
+			var workbook 				= loadPoi( "org.apache.poi.hssf.usermodel.HSSFWorkbook" ).init( excelFileSystem );
+
+		}
+		finally{
+			inputStream.close();
+		}
+		return workbook;
 	}
 
 }
