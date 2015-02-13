@@ -292,7 +292,7 @@ component{
 		,string rows //TODO
 		,numeric sheet // 1-based
 		,string sheetName  //TODO
-		,boolean excludeHeaderRow=false
+		,boolean excludeHeaderRow=true
 	){
 		if( arguments.KeyExists( "query" ) )
 			throw( type=exceptionType,message="Invalid argument 'query'.",details="Just use format='query' to return a query object" );
