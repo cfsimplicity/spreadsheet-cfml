@@ -42,6 +42,8 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 
 ##Usage
 
+Note that this is not a Lucee extension, so **does not need to be installed**. To use it, simply copy the files/folders to a location where `Spreadsheet.cfc` can be called by your application code.
+
 The following examples assume the file containing the script is in the same location as the spreadsheet.cfc.
 
 You will probably want to place the spreadsheet library files in a central location with an application mapping, and instantiate the component using its dot path (e.g. `New myLibrary.spreadsheet.spreadsheet();`).
