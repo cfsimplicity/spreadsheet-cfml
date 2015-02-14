@@ -246,7 +246,7 @@ component access="package"{
 		var sheet = workbook.GetSheetAt( JavaCast( "int",sheetIndex ) );
 		var sheetData = [];
 		var lastRowNumber = sheet.GetLastRowNum();
-		// Loop over the rows in the Excel sheet. This time, we already have a query built, so we just want to start capturing the cell data.
+		// Loop over the rows in the Excel sheet.
 		for( rowIndex=0; rowIndex LTE lastRowNumber; rowIndex++ ){
 			var row = sheet.GetRow( JavaCast( "int",rowIndex ) );
 			var rowData	=	[];
@@ -260,7 +260,6 @@ component access="package"{
 				if( IsNull( cell ) )
 					continue;
 				if( isHeaderRow ){
-					/* Try to get a header column name (it might throw an error). We want to take that cell value and add it to the array of header values that we will return with the sheet data. */
 					try{
 						var value = cell.getStringCellValue();
 					}
@@ -283,7 +282,7 @@ component access="package"{
 				
 				var cellType = cell.GetCellType();
 				var cellValue = "";
-				/* Get the value of the cell based on the data type. The thing to worry about here is cell forumlas and cell dates. Formulas  can be strange and dates are stored as numeric types. For  this demo, I am not going to worry about that at all. I will  just grab dates as floats and formulas I will try to grab as numeric values. */
+				/* Get the value of the cell based on the data type. The thing to worry about here is cell forumlas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values. */
 				if( cellType EQ cell.CELL_TYPE_NUMERIC ) {
 					/* Get numeric cell data. This could be a standard number, could also be a date value. I am going to leave it up to the calling program to decide. */
 					cellValue = cell.GetNumericCellValue();
@@ -348,10 +347,8 @@ component access="package"{
 	function workbookFromFile( required string path ){
 		try{
 			var inputStream 		= CreateObject( "Java","java.io.FileInputStream" ).init( path );
-			//var excelFileSystem = CreateObject( "Java","org.apache.poi.poifs.filesystem.POIFSFileSystem" ).init( inputStream );
 			var excelFileSystem = loadPoi( "org.apache.poi.poifs.filesystem.POIFSFileSystem" ).init( inputStream );
 			var workbook 				= loadPoi( "org.apache.poi.hssf.usermodel.HSSFWorkbook" ).init( excelFileSystem );
-
 		}
 		finally{
 			inputStream.close();
