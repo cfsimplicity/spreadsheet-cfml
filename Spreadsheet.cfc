@@ -312,6 +312,8 @@ component{
 		if( arguments.KeyExists( "sheetName" ) )
 			throw( type=exceptionType,message="Attribute not yet supported",detail="Sorry the 'sheetName' attribute is not yet supported." );
 		//END TODO
+		if( !FileExists( src ) )
+			throw( type=exceptionType,message="Non-existent file",detail="Cannot find the file #src#." );
 		var workbook = tools.workbookFromFile( src );
 		switch( format ){
 			case "csv": case "tab": case "pipe":
