@@ -322,10 +322,11 @@ component{
 				var args = {
 					workbook = workbook
 					,sheetIndex = arguments.KeyExists( "sheet" )? sheet-1: 0
-					,excludeHeaderRow = excludeHeaderRow
 				}
-				if( arguments.KeyExists( "headerRow" ) )
+				if( arguments.KeyExists( "headerRow" ) ){
 					args.headerRow=headerRow;
+					args.excludeHeaderRow = excludeHeaderRow;
+				}
 				return tools.sheetToQuery( argumentCollection=args );
 		}
 		return workbook;

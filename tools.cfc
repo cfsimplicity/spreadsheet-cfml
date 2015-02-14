@@ -239,6 +239,7 @@ component access="package"{
 
 	query function sheetToQuery( required workbook,required numeric sheetIndex,numeric headerRow,boolean excludeHeaderRow=false ){
 		/* Based on https://github.com/bennadel/POIUtility.cfc */
+
 		var hasHeaderRow = arguments.KeyExists( "headerRow" );
 		var poiHeaderRow = ( hasHeaderRow AND headerRow )? headerRow-1: 0;
 		var columnNames=[];
@@ -313,7 +314,7 @@ component access="package"{
 				sheetData.Append( rowData );
 		}//end row loop
 		if( !columnNames.Len() ){
-			for( var i=1; totalColumnCount; i++ ){
+			for( var i=1; i LTE totalColumnCount; i++ ){
 				columnNames.Append( "column" & i );
 			}
 		}
