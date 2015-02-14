@@ -62,6 +62,8 @@ component{
 		,xmlformat=false
 	){
 		var workbook = this.workbookFromQuery( data,addHeaderRow,boldHeaderRow,xmlFormat );
+		if( xmlformat AND ( ListLast( filepath,"." ) IS "xls" ) )
+			arguments.filePath &="x";// force to .xlsx
 		this.write( workbook=workbook,filepath=filepath,overwrite=overwrite );
 	}
 
