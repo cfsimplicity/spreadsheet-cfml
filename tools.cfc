@@ -237,9 +237,8 @@ component access="package"{
 		return false;
 	}
 
-	query function sheetToQuery( required workbook,required numeric sheetIndex,numeric headerRow,boolean excludeHeaderRow=false ){
+	query function sheetToQuery( required workbook,required numeric sheetIndex,numeric headerRow,boolean excludeHeaderRow=false,boolean includeBlankRows=false ){
 		/* Based on https://github.com/bennadel/POIUtility.cfc */
-
 		var hasHeaderRow = arguments.KeyExists( "headerRow" );
 		var poiHeaderRow = ( hasHeaderRow AND headerRow )? headerRow-1: 0;
 		var columnNames=[];
@@ -262,7 +261,8 @@ component access="package"{
 			for( colIndex=0; colIndex LT columnCount; colIndex++ ){
 				var cell = row.GetCell( JavaCast( "int",colIndex ) );
 				if( IsNull( cell ) ){
-					rowData.append( JavaCast( "string","" ) );
+					if( includeBlankRows )
+						rowData.append( JavaCast( "string","" ) );
 					continue;
 				}
 				if( isHeaderRow ){

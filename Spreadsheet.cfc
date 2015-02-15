@@ -292,6 +292,7 @@ component{
 		,numeric sheet // 1-based
 		,string sheetName  //TODO
 		,boolean excludeHeaderRow=true
+		,boolean includeBlankRows=false
 	){
 		if( arguments.KeyExists( "query" ) )
 			throw( type=exceptionType,message="Invalid argument 'query'.",details="Just use format='query' to return a query object" );
@@ -328,6 +329,8 @@ component{
 					args.headerRow=headerRow;
 					args.excludeHeaderRow = excludeHeaderRow;
 				}
+				if( arguments.KeyExists( "includeBlankRows" ) )
+					args.includeBlankRows=includeBlankRows;
 				return tools.sheetToQuery( argumentCollection=args );
 		}
 		return workbook;
