@@ -80,18 +80,15 @@ component{
 		var row 				= 0;
 		var cell 				= 0;
 		var oldCell 		= 0;
-		var rowNum 			= 0;
+		var rowNum 			= ( arguments.KeyExists( "startRow" ) AND startRow )? startRow-1: 0;
 		var cellNum 		= 0;
 		var lastCellNum = 0;
 		var cellValue 	= 0;
-		if( arguments.KeyExists( "startRow" ) )
-			rowNum = startRow-1;
 		if( arguments.KeyExists( "startColumn" ) ){
 			cellNum = startColumn-1;
 		} else {
 			row = tools.getActiveSheet( workbook ).getRow( rowNum );
-			/* if this row exists, find the next empty cell number. note: getLastCellNum() 
-				returns the cell index PLUS ONE or -1 if not found */
+			/* if this row exists, find the next empty cell number. note: getLastCellNum() returns the cell index PLUS ONE or -1 if not found */
 			if( !IsNull( row ) AND row.getLastCellNum() GT 0 )
 				cellNum = row.getLastCellNum();
 			else
