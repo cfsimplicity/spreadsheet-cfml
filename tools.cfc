@@ -249,17 +249,22 @@ component access="package"{
 		var lastRowNumber = sheet.GetLastRowNum();
 		// Loop over the rows in the Excel sheet.
 		for( rowIndex=0; rowIndex LTE lastRowNumber; rowIndex++ ){
-			var row = sheet.GetRow( JavaCast( "int",rowIndex ) );
-			var rowData	=	[];
-			if( IsNull( row ) )
-				continue;
 			var isHeaderRow = ( hasHeaderRow AND ( rowIndex EQ poiHeaderRow ) );
+			var rowData	=	[];
+			var row = sheet.GetRow( JavaCast( "int",rowIndex ) );
+			if( IsNull( row ) ){
+				if( !isHeaderRow OR !excludeHeaderRow )
+					sheetData.Append( rowData );
+				continue;
+			}
 			var columnCount = row.GetLastCellNum();
 			totalColumnCount = Max( totalColumnCount,columnCount );
 			for( colIndex=0; colIndex LT columnCount; colIndex++ ){
 				var cell = row.GetCell( JavaCast( "int",colIndex ) );
-				if( IsNull( cell ) )
+				if( IsNull( cell ) ){
+					rowData.append( JavaCast( "string","" ) );
 					continue;
+				}
 				if( isHeaderRow ){
 					try{
 						var value = cell.getStringCellValue();
