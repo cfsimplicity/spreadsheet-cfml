@@ -73,7 +73,7 @@ component{
 		required workbook
 		,required string data /* Delimited list of cell values */
 		,numeric startRow
-		,numeric column
+		,numeric startColumn
 		,boolean insert=true
 		,string delimiter=","
 	){
@@ -86,8 +86,8 @@ component{
 		var cellValue 	= 0;
 		if( arguments.KeyExists( "startRow" ) )
 			rowNum = startRow-1;
-		if( arguments.KeyExists( "column" ) ){
-			cellNum = column-1;
+		if( arguments.KeyExists( "startColumn" ) ){
+			cellNum = startColumn-1;
 		} else {
 			row = tools.getActiveSheet( workbook ).getRow( rowNum );
 			/* if this row exists, find the next empty cell number. note: getLastCellNum() 
