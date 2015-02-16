@@ -276,7 +276,7 @@ component{
 	}
 
 	function new( string sheetName="Sheet1",boolean xmlformat=false ){
-		var workbook = this.createWorkBook( sheetName.Left( 31 ) );
+		var workbook = this.createWorkBook( sheetName.Left( 31 ),xmlFormat );
 		this.createSheet( workbook,sheetName,xmlformat );
 		setActiveSheet( workbook,sheetName );
 		return workbook;
