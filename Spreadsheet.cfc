@@ -139,6 +139,8 @@ component{
 			throw( type=exceptionType,message="Invalid startRow value",detail="The value for startRow must be greater than or equal to 1." );
 		if( arguments.KeyExists( "startColumn" ) AND ( startColumn LTE 0 ) )
 			throw( type=exceptionType,message="Invalid startColumn value",detail="The value for startColumn must be greater than or equal to 1." );
+		if( !insert AND !arguments.KeyExists( "startRow") )
+			throw( type=exceptionType,message="Missing startRow value",detail="To replace a row using 'insert', please specify the row to replace." );
 		var lastRow = this.getNextEmptyRow( workbook );
 		//If the requested row already exists ...
 		if( arguments.KeyExists( "startRow" ) AND ( startRow LTE lastRow ) ){
