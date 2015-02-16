@@ -144,16 +144,10 @@ private function loadPoi( required string javaclass ){
 	if( !server.KeyExists( "_poiLoader" ) ){
 		var paths = [];
 		var libPath = ExpandPath( GetDirectoryFromPath( GetCurrentTemplatePath() ) & "lib/" );
-		//paths.Append( libPath & "poi-3.7-20101029.jar" );
-		//paths.Append( libPath & "poi-ooxml-3.7-20101029.jar" );
-		//paths.Append( libPath & "poi-ooxml-schemas-3.7-20101029.jar" );
-		//paths.Append( libPath & "dom4j-1.6.1.jar" );
-		//paths.Append( libPath & "geronimo-stax-api_1.0_spec-1.0.jar" );
-		//paths.Append( libPath & "xmlbeans-2.3.0.jar" );
 		paths.Append( libPath & "poi-3.11-20141221.jar" );
-		//paths.Append( libPath & "poi-ooxml-3.11-20141221.jar" );
-		//paths.Append( libPath & "poi-ooxml-schemas-3.11-20141221.jar" );
-		//paths.Append( libPath & "xmlbeans-2.6.0.jar" );
+		paths.Append( libPath & "poi-ooxml-3.11-20141221.jar" );
+		paths.Append( libPath & "poi-ooxml-schemas-3.11-20141221.jar" );
+		paths.Append( libPath & "xmlbeans-2.6.0.jar" );
 		if( !server.KeyExists( "_poiLoader" ) ){
 			server._poiLoader = CreateObject( "component","javaLoader.JavaLoader" ).init( loadPaths=paths,loadColdFusionClassPath=true,trustedSource=true );
 		}
