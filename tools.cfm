@@ -56,7 +56,11 @@ private string function filenameSafe( required string input ){
 
 private function getActiveSheet( required workbook ){
 	return workbook.getSheetAt( JavaCast( "int",workbook.getActiveSheetIndex() ) );
-} 
+}
+
+private function getActiveSheetName( required workbook ){
+	return this.getActiveSheet( workbook ).getSheetName();
+}
 
 private function getCellUtil(){
 	if( IsNull( variables.cellUtil ) )
