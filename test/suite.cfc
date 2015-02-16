@@ -24,11 +24,12 @@ component extends="testbox.system.BaseSpec"{
 					FileDelete( tempXlsPath );
 			});
 
-			include "test/addColumn.cfm";
-			include "test/addRow.cfm";
-			include "test/addRows.cfm";
-			include "test/deleteRow.cfm";
-			include "test/new.cfm";
+			include "tests/addColumn.cfm";
+			include "tests/addRow.cfm";
+			include "tests/addRows.cfm";
+			include "tests/deleteRow.cfm";
+			include "tests/new.cfm";
+			include "tests/read.cfm";
 
 		});
 

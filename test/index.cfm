@@ -1,5 +1,5 @@
 <cfscript>
-paths = [ "root.tests.spreadsheet" ];
+paths = [ "root.test.suite" ];
 testRunner = New testbox.system.Testbox( paths );
 echo( testRunner.run() );
 </cfscript>

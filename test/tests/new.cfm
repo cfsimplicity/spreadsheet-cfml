@@ -17,7 +17,5 @@ describe( "new tests",function(){
 		expect( s.getActiveSheetName( workbook ) ).toBe( "test" );
 	});
 
-
-
 });	
 </cfscript>
