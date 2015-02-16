@@ -15,6 +15,14 @@ describe( "addRow tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "can append a row including commas with a custom delimiter",function() {
+		s.addRow( workbook=workbook,data="a,b|c,d",delimiter="|" );
+		s.write( workbook,tempXlsPath,true );
+		expected = QueryNew( "column1,column2","VarChar,VarChar",[ [ "a,b","c,d" ] ] );
+		actual = s.read( src=tempXlsPath,format="query" );
+		expect( actual ).toBe( expected );
+	});
+
 	it( "can insert a row at a specifed position",function() {
 		s.addRow( workbook,data );
 		s.addRow( workbook,"e,f",2,2 );
