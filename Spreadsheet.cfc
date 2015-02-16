@@ -64,6 +64,8 @@ component{
 		,boldHeaderRow=true
 		,xmlformat=false
 	){
+		if( !xmlformat AND ( ListLast( filepath,"." ) IS "xlsx" ) )
+			arguments.xmlformat=true;
 		var workbook = this.workbookFromQuery( data,addHeaderRow,boldHeaderRow,xmlFormat );
 		if( xmlformat AND ( ListLast( filepath,"." ) IS "xls" ) )
 			arguments.filePath &="x";// force to .xlsx
@@ -194,7 +196,7 @@ component{
 
 	void function addRows( required workbook,required query data,numeric row,numeric column=1,boolean insert=true ){
 		var lastRow = this.getNextEmptyRow( workbook );
-		if( arguments.KeyExists( "row" ) AND row LTE lastRow AND insert )
+		if( arguments.KeyExists( "row" ) AND ( row LTE lastRow ) AND insert )
 			shiftRows( workbook,row,lastRow,data.recordCount );
 		var rowNum	=	arguments.keyExists( "row" )? row-1: this.getNextEmptyRow( workbook );
 		var queryColumns = this.getQueryColumnFormats( workbook,data );
