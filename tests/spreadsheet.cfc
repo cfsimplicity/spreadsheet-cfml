@@ -27,6 +27,8 @@ component extends="testbox.system.BaseSpec"{
 			include "test/addColumn.cfm";
 			include "test/addRow.cfm";
 			include "test/addRows.cfm";
+			include "test/deleteRow.cfm";
+			include "test/new.cfm";
 
 		});
 
