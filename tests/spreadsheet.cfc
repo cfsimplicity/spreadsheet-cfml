@@ -25,9 +25,12 @@ component extends="testbox.system.BaseSpec"{
 			});
 
 			include "test/addColumn.cfm";
+			include "test/addRow.cfm";
 
 		});
 
 	}
+
+	//dump( expected );dump( actual );abort;
 
 }

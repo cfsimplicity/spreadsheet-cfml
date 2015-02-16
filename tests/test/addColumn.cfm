@@ -39,7 +39,14 @@ describe( "addColumn tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	/* TODO insert tests */
+	it( "can insert (not replace) a column with the minimum arguments",function() {
+		s.addColumn( workbook,data );
+		s.addColumn( workbook=workbook,data=data,insert=true );
+		s.write( workbook,tempXlsPath,true );
+		expected = QueryNew( "column1,column2","VarChar,VarChar",[ [ "a","a" ],[ "b","b" ] ] );
+		actual = s.read( src=tempXlsPath,format="query" );
+		expect( actual ).toBe( expected );
+	});
 
 });	
 </cfscript>
