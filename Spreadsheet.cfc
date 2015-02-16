@@ -3,14 +3,17 @@ component{
 	variables.defaultFormats = { DATE = "m/d/yy", TIMESTAMP = "m/d/yy h:mm", TIME = "h:mm:ss" };
 	variables.exceptionType	=	"cfsimplicity.lucee.spreadsheet";
 
+	include "tools.cfm";
+	include "formatting.cfm";
+
 	function init(){
-		variables.formatting = New formatting( exceptionType );
-		variables.tools = New tools( formatting,defaultFormats,exceptionType );
 		return this;
 	}
 
 	void function flushPoiLoader(){
-		tools.flushPoiLoader();
+		lock scope="server" timeout="10"{
+		StructDelete( server,"_poiLoader" );
+	};
 	}
 
 	/* CUSTOM METHODS */
@@ -43,7 +46,7 @@ component{
 		,boolean xmlformat=false
 		,string contentType
 	){
-		var safeFilename	=	tools.filenameSafe( filename );
+		var safeFilename	=	this.filenameSafe( filename );
 		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$","" );
 		var binary = this.binaryFromQuery( data,addHeaderRow,boldHeaderRow,xmlformat );
 		if( !arguments.KeyExists( "contentType" ) )
@@ -87,7 +90,7 @@ component{
 		if( arguments.KeyExists( "startColumn" ) ){
 			cellNum = startColumn-1;
 		} else {
-			row = tools.getActiveSheet( workbook ).getRow( rowNum );
+			row = this.getActiveSheet( workbook ).getRow( rowNum );
 			/* if this row exists, find the next empty cell number. note: getLastCellNum() returns the cell index PLUS ONE or -1 if not found */
 			if( !IsNull( row ) AND row.getLastCellNum() GT 0 )
 				cellNum = row.getLastCellNum();
@@ -97,10 +100,10 @@ component{
 		var columnData = ListToArray( data,delimiter );
 		for( var cellValue in columnData ){
 			/* if rowNum is greater than the last row of the sheet, need to create a new row  */
-			if( rowNum GT tools.getActiveSheet( workbook ).getLastRowNum() OR IsNull( tools.getActiveSheet( workbook ).getRow( rowNum ) ) )
-				row = tools.createRow( workbook,rowNum );
+			if( rowNum GT this.getActiveSheet( workbook ).getLastRowNum() OR IsNull( this.getActiveSheet( workbook ).getRow( rowNum ) ) )
+				row = this.createRow( workbook,rowNum );
 			else
-				row = tools.getActiveSheet( workbook ).getRow( rowNum );
+				row = this.getActiveSheet( workbook ).getRow( rowNum );
 			/* POI doesn't have any 'shift column' functionality akin to shiftRows() so inserts get interesting */
 			/* ** Note: row.getLastCellNum() returns the cell index PLUS ONE or -1 if not found */
 			if( insert AND ( cellNum LT row.getLastCellNum() ) ){
@@ -110,14 +113,14 @@ component{
 					oldCell	=	row.getCell( JavaCast( "int",i-1 ) );
 					if( !IsNull( oldCell ) ){
 						/* TODO: Handle other cell types ?  */
-						cell = tools.createCell( row,i );
+						cell = this.createCell( row,i );
 						cell.setCellStyle( oldCell.getCellStyle() );
 						cell.setCellValue( oldCell.getStringCellValue() );
 						cell.setCellComment( oldCell.getCellComment() );
 					}
 				}
 			}
-			cell = tools.createCell( row,cellNum );
+			cell = this.createCell( row,cellNum );
 			cell.setCellValue( JavaCast( "string",cellValue ) );
 			rowNum++;
 		}
@@ -132,21 +135,21 @@ component{
 		,string delimiter=","
 		,boolean handleEmbeddedCommas=true /* When true, values enclosed in single quotes are treated as a single element like in ACF. Only applies when the delimiter is a comma. */
 	){
-		var lastRow = tools.getNextEmptyRow( workbook );
+		var lastRow = this.getNextEmptyRow( workbook );
 		//If the requested row already exists ...
 		if( arguments.KeyExists( "startRow" ) AND startRow LTE lastRow ){
 			shiftRows( startRow,lastRow,1 );//shift the existing rows down (by one row)
 		else
 			deleteRow( startRow );//otherwise, clear the entire row
 		}
-		var theRow = arguments.KeyExists( "startRow" )? tools.createRow( workbook,arguments.startRow-1 ): tools.createRow( workbook );
-		var rowValues = tools.parseRowData( data,delimiter,handleEmbeddedCommas );
+		var theRow = arguments.KeyExists( "startRow" )? this.createRow( workbook,arguments.startRow-1 ): this.createRow( workbook );
+		var rowValues = this.parseRowData( data,delimiter,handleEmbeddedCommas );
 		var cellNum = startColumn - 1;
-		var dateUtil = tools.getDateUtil();
+		var dateUtil = this.getDateUtil();
 		for( var cellValue in rowValues ){
 			cellValue=cellValue.Trim();
-			var oldWidth = tools.getActiveSheet( workbook ).getColumnWidth( cellNum );
-			var cell = tools.createCell( theRow,cellNum );
+			var oldWidth = this.getActiveSheet( workbook ).getColumnWidth( cellNum );
+			var cell = this.createCell( theRow,cellNum );
 			var isDateColumn  = false;
 			var dateMask  = "";
 			if( IsNumeric( cellValue ) and !cellValue.REFind( "^0[\d]+" ) ){
@@ -156,8 +159,8 @@ component{
 				cell.setCellValue( JavaCast( "double",cellValue ) );
 			} else if( IsDate( cellValue ) ){
 				/*  DATE  */
-				cellFormat = tools.getDateTimeValueFormat( cellValue );
-				cell.setCellStyle( formatting.buildCellStyle( { workbook,dataFormat=cellFormat } ) );
+				cellFormat = this.getDateTimeValueFormat( cellValue );
+				cell.setCellStyle( this.buildCellStyle( { workbook,dataFormat=cellFormat } ) );
 				cell.setCellType( cell.CELL_TYPE_NUMERIC );
 				/*  Excel's uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling - */
 				if( cellFormat EQ variables.defaultFormats.TIME ){
@@ -177,25 +180,25 @@ component{
 				cell.setCellType( cell.CELL_TYPE_BLANK );
 				cell.setCellValue( "" );
 			}
-			tools.autoSizeColumnFix( workbook,cellNum,isDateColumn,dateMask );
+			this.autoSizeColumnFix( workbook,cellNum,isDateColumn,dateMask );
 			cellNum++;
 		}
 	}
 
 	void function addRows( required workbook,required query data,numeric row,numeric column=1,boolean insert=true ){
-		var lastRow = tools.getNextEmptyRow( workbook );
+		var lastRow = this.getNextEmptyRow( workbook );
 		if( arguments.KeyExists( "row" ) AND row LTE lastRow AND insert )
 			shiftRows( row,lastRow,data.recordCount );
-		var rowNum	=	arguments.keyExists( "row" )? row-1: tools.getNextEmptyRow( workbook );
-		var queryColumns = tools.getQueryColumnFormats( workbook,data );
-		var dateUtil = tools.getDateUtil();
+		var rowNum	=	arguments.keyExists( "row" )? row-1: this.getNextEmptyRow( workbook );
+		var queryColumns = this.getQueryColumnFormats( workbook,data );
+		var dateUtil = this.getDateUtil();
 		var dateColumns  = {};
 		for( var dataRow in data ){
 			/* can't just call addRow() here since that function expects a comma-delimited 
 					list of data (probably not the greatest limitation ...) and the query 
 					data may have commas in it, so this is a bit redundant with the addRow() 
 					function */
-			var theRow = tools.createRow( workbook,rowNum,false );
+			var theRow = this.createRow( workbook,rowNum,false );
 			var cellNum = ( arguments.column-1 );
 			/* Note: To properly apply date/number formatting:
    				- cell type must be CELL_TYPE_NUMERIC
@@ -203,7 +206,7 @@ component{
    				- cell style must have a dataFormat (datetime values only) */
    		/* populate all columns in the row */
    		for( var column in queryColumns ){
-   			var cell 	= tools.createCell( theRow, cellNum, false );
+   			var cell 	= this.createCell( theRow, cellNum, false );
 				var value = dataRow[ column.name ];
 				var forceDefaultStyle = false;
 				column.index = cellNum;
@@ -250,20 +253,20 @@ component{
 	void function deleteRow( required workbook,required numeric rowNum ){
 		/* Deletes the data from a row. Does not physically delete the row. */
 		var rowToDelete = rowNum - 1;
-		if( rowToDelete GTE tools.getFirstRowNum( workbook ) AND rowToDelete LTE tools.getLastRowNum( workbook ) ) //If this is a valid row, remove it
-			tools.getActiveSheet( workbook ).removeRow( tools.getActiveSheet( workbook ).getRow( JavaCast( "int",rowToDelete ) ) );
+		if( rowToDelete GTE this.getFirstRowNum( workbook ) AND rowToDelete LTE this.getLastRowNum( workbook ) ) //If this is a valid row, remove it
+			this.getActiveSheet( workbook ).removeRow( this.getActiveSheet( workbook ).getRow( JavaCast( "int",rowToDelete ) ) );
 	}
 
 	void function formatCell( required workbook,required struct format,required numeric row,required numeric column,any cellStyle ){
-		var cell = tools.initializeCell( workbook,row,column );
+		var cell = this.initializeCell( workbook,row,column );
 		if( arguments.KeyExists( "cellStyle" ) )
 			cell.setCellStyle( cellStyle );// reuse an existing style
 		else
-			cell.setCellStyle( formatting.buildCellStyle( workbook,format ) );
+			cell.setCellStyle( this.buildCellStyle( workbook,format ) );
 	}
 
 	void function formatRow( required workbook,required struct format,required numeric rowNum ){
-		var theRow = tools.getActiveSheet( workbook ).getRow( arguments.rowNum-1 );
+		var theRow = this.getActiveSheet( workbook ).getRow( arguments.rowNum-1 );
 		if( IsNull( theRow ) )
 			return;
 		var cellIterator = theRow.cellIterator();
@@ -273,8 +276,8 @@ component{
 	}
 
 	function new( string sheetName="Sheet1",boolean xmlformat=false ){
-		var workbook = tools.createWorkBook( sheetName.Left( 31 ) );
-		tools.createSheet( workbook,sheetName,xmlformat );
+		var workbook = this.createWorkBook( sheetName.Left( 31 ) );
+		this.createSheet( workbook,sheetName,xmlformat );
 		setActiveSheet( workbook,sheetName );
 		return workbook;
 	}
@@ -309,7 +312,7 @@ component{
 		//END TODO
 		if( !FileExists( src ) )
 			throw( type=exceptionType,message="Non-existent file",detail="Cannot find the file #src#." );
-		var workbook = tools.workbookFromFile( src );
+		var workbook = this.workbookFromFile( src );
 		switch( format ){
 			case "csv": case "tab": case "pipe":
 				throw( type=exceptionType,message="Format not yet supported",detail="Sorry #format# is not yet supported as an ouput format" );
@@ -328,7 +331,7 @@ component{
 				}
 				if( arguments.KeyExists( "includeBlankRows" ) )
 					args.includeBlankRows=includeBlankRows;
-				return tools.sheetToQuery( argumentCollection=args );
+				return this.sheetToQuery( argumentCollection=args );
 		}
 		return workbook;
 	}
@@ -341,17 +344,17 @@ component{
 	}
 
 	void function setActiveSheet( required workbook,string sheetName,numeric sheetIndex ){
-		tools.validateSheetNameOrIndexWasProvided( argumentCollection=arguments );
+		this.validateSheetNameOrIndexWasProvided( argumentCollection=arguments );
 		if( arguments.KeyExists( "sheetName" ) ){
-			tools.validateSheetName( workbook,sheetName );
+			this.validateSheetName( workbook,sheetName );
 			arguments.sheetIndex = workbook.getSheetIndex( JavaCast( "string",arguments.sheetName ) ) + 1;
 		}
-		tools.validateSheetIndex( workbook,arguments.sheetIndex )
+		this.validateSheetIndex( workbook,arguments.sheetIndex )
 		workbook.setActiveSheet( JavaCast( "int",arguments.sheetIndex - 1 ) );
 	}
 
 	void function shiftRows( required workbook,required numeric startRow,numeric endRow=startRow,numeric offest=1 ){
-		tools.getActiveSheet( workbook ).shiftRows(
+		this.getActiveSheet( workbook ).shiftRows(
 			JavaCast( "int",arguments.startRow - 1 )
 			,JavaCast( "int",arguments.endRow - 1 )
 			,JavaCast( "int",arguments.offset )
