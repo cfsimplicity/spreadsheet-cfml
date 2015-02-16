@@ -12,8 +12,8 @@ component{
 
 	void function flushPoiLoader(){
 		lock scope="server" timeout="10"{
-		StructDelete( server,"_poiLoader" );
-	};
+			StructDelete( server,"_poiLoader" );
+		};
 	}
 
 	/* CUSTOM METHODS */
@@ -131,7 +131,7 @@ component{
 		,required string data /* Delimited list of data */
 		,numeric startRow
 		,numeric startColumn=1
-		,boolean insert=true
+		,boolean insert=true //TODO
 		,string delimiter=","
 		,boolean handleEmbeddedCommas=true /* When true, values enclosed in single quotes are treated as a single element like in ACF. Only applies when the delimiter is a comma. */
 	){
@@ -353,7 +353,7 @@ component{
 		workbook.setActiveSheet( JavaCast( "int",arguments.sheetIndex - 1 ) );
 	}
 
-	void function shiftRows( required workbook,required numeric startRow,numeric endRow=startRow,numeric offest=1 ){
+	void function shiftRows( required workbook,required numeric startRow,numeric endRow=startRow,numeric offset=1 ){
 		this.getActiveSheet( workbook ).shiftRows(
 			JavaCast( "int",arguments.startRow - 1 )
 			,JavaCast( "int",arguments.endRow - 1 )
