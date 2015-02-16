@@ -129,29 +129,29 @@ component{
 	void function addRow(
 		required workbook
 		,required string data /* Delimited list of data */
-		,numeric startRow
-		,numeric startColumn=1
+		,numeric row
+		,numeric column=1
 		,boolean insert=true //TODO
 		,string delimiter=","
 		,boolean handleEmbeddedCommas=true /* When true, values enclosed in single quotes are treated as a single element like in ACF. Only applies when the delimiter is a comma. */
 	){
-		if( arguments.KeyExists( "startRow" ) AND ( startRow LTE 0 ) )
-			throw( type=exceptionType,message="Invalid startRow value",detail="The value for startRow must be greater than or equal to 1." );
-		if( arguments.KeyExists( "startColumn" ) AND ( startColumn LTE 0 ) )
-			throw( type=exceptionType,message="Invalid startColumn value",detail="The value for startColumn must be greater than or equal to 1." );
-		if( !insert AND !arguments.KeyExists( "startRow") )
-			throw( type=exceptionType,message="Missing startRow value",detail="To replace a row using 'insert', please specify the row to replace." );
+		if( arguments.KeyExists( "row" ) AND ( row LTE 0 ) )
+			throw( type=exceptionType,message="Invalid row value",detail="The value for row must be greater than or equal to 1." );
+		if( arguments.KeyExists( "column" ) AND ( column LTE 0 ) )
+			throw( type=exceptionType,message="Invalid column value",detail="The value for column must be greater than or equal to 1." );
+		if( !insert AND !arguments.KeyExists( "row") )
+			throw( type=exceptionType,message="Missing row value",detail="To replace a row using 'insert', please specify the row to replace." );
 		var lastRow = this.getNextEmptyRow( workbook );
 		//If the requested row already exists ...
-		if( arguments.KeyExists( "startRow" ) AND ( startRow LTE lastRow ) ){
+		if( arguments.KeyExists( "row" ) AND ( row LTE lastRow ) ){
 			if( arguments.insert )
-				shiftRows( workbook,startRow,lastRow,1 );//shift the existing rows down (by one row)
+				shiftRows( workbook,row,lastRow,1 );//shift the existing rows down (by one row)
 			else
-				deleteRow( workbook,startRow );//otherwise, clear the entire row
+				deleteRow( workbook,row );//otherwise, clear the entire row
 		}
-		var theRow = arguments.KeyExists( "startRow" )? this.createRow( workbook,arguments.startRow-1 ): this.createRow( workbook );
+		var theRow = arguments.KeyExists( "row" )? this.createRow( workbook,arguments.row-1 ): this.createRow( workbook );
 		var rowValues = this.parseRowData( data,delimiter,handleEmbeddedCommas );
-		var cellNum = startColumn - 1;
+		var cellNum = column - 1;
 		var dateUtil = this.getDateUtil();
 		for( var cellValue in rowValues ){
 			cellValue=cellValue.Trim();
@@ -201,10 +201,7 @@ component{
 		var dateUtil = this.getDateUtil();
 		var dateColumns  = {};
 		for( var dataRow in data ){
-			/* can't just call addRow() here since that function expects a comma-delimited 
-					list of data (probably not the greatest limitation ...) and the query 
-					data may have commas in it, so this is a bit redundant with the addRow() 
-					function */
+			/* can't just call addRow() here since that function expects a comma-delimited list of data (probably not the greatest limitation ...) and the query data may have commas in it, so this is a bit redundant with the addRow() function */
 			var theRow = this.createRow( workbook,rowNum,false );
 			var cellNum = ( arguments.column-1 );
 			/* Note: To properly apply date/number formatting:
@@ -245,9 +242,7 @@ component{
 				/* Replace the existing styles with custom formatting  */
 				if( column.KeyExists( "customCellStyle" ) ){
 					cell.setCellStyle( column.customCellStyle );
-					/* Replace the existing styles with default formatting (for readability). The reason we cannot 
-					just update the cell's style is because they are shared. So modifying it may impact more than 
-					just this one cell. */
+					/* Replace the existing styles with default formatting (for readability). The reason we cannot just update the cell's style is because they are shared. So modifying it may impact more than just this one cell. */
 				} else if( column.KeyExists( "defaultCellStyle" ) AND forceDefaultStyle ){
 					cell.setCellStyle( column.defaultCellStyle );
 				}

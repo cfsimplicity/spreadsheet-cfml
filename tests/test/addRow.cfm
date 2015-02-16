@@ -27,7 +27,7 @@ describe( "addRow tests",function(){
 
 	it( "can replace a row if insert is false",function() {
 		s.addRow( workbook,data );
-		s.addRow( workbook=workbook,data=data,startRow=1,insert=false );
+		s.addRow( workbook=workbook,data=data,row=1,insert=false );
 		s.write( workbook,tempXlsPath,true );
 		expected = QueryNew( "column1,column2","VarChar,VarChar",[ [ "a","b" ] ] );
 		actual = s.read( src=tempXlsPath,format="query" );
