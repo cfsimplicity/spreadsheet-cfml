@@ -135,12 +135,17 @@ component{
 		,string delimiter=","
 		,boolean handleEmbeddedCommas=true /* When true, values enclosed in single quotes are treated as a single element like in ACF. Only applies when the delimiter is a comma. */
 	){
+		if( arguments.KeyExists( "startRow" ) AND ( startRow LTE 0 ) )
+			throw( type=exceptionType,message="Invalid startRow value",detail="The value for startRow must be greater than or equal to 1." );
+		if( arguments.KeyExists( "startColumn" ) AND ( startColumn LTE 0 ) )
+			throw( type=exceptionType,message="Invalid startColumn value",detail="The value for startColumn must be greater than or equal to 1." );
 		var lastRow = this.getNextEmptyRow( workbook );
 		//If the requested row already exists ...
-		if( arguments.KeyExists( "startRow" ) AND startRow LTE lastRow ){
-			shiftRows( startRow,lastRow,1 );//shift the existing rows down (by one row)
-		else
-			deleteRow( startRow );//otherwise, clear the entire row
+		if( arguments.KeyExists( "startRow" ) AND ( startRow LTE lastRow ) ){
+			if( arguments.insert )
+				shiftRows( workbook,startRow,lastRow,1 );//shift the existing rows down (by one row)
+			else
+				deleteRow( workbook,startRow );//otherwise, clear the entire row
 		}
 		var theRow = arguments.KeyExists( "startRow" )? this.createRow( workbook,arguments.startRow-1 ): this.createRow( workbook );
 		var rowValues = this.parseRowData( data,delimiter,handleEmbeddedCommas );
@@ -188,7 +193,7 @@ component{
 	void function addRows( required workbook,required query data,numeric row,numeric column=1,boolean insert=true ){
 		var lastRow = this.getNextEmptyRow( workbook );
 		if( arguments.KeyExists( "row" ) AND row LTE lastRow AND insert )
-			shiftRows( row,lastRow,data.recordCount );
+			shiftRows( workbook,row,lastRow,data.recordCount );
 		var rowNum	=	arguments.keyExists( "row" )? row-1: this.getNextEmptyRow( workbook );
 		var queryColumns = this.getQueryColumnFormats( workbook,data );
 		var dateUtil = this.getDateUtil();
