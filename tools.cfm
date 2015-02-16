@@ -340,8 +340,13 @@ private void function validateSheetNameOrIndexWasProvided( string sheetName,nume
 
 private function workbookFromFile( required string path ){
 	// works with both xls and xlsx
-	var file = CreateObject( "java","java.io.File" ).init( path );
-	var workbook = loadPoi( "org.apache.poi.ss.usermodel.WorkbookFactory" ).create( file );
-	return workbook;
+	try{
+		var file = CreateObject( "java","java.io.FileInputStream" ).init( path );
+		var workbook = loadPoi( "org.apache.poi.ss.usermodel.WorkbookFactory" ).create( file );
+		return workbook;
+	}
+	finally{
+		file.close();
+	}
 }
 </cfscript>

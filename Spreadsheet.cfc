@@ -133,7 +133,7 @@ component{
 		,required string data /* Delimited list of data */
 		,numeric row
 		,numeric column=1
-		,boolean insert=true //TODO
+		,boolean insert=true
 		,string delimiter=","
 		,boolean handleEmbeddedCommas=true /* When true, values enclosed in single quotes are treated as a single element like in ACF. Only applies when the delimiter is a comma. */
 	){
