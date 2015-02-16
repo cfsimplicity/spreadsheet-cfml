@@ -103,10 +103,8 @@ component{
 				row = tools.getActiveSheet( workbook ).getRow( rowNum );
 			/* POI doesn't have any 'shift column' functionality akin to shiftRows() so inserts get interesting */
 			/* ** Note: row.getLastCellNum() returns the cell index PLUS ONE or -1 if not found */
-			if( insert AND cellNum LT row.getLastCellNum() ){
-				/*  need to get the last populated column number in the row, figure out which 
-						cells are impacted, and shift the impacted cells to the right to make 
-						room for the new data */
+			if( insert AND ( cellNum LT row.getLastCellNum() ) ){
+				/*  need to get the last populated column number in the row, figure out which cells are impacted, and shift the impacted cells to the right to make room for the new data */
 				lastCellNum = row.getLastCellNum();
 				for( var i=lastCellNum; i EQ cellNum; i-- ){
 					oldCell	=	row.getCell( JavaCast( "int",i-1 ) );
@@ -161,8 +159,7 @@ component{
 				cellFormat = tools.getDateTimeValueFormat( cellValue );
 				cell.setCellStyle( formatting.buildCellStyle( { workbook,dataFormat=cellFormat } ) );
 				cell.setCellType( cell.CELL_TYPE_NUMERIC );
-				/*  Excel's uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" 
-				only values will not display properly without special handling - */
+				/*  Excel's uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling - */
 				if( cellFormat EQ variables.defaultFormats.TIME ){
 					cellValue = TimeFormat( cellValue, "HH:MM:SS" );
 				 	cell.setCellValue( dateUtil.convertTime( cellValue ) );
