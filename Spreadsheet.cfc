@@ -254,9 +254,11 @@ component{
 		}
 	}
 
-	void function deleteRow( required workbook,required numeric rowNum ){
+	void function deleteRow( required workbook,required numeric row ){
 		/* Deletes the data from a row. Does not physically delete the row. */
-		var rowToDelete = rowNum - 1;
+		if( row LTE 0 )
+			throw( type=exceptionType,message="Invalid row value",detail="The value for row must be greater than or equal to 1." );
+		var rowToDelete = row-1;
 		if( rowToDelete GTE this.getFirstRowNum( workbook ) AND rowToDelete LTE this.getLastRowNum( workbook ) ) //If this is a valid row, remove it
 			this.getActiveSheet( workbook ).removeRow( this.getActiveSheet( workbook ).getRow( JavaCast( "int",rowToDelete ) ) );
 	}
