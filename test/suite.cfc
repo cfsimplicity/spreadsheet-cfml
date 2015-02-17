@@ -22,13 +22,16 @@ component extends="testbox.system.BaseSpec"{
 			include "tests/addColumn.cfm";
 			include "tests/addRow.cfm";
 			include "tests/addRows.cfm";
+			include "tests/binaryFromQuery.cfm";
 			include "tests/deleteRow.cfm";
 			include "tests/new.cfm";
 			include "tests/read.cfm";
 			include "tests/readBinary.cfm";
 			include "tests/setActiveSheet.cfm";
 			include "tests/shiftRows.cfm";
+			include "tests/workbookFromQuery.cfm";
 			include "tests/write.cfm";
+			include "tests/writeFileFromQuery.cfm";
 
 		});
 
