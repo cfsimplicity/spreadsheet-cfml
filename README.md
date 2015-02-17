@@ -46,7 +46,7 @@ Note that this is not a Lucee extension, so **does not need to be installed**. T
 
 The following examples assume the file containing the script is in the same location as the spreadsheet.cfc.
 
-You will probably want to place the spreadsheet library files in a central location with an application mapping, and instantiate the component using its dot path (e.g. `New myLibrary.spreadsheet.spreadsheet();`).
+You will probably want to place the spreadsheet library files in a central location with an application mapping, and instantiate the component using its dot path (e.g. `New myLibrary.spreadsheet.spreadsheet();`). [How to create mappings](http://stackoverflow.com/questions/12073714/components-mapping-in-railo).
 
 ```
 spreadsheet	=	New spreadsheet();
@@ -72,7 +72,7 @@ myQuery = spreadsheet.read( src=mypath,format="query" );
 - `headerRow` numeric: specify which row is the header to be used for the query column names
 - `sheet` numeric default=1: which sheet to read (1 based, not zero-based)
 - `includeHeaderRow` boolean default=false: whether to include the header row from the spreadsheet (NB: the default is the opposite to Adobe ColdFusion 9, which is `excludeHeaderRow=false`). 
-- `includeBlankRows` boolean default=false: whether to include blank rows from the spreadsheet in the query data set.
+- `includeBlankRows` boolean default=false: whether to include blank rows from the spreadsheet in the query data set. By default blank rows are suppressed.
 
 ###Convenience methods
 
@@ -131,6 +131,9 @@ spreadsheet.writeFileFromQuery( data,filepath,true );
 - `addHeaderRow` boolean default=true: whether to include the query column names as a header row
 - `boldHeaderRow` boolean default=true: whether to make the header row bold
 - `xmlformat` boolean default=false: whether to create an XML spreadsheet (.xlsx)
+
+##Test Suite
+The automated tests require [TestBox 2.1](https://github.com/Ortus-Solutions/TestBox). You will need to create an application mapping for `/testbox`
 
 ##Credits
 
