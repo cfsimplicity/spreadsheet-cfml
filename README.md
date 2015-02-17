@@ -71,7 +71,8 @@ myQuery = spreadsheet.read( src=mypath,format="query" );
 - `format` string: currently only "query" supported
 - `headerRow` numeric: specify which row is the header to be used for the query column names
 - `sheet` numeric default=1: which sheet to read (1 based, not zero-based)
-- `excludeHeaderRow` boolean default=true: whether to exclude the header row from the spreadsheet (NB: the default is the opposite to Adobe ColdFusion 9). 
+- `includeHeaderRow` boolean default=false: whether to include the header row from the spreadsheet (NB: the default is the opposite to Adobe ColdFusion 9, which is `excludeHeaderRow=false`). 
+- `includeBlankRows` boolean default=false: whether to include blank rows from the spreadsheet in the query data set.
 
 ###Convenience methods
 
