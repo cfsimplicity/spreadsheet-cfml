@@ -218,7 +218,7 @@ component{
 				column.index = cellNum;
 
 				/* Cast the values to the correct type, so data formatting is properly applied  */
-				if( column.cellDataType IS "DOUBLE" AND isNumeric( value ) ){
+				if( column.cellDataType IS "DOUBLE" AND IsNumeric( value ) ){
 					cell.setCellValue( JavaCast("double", Val( value) ) );
 				} else if( column.cellDataType IS "TIME" AND IsDate( value ) ){
 					value = TimeFormat( ParseDateTime( value ),"HH:MM:SS");				
@@ -302,7 +302,7 @@ component{
 	){
 		if( arguments.KeyExists( "query" ) )
 			throw( type=exceptionType,message="Invalid argument 'query'.",details="Just use format='query' to return a query object" );
-		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query,csv,html,tab,pipe",format ) )
+		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query",format ) ) //,csv,html,tab,pipe
 			throw( type=exceptionType,message="Invalid Format",detail="Supported formats are: QUERY, HTML, CSV, TAB and PIPE" );
 		if( arguments.KeyExists( "sheetname" ) AND arguments.KeyExists( "sheet" ) )
 			throw( type=exceptionType,message="Cannot Provide Both Sheet and sheetname Attributes",detail="Only one of either 'sheet' or 'sheetname' attributes may be provided." );
@@ -319,6 +319,8 @@ component{
 		if( !FileExists( src ) )
 			throw( type=exceptionType,message="Non-existent file",detail="Cannot find the file #src#." );
 		var workbook = this.workbookFromFile( src );
+		if( !arguments.keyExists( "format" ) )
+			return workbook;
 		switch( format ){
 			case "csv": case "tab": case "pipe":
 				throw( type=exceptionType,message="Format not yet supported",detail="Sorry #format# is not yet supported as an ouput format" );
