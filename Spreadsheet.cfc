@@ -297,7 +297,7 @@ component{
 		,string rows //TODO
 		,numeric sheet // 1-based
 		,string sheetName  //TODO
-		,boolean excludeHeaderRow=true
+		,boolean includeHeaderRow=false
 		,boolean includeBlankRows=false
 	){
 		if( arguments.KeyExists( "query" ) )
@@ -335,7 +335,7 @@ component{
 				}
 				if( arguments.KeyExists( "headerRow" ) ){
 					args.headerRow=headerRow;
-					args.excludeHeaderRow = excludeHeaderRow;
+					args.includeHeaderRow = includeHeaderRow;
 				}
 				if( arguments.KeyExists( "includeBlankRows" ) )
 					args.includeBlankRows=includeBlankRows;

@@ -225,7 +225,7 @@ private boolean function sheetExists( required workbook,string sheetName,numeric
 	return false;
 }
 
-private query function sheetToQuery( required workbook,required numeric sheetIndex,numeric headerRow,boolean excludeHeaderRow=false,boolean includeBlankRows=false ){
+private query function sheetToQuery( required workbook,required numeric sheetIndex,numeric headerRow,boolean includeHeaderRow=false,boolean includeBlankRows=false ){
 	/* Based on https://github.com/bennadel/POIUtility.cfc */
 	var hasHeaderRow = arguments.KeyExists( "headerRow" );
 	var poiHeaderRow = ( hasHeaderRow AND headerRow )? headerRow-1: 0;
@@ -240,7 +240,7 @@ private query function sheetToQuery( required workbook,required numeric sheetInd
 		var rowData	=	[];
 		var row = sheet.GetRow( JavaCast( "int",rowIndex ) );
 		if( IsNull( row ) ){
-			if( !isHeaderRow OR !excludeHeaderRow )
+			if( !isHeaderRow OR includeHeaderRow )
 				sheetData.Append( rowData );
 			continue;
 		}
@@ -262,7 +262,7 @@ private query function sheetToQuery( required workbook,required numeric sheetInd
 					var value="column#( colIndex+1 )#";
 				}
 				columnNames.append( value );
-				if( excludeHeaderRow )
+				if( !includeHeaderRow )
 					continue;
 			}
 			/* When getting the value of a cell, it is important to know what type of cell value we are dealing with. If you try to grab the wrong value type, an error might be thrown. For that reason, we must check to see what type of cell we are working with. These are the cell types and they are constants of the cell object itself:
@@ -303,7 +303,7 @@ private query function sheetToQuery( required workbook,required numeric sheetInd
 			}
 			rowData.append( JavaCast( "string",cellValue ) );
 		}//end column loop
-		if( !isHeaderRow OR !excludeHeaderRow )
+		if( !isHeaderRow OR includeHeaderRow )
 			sheetData.Append( rowData );
 	}//end row loop
 	if( !columnNames.Len() ){
