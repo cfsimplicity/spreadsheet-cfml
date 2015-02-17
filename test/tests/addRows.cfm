@@ -6,7 +6,7 @@ describe( "addRows tests",function(){
 		variables.workbook = s.new();
 	});
 
-	it( "can append multiple rows from a query with the minimum arguments",function() {
+	it( "Appends multiple rows from a query with the minimum arguments",function() {
 		s.addRow( workbook,"x,y" );
 		s.addRows( workbook,data );
 		s.write( workbook,tempXlsPath,true );
@@ -15,7 +15,7 @@ describe( "addRows tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "can insert multiple rows at a specifed position",function() {
+	it( "Inserts multiple rows at a specifed position",function() {
 		s.addRow( workbook,"e,f" );
 		s.addRows( workbook,data,1,2 );
 		s.write( workbook,tempXlsPath,true );
@@ -24,7 +24,7 @@ describe( "addRows tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "can replace rows if insert is false",function() {
+	it( "Replaces rows if insert is false",function() {
 		s.addRow( workbook,"e,f" );
 		s.addRow( workbook,"g,h" );
 		s.addRows( workbook=workbook,data=data,row=1,insert=false );

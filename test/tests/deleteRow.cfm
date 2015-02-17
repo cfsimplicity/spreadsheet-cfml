@@ -5,7 +5,7 @@ describe( "deleteRow tests",function(){
 		variables.workbook = s.new();
 	});
 
-	it( "can delete the data in a specified row",function() {
+	it( "Deletes the data in a specified row",function() {
 		s.addRow( workbook,"a,b" );
 		s.addRow( workbook,"c,d" );
 		s.deleteRow( workbook,1 );
@@ -15,6 +15,15 @@ describe( "deleteRow tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	describe( "deleteRow exceptions",function(){
+
+		it( "Throws an exception if row is zero or less",function() {
+			expect( function(){
+				s.deleteRow( workbook=workbook,row=0 );
+			}).toThrow( message="Invalid row value" );
+		});
+
+	});
 
 });	
 </cfscript>

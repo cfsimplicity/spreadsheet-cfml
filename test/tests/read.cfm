@@ -1,19 +1,19 @@
 <cfscript>
 describe( "read tests",function(){
 
-	it( "can read a traditional XLS file",function() {
+	it( "Can read a traditional XLS file",function() {
 		path = ExpandPath( "/root/test/files/test.xls" );
 		workbook = s.read( src=path );
 		expect( workbook.getClass().name ).toBe( "org.apache.poi.hssf.usermodel.HSSFWorkbook" );
 	});
 
-	it( "can read an OOXML file",function() {
+	it( "Can read an OOXML file",function() {
 		path = ExpandPath( "/root/test/files/test.xlsx" );
 		workbook = s.read( src=path );
 		expect( workbook.getClass().name ).toBe( "org.apache.poi.xssf.usermodel.XSSFWorkbook" );
 	});
 
-	it( "can read a traditional XLS file into a query",function() {
+	it( "Can read a traditional XLS file into a query",function() {
 		path = ExpandPath( "/root/test/files/test.xls" );
 		expected = querySim(
 			"column1,column2
@@ -23,7 +23,7 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "can read an OOXML file into a query",function() {
+	it( "Can read an OOXML file into a query",function() {
 		path = ExpandPath( "/root/test/files/test.xlsx" );
 		expected = querySim(
 			"column1,column2
@@ -35,7 +35,7 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "reads from the specified sheet index",function(){
+	it( "Reads from the specified sheet index",function(){
 		path = ExpandPath( "/root/test/files/test.xls" );// has 2 sheets
 		expected = querySim(
 			"column1,column2
@@ -44,7 +44,7 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "uses header row for column names if specified",function() {
+	it( "Uses header row for column names if specified",function() {
 		path = ExpandPath( "/root/test/files/test.xls" );
 		expected = querySim(
 			"a,b
@@ -53,7 +53,7 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "includes the specified header row in query if includeHeader is true",function() {
+	it( "Includes the specified header row in query if includeHeader is true",function() {
 		path = ExpandPath( "/root/test/files/test.xls" );
 		expected = querySim(
 			"a,b
@@ -63,7 +63,7 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "includes blank rows in query if includeBlankRows is true",function() {
+	it( "Includes blank rows in query if includeBlankRows is true",function() {
 		data = QueryNew( "column1,column2","VarChar,VarChar",[ [ "","" ],[ "a","b" ] ] );
 		workbook = s.new();
 		s.addRows( workbook,data );
@@ -71,6 +71,22 @@ describe( "read tests",function(){
 		expected = data;
 		actual = s.read( src=tempXlsPath,format="query",includeBlankRows=true );
 		expect( actual ).toBe( expected );
+	});
+
+	describe( "read exceptions",function(){
+
+		it( "Throws an exception if the 'query' argument is passed",function() {
+			expect( function(){
+				s.read( src=tempXlsPath,query="q" );
+			}).toThrow( message="Invalid argument 'query'" );
+		});
+
+		it( "Throws an exception if the format argument is invalid",function() {
+			expect( function(){
+				s.read( src=tempXlsPath,format="wrong" );
+			}).toThrow( message="Invalid format" );
+		});
+
 	});
 
 });	

@@ -6,7 +6,7 @@ describe( "addColumn tests",function(){
 		variables.workbook = s.new();
 	});
 
-	it( "can add a column with the minimum arguments",function() {
+	it( "Adds a column with the minimum arguments",function() {
 		s.addColumn( workbook,data );
 		s.write( workbook,tempXlsPath,true );
 		expected = QueryNew( "column1","VarChar",[ [ "a" ],[ "b" ] ] );
@@ -14,7 +14,7 @@ describe( "addColumn tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "can add a column at a given start row",function() {
+	it( "Adds a column at a given start row",function() {
 		s.addColumn( workbook,data,2 );
 		s.write( workbook,tempXlsPath,true );
 		expected = QueryNew( "column1","VarChar",[ [ "" ],[ "a" ],[ "b" ] ] );
@@ -22,7 +22,7 @@ describe( "addColumn tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "can add a column at a given column number",function() {
+	it( "Adds a column at a given column number",function() {
 		s.addColumn( workbook=workbook,data=data,startColumn=2 );
 		s.write( workbook,tempXlsPath,true );
 		expected = QueryNew( "column1,column2","VarChar,VarChar",[ [ "","a" ],[ "","b" ] ] );
@@ -30,7 +30,7 @@ describe( "addColumn tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "can add a column including commas with a custom delimiter",function() {
+	it( "Adds a column including commas with a custom delimiter",function() {
 		var data = "a,b|c,d";
 		s.addColumn( workbook=workbook,data=data,delimiter="|" );
 		s.write( workbook,tempXlsPath,true );
@@ -39,7 +39,7 @@ describe( "addColumn tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "can insert (not replace) a column with the minimum arguments",function() {
+	it( "Inserts (not replaces) a column with the minimum arguments",function() {
 		s.addColumn( workbook,data );
 		s.addColumn( workbook=workbook,data=data,insert=true );
 		s.write( workbook,tempXlsPath,true );

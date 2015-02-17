@@ -6,11 +6,6 @@ component extends="testbox.system.BaseSpec"{
 
 	function afterAll(){}
 
-	/* helpers */
-	query function data(){
-		return QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Julian","Halliwell" ] ] );
-	}
-
 	function run( testResults,testBox ){
 
 		describe( "spreadsheet test suite",function() {
@@ -30,6 +25,10 @@ component extends="testbox.system.BaseSpec"{
 			include "tests/deleteRow.cfm";
 			include "tests/new.cfm";
 			include "tests/read.cfm";
+			include "tests/readBinary.cfm";
+			include "tests/setActiveSheet.cfm";
+			include "tests/shiftRows.cfm";
+			include "tests/write.cfm";
 
 		});
 

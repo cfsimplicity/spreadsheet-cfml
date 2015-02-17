@@ -303,18 +303,18 @@ component{
 		if( arguments.KeyExists( "query" ) )
 			throw( type=exceptionType,message="Invalid argument 'query'.",details="Just use format='query' to return a query object" );
 		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query",format ) ) //,csv,html,tab,pipe
-			throw( type=exceptionType,message="Invalid Format",detail="Supported formats are: QUERY, HTML, CSV, TAB and PIPE" );
+			throw( type=exceptionType,message="Invalid format",detail="Supported formats are: QUERY, HTML, CSV, TAB and PIPE" );
 		if( arguments.KeyExists( "sheetname" ) AND arguments.KeyExists( "sheet" ) )
-			throw( type=exceptionType,message="Cannot Provide Both Sheet and sheetname Attributes",detail="Only one of either 'sheet' or 'sheetname' attributes may be provided." );
+			throw( type=exceptionType,message="Cannot provide both sheet and sheetname arguments",detail="Only one of either 'sheet' or 'sheetname' arguments may be provided." );
 		 //TODO
 		if( arguments.KeyExists( "columns" ) )
-			throw( type=exceptionType,message="Attribute not yet supported",detail="Sorry the 'columns' attribute is not yet supported." );
+			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'columns' argument is not yet supported." );
 		if( arguments.KeyExists( "columnNames" ) )
-			throw( type=exceptionType,message="Attribute not yet supported",detail="Sorry the 'columnNames' attribute is not yet supported." );
+			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'columnNames' argument is not yet supported." );
 		if( arguments.KeyExists( "rows" ) )
-			throw( type=exceptionType,message="Attribute not yet supported",detail="Sorry the 'rows' attribute is not yet supported." );
+			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'rows' argument is not yet supported." );
 		if( arguments.KeyExists( "sheetName" ) )
-			throw( type=exceptionType,message="Attribute not yet supported",detail="Sorry the 'sheetName' attribute is not yet supported." );
+			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'sheetName' argument is not yet supported." );
 		//END TODO
 		if( !FileExists( src ) )
 			throw( type=exceptionType,message="Non-existent file",detail="Cannot find the file #src#." );
@@ -375,7 +375,7 @@ component{
 		// writeProtectWorkbook takes both a user name and a password, but since CF 9 tag only takes a password, just making up a user name 
 		// TODO: workbook.isWriteProtected() returns true but the workbook opens without prompting for a password
 		if( arguments.KeyExists( "password" ) AND !password.Trim().IsEmpty() )
-			workbook.writeProtectWorkbook( JavaCast( "string",password),JavaCast( "string","user" ) );
+			workbook.writeProtectWorkbook( JavaCast( "string",password ),JavaCast( "string","user" ) );
 		var outputStream = CreateObject( "java","java.io.FileOutputStream" ).init( filepath );
 		try{
 			workbook.write( outputStream );
