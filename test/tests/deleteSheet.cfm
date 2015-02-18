@@ -44,7 +44,6 @@ describe( "deleteSheet tests",function(){
 			}).toThrow( regex="Invalid sheet" );
 		});
 
-
 	});	
 
 });	
