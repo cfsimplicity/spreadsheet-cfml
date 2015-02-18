@@ -17,5 +17,15 @@ describe( "new tests",function(){
 		expect( s.getActiveSheetName( workbook ) ).toBe( "test" );
 	});
 
+	describe( "new exceptions",function(){
+
+		it( "Throws an exception if the sheet name contains invalid characters",function() {
+			expect( function(){
+				s.new( "[]?*\/:" );
+			}).toThrow( message="Invalid characters in sheet name" );
+		});
+
+	});
+
 });	
 </cfscript>
