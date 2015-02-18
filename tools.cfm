@@ -42,8 +42,8 @@ private function createWorkBook( required string sheetName,boolean useXmlFormat=
 	return loadPoi( className ).init();
 }
 
-private void function deleteSheetNumber( required workbook,required numeric sheetNumber ){
-	workbook.removeSheetAt( JavaCast( "int",sheetNumber-1 ) );
+private void function deleteSheetAtIndex( required workbook,required numeric sheetIndex ){
+	workbook.removeSheetAt( JavaCast( "int",sheetIndex ) );
 }
 
 private string function filenameSafe( required string input ){

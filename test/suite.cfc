@@ -26,6 +26,7 @@ component extends="testbox.system.BaseSpec"{
 			include "tests/createSheet.cfm";
 			include "tests/deleteRow.cfm";
 			include "tests/deleteSheet.cfm";
+			include "tests/deleteSheetNumber.cfm";
 			include "tests/new.cfm";
 			include "tests/read.cfm";
 			include "tests/readBinary.cfm";

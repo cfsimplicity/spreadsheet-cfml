@@ -270,7 +270,7 @@ component{
 			throw( type=exceptionType,message="Sheet name already exists",detail="A sheet with the name '#sheetName#' already exists in this workbook" );
 		/* OK to replace the existing */
 		var sheetIndexToReplace = workbook.getSheetIndex( JavaCast( "string",sheetName) );
-		this.deleteSheetNumber( workbook,sheetIndexToReplace+1 );
+		this.deleteSheetAtIndex( workbook,sheetIndexToReplace );
 		var newSheet = workbook.createSheet( JavaCast( "String",sheetName ) );
 		var moveToIndex = sheetIndexToReplace;
 		this.moveSheet( workbook,sheetName,moveToIndex );
@@ -294,7 +294,12 @@ component{
 		} else {
 			validateSheetNumber( workbook,sheetNumber );
 		}
-		this.deleteSheetNumber( workbook,sheetNumber );
+		var sheetIndex = sheetNumber-1;
+		this.deleteSheetAtIndex( workbook,sheetIndex );
+	}
+
+	void function deleteSheetNumber( required workbook,required numeric sheetNumber ){
+		this.deleteSheet( argumentCollection=arguments );
 	}
 
 	void function formatCell( required workbook,required struct format,required numeric row,required numeric column,any cellStyle ){
