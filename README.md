@@ -26,7 +26,7 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 - Not all spreadsheet functions implemented
 - Existing code needs adapting to invoke the library. Existing CFML spreadsheet functions and the `<cfspreadsheet>` tag won't work with it.
 
-##Currently supported standard functions
+##Currently supported ACF functions
 
 - `addColumn`
 - `addRow`
@@ -40,6 +40,7 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 - `readBinary`
 - `removeSheet`
 - `setActiveSheet`
+- `setActiveSheetNumber`
 - `shiftRows`
 - `write`
 

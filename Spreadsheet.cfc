@@ -404,6 +404,10 @@ component{
 		workbook.setActiveSheet( JavaCast( "int",sheetNumber - 1 ) );
 	}
 
+	void function setActiveSheetNumber( required workbook,numeric sheetNumber ){
+		this.setActiveSheet( argumentCollection=arguments );
+	}
+
 	void function shiftRows( required workbook,required numeric startRow,numeric endRow=startRow,numeric offset=1 ){
 		this.getActiveSheet( workbook ).shiftRows(
 			JavaCast( "int",arguments.startRow - 1 )
@@ -454,7 +458,6 @@ component{
 	function getCellValue(){ notYetImplemented(); }
 	function info(){ notYetImplemented(); }
 	function mergeCells(){ notYetImplemented(); }
-	function setActiveSheetNumber(){ notYetImplemented(); }
 	function setCellComment(){ notYetImplemented(); }
 	function setCellFormula(){ notYetImplemented(); }
 	function setCellValue(){ notYetImplemented(); }
