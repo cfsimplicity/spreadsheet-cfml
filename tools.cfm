@@ -36,14 +36,14 @@ private function createRow( required workbook,numeric rowNum=getNextEmptyRow( wo
 	return row;
 }
 
-private function createSheet( required workbook,required string sheetName ){
-	newSheet = workbook.createSheet( JavaCast( "String", sheetName ) );
-	return newSheet;
-}
-
 private function createWorkBook( required string sheetName,boolean useXmlFormat=false ){
+	this.validateSheetName( sheetName );
 	var className = useXmlFormat? "org.apache.poi.xssf.usermodel.XSSFWorkbook": "org.apache.poi.hssf.usermodel.HSSFWorkbook";
 	return loadPoi( className ).init();
+}
+
+private void function deleteSheetNumber( required workbook,required numeric sheetNumber ){
+	workbook.removeSheetAt( JavaCast( "int",sheetNumber-1 ) );
 }
 
 private string function filenameSafe( required string input ){
@@ -52,6 +52,19 @@ private string function filenameSafe( required string input ){
 	if( result.isEmpty() )
 		return	"renamed"; // in case all chars have been replaced (unlikely but possible)
 	return result;
+}
+
+private string function generateUniqueSheetName( required workbook ){
+	/* Generates a unique sheet name (Sheet1, Sheet2, etecetera). */
+	var startNumber = workbook.getNumberOfSheets()+1;
+	var maxRetry = startNumber+250;
+	for( var sheetNumber=startNumber; sheetNumber LTE maxRetry; sheetNumber++ ){
+		var proposedName = "Sheet" & sheetNumber;
+		if( workbook.getSheetIndex( JavaCast( "string",proposedName ) ) LT 0 )
+			return proposedName;
+	}
+	/* this should never happen. but if for some reason it did, warn the action failed and abort */
+	throw( type=exceptionType,message="Unable to generate name",detail="Unable to generate a unique sheet name" );
 }
 
 private function getActiveSheet( required workbook ){
@@ -159,6 +172,10 @@ private function loadPoi( required string javaclass ){
 	return server._poiLoader.create( arguments.javaclass );
 }
 
+private void function moveSheet( required workbook,required string sheetName,required string moveToIndex ){
+	workbook.setSheetOrder( JavaCast( "String",sheetName ),JavaCast( "int",moveToIndex ) );
+}
+
 private array function parseRowData( required string line,required string delimiter,boolean handleEmbeddedCommas=true ){
 	var elements = ListToArray( arguments.line,arguments.delimiter );
 	var potentialQuotes = 0;
@@ -215,23 +232,23 @@ private array function parseRowData( required string line,required string delimi
   return values;
 }
 
-private boolean function sheetExists( required workbook,string sheetName,numeric sheetIndex ){
-	validateSheetNameOrIndexWasProvided( argumentCollection=arguments );
+private boolean function sheetExists( required workbook,string sheetName,numeric sheetNumber ){
+	validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
 	if( arguments.KeyExists( "sheetName" ) )
-		arguments.sheetIndex = workbook.getSheetIndex( JavaCast("string", arguments.sheetName) ) + 1;
+		arguments.sheetNumber = workbook.getSheetIndex( JavaCast( "string",sheetName) )+1;
 		//the position is valid if it an integer between 1 and the total number of sheets in the workbook
-	if( sheetIndex GT 0 AND sheetIndex EQ Round( sheetIndex ) AND sheetIndex LTE workbook.getNumberOfSheets() )
+	if( sheetNumber AND ( sheetNumber EQ Round( sheetNumber ) ) AND ( sheetNumber LTE workbook.getNumberOfSheets() ) )
 		return true;
 	return false;
 }
 
-private query function sheetToQuery( required workbook,required numeric sheetIndex,numeric headerRow,boolean includeHeaderRow=false,boolean includeBlankRows=false ){
+private query function sheetToQuery( required workbook,required numeric sheetNumber,numeric headerRow,boolean includeHeaderRow=false,boolean includeBlankRows=false ){
 	/* Based on https://github.com/bennadel/POIUtility.cfc */
 	var hasHeaderRow = arguments.KeyExists( "headerRow" );
 	var poiHeaderRow = ( hasHeaderRow AND headerRow )? headerRow-1: 0;
 	var columnNames=[];
 	var totalColumnCount=0
-	var sheet = workbook.GetSheetAt( JavaCast( "int",sheetIndex ) );
+	var sheet = workbook.GetSheetAt( JavaCast( "int",sheetNumber-1 ) );
 	var sheetData = [];
 	var lastRowNumber = sheet.GetLastRowNum();
 	// Loop over the rows in the Excel sheet.
@@ -319,23 +336,33 @@ private query function sheetToQuery( required workbook,required numeric sheetInd
 	return result;
 }
 
-private void function validateSheetName( required workbook,required string sheetName ){
-	if( !sheetExists( workbook=workbook,sheetName=sheetName ) )
-		throw( type=exceptionType,message="Invalid Sheet Name [#arguments.SheetName#]", detail="The requested sheet was not found in the current workbook." );
+private void function validateSheetExistsWithName( required workbook,required string sheetName ){
+	if( !this.sheetExists( workbook=workbook,sheetName=sheetName ) )
+		throw( type=exceptionType,message="Invalid sheet name [#sheetName#]", detail="The specified sheet was not found in the current workbook." );
 }
 
-private void function validateSheetIndex( required workbook,required numeric sheetIndex ){
-	if( !sheetExists( workbook=workbook,sheetIndex=sheetIndex ) ){
+private void function validateSheetNumber( required workbook,required numeric sheetNumber ){
+	if( !sheetExists( workbook=workbook,sheetNumber=sheetNumber ) ){
 		var sheetCount = workbook.getNumberOfSheets();
-		throw( type=exceptionType,message="Invalid Sheet Index [#arguments.sheetIndex#]",detail="The SheetIndex must a whole number between 1 and the total number of sheets in the workbook [#Local.sheetCount#]" );
+		throw( type=exceptionType,message="Invalid sheet number [#sheetNumber#]",detail="The sheetNumber must a whole number between 1 and the total number of sheets in the workbook [#sheetCount#]" );
 	}
 }
 
-private void function validateSheetNameOrIndexWasProvided( string sheetName,numeric sheetIndex ){
-	if( !arguments.KeyExists( "sheetName" ) AND !arguments.KeyExists( "sheetIndex" ) )
-		throw( type=exceptionType,message="Missing Required Argument", detail="Either sheetName or sheetIndex must be provided" );
-	if( arguments.KeyExists( "sheetName" ) AND arguments.KeyExists( "sheetIndex" ) )
-		throw( type=exceptionType,message="Too Many Arguments", detail="Only one argument is allowed. Specify either a SheetName or SheetIndex, not both" );
+private void function validateSheetName( required string sheetName ){
+	var poiTool = loadPoi( "org.apache.poi.ss.util.WorkbookUtil" );
+	try{
+		poiTool.validateSheetName( JavaCast( "String",sheetName ) );
+	}
+	catch( "java.lang.IllegalArgumentException" exception ){
+		throw( type=exceptionType,message="Invalid characters in sheet name",detail=exception.message );
+	}
+}
+
+private void function validateSheetNameOrNumberWasProvided(){
+	if( !arguments.KeyExists( "sheetName" ) AND !arguments.KeyExists( "sheetNumber" ) )
+		throw( type=exceptionType,message="Missing Required Argument", detail="Either sheetName or sheetNumber must be provided" );
+	if( arguments.KeyExists( "sheetName" ) AND arguments.KeyExists( "sheetNumber" ) )
+		throw( type=exceptionType,message="Too Many Arguments", detail="Only one argument is allowed. Specify either a sheetName or sheetNumber, not both" );
 }
 
 private function workbookFromFile( required string path ){

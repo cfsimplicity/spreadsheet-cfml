@@ -256,6 +256,26 @@ component{
 		}
 	}
 
+	void function createSheet( required workbook,string sheetName,overwrite=false ){
+		if( arguments.KeyExists( "sheetName" ) )
+			this.validateSheetName( sheetName );
+		else
+			arguments.sheetName = this.generateUniqueSheetName( workbook );
+		if( !this.sheetExists( workbook=workbook,sheetName=sheetName ) ){
+			workbook.createSheet( JavaCast( "String",sheetName ) );
+			return;
+		}
+		/* sheet already exists with that name */
+		if( !overwrite )
+			throw( type=exceptionType,message="Sheet name already exists",detail="A sheet with the name '#sheetName#' already exists in this workbook" );
+		/* OK to replace the existing */
+		var sheetIndexToReplace = workbook.getSheetIndex( JavaCast( "string",sheetName) );
+		this.deleteSheetNumber( workbook,sheetIndexToReplace+1 );
+		var newSheet = workbook.createSheet( JavaCast( "String",sheetName ) );
+		var moveToIndex = sheetIndexToReplace;
+		this.moveSheet( workbook,sheetName,moveToIndex );
+	}
+
 	void function deleteRow( required workbook,required numeric row ){
 		/* Deletes the data from a row. Does not physically delete the row. */
 		if( row LTE 0 )
@@ -263,6 +283,18 @@ component{
 		var rowToDelete = row-1;
 		if( rowToDelete GTE this.getFirstRowNum( workbook ) AND rowToDelete LTE this.getLastRowNum( workbook ) ) //If this is a valid row, remove it
 			this.getActiveSheet( workbook ).removeRow( this.getActiveSheet( workbook ).getRow( JavaCast( "int",rowToDelete ) ) );
+	}
+
+	void function deleteSheet( required workbook,string sheetName,numeric sheetNumber ){
+		this.validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
+		if( arguments.KeyExists( "sheetName" ) ){
+			validateSheetName( sheetName );
+			validateSheetExistsWithName( workbook,sheetName );
+			arguments.sheetNumber = workbook.getSheetIndex( sheetName )+1;
+		} else {
+			validateSheetNumber( workbook,sheetNumber );
+		}
+		this.deleteSheetNumber( workbook,sheetNumber );
 	}
 
 	void function formatCell( required workbook,required struct format,required numeric row,required numeric column,any cellStyle ){
@@ -284,7 +316,7 @@ component{
 	}
 
 	function new( string sheetName="Sheet1",boolean xmlformat=false ){
-		var workbook = this.createWorkBook( sheetName.Left( 31 ),xmlFormat );
+		var workbook = this.createWorkBook( sheetName,xmlFormat );
 		this.createSheet( workbook,sheetName,xmlformat );
 		setActiveSheet( workbook,sheetName );
 		return workbook;
@@ -297,7 +329,7 @@ component{
 		,string columnNames //TODO
 		,numeric headerRow
 		,string rows //TODO
-		,numeric sheet // 1-based
+		,numeric sheetNumber // 1-based
 		,string sheetName  //TODO
 		,boolean includeHeaderRow=false
 		,boolean includeBlankRows=false
@@ -306,8 +338,8 @@ component{
 			throw( type=exceptionType,message="Invalid argument 'query'.",details="Just use format='query' to return a query object" );
 		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query",format ) ) //,csv,html,tab,pipe
 			throw( type=exceptionType,message="Invalid format",detail="Supported formats are: QUERY, HTML, CSV, TAB and PIPE" );
-		if( arguments.KeyExists( "sheetname" ) AND arguments.KeyExists( "sheet" ) )
-			throw( type=exceptionType,message="Cannot provide both sheet and sheetname arguments",detail="Only one of either 'sheet' or 'sheetname' arguments may be provided." );
+		if( arguments.KeyExists( "sheetName" ) AND arguments.KeyExists( "sheetNumber" ) )
+			throw( type=exceptionType,message="Cannot provide both sheetNumber and sheetName arguments",detail="Only one of either 'sheetNumber' or 'sheetName' arguments may be provided." );
 		 //TODO
 		if( arguments.KeyExists( "columns" ) )
 			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'columns' argument is not yet supported." );
@@ -333,7 +365,7 @@ component{
 			case "query":
 				var args = {
 					workbook = workbook
-					,sheetIndex = arguments.KeyExists( "sheet" )? sheet-1: 0
+					,sheetNumber = arguments.KeyExists( "sheetNumber" )? sheetNumber: 1
 				}
 				if( arguments.KeyExists( "headerRow" ) ){
 					args.headerRow=headerRow;
@@ -353,14 +385,18 @@ component{
 		return baos.toByteArray();
 	}
 
-	void function setActiveSheet( required workbook,string sheetName,numeric sheetIndex ){
-		this.validateSheetNameOrIndexWasProvided( argumentCollection=arguments );
+	void function removeSheet( required workbook,required string sheetName ){
+		this.deleteSheet( argumentCollection=arguments );
+	}
+
+	void function setActiveSheet( required workbook,string sheetName,numeric sheetNumber ){
+		this.validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
 		if( arguments.KeyExists( "sheetName" ) ){
-			this.validateSheetName( workbook,sheetName );
-			arguments.sheetIndex = workbook.getSheetIndex( JavaCast( "string",arguments.sheetName ) ) + 1;
+			this.validateSheetExistsWithName( workbook,sheetName );
+			sheetNumber = workbook.getSheetIndex( JavaCast( "string",sheetName ) ) + 1;
 		}
-		this.validateSheetIndex( workbook,arguments.sheetIndex )
-		workbook.setActiveSheet( JavaCast( "int",arguments.sheetIndex - 1 ) );
+		this.validateSheetNumber( workbook,sheetNumber )
+		workbook.setActiveSheet( JavaCast( "int",sheetNumber - 1 ) );
 	}
 
 	void function shiftRows( required workbook,required numeric startRow,numeric endRow=startRow,numeric offset=1 ){
@@ -401,7 +437,6 @@ component{
 	function addSplitPlane(){ notYetImplemented(); }
 	function autoSizeColumn(){ notYetImplemented(); }
 	function clearCellRange(){ notYetImplemented(); }
-	function createSheet(){ notYetImplemented(); }
 	function deleteColumn(){ notYetImplemented(); }
 	function deleteColumns(){ notYetImplemented(); }
 	function deleteRows(){ notYetImplemented(); }
@@ -414,8 +449,6 @@ component{
 	function getCellValue(){ notYetImplemented(); }
 	function info(){ notYetImplemented(); }
 	function mergeCells(){ notYetImplemented(); }
-	function removeSheet(){ notYetImplemented(); }
-	function removeSheetNumber(){ notYetImplemented(); }
 	function setActiveSheetNumber(){ notYetImplemented(); }
 	function setCellComment(){ notYetImplemented(); }
 	function setCellFormula(){ notYetImplemented(); }

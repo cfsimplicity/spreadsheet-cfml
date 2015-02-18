@@ -5,7 +5,7 @@ describe( "setActiveSheet tests",function(){
 		path = ExpandPath( "/root/test/files/test.xls" );// has 2 sheets
 		workbook = s.read( src=path );
 		makePublic( s,"getActiveSheetName" );
-		s.setActiveSheet( workbook=workbook,sheetIndex=2 );
+		s.setActiveSheet( workbook=workbook,sheetNumber=2 );
 		expect( s.getActiveSheetName( workbook ) ).toBe( "sheet2" );
 	});
 

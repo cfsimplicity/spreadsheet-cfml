@@ -40,7 +40,7 @@ describe( "read tests",function(){
 		expected = querySim(
 			"column1,column2
 			x|y");
-		actual = s.read( src=path,format="query",sheet=2 );
+		actual = s.read( src=path,format="query",sheetNumber=2 );
 		expect( actual ).toBe( expected );
 	});
 
