@@ -18,6 +18,7 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
  - the library can be stored as a singleton in application scope
  - the functions work more like those in ACF: you pass in an existing workbook explicitly as the first argument.
 - Offers additional convenience methods, e.g. `downloadFileFromQuery()`.
+- Uses a newer version of the java POI library (3.11).
 - Written entirely in Lucee script.
 
 ##Downsides
