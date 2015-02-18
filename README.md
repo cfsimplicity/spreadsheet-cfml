@@ -30,14 +30,14 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 - `addColumn`
 - `addRow`
 - `addRows`
-- `createSheet()`
+- `createSheet`
 - `deleteRow`
 - `formatCell`
 - `formatRow`
 - `new`
 - `read`
 - `readBinary`
-- `removeSheet()`
+- `removeSheet`
 - `setActiveSheet`
 - `shiftRows`
 - `write`
