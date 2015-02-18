@@ -320,6 +320,21 @@ component{
 		}
 	}
 
+	void function formatRows( required workbook,required struct format,required string range ){
+		/* Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. */
+		var allRanges = this.extractRanges( range );
+		for( var thisRange in allRanges ){
+			if( thisRange.startAt EQ thisRange.endAt ){
+				/* Just one row */
+				this.formatRow( workbook,format,thisRange.startAt );
+				continue;
+			}
+			for( var rowNumber=thisRange.startAt; rowNumber LTE thisRange.endAt; rowNumber++ ){
+				this.formatRow( workbook,format,rowNumber );
+			}
+		}
+	}
+
 	function new( string sheetName="Sheet1",boolean xmlformat=false ){
 		var workbook = this.createWorkBook( sheetName,xmlFormat );
 		this.createSheet( workbook,sheetName,xmlformat );
@@ -452,7 +467,6 @@ component{
 	function formatCellRange(){ notYetImplemented(); }
 	function formatColumn(){ notYetImplemented(); }
 	function formatColumns(){ notYetImplemented(); }
-	function formatRows(){ notYetImplemented(); }
 	function getCellComment(){ notYetImplemented(); }
 	function getCellFormula(){ notYetImplemented(); }
 	function getCellValue(){ notYetImplemented(); }
