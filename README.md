@@ -30,12 +30,14 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 - `addColumn`
 - `addRow`
 - `addRows`
+- `createSheet()`
 - `deleteRow`
 - `formatCell`
 - `formatRow`
 - `new`
 - `read`
 - `readBinary`
+- `removeSheet()`
 - `setActiveSheet`
 - `shiftRows`
 - `write`
@@ -70,11 +72,26 @@ myQuery = spreadsheet.read( src=mypath,format="query" );
 #####Optional arguments
 - `format` string: currently only "query" supported
 - `headerRow` numeric: specify which row is the header to be used for the query column names
-- `sheet` numeric default=1: which sheet to read (1 based, not zero-based)
+- `sheetNumber` numeric default=1: which sheet to read (1 based, not zero-based)
 - `includeHeaderRow` boolean default=false: whether to include the header row from the spreadsheet (NB: the default is the opposite to Adobe ColdFusion 9, which is `excludeHeaderRow=false`). 
 - `includeBlankRows` boolean default=false: whether to include blank rows from the spreadsheet in the query data set. By default blank rows are suppressed.
 
-###Convenience methods
+###Additional/convenience methods
+
+####deleteSheet()
+
+Same as `removeSheet` but also allows sheets to be removed by their number.
+
+```
+spreadsheet.deleteSheet( workbook=workbook,sheetNumber=2 );
+```
+
+#####Required arguments
+ - `workbook` object: the spreadsheet object
+ - EITHER
+ 	`sheetName` string: the name of the sheet to delete
+ 	OR
+ 	`sheetNumber` numeric: the number of the sheet to delete
 
 ####downloadFileFromQuery()
 

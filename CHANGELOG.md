@@ -1,26 +1,37 @@
+## 0.2.0 - 18 February 2015
+
+- Breaking changes
+ - `read()` method `sheet` argument should now be `sheetNumber` (for consistency)
+ - When specifying 1-based sheet numbers as arguments, always use `sheetNumber` (not `sheet` or `sheetIndex`).
+ - When specifying sheet names as arguments, use `sheetName`, not `sheet`.
+- Enhancements
+ - \#13 Add support for `createSheet()`
+ - \#14 Add support for `removeSheet()`
+ - \#15 Add `deleteSheet()` which can delete a sheet by name or number
+
 ## 0.1.0 - 17 February 2015
 
 - Bug fixes:
  - Treat null rows/cells as blank not null
- - \#5 new() method ignores xmlFormat argument
- - \#6 ShiftRows offset argument misspel
- - \#7 ShiftRows calls require workbook as argumen
- - \#8 AddRow insert argument not working
+ - \#5 `new()` method ignores xmlFormat argument
+ - \#6 `ShiftRows` offset argument misspel
+ - \#7 `ShiftRows` calls require workbook as argumen
+ - \#8 `AddRow` insert argument not working
  - \#10 Cannot read XLSX files
- - \#11 Read method errors if no format specified. Should return workbook object
+ - \#11 `Read` method errors if no format specified. Should return workbook object
 - Enhancements:
  - \#2 Testbox BDD style test suite
  - \#3 Upgrade POI to 3.11
  - \#3 Option to include blank rows when reading into a query
  - \#4 Simplify dependencies by including tools and formatting as mixins
- - \#9 writeFileFromQuery(): detect if xml from file extension
- - \#12 Change ACF "excludeHeaderRow" default=false to "includeHeaderRow", default=false 
+ - \#9 `writeFileFromQuery()`: detect if xml from file extension
+ - \#12 Change ACF `excludeHeaderRow` default=false to `includeHeaderRow`, default=false 
 
 ## 0.0.5 - 13 February 2015
 
 - `read` method
 	- changed radically to work under Lucee. Some attributes/functionality disabled for now, but can return a query or workbook object.
-	- changed excludeHeaderRow default from false to true
+	- changed `excludeHeaderRow` default from false to true
 - Added `flushPoiLoader` utility method
 
 ## 0.0.4 - 12 February 2015
