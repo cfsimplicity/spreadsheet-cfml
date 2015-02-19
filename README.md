@@ -92,6 +92,13 @@ myQuery = spreadsheet.read( src=mypath,format="query" );
 
 ###Additional/convenience methods
 
+####isBinaryFormat()/isXmlFormat()
+
+Boolean tests for the binary "xls" or XML "xlsx" formats.
+
+#####Required arguments for both
+ - `workbook` object: the spreadsheet object
+
 ####removeSheetNumber()
 
 Remove/delete a sheet by number rather than its name
