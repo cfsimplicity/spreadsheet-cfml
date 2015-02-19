@@ -33,6 +33,7 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 - `addRows`
 - `createSheet`
 - `deleteRow`
+- `deleteRows`
 - `formatCell`
 - `formatRow`
 - `formatRows`

@@ -285,6 +285,21 @@ component{
 			this.getActiveSheet( workbook ).removeRow( this.getActiveSheet( workbook ).getRow( JavaCast( "int",rowToDelete ) ) );
 	}
 
+	void function deleteRows( required workbook,required string range ){
+		/* Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. */
+		var allRanges = this.extractRanges( range );
+		for( var thisRange in allRanges ){
+			if( thisRange.startAt EQ thisRange.endAt ){
+				/* Just one row */
+				this.deleteRow( workbook,thisRange.startAt );
+				continue;
+			}
+			for( var rowNumber=thisRange.startAt; rowNumber LTE thisRange.endAt; rowNumber++ ){
+				this.deleteRow( workbook,rowNumber );
+			}
+		}
+	}
+
 	void function deleteSheet( required workbook,string sheetName,numeric sheetNumber ){
 		this.validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
 		if( arguments.KeyExists( "sheetName" ) ){
@@ -466,7 +481,6 @@ component{
 	function clearCellRange(){ notYetImplemented(); }
 	function deleteColumn(){ notYetImplemented(); }
 	function deleteColumns(){ notYetImplemented(); }
-	function deleteRows(){ notYetImplemented(); }
 	function formatCellRange(){ notYetImplemented(); }
 	function formatColumn(){ notYetImplemented(); }
 	function formatColumns(){ notYetImplemented(); }

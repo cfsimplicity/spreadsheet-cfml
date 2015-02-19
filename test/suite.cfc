@@ -26,6 +26,7 @@ component extends="testbox.system.BaseSpec"{
 			include "tests/binaryFromQuery.cfm";
 			include "tests/createSheet.cfm";
 			include "tests/deleteRow.cfm";
+			include "tests/deleteRows.cfm";
 			include "tests/deleteSheet.cfm";
 			include "tests/deleteSheetNumber.cfm";
 			include "tests/formatRows.cfm";
