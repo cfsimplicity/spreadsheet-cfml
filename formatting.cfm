@@ -78,7 +78,7 @@ private any function buildCellStyle( required workbook,required struct format ){
 			case "fillpattern":
 				cellStyle.setFillPattern( Evaluate( "cellStyle." & UCase( StructFind( format,setting ) ) ) );
 			break;
-			case font:
+			case "font":
 				font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );					
 				font.setFontName( JavaCast( "string",StructFind( format,setting ) ) );
 				cellStyle.setFont( font );
