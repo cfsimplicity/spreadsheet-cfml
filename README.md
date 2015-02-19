@@ -43,6 +43,7 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 - `formatRow`
 - `formatRows`
 - `getCellValue`
+- `mergeCells`
 - `new`
 - `read`
 - `readBinary`

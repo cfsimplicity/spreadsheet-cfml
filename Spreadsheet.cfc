@@ -329,20 +329,6 @@ component{
 		}
 	}
 
-	void function removeSheet( required workbook,required string sheetName ){
-		validateSheetName( sheetName );
-		validateSheetExistsWithName( workbook,sheetName );
-		arguments.sheetNumber = workbook.getSheetIndex( sheetName )+1;
-		var sheetIndex = sheetNumber-1;
-		this.deleteSheetAtIndex( workbook,sheetIndex );
-	}
-
-	void function removeSheetNumber( required workbook,required numeric sheetNumber ){
-		validateSheetNumber( workbook,sheetNumber );
-		var sheetIndex = sheetNumber-1;
-		this.deleteSheetAtIndex( workbook,sheetIndex );
-	}
-
 	void function formatCell( required workbook,required struct format,required numeric row,required numeric column,any cellStyle ){
 		var cell = this.initializeCell( workbook,row,column );
 		if( arguments.KeyExists( "cellStyle" ) )
@@ -441,6 +427,26 @@ component{
 		return workbook.getClass().getCanonicalName() IS "org.apache.poi.xssf.usermodel.XSSFWorkbook";
 	}
 
+	void function mergeCells(
+		required workbook
+		,required numeric startRow
+		,required numeric endRow
+		,required numeric startColumn
+		,required numeric endColumn
+	){
+		if( startRow LT 1 OR startRow GT endRow )
+			throw( type=exceptionType,message="Invalid startRow or endRow",detail="Row values must be greater than 0 and the startRow cannot be greater than the endRow." );
+		if( startColumn LT 1 OR startColumn GT endColumn )
+			throw( type=exceptionType,message="Invalid startColumn or endColumn",detail="Column values must be greater than 0 and the startColumn cannot be greater than the endColumn." );
+		var cellRangeAddress = loadPoi( "org.apache.poi.ss.util.CellRangeAddress" ).init(
+			JavaCast( "int",startRow - 1 )
+			,JavaCast( "int",endRow - 1 )
+			,JavaCast( "int",startColumn - 1 )
+			,JavaCast( "int",endColumn - 1 )
+		);
+		this.getActiveSheet( workbook ).addMergedRegion( cellRangeAddress );
+	}
+
 	function new( string sheetName="Sheet1",boolean xmlformat=false ){
 		var workbook = this.createWorkBook( sheetName,xmlFormat );
 		this.createSheet( workbook,sheetName,xmlformat );
@@ -512,6 +518,20 @@ component{
 		workbook.write( baos );
 		baos.flush();
 		return baos.toByteArray();
+	}
+
+	void function removeSheet( required workbook,required string sheetName ){
+		validateSheetName( sheetName );
+		validateSheetExistsWithName( workbook,sheetName );
+		arguments.sheetNumber = workbook.getSheetIndex( sheetName )+1;
+		var sheetIndex = sheetNumber-1;
+		this.deleteSheetAtIndex( workbook,sheetIndex );
+	}
+
+	void function removeSheetNumber( required workbook,required numeric sheetNumber ){
+		validateSheetNumber( workbook,sheetNumber );
+		var sheetIndex = sheetNumber-1;
+		this.deleteSheetAtIndex( workbook,sheetIndex );
 	}
 
 	void function setActiveSheet( required workbook,string sheetName,numeric sheetNumber ){
@@ -618,7 +638,6 @@ component{
 	function getCellComment(){ notYetImplemented(); }
 	function getCellFormula(){ notYetImplemented(); }
 	function info(){ notYetImplemented(); }
-	function mergeCells(){ notYetImplemented(); }
 	function setCellComment(){ notYetImplemented(); }
 	function setCellFormula(){ notYetImplemented(); }
 	function setColumnWidth(){ notYetImplemented(); }
