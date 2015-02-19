@@ -8,9 +8,8 @@ describe( "workbookFromQuery tests",function(){
 
 	it( "Returns a workbook from a query",function() {
 		workbook = s.workbookFromQuery( data );
-		s.write( workbook,tempXlsPath,true );
 		expected = data;
-		actual = s.read( src=tempXlsPath,format="query",headerRow=1 );
+		actual = s.sheetToQuery( workbook=workbook,headerRow=1 );
 		expect( actual ).toBe( expected );
 	});
 

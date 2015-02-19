@@ -12,6 +12,7 @@ component extends="testbox.system.BaseSpec"{
      
 			beforeEach( function( currentSpec ) {
 			  variables.s = New root.spreadsheet();
+			  makePublic( s,"sheetToQuery" );
 			});
 
 			afterEach(function( currentSpec ) {
