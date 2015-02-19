@@ -436,6 +436,14 @@ component{
 		return formatter.formatCellValue( cell );
 	}
 
+	boolean function isBinaryFormat( required workbook ){
+		return workbook.getClass().getCanonicalName() IS "org.apache.poi.hssf.usermodel.HSSFWorkbook";
+	}
+
+	boolean function isXmlFormat( required workbook ){
+		return workbook.getClass().getCanonicalName() IS "org.apache.poi.xssf.usermodel.XSSFWorkbook";
+	}
+
 	function new( string sheetName="Sheet1",boolean xmlformat=false ){
 		var workbook = this.createWorkBook( sheetName,xmlFormat );
 		this.createSheet( workbook,sheetName,xmlformat );
@@ -609,13 +617,11 @@ component{
 	private void function notYetImplemented(){
 		throw( type=exceptionType,message="Function not yet implemented" );
 	}
-
+	/* ACF9 */
 	function addFreezePane(){ notYetImplemented(); }
 	function addImage(){ notYetImplemented(); }
 	function addInfo(){ notYetImplemented(); }
 	function addSplitPlane(){ notYetImplemented(); }
-	function autoSizeColumn(){ notYetImplemented(); }
-	function clearCellRange(){ notYetImplemented(); }
 	function getCellComment(){ notYetImplemented(); }
 	function getCellFormula(){ notYetImplemented(); }
 	function info(){ notYetImplemented(); }
@@ -623,7 +629,14 @@ component{
 	function setCellComment(){ notYetImplemented(); }
 	function setCellFormula(){ notYetImplemented(); }
 	function setColumnWidth(){ notYetImplemented(); }
+	function setFooter(){ notYetImplemented(); }
 	function setHeader(){ notYetImplemented(); }
 	function setRowHeight(){ notYetImplemented(); }
+	/* Railo extension */
+	function autoSizeColumn(){ notYetImplemented(); }
+	function clearCell(){ notYetImplemented(); }
+	function clearCellRange(){ notYetImplemented(); }
+	function createSplitPane(){ notYetImplemented(); }
+	function renameSheet(){ notYetImplemented(); }
 
 }

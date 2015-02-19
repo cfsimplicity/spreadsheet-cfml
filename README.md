@@ -92,25 +92,11 @@ myQuery = spreadsheet.read( src=mypath,format="query" );
 
 ###Additional/convenience methods
 
-####deleteSheet()
+####removeSheetNumber()
 
-Same as `removeSheet` but also allows sheets to be removed by their number.
-
+Remove/delete a sheet by number rather than its name
 ```
-spreadsheet.deleteSheet( workbook,"sheet2" );
-spreadsheet.deleteSheet( workbook=workbook,sheetNumber=2 );
-```
-
-#####Required arguments
- - `workbook` object: the spreadsheet object
- - `sheetNumber` numeric: the number of the sheet to delete
-
-####deleteSheetNumber()
-
-Easier to type synonym when you want to delete by sheet number:
-```
-spreadsheet.deleteSheet( workbook=workbook,sheetNumber=2 );
-spreadsheet.deleteSheetNumber( workbook,2 );// the same effect
+spreadsheet.removeSheetNumber( workbook,2 );
 ```
 
 #####Required arguments

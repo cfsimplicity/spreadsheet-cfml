@@ -4,13 +4,13 @@ describe( "read tests",function(){
 	it( "Can read a traditional XLS file",function() {
 		path = ExpandPath( "/root/test/files/test.xls" );
 		workbook = s.read( src=path );
-		expect( workbook.getClass().name ).toBe( "org.apache.poi.hssf.usermodel.HSSFWorkbook" );
+		expect( s.isBinaryFormat( workbook ) ).toBeTrue();
 	});
 
 	it( "Can read an OOXML file",function() {
 		path = ExpandPath( "/root/test/files/test.xlsx" );
 		workbook = s.read( src=path );
-		expect( workbook.getClass().name ).toBe( "org.apache.poi.xssf.usermodel.XSSFWorkbook" );
+		expect( s.isXmlFormat( workbook ) ).toBeTrue();
 	});
 
 	it( "Can read a traditional XLS file into a query",function() {
