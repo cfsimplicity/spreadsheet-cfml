@@ -8,7 +8,7 @@ describe( "shiftRows tests",function(){
 
 	it( "Shifts rows down if offset is positive",function() {
 		s.addRows( workbook,data );
-		s.shiftRows( workbook,1,1,1)
+		s.shiftRows( workbook,1,1,1 )
 		expected = QueryNew( "column1,column2","VarChar,VarChar",[ [ "","" ],[ "a","b" ] ] );
 		actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );

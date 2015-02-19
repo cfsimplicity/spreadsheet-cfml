@@ -470,10 +470,54 @@ component{
 		this.setActiveSheet( argumentCollection=arguments );
 	}
 
-	void function shiftRows( required workbook,required numeric startRow,numeric endRow=startRow,numeric offset=1 ){
+	void function shiftColumns( required workbook,required numeric start,numeric end=start,numeric offset=1 ){
+		if( start LTE 0 )
+			throw( type=exceptionType,message="Invalid start value",detail="The start value must be greater than or equal to 1" );
+		if( arguments.KeyExists( "end" ) AND ( end LTE 0 OR end LT start ) )
+			throw( type=exceptionType,message="Invalid end value",detail="The end value must be greater than or equal to the start value" );
+		var rowIterator = this.getActiveSheet( workbook ).rowIterator();
+		var startIndex = start-1;
+		var endIndex = arguments.KeyExists( "end" )? end-1: startIndex;
+		while( rowIterator.hasNext() ){
+			row = rowIterator.next();
+			if( offset GT 0 ){
+				for( var i=endIndex; i GTE startIndex; i-- ){
+					var tempCell = row.getCell( JavaCast( "int",i ) );
+					var cell = this.createCell( row,i+offset );
+					if( !IsNull( tempCell ) )
+						cell.setCellValue( JavaCast( "string",tempCell.getStringCellValue() ) );
+				}
+			} else {
+				for( var i=startIndex; i LTE endIndex; i++ ){
+					var tempCell = row.getCell( JavaCast( "int",i ) );
+					var cell = createCell( row,i+offset );
+					if( !IsNull( tempCell ) )
+						cell.setCellValue( JavaCast( "string",tempCell.getStringCellValue() ) );
+				}
+			}
+		}
+		// clean up any columns that need to be deleted after the shift
+		var numberColsShifted = ( endIndex-startIndex )+1;
+		var numberColsToDelete = Abs( offset );
+		if( numberColsToDelete GT numberColsShifted )
+			numberColsToDelete = numberColsShifted;
+		if( offset GT 0 ){
+			var stopValue = ( startIndex + numberColsToDelete )-1;
+			for( var i=startIndex; i LTE stopValue; i++ ){
+				this.deleteColumn( workbook,i+1 );
+			}
+			return;
+		}
+		var stopValue = ( endIndex - numberColsToDelete )+1;
+		for( var i=endIndex; i GTE stopValue; i-- ){
+			this.deleteColumn( workbook,i+1 );
+		}
+	}
+
+	void function shiftRows( required workbook,required numeric start,numeric end=start,numeric offset=1 ){
 		this.getActiveSheet( workbook ).shiftRows(
-			JavaCast( "int",arguments.startRow - 1 )
-			,JavaCast( "int",arguments.endRow - 1 )
+			JavaCast( "int",arguments.start - 1 )
+			,JavaCast( "int",arguments.end - 1 )
 			,JavaCast( "int",arguments.offset )
 		);
 	}
@@ -522,6 +566,5 @@ component{
 	function setColumnWidth(){ notYetImplemented(); }
 	function setHeader(){ notYetImplemented(); }
 	function setRowHeight(){ notYetImplemented(); }
-	function shiftColumns(){ notYetImplemented(); }
 
 }

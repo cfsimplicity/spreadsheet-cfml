@@ -38,6 +38,7 @@ component extends="testbox.system.BaseSpec"{
 			include "tests/removeSheet.cfm";
 			include "tests/setActiveSheet.cfm";
 			include "tests/setActiveSheetNumber.cfm";
+			include "tests/shiftColumns.cfm";
 			include "tests/shiftRows.cfm";
 			include "tests/workbookFromQuery.cfm";
 			include "tests/write.cfm";
