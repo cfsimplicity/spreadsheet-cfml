@@ -22,7 +22,7 @@ describe( "new tests",function(){
 		it( "Throws an exception if the sheet name contains invalid characters",function() {
 			expect( function(){
 				s.new( "[]?*\/:" );
-			}).toThrow( message="Invalid characters in sheet name" );
+			}).toThrow( regex="Invalid characters" );
 		});
 
 	});

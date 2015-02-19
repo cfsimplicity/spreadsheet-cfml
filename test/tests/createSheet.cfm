@@ -27,14 +27,14 @@ describe( "createSheet tests",function(){
 		it( "Throws an exception if the sheet name contains invalid characters",function() {
 			expect( function(){
 				s.createSheet( workbook,"[]?*\/:" );
-			}).toThrow( message="Invalid characters in sheet name" );
+			}).toThrow( regex="Invalid characters" );
 		});
 
 		it( "Throws an exception if a sheet exists with the specified name and overwrite is false",function() {
 			expect( function(){
 				s.createSheet( workbook,"test" );
 				s.createSheet( workbook,"test" );
-			}).toThrow( message="Sheet name already exists" );
+			}).toThrow( regex="already exists" );
 		});
 
 	});	

@@ -20,7 +20,7 @@ describe( "deleteRow tests",function(){
 		it( "Throws an exception if row is zero or less",function() {
 			expect( function(){
 				s.deleteRow( workbook=workbook,row=0 );
-			}).toThrow( message="Invalid row value" );
+			}).toThrow( regex="Invalid row" );
 		});
 
 	});

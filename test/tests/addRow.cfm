@@ -55,19 +55,19 @@ describe( "addRow tests",function(){
 		it( "Throws an exception if row is zero or less",function() {
 			expect( function(){
 				s.addRow( workbook=workbook,data=data,row=0 );
-			}).toThrow( message="Invalid row value" );
+			}).toThrow( regex="Invalid row" );
 		});
 
 		it( "Throws an exception if column is zero or less",function() {
 			expect( function(){
 				s.addRow( workbook=workbook,data=data,column=0 );
-			}).toThrow( message="Invalid column value" );
+			}).toThrow( regex="Invalid column" );
 		});
 
 		it( "Throws an exception if insert is false and no row specified",function() {
 			expect( function(){
 				s.addRow( workbook=workbook,data=data,insert=false );
-			}).toThrow( message="Missing row value" );
+			}).toThrow( regex="Missing row" );
 		});
 
 	});
