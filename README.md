@@ -26,6 +26,21 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 - Not all spreadsheet functions implemented
 - Existing code needs adapting to invoke the library. Existing CFML spreadsheet functions and the `<cfspreadsheet>` tag won't work with it.
 
+##Usage
+
+Note that this is not a Lucee extension, so **does not need to be installed**. To use it, simply copy the files/folders to a location where `Spreadsheet.cfc` can be called by your application code.
+
+The following examples assume the file containing the script is in the same location as the spreadsheet.cfc.
+
+You will probably want to place the spreadsheet library files in a central location with an application mapping, and instantiate the component using its dot path (e.g. `New myLibrary.spreadsheet.spreadsheet();`). [How to create mappings](http://stackoverflow.com/questions/12073714/components-mapping-in-railo).
+
+```
+spreadsheet	=	New spreadsheet();
+data = QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Julian","Halliwell" ] ] );
+workbook = spreadsheet.new();
+spreadsheet.addRows( workbook,data );
+```
+
 ##Currently supported Adobe ColdFusion functions
 
 - `addColumn`
@@ -54,21 +69,6 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 - `shiftColumns`
 - `shiftRows`
 - `write`
-
-##Usage
-
-Note that this is not a Lucee extension, so **does not need to be installed**. To use it, simply copy the files/folders to a location where `Spreadsheet.cfc` can be called by your application code.
-
-The following examples assume the file containing the script is in the same location as the spreadsheet.cfc.
-
-You will probably want to place the spreadsheet library files in a central location with an application mapping, and instantiate the component using its dot path (e.g. `New myLibrary.spreadsheet.spreadsheet();`). [How to create mappings](http://stackoverflow.com/questions/12073714/components-mapping-in-railo).
-
-```
-spreadsheet	=	New spreadsheet();
-data = QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Julian","Halliwell" ] ] );
-workbook = spreadsheet.new();
-spreadsheet.addRows( workbook,data );
-```
 
 ###Enhanced Read() method
 
