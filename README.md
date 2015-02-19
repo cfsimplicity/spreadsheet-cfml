@@ -37,6 +37,9 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 - `deleteRow`
 - `deleteRows`
 - `formatCell`
+- `formatCellRange`
+- `formatColumn`
+- `formatColumns`
 - `formatRow`
 - `formatRows`
 - `getCellValue`

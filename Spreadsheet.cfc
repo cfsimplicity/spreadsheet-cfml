@@ -354,6 +354,48 @@ component{
 			cell.setCellStyle( this.buildCellStyle( workbook,format ) );
 	}
 
+	void function formatCellRange(
+		required workbook
+		,required struct format
+		,required numeric startRow
+		,required numeric endRow
+		,required numeric startColumn
+		,required numeric endColumn
+		){
+		var style = this.buildCellStyle( workbook,format );
+		for( var rowNumber=startRow; rowNumber LTE endRow; rowNumber++ ){
+			for( var columnNumber=startColumn; columnNumber LTE endColumn; columnNumber++ ){
+				this.formatCell( workbook,format,rowNumber,columnNumber,style );
+			}
+		}
+	}
+
+	void function formatColumn( required workbook,required struct format,required numeric column ){
+		if( column LT 1 )
+			throw( type=exceptionType,message="Invalid column value",detail="The column value must be greater than 0" );
+		var rowIterator = this.getActiveSheet( workbook ).rowIterator();
+		var columnNumber = column;
+		while( rowIterator.hasNext() ){
+			var rowNumber = rowIterator.next().getRowNum() + 1;
+			this.formatCell( workbook,format,rowNumber,columnNumber );
+		}
+	}
+
+	void function formatColumns( required workbook,required struct format,required string range ){
+		/* Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. */
+		var allRanges = this.extractRanges( range );
+		for( var thisRange in allRanges ){
+			if( thisRange.startAt EQ thisRange.endAt ){
+				/* Just one column */
+				this.formatColumn( workbook,format,thisRange.startAt );
+				continue;
+			}
+			for( var columnNumber=thisRange.startAt; columnNumber LTE thisRange.endAt; columnNumber++ ){
+				this.formatColumn( workbook,format,columnNumber );
+			}
+		}
+	}
+
 	void function formatRow( required workbook,required struct format,required numeric row ){
 		var rowIndex = row-1;
 		var theRow = this.getActiveSheet( workbook ).getRow( rowIndex );
@@ -574,9 +616,6 @@ component{
 	function addSplitPlane(){ notYetImplemented(); }
 	function autoSizeColumn(){ notYetImplemented(); }
 	function clearCellRange(){ notYetImplemented(); }
-	function formatCellRange(){ notYetImplemented(); }
-	function formatColumn(){ notYetImplemented(); }
-	function formatColumns(){ notYetImplemented(); }
 	function getCellComment(){ notYetImplemented(); }
 	function getCellFormula(){ notYetImplemented(); }
 	function info(){ notYetImplemented(); }
