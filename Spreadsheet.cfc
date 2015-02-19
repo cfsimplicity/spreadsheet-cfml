@@ -130,6 +130,31 @@ component{
 		}
 	}
 
+	void function addFreezePane(
+		required workbook
+		,required numeric splitColumn // horizontal position of split
+		,required numeric splitRow //vertical position of split
+		,numeric leftmostColumn //left column visible in right pane
+		,numeric topRow //top row visible in bottom pane
+	){
+		if( arguments.KeyExists( "leftmostColumn" ) AND !arguments.KeyExists( "topRow" ) )
+			arguments.topRow = splitRow;
+		if( arguments.KeyExists( "topRow" ) AND !arguments.KeyExists( "leftmostColumn" ) )
+			arguments.leftmostColumn = splitColumn;
+		/* createFreezePane() operates on the logical row/column numbers as opposed to physical, so no need for n-1 stuff here */
+		if( !arguments.KeyExists( "leftmostColumn" ) ){
+			this.getActiveSheet( workbook ).createFreezePane( JavaCast( "int",splitColumn ),JavaCast( "int",splitRow ) );
+		} else {
+			// POI lets you specify an active pane if you use createSplitPane() here
+			this.getActiveSheet( workbook ).createFreezePane(
+				JavaCast( "int",splitColumn )
+				,JavaCast( "int",splitRow )
+				,JavaCast( "int",leftmostColumn )
+				,JavaCast( "int",topRow )
+			);
+		}
+	}
+
 	void function addRow(
 		required workbook
 		,required string data /* Delimited list of data */
@@ -254,6 +279,25 @@ component{
    		}
    		rowNum++;
 		}
+	}
+
+	void function addSplitPane(
+		required workbook
+		,required numeric xSplitPosition
+		,required numeric ySplitPosition
+		,required numeric leftmostColumn
+		,required numeric topRow
+		,string activePane="UPPER_LEFT" //Valid values are LOWER_LEFT, LOWER_RIGHT, UPPER_LEFT, and UPPER_RIGHT
+	){
+		var activeSheet = this.getActiveSheet( workbook );
+		arguments.activePane = activeSheet[ "PANE_#activePane#" ];
+		activeSheet.createSplitPane(
+			JavaCast( "int",xSplitPosition )
+			,JavaCast( "int",ySplitPosition )
+			,JavaCast( "int",leftmostColumn )
+			,JavaCast( "int",topRow )
+			,JavaCast( "int",activePane )
+		);
 	}
 
 	void function createSheet( required workbook,string sheetName,overwrite=false ){
@@ -631,10 +675,8 @@ component{
 		throw( type=exceptionType,message="Function not yet implemented" );
 	}
 	/* ACF9 */
-	function addFreezePane(){ notYetImplemented(); }
 	function addImage(){ notYetImplemented(); }
 	function addInfo(){ notYetImplemented(); }
-	function addSplitPlane(){ notYetImplemented(); }
 	function getCellComment(){ notYetImplemented(); }
 	function getCellFormula(){ notYetImplemented(); }
 	function info(){ notYetImplemented(); }

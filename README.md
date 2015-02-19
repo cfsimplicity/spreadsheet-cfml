@@ -44,8 +44,10 @@ spreadsheet.addRows( workbook,data );
 ##Currently supported Adobe ColdFusion functions
 
 - `addColumn`
+- `addFreezePane`
 - `addRow`
 - `addRows`
+- `addSplitPane`
 - `createSheet`
 - `deleteColumn`
 - `deleteColumns`
