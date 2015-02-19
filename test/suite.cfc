@@ -32,12 +32,14 @@ component extends="testbox.system.BaseSpec"{
 			include "tests/deleteSheet.cfm";
 			include "tests/deleteSheetNumber.cfm";
 			include "tests/formatRows.cfm";
+			include "tests/getCellValue.cfm";
 			include "tests/new.cfm";
 			include "tests/read.cfm";
 			include "tests/readBinary.cfm";
 			include "tests/removeSheet.cfm";
 			include "tests/setActiveSheet.cfm";
 			include "tests/setActiveSheetNumber.cfm";
+			include "tests/setCellValue.cfm";
 			include "tests/shiftColumns.cfm";
 			include "tests/shiftRows.cfm";
 			include "tests/workbookFromQuery.cfm";

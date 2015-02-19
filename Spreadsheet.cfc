@@ -354,13 +354,14 @@ component{
 			cell.setCellStyle( this.buildCellStyle( workbook,format ) );
 	}
 
-	void function formatRow( required workbook,required struct format,required numeric rowNum ){
-		var theRow = this.getActiveSheet( workbook ).getRow( arguments.rowNum-1 );
+	void function formatRow( required workbook,required struct format,required numeric row ){
+		var rowIndex = row-1;
+		var theRow = this.getActiveSheet( workbook ).getRow( rowIndex );
 		if( IsNull( theRow ) )
 			return;
 		var cellIterator = theRow.cellIterator();
 		while( cellIterator.hasNext() ){
-			formatCell( workbook,format,rowNum,cellIterator.next().getColumnIndex()+1 );
+			formatCell( workbook,format,row,cellIterator.next().getColumnIndex()+1 );
 		}
 	}
 
@@ -377,6 +378,20 @@ component{
 				this.formatRow( workbook,format,rowNumber );
 			}
 		}
+	}
+
+	string function getCellValue( required workbook,required numeric row,required numeric column ){
+		if( !this.cellExists( workbook,row,column ) )
+			return "";
+		var rowIndex = row-1;
+		var columnIndex = column-1;
+		var rowObject = this.getActiveSheet( workbook ).getRow( JavaCast( "int",rowIndex ) );
+		var cell = rowObject.getCell( JavaCast( "int",columnIndex ) );
+		var formatter = this.getFormatter();
+		var formulaEvalutor = workbook.getCreationHelper().createFormulaEvaluator();
+		if( cell.getCellType() EQ cell.CELL_TYPE_FORMULA )
+			return formatter.formatCellValue( cell,formulaEvalutor );
+		return formatter.formatCellValue( cell );
 	}
 
 	function new( string sheetName="Sheet1",boolean xmlformat=false ){
@@ -470,6 +485,13 @@ component{
 		this.setActiveSheet( argumentCollection=arguments );
 	}
 
+	void function setCellValue( required workbook,required string value,required numeric row,required numeric column ){
+		//Automatically create the cell if it does not exist, instead of throwing an error
+		var cell = initializeCell( workbook,row,column );
+		//TODO: need to worry about data types? doing everything as a string for now
+		cell.setCellValue( JavaCast( "string",value ) );
+	}
+
 	void function shiftColumns( required workbook,required numeric start,numeric end=start,numeric offset=1 ){
 		if( start LTE 0 )
 			throw( type=exceptionType,message="Invalid start value",detail="The start value must be greater than or equal to 1" );
@@ -557,12 +579,10 @@ component{
 	function formatColumns(){ notYetImplemented(); }
 	function getCellComment(){ notYetImplemented(); }
 	function getCellFormula(){ notYetImplemented(); }
-	function getCellValue(){ notYetImplemented(); }
 	function info(){ notYetImplemented(); }
 	function mergeCells(){ notYetImplemented(); }
 	function setCellComment(){ notYetImplemented(); }
 	function setCellFormula(){ notYetImplemented(); }
-	function setCellValue(){ notYetImplemented(); }
 	function setColumnWidth(){ notYetImplemented(); }
 	function setHeader(){ notYetImplemented(); }
 	function setRowHeight(){ notYetImplemented(); }

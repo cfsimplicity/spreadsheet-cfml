@@ -16,6 +16,13 @@ private void function autoSizeColumnFix(
 	}
 }
 
+private boolean function cellExists( required workbook,required numeric rowNumber,required numeric columnNumber ){
+	var rowIndex = rowNumber-1;
+	var columnIndex = columnNumber=1;
+	var checkRow = this.getActiveSheet( workbook ).getRow( JavaCast( "int",rowIndex ) );
+	return !IsNull( checkRow ) AND !IsNull( checkRow.getCell( JavaCast( "int",columnIndex ) ) );
+}
+
 private function createCell( required row,numeric cellNum=arguments.row.getLastCellNum(),overwrite=true ){
 	/* get existing cell (if any)  */
 	var cell = row.getCell( JavaCast( "int",cellNum ) );
@@ -129,6 +136,13 @@ private numeric function getFirstRowNum( required workbook ){
 	return firstRow;
 }
 
+private function getFormatter(){
+	/* Returns cell formatting utility object ie org.apache.poi.ss.usermodel.DataFormatter */
+	if( IsNull( variables.dataFormatter ) )
+		variables.dataFormatter = this.loadPOI( "org.apache.poi.ss.usermodel.DataFormatter" ).init();
+	return dataFormatter;
+}
+
 private numeric function getLastRowNum( required workbook ){
 	var lastRow = getActiveSheet( workbook ).getLastRowNum();
 	if( lastRow EQ 0 AND getActiveSheet( workbook ).getPhysicalNumberOfRows() EQ 0 )
@@ -178,11 +192,11 @@ private numeric function getSheetIndexFromName( required workbook,required strin
 	return workbook.getSheetIndex( JavaCast( "string",sheetName ) );
 }
 
-private function initializeCell( required workbook,required numeric row,required numeric column ){
-	var jRow = JavaCast( "int",row-1 );
-	var jColumn = JavaCast( "int",column-1 );
-	var rowObject = getCellUtil().getRow( jRow,getActiveSheet( workbook ) );
-	var cellObject = getCellUtil().getCell( rowObject,jColumn );
+private function initializeCell( required workbook,required numeric rowNumber,required numeric columnNumber ){
+	var rowIndex = JavaCast( "int",rowNumber-1 );
+	var columnIndex = JavaCast( "int",columnNumber-1 );
+	var rowObject = getCellUtil().getRow( rowIndex,getActiveSheet( workbook ) );
+	var cellObject = getCellUtil().getCell( rowObject,columnIndex );
 	return cellObject; 
 }
 

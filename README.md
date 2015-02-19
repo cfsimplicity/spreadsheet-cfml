@@ -39,12 +39,14 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 - `formatCell`
 - `formatRow`
 - `formatRows`
+- `getCellValue`
 - `new`
 - `read`
 - `readBinary`
 - `removeSheet`
 - `setActiveSheet`
 - `setActiveSheetNumber`
+- `setCellValue`
 - `shiftColumns`
 - `shiftRows`
 - `write`
