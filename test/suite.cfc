@@ -29,8 +29,6 @@ component extends="testbox.system.BaseSpec"{
 			include "tests/deleteColumns.cfm";
 			include "tests/deleteRow.cfm";
 			include "tests/deleteRows.cfm";
-			include "tests/deleteSheet.cfm";
-			include "tests/deleteSheetNumber.cfm";
 			include "tests/formatColumn.cfm";
 			include "tests/formatColumns.cfm";
 			include "tests/formatRows.cfm";
@@ -40,6 +38,7 @@ component extends="testbox.system.BaseSpec"{
 			include "tests/read.cfm";
 			include "tests/readBinary.cfm";
 			include "tests/removeSheet.cfm";
+			include "tests/removeSheetNumber.cfm";
 			include "tests/setActiveSheet.cfm";
 			include "tests/setActiveSheetNumber.cfm";
 			include "tests/setCellValue.cfm";

@@ -329,21 +329,18 @@ component{
 		}
 	}
 
-	void function deleteSheet( required workbook,string sheetName,numeric sheetNumber ){
-		this.validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
-		if( arguments.KeyExists( "sheetName" ) ){
-			validateSheetName( sheetName );
-			validateSheetExistsWithName( workbook,sheetName );
-			arguments.sheetNumber = workbook.getSheetIndex( sheetName )+1;
-		} else {
-			validateSheetNumber( workbook,sheetNumber );
-		}
+	void function removeSheet( required workbook,required string sheetName ){
+		validateSheetName( sheetName );
+		validateSheetExistsWithName( workbook,sheetName );
+		arguments.sheetNumber = workbook.getSheetIndex( sheetName )+1;
 		var sheetIndex = sheetNumber-1;
 		this.deleteSheetAtIndex( workbook,sheetIndex );
 	}
 
-	void function deleteSheetNumber( required workbook,required numeric sheetNumber ){
-		this.deleteSheet( argumentCollection=arguments );
+	void function removeSheetNumber( required workbook,required numeric sheetNumber ){
+		validateSheetNumber( workbook,sheetNumber );
+		var sheetIndex = sheetNumber-1;
+		this.deleteSheetAtIndex( workbook,sheetIndex );
 	}
 
 	void function formatCell( required workbook,required struct format,required numeric row,required numeric column,any cellStyle ){
@@ -515,10 +512,6 @@ component{
 		workbook.write( baos );
 		baos.flush();
 		return baos.toByteArray();
-	}
-
-	void function removeSheet( required workbook,required string sheetName ){
-		this.deleteSheet( argumentCollection=arguments );
 	}
 
 	void function setActiveSheet( required workbook,string sheetName,numeric sheetNumber ){
