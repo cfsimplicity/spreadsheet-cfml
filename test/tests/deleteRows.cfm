@@ -19,7 +19,6 @@ describe( "deleteRows tests",function(){
 		it( "Throws an exception if the range is invalid",function() {
 			expect( function(){
 				workbook = s.new();
-				format = { font="Courier" };
 				s.deleteRows( workbook,"a-b" );
 			}).toThrow( regex="Invalid range" );
 		});

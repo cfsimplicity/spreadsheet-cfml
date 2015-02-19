@@ -276,6 +276,35 @@ component{
 		this.moveSheet( workbook,sheetName,moveToIndex );
 	}
 
+	void function deleteColumn( required workbook,required numeric column ){
+		if( column LTE 0 )
+			throw( type=exceptionType,message="Invalid column value",detail="The value for column must be greater than or equal to 1." );
+			/* POI doesn't have remove column functionality, so iterate over all the rows and remove the column indicated */
+		var rowIterator = this.getActiveSheet( workbook ).rowIterator();
+		while( rowIterator.hasNext() ){
+			var row = rowIterator.next();
+			var cell = row.getCell( JavaCast( "int",column-1 ) );
+			if( IsNull( cell ) )
+				continue;
+			row.removeCell( cell );
+		}
+	}
+
+	void function deleteColumns( required workbook,required string range ){
+		/* Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. */
+		var allRanges = this.extractRanges( range );
+		for( var thisRange in allRanges ){
+			if( thisRange.startAt EQ thisRange.endAt ){
+				/* Just one row */
+				this.deleteColumn( workbook,thisRange.startAt );
+				continue;
+			}
+			for( var columnNumber=thisRange.startAt; columnNumber LTE thisRange.endAt; columnNumber++ ){
+				this.deleteColumn( workbook,columnNumber );
+			}
+		}
+	}
+
 	void function deleteRow( required workbook,required numeric row ){
 		/* Deletes the data from a row. Does not physically delete the row. */
 		if( row LTE 0 )
@@ -479,8 +508,6 @@ component{
 	function addSplitPlane(){ notYetImplemented(); }
 	function autoSizeColumn(){ notYetImplemented(); }
 	function clearCellRange(){ notYetImplemented(); }
-	function deleteColumn(){ notYetImplemented(); }
-	function deleteColumns(){ notYetImplemented(); }
 	function formatCellRange(){ notYetImplemented(); }
 	function formatColumn(){ notYetImplemented(); }
 	function formatColumns(){ notYetImplemented(); }

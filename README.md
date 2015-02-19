@@ -32,6 +32,8 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 - `addRow`
 - `addRows`
 - `createSheet`
+- `deleteColumn`
+- `deleteColumns`
 - `deleteRow`
 - `deleteRows`
 - `formatCell`
@@ -74,7 +76,7 @@ myQuery = spreadsheet.read( src=mypath,format="query" );
 - `src` string: full path to the file to read
 
 #####Optional arguments
-- `format` string: currently only "query" supported
+- `format` string: currently only "query" supported. If omitted, returns a spreadsheet object
 - `headerRow` numeric: specify which row is the header to be used for the query column names
 - `sheetName` string: name of the sheet to read
  OR
