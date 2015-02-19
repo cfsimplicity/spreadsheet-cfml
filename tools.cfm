@@ -58,7 +58,7 @@ private array function extractRanges( required string rangeList ){
 		/* remove all white space */
 		thisRange.REReplace( "\s+","","ALL" );
 		if( !REFind( rangeTest,thisRange ) )
-			throw( type=exceptionType,message="Invalid range value",detail="The range value '#thisRange#' is not valud." );
+			throw( type=exceptionType,message="Invalid range value",detail="The range value '#thisRange#' is not valid." );
 		var parts = ListToArray( thisRange,"-" );
 		//if this is a single number, the start/endAt values are the same
 		var range = {
@@ -84,7 +84,7 @@ private string function generateUniqueSheetName( required workbook ){
 	var maxRetry = startNumber+250;
 	for( var sheetNumber=startNumber; sheetNumber LTE maxRetry; sheetNumber++ ){
 		var proposedName = "Sheet" & sheetNumber;
-		if( workbook.getSheetIndex( JavaCast( "string",proposedName ) ) LT 0 )
+		if( !sheetExists( workbook,proposedName ) )
 			return proposedName;
 	}
 	/* this should never happen. but if for some reason it did, warn the action failed and abort */
@@ -173,6 +173,11 @@ private array function getQueryColumnFormats( required workbook,required query q
 	return metadata;
 }
 
+private numeric function getSheetIndexFromName( required workbook,required string sheetName ){
+	//returns -1 if non-existent
+	return workbook.getSheetIndex( JavaCast( "string",sheetName ) );
+}
+
 private function initializeCell( required workbook,required numeric row,required numeric column ){
 	var jRow = JavaCast( "int",row-1 );
 	var jColumn = JavaCast( "int",column-1 );
@@ -259,19 +264,23 @@ private array function parseRowData( required string line,required string delimi
 private boolean function sheetExists( required workbook,string sheetName,numeric sheetNumber ){
 	validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
 	if( arguments.KeyExists( "sheetName" ) )
-		arguments.sheetNumber = workbook.getSheetIndex( JavaCast( "string",sheetName) )+1;
+		arguments.sheetNumber = this.getSheetIndexFromName( workbook,sheetName )+1;
 		//the position is valid if it an integer between 1 and the total number of sheets in the workbook
 	if( sheetNumber AND ( sheetNumber EQ Round( sheetNumber ) ) AND ( sheetNumber LTE workbook.getNumberOfSheets() ) )
 		return true;
 	return false;
 }
 
-private query function sheetToQuery( required workbook,required numeric sheetNumber,numeric headerRow,boolean includeHeaderRow=false,boolean includeBlankRows=false ){
+private query function sheetToQuery( required workbook,string sheetName,numeric sheetNumber=1,numeric headerRow,boolean includeHeaderRow=false,boolean includeBlankRows=false ){
 	/* Based on https://github.com/bennadel/POIUtility.cfc */
 	var hasHeaderRow = arguments.KeyExists( "headerRow" );
 	var poiHeaderRow = ( hasHeaderRow AND headerRow )? headerRow-1: 0;
 	var columnNames=[];
 	var totalColumnCount=0
+	if( arguments.KeyExists( "sheetName" ) ){
+		validateSheetExistsWithName( workbook,sheetName );
+		arguments.sheetNumber = getSheetIndexFromName( workbook,sheetName )+1;
+	}
 	var sheet = workbook.GetSheetAt( JavaCast( "int",sheetNumber-1 ) );
 	var sheetData = [];
 	var lastRowNumber = sheet.GetLastRowNum();
@@ -366,7 +375,7 @@ private void function validateSheetExistsWithName( required workbook,required st
 }
 
 private void function validateSheetNumber( required workbook,required numeric sheetNumber ){
-	if( !sheetExists( workbook=workbook,sheetNumber=sheetNumber ) ){
+	if( !this.sheetExists( workbook=workbook,sheetNumber=sheetNumber ) ){
 		var sheetCount = workbook.getNumberOfSheets();
 		throw( type=exceptionType,message="Invalid sheet number [#sheetNumber#]",detail="The sheetNumber must a whole number between 1 and the total number of sheets in the workbook [#sheetCount#]" );
 	}

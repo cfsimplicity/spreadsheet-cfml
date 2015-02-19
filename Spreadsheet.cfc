@@ -349,8 +349,8 @@ component{
 		,string columnNames //TODO
 		,numeric headerRow
 		,string rows //TODO
+		,string sheetName
 		,numeric sheetNumber // 1-based
-		,string sheetName  //TODO
 		,boolean includeHeaderRow=false
 		,boolean includeBlankRows=false
 	){
@@ -366,13 +366,13 @@ component{
 		if( arguments.KeyExists( "columnNames" ) )
 			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'columnNames' argument is not yet supported." );
 		if( arguments.KeyExists( "rows" ) )
-			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'rows' argument is not yet supported." );
-		if( arguments.KeyExists( "sheetName" ) )
-			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'sheetName' argument is not yet supported." );
+			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'rows' argument is not yet supported." );		
 		//END TODO
 		if( !FileExists( src ) )
 			throw( type=exceptionType,message="Non-existent file",detail="Cannot find the file #src#." );
 		var workbook = this.workbookFromFile( src );
+		if( arguments.KeyExists( "sheetName" ) )
+			this.setActiveSheet( workbook=workbook,sheetName=sheetName );
 		if( !arguments.keyExists( "format" ) )
 			return workbook;
 		switch( format ){
@@ -385,8 +385,11 @@ component{
 			case "query":
 				var args = {
 					workbook = workbook
-					,sheetNumber = arguments.KeyExists( "sheetNumber" )? sheetNumber: 1
-				}
+				};
+				if( arguments.KeyExists( "sheetName" ) )
+					args.sheetName = sheetName;
+				if( arguments.KeyExists( "sheetNumber" ) )
+					args.sheetNumber = sheetNumber;
 				if( arguments.KeyExists( "headerRow" ) ){
 					args.headerRow=headerRow;
 					args.includeHeaderRow = includeHeaderRow;

@@ -35,7 +35,17 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Reads from the specified sheet index",function(){
+
+	it( "Reads from the specified sheet name",function(){
+		path = ExpandPath( "/root/test/files/test.xls" );// has 2 sheets
+		expected = querySim(
+			"column1,column2
+			x|y");
+		actual = s.read( src=path,format="query",sheetName="sheet2" );
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Reads from the specified sheet number",function(){
 		path = ExpandPath( "/root/test/files/test.xls" );// has 2 sheets
 		expected = querySim(
 			"column1,column2
@@ -78,13 +88,25 @@ describe( "read tests",function(){
 		it( "Throws an exception if the 'query' argument is passed",function() {
 			expect( function(){
 				s.read( src=tempXlsPath,query="q" );
-			}).toThrow( message="Invalid argument 'query'" );
+			}).toThrow( regex="Invalid argument" );
 		});
 
 		it( "Throws an exception if the format argument is invalid",function() {
 			expect( function(){
 				s.read( src=tempXlsPath,format="wrong" );
-			}).toThrow( message="Invalid format" );
+			}).toThrow( regex="Invalid format" );
+		});
+
+		it( "Throws an exception if the sheet name doesn't exist",function() {
+			expect( function(){
+				s.read( src=path,format="query",sheetName="nonexistant" );
+			}).toThrow( regex="Invalid sheet" );
+		});
+
+		it( "Throws an exception if the sheet number doesn't exist",function() {
+			expect( function(){
+				s.read( src=path,format="query",sheetNumber=20 );
+			}).toThrow( regex="Invalid sheet|out of range" );
 		});
 
 	});
