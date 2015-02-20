@@ -690,7 +690,6 @@ component{
 	function autoSizeColumn(){ notYetImplemented(); }
 	function clearCell(){ notYetImplemented(); }
 	function clearCellRange(){ notYetImplemented(); }
-	function createSplitPane(){ notYetImplemented(); }
 	function renameSheet(){ notYetImplemented(); }
 
 }

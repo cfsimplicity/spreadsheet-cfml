@@ -111,10 +111,7 @@ spreadsheet.removeSheetNumber( workbook,2 );
 
 #####Required arguments
  - `workbook` object: the spreadsheet object
- - EITHER
- 	`sheetName` string: the name of the sheet to delete
- 	OR
- 	`sheetNumber` numeric: the number of the sheet to delete
+ - `sheetNumber` numeric: the number of the sheet to delete
 
 ####downloadFileFromQuery()
 

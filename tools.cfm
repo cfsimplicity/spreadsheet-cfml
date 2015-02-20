@@ -235,7 +235,7 @@ private array function parseRowData( required string line,required string delimi
 	var nextValue = "";
 	var isEmbeddedValue = false;
 	var values = [];
-	var buffer = CreateObject( "Java","java.lang.StringBuilder").init();
+	var buffer = CreateObject( "Java","java.lang.StringBuilder" ).init();
 	var maxElements = ArrayLen( elements );
 	
 	for( var i=1; i LTE maxElements; i++) {
