@@ -24,6 +24,7 @@ component extends="testbox.system.BaseSpec"{
 			include "tests/addRow.cfm";
 			include "tests/addRows.cfm";
 			include "tests/binaryFromQuery.cfm";
+			include "tests/cellValue.cfm";
 			include "tests/createSheet.cfm";
 			include "tests/deleteColumn.cfm";
 			include "tests/deleteColumns.cfm";
@@ -32,7 +33,6 @@ component extends="testbox.system.BaseSpec"{
 			include "tests/formatColumn.cfm";
 			include "tests/formatColumns.cfm";
 			include "tests/formatRows.cfm";
-			include "tests/getCellValue.cfm";
 			include "tests/info.cfm";
 			include "tests/isXmlOrBinaryFormat.cfm";
 			include "tests/mergeCells.cfm";
@@ -43,7 +43,6 @@ component extends="testbox.system.BaseSpec"{
 			include "tests/removeSheetNumber.cfm";
 			include "tests/setActiveSheet.cfm";
 			include "tests/setActiveSheetNumber.cfm";
-			include "tests/setCellValue.cfm";
 			include "tests/shiftColumns.cfm";
 			include "tests/shiftRows.cfm";
 			include "tests/workbookFromQuery.cfm";

@@ -1,9 +1,8 @@
 <cfscript>
 private void function addInfoBinary( required workbook,required struct info ){
-	workbook.createInformationProperties();
+	workbook.createInformationProperties(); // creates the following if missing
 	var documentSummaryInfo = workbook.getDocumentSummaryInformation();
 	var summaryInfo = workbook.getSummaryInformation();	
-	
 	for( var key in info ) {
 		switch( key ){
 			case "author": 				
@@ -40,7 +39,7 @@ private void function addInfoBinary( required workbook,required struct info ){
 private void function addInfoXml( required workbook,required struct info ){
 	var documentProperties = workbook.getProperties().getExtendedProperties().getUnderlyingProperties();
 	var coreProperties = workbook.getProperties().getCoreProperties();
-	for (var key in info ) {
+	for( var key in info ) {
 		switch( key ){
 			case "author": 				
 				coreProperties.setCreator( JavaCast( "string",info[ key ] )  );
