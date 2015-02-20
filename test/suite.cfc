@@ -33,6 +33,7 @@ component extends="testbox.system.BaseSpec"{
 			include "tests/formatColumns.cfm";
 			include "tests/formatRows.cfm";
 			include "tests/getCellValue.cfm";
+			include "tests/info.cfm";
 			include "tests/isXmlOrBinaryFormat.cfm";
 			include "tests/mergeCells.cfm";
 			include "tests/new.cfm";

@@ -45,6 +45,7 @@ spreadsheet.addRows( workbook,data );
 
 - `addColumn`
 - `addFreezePane`
+- `addInfo`
 - `addRow`
 - `addRows`
 - `addSplitPane`
@@ -60,6 +61,7 @@ spreadsheet.addRows( workbook,data );
 - `formatRow`
 - `formatRows`
 - `getCellValue`
+- `info`
 - `mergeCells`
 - `new`
 - `read`

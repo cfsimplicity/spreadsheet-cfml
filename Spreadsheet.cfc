@@ -155,6 +155,14 @@ component{
 		}
 	}
 
+	void function addInfo( required workbook,required struct info ){
+		/* Valid struct keys are author, category, lastauthor, comments, keywords, manager, company, subject, title */
+		if( this.isBinaryFormat( workbook ) )
+			this.addInfoBinary( workbook,info );
+		else
+			this.addInfoXml( workbook,info );
+	}
+
 	void function addRow(
 		required workbook
 		,required string data /* Delimited list of data */
@@ -463,6 +471,40 @@ component{
 		return formatter.formatCellValue( cell );
 	}
 
+	struct function info( required workbook ){
+		/* 
+		workbook properties returned in the struct are:
+			* AUTHOR
+			* CATEGORY
+			* COMMENTS
+			* CREATIONDATE
+			* LASTEDITED
+			* LASTAUTHOR
+			* LASTSAVED
+			* KEYWORDS
+			* MANAGER
+			* COMPANY
+			* SUBJECT
+			* TITLE
+			* SHEETS
+			* SHEETNAMES
+			* SPREADSHEETTYPE
+		 */
+		 //format specific metadata
+		var info = this.isBinaryFormat( workbook )? this.binaryInfo( workbook ): this.xmlInfo( workbook );
+		//common properties
+		info.sheets = workbook.getNumberOfSheets();
+		var sheetnames = [];
+		if( IsNumeric( info.sheets ) ){
+			for( var i=1; i LTE info.sheets; i++ ){
+				sheetnames.Append( workbook.getSheetName( JavaCast( "int",i-1 ) ) );
+			}
+			info.sheetnames = sheetnames.ToList();
+		}
+		info.spreadSheetType = this.isXmlFormat( workbook )? "Excel (2007)": "Excel";
+		return info; 
+	}
+
 	boolean function isBinaryFormat( required workbook ){
 		return workbook.getClass().getCanonicalName() IS "org.apache.poi.hssf.usermodel.HSSFWorkbook";
 	}
@@ -676,10 +718,8 @@ component{
 	}
 	/* ACF9 */
 	function addImage(){ notYetImplemented(); }
-	function addInfo(){ notYetImplemented(); }
 	function getCellComment(){ notYetImplemented(); }
 	function getCellFormula(){ notYetImplemented(); }
-	function info(){ notYetImplemented(); }
 	function setCellComment(){ notYetImplemented(); }
 	function setCellFormula(){ notYetImplemented(); }
 	function setColumnWidth(){ notYetImplemented(); }

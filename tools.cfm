@@ -1,4 +1,79 @@
 <cfscript>
+private void function addInfoBinary( required workbook,required struct info ){
+	workbook.createInformationProperties();
+	var documentSummaryInfo = workbook.getDocumentSummaryInformation();
+	var summaryInfo = workbook.getSummaryInformation();	
+	
+	for( var key in info ) {
+		switch( key ){
+			case "author": 				
+				summaryInfo.setAuthor( JavaCast( "string",info.author ) );
+				break;
+			case "category":
+				documentSummaryInfo.setCategory( JavaCast( "string",info.category ) );
+				break;
+			case "lastauthor":
+				summaryInfo.setLastAuthor( JavaCast( "string",info.lastauthor ) );
+				break;
+			case "comments":
+				summaryInfo.setComments( JavaCast( "string",info.comments ) );	
+				break;
+			case "keywords":
+				summaryInfo.setKeywords( JavaCast( "string",info.keywords ) );
+				break;
+			case "manager":
+				documentSummaryInfo.setManager( JavaCast( "string",info.manager ) );
+				break;
+			case "company":
+				documentSummaryInfo.setCompany( JavaCast( "string",info.company ) );
+				break;
+			case "subject":
+				summaryInfo.setSubject( JavaCast( "string",info.subject ) );
+				break;
+			case "title":
+				summaryInfo.setTitle( JavaCast( "string",info.title ) );
+				break;
+		}
+	}	
+}
+
+private void function addInfoXml( required workbook,required struct info ){
+	var documentProperties = workbook.getProperties().getExtendedProperties().getUnderlyingProperties();
+	var coreProperties = workbook.getProperties().getCoreProperties();
+	for (var key in info ) {
+		switch( key ){
+			case "author": 				
+				coreProperties.setCreator( JavaCast( "string",info[ key ] )  );
+				break;
+			case "category": 				
+				coreProperties.setCategory( JavaCast( "string",info[ key ] ) );
+				break;
+			case "lastauthor": 
+				// TODO: This does not seem to be working. Not sure why
+				coreProperties.getUnderlyingProperties().setLastModifiedByProperty( JavaCast( "string",info[ key ] ) );
+				break;
+			case "comments": 				
+				coreProperties.setDescription( JavaCast( "string",info[ key ] ) );	
+				break;
+			case "keywords": 				
+				coreProperties.setKeywords( JavaCast( "string",info[ key ] ) );
+				break;
+			case "subject": 				
+				coreProperties.setSubjectProperty( JavaCast( "string",info[ key ] ) );
+				break;
+			case "title": 				
+				coreProperties.setTitle( JavaCast( "string",info[ key ] ) );
+				break;
+			case "manager": 	
+				documentProperties.setManager( JavaCast( "string",info[ key ] ) );
+				break;
+			case "company": 				
+				documentProperties.setCompany( JavaCast( "string",info[ key ] ) );
+				break;
+		}
+	}
+}
+
 /* Workaround for an issue with autoSizeColumn(). It does not seem to handle 
 	date cells properly. It measures the length of the date "number", instead of 
 	the  visible date string ie mm//dd/yyyy. As a result columns are too narrow */
@@ -14,6 +89,44 @@ private void function autoSizeColumnFix(
 	} else {
 		getActiveSheet( workbook ).autoSizeColumn( JavaCast( "int",columnIndex),true );
 	}
+}
+
+private struct function binaryInfo( required workbook ){
+	var documentProperties = workbook.getDocumentSummaryInformation();
+	var coreProperties = workbook.getSummaryInformation();
+	return {
+		author = coreProperties.getAuthor()?:""
+		,category = documentProperties.getCategory()?:""
+		,comments = coreProperties.getComments()?:""
+		,creationDate = coreProperties.getCreateDateTime()?:""
+		,lastEdited = ( coreProperties.getEditTime() EQ 0 )? "": CreateObject( "java","java.util.Date" ).init( coreProperties.getEditTime() )
+		,subject = coreProperties.getSubject()?:""
+		,title = coreProperties.getTitle()?:""
+		,lastAuthor = coreProperties.getLastAuthor()?:""
+		,keywords = coreProperties.getKeywords()?:""
+		,lastSaved = coreProperties.getLastSaveDateTime()?:""
+		,manager = documentProperties.getManager()?:""
+		,company = documentProperties.getCompany()?:""
+	};
+}
+
+private struct function xmlInfo( required workbook ){
+	var documentProperties = workbook.getProperties().getExtendedProperties().getUnderlyingProperties();
+	var coreProperties = workbook.getProperties().getCoreProperties();
+	return {
+		author = coreProperties.getCreator()?:""
+		,category = coreProperties.getCategory()?:""
+		,comments = coreProperties.getDescription()?:""
+		,creationDate = coreProperties.getCreated()?:""
+		,lastEdited = coreProperties.getModified()?:""
+		,subject = coreProperties.getSubject()?:""
+		,title = coreProperties.getTitle()?:""
+		,lastAuthor = coreProperties.getUnderlyingProperties().getLastModifiedByProperty().getValue()?:""
+		,keywords = coreProperties.getKeywords()?:""
+		,lastSaved = ""// not available in xml
+		,manager = documentProperties.getManager()?:""
+		,company = documentProperties.getCompany()?:""
+	};
 }
 
 private boolean function cellExists( required workbook,required numeric rowNumber,required numeric columnNumber ){
