@@ -188,17 +188,16 @@ component{
 		}
 		var theRow = arguments.KeyExists( "row" )? this.createRow( workbook,arguments.row-1 ): this.createRow( workbook );
 		var rowValues = this.parseRowData( data,delimiter,handleEmbeddedCommas );
-		var cellNum = column - 1;
+		var cellIndex = column - 1;
 		var dateUtil = this.getDateUtil();
 		for( var cellValue in rowValues ){
-			cellValue=cellValue.Trim();
-			var oldWidth = this.getActiveSheet( workbook ).getColumnWidth( cellNum );
-			var cell = this.createCell( theRow,cellNum );
+			cellValue = cellValue.Trim();
+			var oldWidth = this.getActiveSheet( workbook ).getColumnWidth( cellIndex );
+			var cell = this.createCell( theRow,cellIndex );
 			var isDateColumn  = false;
 			var dateMask  = "";
-			if( IsNumeric( cellValue ) and !cellValue.REFind( "^0[\d]+" ) ){
+			if( IsNumeric( cellValue ) AND !cellValue.REFind( "^0[\d]+" ) ){ /*  skip numeric strings with leading zeroes. treat those as text  */
 				/*  NUMERIC  */
-				/*  skip numeric strings with leading zeroes. treat those as text  */
 				cell.setCellType( cell.CELL_TYPE_NUMERIC );
 				cell.setCellValue( JavaCast( "double",cellValue ) );
 			} else if( IsDate( cellValue ) ){
@@ -215,6 +214,10 @@ component{
 				}
 				dateMask = cellFormat;
 				isDateColumn = true;
+			} else if( IsBoolean( cellValue ) ){
+				/* BOOLEAN */
+				cell.setCellType( cell.CELL_TYPE_BOOLEAN );
+				cell.setCellValue( JavaCast( "boolean",cellValue ) )
 			} else if( cellValue.Len() ){
 				/* STRING */
 				cell.setCellType( cell.CELL_TYPE_STRING );
@@ -224,8 +227,8 @@ component{
 				cell.setCellType( cell.CELL_TYPE_BLANK );
 				cell.setCellValue( "" );
 			}
-			this.autoSizeColumnFix( workbook,cellNum,isDateColumn,dateMask );
-			cellNum++;
+			this.autoSizeColumnFix( workbook,cellIndex,isDateColumn,dateMask );
+			cellIndex++;
 		}
 	}
 
@@ -254,7 +257,7 @@ component{
 
 				/* Cast the values to the correct type, so data formatting is properly applied  */
 				if( column.cellDataType IS "DOUBLE" AND IsNumeric( value ) ){
-					cell.setCellValue( JavaCast("double", Val( value) ) );
+					cell.setCellValue( JavaCast( "double", Val( value ) ) );
 				} else if( column.cellDataType IS "TIME" AND IsDate( value ) ){
 					value = TimeFormat( ParseDateTime( value ),"HH:MM:SS");				
 					cell.setCellValue( dateUtil.convertTime( value ) );
