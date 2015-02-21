@@ -271,7 +271,7 @@ component{
 					dateColumns[ column.name ] = { index=cellNum,type=column.cellDataType };
 				} else if( column.cellDataType EQ "BOOLEAN" AND IsBoolean( value ) ){
 					cell.setCellValue( JavaCast( "boolean",value ) );
-				} else if( IsSimpleValue( value ) AND value.isEmpty() ){
+				} else if( IsSimpleValue( value ) AND !Len( value ) ){ //NB don't use member function: won't work if numeric
 					cell.setCellType( cell.CELL_TYPE_BLANK );
 				} else {
 					cell.setCellValue( JavaCast( "string",value ) );
@@ -457,6 +457,39 @@ component{
 		}
 	}
 
+	function getCellFormula( required workbook,numeric row,numeric column ){
+		if( arguments.KeyExists( "row" ) AND arguments.KeyExists( "column" ) ){
+			if( cellExists( workbook,row,column ) ){
+				var cell = getCellAt( workbook,row,column );
+				if( cell.getCellType() IS cell.CELL_TYPE_FORMULA )
+					return cell.getCellFormula();
+				return "";
+			}
+		}
+		//no row and column provided so return an array of structs containing formulas for the entire sheet
+		var rowIterator = getActiveSheet( workbook ).rowIterator();
+		var formulas = [];
+		while( rowIterator.hasNext() ){
+			var cellIterator = rowIterator.next().cellIterator();
+			while( cellIterator.hasNext() ){
+				var cell = cellIterator.next();
+				var formulaStruct = {
+					row = ( cell.getRowIndex() + 1 )
+					,column = ( cell.getColumnIndex() + 1 )
+				};
+				try{
+					formulaStruct.formula = cell.getCellFormula();
+				}
+				catch( any exception ){
+					formulaStruct.formula = "";
+				}
+				if( formulaStruct.formula.Len() )
+					formulas.Append( formulaStruct );
+			}
+		}
+		return formulas;
+	}
+
 	string function getCellValue( required workbook,required numeric row,required numeric column ){
 		if( !this.cellExists( workbook,row,column ) )
 			return "";
@@ -465,9 +498,10 @@ component{
 		var rowObject = this.getActiveSheet( workbook ).getRow( JavaCast( "int",rowIndex ) );
 		var cell = rowObject.getCell( JavaCast( "int",columnIndex ) );
 		var formatter = this.getFormatter();
-		var formulaEvalutor = workbook.getCreationHelper().createFormulaEvaluator();
-		if( cell.getCellType() EQ cell.CELL_TYPE_FORMULA )
-			return formatter.formatCellValue( cell,formulaEvalutor );
+		if( cell.getCellType() EQ cell.CELL_TYPE_FORMULA ){
+			var formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
+			return formatter.formatCellValue( cell,formulaEvaluator );
+		}
 		return formatter.formatCellValue( cell );
 	}
 
@@ -634,6 +668,12 @@ component{
 		this.setActiveSheet( argumentCollection=arguments );
 	}
 
+	void function setCellFormula( required workbook,required string formula,required numeric row,required numeric column ){
+		//Automatically create the cell if it does not exist, instead of throwing an error
+		var cell = initializeCell( workbook,row,column );
+		cell.setCellFormula( JavaCast( "string",formula ) );
+	}
+
 	void function setCellValue( required workbook,required string value,required numeric row,required numeric column ){
 		//Automatically create the cell if it does not exist, instead of throwing an error
 		var cell = initializeCell( workbook,row,column );
@@ -719,9 +759,7 @@ component{
 	/* ACF9 */
 	function addImage(){ notYetImplemented(); }
 	function getCellComment(){ notYetImplemented(); }
-	function getCellFormula(){ notYetImplemented(); }
 	function setCellComment(){ notYetImplemented(); }
-	function setCellFormula(){ notYetImplemented(); }
 	function setColumnWidth(){ notYetImplemented(); }
 	function setFooter(){ notYetImplemented(); }
 	function setHeader(){ notYetImplemented(); }

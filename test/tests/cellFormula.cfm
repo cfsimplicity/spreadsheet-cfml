@@ -1,45 +1,30 @@
 <cfscript>
-describe( "info tests",function(){
+describe( "cellFormula tests",function(){
 
 	beforeEach( function(){
-		variables.infoToAdd = {
-			author="Bob"
-			,category="Testing"
-			,lastAuthor="Anne"
-			,comments="OK"
-			,keywords="test"
-			,manager="Diane"
-			,company="Acme Ltd"
-			,subject="tests"
-			,title="Test figures"
-		};
-		var additional = {
-			creationDate=DateFormat( Now(),"yyyymmdd" )
-			,lastEdited = ""
-			,lastSaved = ""
-			,sheetnames = "Sheet1"
-			,sheets=1
-			,spreadSheetType="Excel"
-		};
-		variables.infoToBeReturned = infoToAdd.Append( additional );
+		/* Need to add data via addRow to ensure numeric data type preserved TODO: make addColumn and setCellValue respect datatypes */
+		variables.workbook = s.new();
+		s.addRow( workbook,1 );
+		s.addRow( workbook,1 );
+		variables.theFormula = "SUM(A1:A2)";
+		s.setCellFormula( workbook,theFormula,3,1 );
 	});
 
-	it( "Adds and can get back info from a binary xls",function() {
-		workbook = s.new();
-		s.addInfo( workbook,infoToAdd );
-		expected = infoToBeReturned;
-		actual = s.info( workbook );
-		actual.creationDate=DateFormat( Now(),"yyyymmdd" );// Doesn't return this value so mock
-		expect( actual ).toBe( expected );
+	it( "Sets the specified formula for the specified cell",function() {
+		expect( s.getCellValue( workbook,3,1 ) ).toBe( 2 );
 	});
 
-	it( "Adds and can get back info from an xml xlsx",function() {
-		workbook = s.new( xmlformat=true );
-		s.addInfo( workbook,infoToAdd );
-		infoToBeReturned.spreadSheetType = "Excel (2007)";
-		expected = infoToBeReturned;
-		actual = s.info( workbook );
-		actual.creationDate = DateFormat( actual.creationDate,"yyyymmdd" ); //can't test time obviously.
+	it( "Gets the formula from the specified cell",function() {
+		expect( s.getCellFormula( workbook,3,1 ) ).toBe( theFormula );
+	});
+
+	it( "Gets all formulas from the workbook",function() {
+		expected = [{
+			formula=theFormula
+			,row=3
+			,column=1
+		}];
+		actual = s.getCellFormula( workbook );
 		expect( actual ).toBe( expected );
 	});
 

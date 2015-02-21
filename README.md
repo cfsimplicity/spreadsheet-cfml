@@ -12,7 +12,7 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 ##Benefits over the official extension
 
 - No installation/restart required, either at the server or individual web context level.
-- `read()` method offers some of the features of the `<cfspreadsheet action="read">` tag in script over in addition to the basic options of `SpreadsheetRead()`.
+- `read()` method offers some of the features of the `<cfspreadsheet action="read">` tag in script in addition to the basic options of `SpreadsheetRead()`.
 - Invoking the library doesn't create a workbook instance (a.k.a *Spreadsheet Object*), meaning:
  - a blank workbook isn't created unnecessarily when reading an existing spreadsheet
  - the library can be stored as a singleton in application scope
@@ -60,6 +60,7 @@ spreadsheet.addRows( workbook,data );
 - `formatColumns`
 - `formatRow`
 - `formatRows`
+- `getCellFormula`
 - `getCellValue`
 - `info`
 - `mergeCells`
@@ -69,6 +70,7 @@ spreadsheet.addRows( workbook,data );
 - `removeSheet`
 - `setActiveSheet`
 - `setActiveSheetNumber`
+- `setCellFormula`
 - `setCellValue`
 - `shiftColumns`
 - `shiftRows`

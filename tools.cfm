@@ -130,7 +130,7 @@ private struct function xmlInfo( required workbook ){
 
 private boolean function cellExists( required workbook,required numeric rowNumber,required numeric columnNumber ){
 	var rowIndex = rowNumber-1;
-	var columnIndex = columnNumber=1;
+	var columnIndex = columnNumber-1;
 	var checkRow = this.getActiveSheet( workbook ).getRow( JavaCast( "int",rowIndex ) );
 	return !IsNull( checkRow ) AND !IsNull( checkRow.getCell( JavaCast( "int",columnIndex ) ) );
 }
@@ -216,6 +216,14 @@ private function getActiveSheet( required workbook ){
 
 private function getActiveSheetName( required workbook ){
 	return this.getActiveSheet( workbook ).getSheetName();
+}
+
+private function getCellAt( required workbook,required numeric rowNumber,required numeric columnNumber ){
+	if( !cellExists( argumentCollection=arguments ) )
+		throw( type=exceptionType,message="Invalid cell",detail="The requested cell [#rowNumber#,#columnNumber#] does not exist in the active sheet" );
+	var rowIndex = rowNumber-1;
+	var columnIndex = columnNumber-1;
+	return getActiveSheet( workbook ).getRow( JavaCast( "int",rowIndex ) ).getCell( JavaCast( "int",columnIndex ) );
 }
 
 private function getCellUtil(){

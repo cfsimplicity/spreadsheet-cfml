@@ -24,6 +24,7 @@ component extends="testbox.system.BaseSpec"{
 			include "tests/addRow.cfm";
 			include "tests/addRows.cfm";
 			include "tests/binaryFromQuery.cfm";
+			include "tests/cellFormula.cfm";
 			include "tests/cellValue.cfm";
 			include "tests/createSheet.cfm";
 			include "tests/deleteColumn.cfm";
