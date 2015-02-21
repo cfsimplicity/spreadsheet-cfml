@@ -3,34 +3,35 @@ private void function addInfoBinary( required workbook,required struct info ){
 	workbook.createInformationProperties(); // creates the following if missing
 	var documentSummaryInfo = workbook.getDocumentSummaryInformation();
 	var summaryInfo = workbook.getSummaryInformation();	
-	for( var key in info ) {
+	for( var key in info ){
+		var value = JavaCast( "string",info[ key ] );
 		switch( key ){
 			case "author": 				
-				summaryInfo.setAuthor( JavaCast( "string",info.author ) );
+				summaryInfo.setAuthor( value );
 				break;
 			case "category":
-				documentSummaryInfo.setCategory( JavaCast( "string",info.category ) );
+				documentSummaryInfo.setCategory( value );
 				break;
 			case "lastauthor":
-				summaryInfo.setLastAuthor( JavaCast( "string",info.lastauthor ) );
+				summaryInfo.setLastAuthor( value );
 				break;
 			case "comments":
-				summaryInfo.setComments( JavaCast( "string",info.comments ) );	
+				summaryInfo.setComments( value );	
 				break;
 			case "keywords":
-				summaryInfo.setKeywords( JavaCast( "string",info.keywords ) );
+				summaryInfo.setKeywords( value );
 				break;
 			case "manager":
-				documentSummaryInfo.setManager( JavaCast( "string",info.manager ) );
+				documentSummaryInfo.setManager( value );
 				break;
 			case "company":
-				documentSummaryInfo.setCompany( JavaCast( "string",info.company ) );
+				documentSummaryInfo.setCompany( value );
 				break;
 			case "subject":
-				summaryInfo.setSubject( JavaCast( "string",info.subject ) );
+				summaryInfo.setSubject( value );
 				break;
 			case "title":
-				summaryInfo.setTitle( JavaCast( "string",info.title ) );
+				summaryInfo.setTitle( value );
 				break;
 		}
 	}	
@@ -39,35 +40,36 @@ private void function addInfoBinary( required workbook,required struct info ){
 private void function addInfoXml( required workbook,required struct info ){
 	var documentProperties = workbook.getProperties().getExtendedProperties().getUnderlyingProperties();
 	var coreProperties = workbook.getProperties().getCoreProperties();
-	for( var key in info ) {
+	for( var key in info ){
+		var value = JavaCast( "string",info[ key ] );
 		switch( key ){
 			case "author": 				
-				coreProperties.setCreator( JavaCast( "string",info[ key ] )  );
+				coreProperties.setCreator( value  );
 				break;
 			case "category": 				
-				coreProperties.setCategory( JavaCast( "string",info[ key ] ) );
+				coreProperties.setCategory( value );
 				break;
 			case "lastauthor": 
 				// TODO: This does not seem to be working. Not sure why
-				coreProperties.getUnderlyingProperties().setLastModifiedByProperty( JavaCast( "string",info[ key ] ) );
+				coreProperties.getUnderlyingProperties().setLastModifiedByProperty( value );
 				break;
 			case "comments": 				
-				coreProperties.setDescription( JavaCast( "string",info[ key ] ) );	
+				coreProperties.setDescription( value );	
 				break;
 			case "keywords": 				
-				coreProperties.setKeywords( JavaCast( "string",info[ key ] ) );
+				coreProperties.setKeywords( value );
 				break;
 			case "subject": 				
-				coreProperties.setSubjectProperty( JavaCast( "string",info[ key ] ) );
+				coreProperties.setSubjectProperty( value );
 				break;
 			case "title": 				
-				coreProperties.setTitle( JavaCast( "string",info[ key ] ) );
+				coreProperties.setTitle( value );
 				break;
 			case "manager": 	
-				documentProperties.setManager( JavaCast( "string",info[ key ] ) );
+				documentProperties.setManager( value );
 				break;
 			case "company": 				
-				documentProperties.setCompany( JavaCast( "string",info[ key ] ) );
+				documentProperties.setCompany( value );
 				break;
 		}
 	}
