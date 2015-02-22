@@ -73,6 +73,8 @@ spreadsheet.addRows( workbook,data );
 - `setCellFormula`
 - `setCellValue`
 - `setColumnWidth`
+- `setFooter`
+- `setHeader`
 - `setRowHeight`
 - `shiftColumns`
 - `shiftRows`
