@@ -654,6 +654,11 @@ function getCellValue( required workbook,required numeric row,required numeric c
 		this.getActiveSheet( workbook ).setColumnWidth( JavaCast( "int",columnIndex ),JavaCast( "int",width*256 ) );
 	}
 
+	void function setRowHeight( required workbook,required numeric row,required numeric height ){
+		var rowIndex = row-1;
+		this.getActiveSheet( workbook ).getRow( JavaCast( "int",rowIndex ) ).setHeightInPoints( JavaCast( "int",height ) );
+	}
+
 	void function shiftColumns( required workbook,required numeric start,numeric end=start,numeric offset=1 ){
 		if( start LTE 0 )
 			throw( type=exceptionType,message="Invalid start value",detail="The start value must be greater than or equal to 1" );
@@ -739,7 +744,6 @@ function getCellValue( required workbook,required numeric row,required numeric c
 	function setCellComment(){ notYetImplemented(); }
 	function setFooter(){ notYetImplemented(); }
 	function setHeader(){ notYetImplemented(); }
-	function setRowHeight(){ notYetImplemented(); }
 	/* Railo extension */
 	function autoSizeColumn(){ notYetImplemented(); }
 	function clearCell(){ notYetImplemented(); }
