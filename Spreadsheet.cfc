@@ -654,6 +654,34 @@ function getCellValue( required workbook,required numeric row,required numeric c
 		this.getActiveSheet( workbook ).setColumnWidth( JavaCast( "int",columnIndex ),JavaCast( "int",width*256 ) );
 	}
 
+	void function setFooter(
+		required workbook
+		,string leftFooter=""
+		,string centerFooter=""
+		,string rightFooter=""
+	){
+		if( !centerFooter.isEmpty() )
+			this.getActiveSheet( workbook ).getFooter().setCenter( JavaCast( "string",centerFooter ) );
+		if( !leftFooter.isEmpty() )
+			this.getActiveSheet( workbook ).getFooter().setleft( JavaCast( "string",leftFooter ) );
+		if( !rightFooter.isEmpty() )
+			this.getActiveSheet( workbook ).getFooter().setright( JavaCast( "string",rightFooter ) );
+	}
+
+	void function setHeader(
+		required workbook
+		,string leftHeader=""
+		,string centerHeader=""
+		,string rightHeader=""
+	){
+		if( !centerHeader.isEmpty() )
+			this.getActiveSheet( workbook ).getHeader().setCenter( JavaCast( "string",centerHeader ) );
+		if( !leftHeader.isEmpty() )
+			this.getActiveSheet( workbook ).getHeader().setleft( JavaCast( "string",leftHeader ) );
+		if( !rightHeader.isEmpty() )
+			this.getActiveSheet( workbook ).getHeader().setright( JavaCast( "string",rightHeader ) );
+	}
+
 	void function setRowHeight( required workbook,required numeric row,required numeric height ){
 		var rowIndex = row-1;
 		this.getActiveSheet( workbook ).getRow( JavaCast( "int",rowIndex ) ).setHeightInPoints( JavaCast( "int",height ) );
@@ -742,8 +770,6 @@ function getCellValue( required workbook,required numeric row,required numeric c
 	function addImage(){ notYetImplemented(); }
 	function getCellComment(){ notYetImplemented(); }
 	function setCellComment(){ notYetImplemented(); }
-	function setFooter(){ notYetImplemented(); }
-	function setHeader(){ notYetImplemented(); }
 	/* Railo extension */
 	function autoSizeColumn(){ notYetImplemented(); }
 	function clearCell(){ notYetImplemented(); }
