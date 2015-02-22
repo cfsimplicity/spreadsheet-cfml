@@ -72,6 +72,8 @@ spreadsheet.addRows( workbook,data );
 - `setActiveSheetNumber`
 - `setCellFormula`
 - `setCellValue`
+- `setColumnWidth`
+- `setRowHeight`
 - `shiftColumns`
 - `shiftRows`
 - `write`
