@@ -269,12 +269,12 @@ private function getCellValueAsType( required workbook,required cell ){
 	}
 	if( cellType EQ cell.CELL_TYPE_BOOLEAN )
 		return cell.getBooleanCellValue();
- if( cellType EQ cell.CELL_TYPE_BLANK )
+ 	if( cellType EQ cell.CELL_TYPE_BLANK )
 		return "";
 	try{
 		return cell.getStringCellValue();
 	}
-	catch( any exception3 ){
+	catch( any exception ){
 		return "";
 	}
 }
