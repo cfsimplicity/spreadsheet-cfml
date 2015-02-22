@@ -649,6 +649,11 @@ function getCellValue( required workbook,required numeric row,required numeric c
 		this.setCellValueAsType( workbook,cell,value );
 	}
 
+	void function setColumnWidth( required workbook,required numeric column,required numeric width ){
+		var columnIndex = column-1;
+		this.getActiveSheet( workbook ).setColumnWidth( JavaCast( "int",columnIndex ),JavaCast( "int",width*256 ) );
+	}
+
 	void function shiftColumns( required workbook,required numeric start,numeric end=start,numeric offset=1 ){
 		if( start LTE 0 )
 			throw( type=exceptionType,message="Invalid start value",detail="The start value must be greater than or equal to 1" );
@@ -732,7 +737,6 @@ function getCellValue( required workbook,required numeric row,required numeric c
 	function addImage(){ notYetImplemented(); }
 	function getCellComment(){ notYetImplemented(); }
 	function setCellComment(){ notYetImplemented(); }
-	function setColumnWidth(){ notYetImplemented(); }
 	function setFooter(){ notYetImplemented(); }
 	function setHeader(){ notYetImplemented(); }
 	function setRowHeight(){ notYetImplemented(); }
