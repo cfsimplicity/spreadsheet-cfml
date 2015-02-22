@@ -45,6 +45,17 @@ describe( "addRow tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Adds numeric, boolean or date values correctly",function() {
+		var dateValue = CreateDate( 2015,04,12 );
+		s.addRow( workbook,"2,true,#dateValue#" );
+		expected = QueryNew( "column1,column2,column3","Numeric,Boolean,Date",[ [ 2,true,dateValue ] ] );
+		actual = s.sheetToQuery( workbook );
+		expect( actual ).toBe( expected );
+		expect( IsNumeric( s.getCellValue( workbook,1,1 ) ) ).tobeTrue();
+		expect( IsBoolean( s.getCellValue( workbook,1,2 ) ) ).tobeTrue();
+		expect( IsDate( s.getCellValue( workbook,1,3 ) ) ).tobeTrue();
+	});
+
 	describe( "addRow exceptions",function(){
 
 		it( "Throws an exception if row is zero or less",function() {

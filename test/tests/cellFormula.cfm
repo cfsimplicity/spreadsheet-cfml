@@ -2,10 +2,8 @@
 describe( "cellFormula tests",function(){
 
 	beforeEach( function(){
-		/* Need to add data via addRow to ensure numeric data type preserved TODO: make addColumn and setCellValue respect datatypes */
 		variables.workbook = s.new();
-		s.addRow( workbook,1 );
-		s.addRow( workbook,1 );
+		s.addColumn( workbook,"1,1" );
 		variables.theFormula = "SUM(A1:A2)";
 		s.setCellFormula( workbook,theFormula,3,1 );
 	});

@@ -2,7 +2,7 @@ component{
 
 	variables.version = "0.2.0";
 
-	variables.defaultFormats = { DATE = "m/d/yy", TIMESTAMP = "m/d/yy h:mm", TIME = "h:mm:ss" };
+	variables.defaultFormats = { DATE = "yyyy-mm-dd", TIMESTAMP = "yyyy-mm-dd hh:mm:ss", TIME = "hh:mm:ss" };
 	variables.exceptionType	=	"cfsimplicity.lucee.spreadsheet";
 
 	include "tools.cfm";
@@ -116,16 +116,16 @@ component{
 				for( var i=lastCellNum; i EQ cellNum; i-- ){
 					oldCell	=	row.getCell( JavaCast( "int",i-1 ) );
 					if( !IsNull( oldCell ) ){
-						/* TODO: Handle other cell types ?  */
 						cell = this.createCell( row,i );
 						cell.setCellStyle( oldCell.getCellStyle() );
-						cell.setCellValue( oldCell.getStringCellValue() );
+						var cellValue = this.getCellValueAsType( workbook,oldCell );
+						this.setCellValueAsType( workbook,oldCell,cellValue );
 						cell.setCellComment( oldCell.getCellComment() );
 					}
 				}
 			}
 			cell = this.createCell( row,cellNum );
-			cell.setCellValue( JavaCast( "string",cellValue ) );
+			this.setCellValueAsType( workbook,cell,cellValue );
 			rowNum++;
 		}
 	}
@@ -188,44 +188,16 @@ component{
 		}
 		var theRow = arguments.KeyExists( "row" )? this.createRow( workbook,arguments.row-1 ): this.createRow( workbook );
 		var rowValues = this.parseRowData( data,delimiter,handleEmbeddedCommas );
-		var cellIndex = column - 1;
-		var dateUtil = this.getDateUtil();
+		var cellIndex = column-1;
 		for( var cellValue in rowValues ){
-			cellValue = cellValue.Trim();
-			var oldWidth = this.getActiveSheet( workbook ).getColumnWidth( cellIndex );
 			var cell = this.createCell( theRow,cellIndex );
+			this.setCellValueAsType( workbook,cell,cellValue.Trim() )
 			var isDateColumn  = false;
 			var dateMask  = "";
-			if( IsNumeric( cellValue ) AND !cellValue.REFind( "^0[\d]+" ) ){ /*  skip numeric strings with leading zeroes. treat those as text  */
-				/*  NUMERIC  */
-				cell.setCellType( cell.CELL_TYPE_NUMERIC );
-				cell.setCellValue( JavaCast( "double",cellValue ) );
-			} else if( IsDate( cellValue ) ){
-				/*  DATE  */
-				cellFormat = this.getDateTimeValueFormat( cellValue );
-				cell.setCellStyle( this.buildCellStyle( { workbook,dataFormat=cellFormat } ) );
-				cell.setCellType( cell.CELL_TYPE_NUMERIC );
-				/*  Excel's uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling - */
-				if( cellFormat EQ variables.defaultFormats.TIME ){
-					cellValue = TimeFormat( cellValue, "HH:MM:SS" );
-				 	cell.setCellValue( dateUtil.convertTime( cellValue ) );
-				} else {
-					cell.setCellValue( ParseDateTime( cellValue ) );
-				}
+			if( IsDate( cellValue ) ){
+				var cellFormat = this.getDateTimeValueFormat( cellValue );
 				dateMask = cellFormat;
 				isDateColumn = true;
-			} else if( IsBoolean( cellValue ) ){
-				/* BOOLEAN */
-				cell.setCellType( cell.CELL_TYPE_BOOLEAN );
-				cell.setCellValue( JavaCast( "boolean",cellValue ) )
-			} else if( cellValue.Len() ){
-				/* STRING */
-				cell.setCellType( cell.CELL_TYPE_STRING );
-				cell.setCellValue( JavaCast( "string",cellValue ) );
-			} else {
-				/* EMPTY */
-				cell.setCellType( cell.CELL_TYPE_BLANK );
-				cell.setCellValue( "" );
 			}
 			this.autoSizeColumnFix( workbook,cellIndex,isDateColumn,dateMask );
 			cellIndex++;
@@ -239,40 +211,34 @@ component{
 		var rowNum	=	arguments.keyExists( "row" )? row-1: this.getNextEmptyRow( workbook );
 		var queryColumns = this.getQueryColumnFormats( workbook,data );
 		var dateUtil = this.getDateUtil();
-		var dateColumns  = {};
 		for( var dataRow in data ){
-			/* can't just call addRow() here since that function expects a comma-delimited list of data (probably not the greatest limitation ...) and the query data may have commas in it, so this is a bit redundant with the addRow() function */
-			var theRow = this.createRow( workbook,rowNum,false );
-			var cellNum = ( arguments.column-1 );
+			var newRow = this.createRow( workbook,rowNum,false );
+			var cellIndex = ( column-1 );
 			/* Note: To properly apply date/number formatting:
    				- cell type must be CELL_TYPE_NUMERIC
    				- cell value must be applied as a java.util.Date or java.lang.Double (NOT as a string)
    				- cell style must have a dataFormat (datetime values only) */
    		/* populate all columns in the row */
-   		for( var column in queryColumns ){
-   			var cell 	= this.createCell( theRow, cellNum, false );
-				var value = dataRow[ column.name ];
+   		for( var queryColumn in queryColumns ){
+   			var cell 	= this.createCell( newRow, cellIndex, false );
+				var value = dataRow[ queryColumn.name ];
 				var forceDefaultStyle = false;
-				column.index = cellNum;
-
+				queryColumn.index = cellIndex;
 				/* Cast the values to the correct type, so data formatting is properly applied  */
-				if( column.cellDataType IS "DOUBLE" AND IsNumeric( value ) ){
-					cell.setCellValue( JavaCast( "double", Val( value ) ) );
-				} else if( column.cellDataType IS "TIME" AND IsDate( value ) ){
+				if( queryColumn.cellDataType IS "DOUBLE" AND IsNumeric( value ) ){
+					cell.setCellValue( JavaCast( "double",Val( value ) ) );
+				} else if( queryColumn.cellDataType IS "TIME" AND IsDate( value ) ){
 					value = TimeFormat( ParseDateTime( value ),"HH:MM:SS");				
 					cell.setCellValue( dateUtil.convertTime( value ) );
 					forceDefaultStyle = true;
-					var dateColumns[ column.name ] = { index=cellNum,type=column.cellDataType };
-				} else if( column.cellDataType EQ "DATE" AND IsDate( value ) ){
-					/* If the cell is NOT already formatted for dates, apply the default format 
-					brand new cells have a styleIndex == 0  */
+				} else if( queryColumn.cellDataType EQ "DATE" AND IsDate( value ) ){
+					/* If the cell is NOT already formatted for dates, apply the default format brand new cells have a styleIndex == 0  */
 					var styleIndex = cell.getCellStyle().getDataFormat();
 					var styleFormat = cell.getCellStyle().getDataFormatString();
 					if( styleIndex EQ 0 OR NOT dateUtil.isADateFormat( styleIndex,styleFormat ) )
 						forceDefaultStyle = true;
 					cell.setCellValue( ParseDateTime( value ) );
-					dateColumns[ column.name ] = { index=cellNum,type=column.cellDataType };
-				} else if( column.cellDataType EQ "BOOLEAN" AND IsBoolean( value ) ){
+				} else if( queryColumn.cellDataType EQ "BOOLEAN" AND IsBoolean( value ) ){
 					cell.setCellValue( JavaCast( "boolean",value ) );
 				} else if( IsSimpleValue( value ) AND !Len( value ) ){ //NB don't use member function: won't work if numeric
 					cell.setCellType( cell.CELL_TYPE_BLANK );
@@ -280,13 +246,13 @@ component{
 					cell.setCellValue( JavaCast( "string",value ) );
 				}
 				/* Replace the existing styles with custom formatting  */
-				if( column.KeyExists( "customCellStyle" ) ){
-					cell.setCellStyle( column.customCellStyle );
+				if( queryColumn.KeyExists( "customCellStyle" ) ){
+					cell.setCellStyle( queryColumn.customCellStyle );
 					/* Replace the existing styles with default formatting (for readability). The reason we cannot just update the cell's style is because they are shared. So modifying it may impact more than just this one cell. */
-				} else if( column.KeyExists( "defaultCellStyle" ) AND forceDefaultStyle ){
-					cell.setCellStyle( column.defaultCellStyle );
+				} else if( queryColumn.KeyExists( "defaultCellStyle" ) AND forceDefaultStyle ){
+					cell.setCellStyle( queryColumn.defaultCellStyle );
 				}
-				cellNum++;
+				cellIndex++;
    		}
    		rowNum++;
 		}
@@ -493,7 +459,7 @@ component{
 		return formulas;
 	}
 
-	string function getCellValue( required workbook,required numeric row,required numeric column ){
+function getCellValue( required workbook,required numeric row,required numeric column ){
 		if( !this.cellExists( workbook,row,column ) )
 			return "";
 		var rowIndex = row-1;
@@ -677,11 +643,10 @@ component{
 		cell.setCellFormula( JavaCast( "string",formula ) );
 	}
 
-	void function setCellValue( required workbook,required string value,required numeric row,required numeric column ){
+	void function setCellValue( required workbook,required value,required numeric row,required numeric column ){
 		//Automatically create the cell if it does not exist, instead of throwing an error
 		var cell = initializeCell( workbook,row,column );
-		//TODO: need to worry about data types? doing everything as a string for now
-		cell.setCellValue( JavaCast( "string",value ) );
+		this.setCellValueAsType( workbook,cell,value );
 	}
 
 	void function shiftColumns( required workbook,required numeric start,numeric end=start,numeric offset=1 ){
@@ -698,15 +663,19 @@ component{
 				for( var i=endIndex; i GTE startIndex; i-- ){
 					var tempCell = row.getCell( JavaCast( "int",i ) );
 					var cell = this.createCell( row,i+offset );
-					if( !IsNull( tempCell ) )
-						cell.setCellValue( JavaCast( "string",tempCell.getStringCellValue() ) );
+					if( !IsNull( tempCell ) ){
+						this.setCellValueAsType( workbook,cell,this.getCellValueAsType( workbook,tempCell ) );
+						cell.setCellStyle( tempCell.getCellStyle() );
+					}
 				}
 			} else {
 				for( var i=startIndex; i LTE endIndex; i++ ){
 					var tempCell = row.getCell( JavaCast( "int",i ) );
 					var cell = createCell( row,i+offset );
-					if( !IsNull( tempCell ) )
-						cell.setCellValue( JavaCast( "string",tempCell.getStringCellValue() ) );
+					if( !IsNull( tempCell ) ){
+						this.setCellValueAsType( workbook,cell,this.getCellValueAsType( workbook,tempCell ) );
+						cell.setCellStyle( tempCell.getCellStyle() );
+					}
 				}
 			}
 		}

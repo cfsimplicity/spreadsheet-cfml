@@ -11,12 +11,37 @@ describe( "cellValue tests",function(){
 		expect( s.getCellValue( workbook,2,2 ) ).toBe( "d" );
 	});
 
-	it( "Sets the specified cell to the specified value",function() {
+	it( "Sets the specified cell to the specified string value",function() {
 		value="test";
 		s.setCellValue( workbook,value,1,1 );
-		expected = querySim( "column1
-			test");
-		actual = s.sheetToQuery( workbook );
+		expected = value;
+		actual = s.getCellValue( workbook,1,1 );
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Sets the specified cell to the specified numeric value",function() {
+		value=1;
+		s.setCellValue( workbook,value,1,1 );
+		expected = value;
+		actual = s.getCellValue( workbook,1,1 );
+		expect( actual ).toBe( expected );
+		expect( IsNumeric( actual ) ).toBeTrue();
+	});
+
+	it( "Sets the specified cell to the specified boolean value",function() {
+		value=true;
+		s.setCellValue( workbook,value,1,1 );
+		expected = value;
+		actual = s.getCellValue( workbook,1,1 );
+		expect( actual ).toBe( expected );
+		expect( IsBoolean( actual ) ).toBeTrue();
+	});
+
+	it( "Sets the specified cell to the specified date value",function() {
+		value=CreateDate( 2015,04,12 );
+		s.setCellValue( workbook,value,1,1 );
+		expected = DateFormat( value,"yyyy-mm-dd" );
+		actual = s.getCellValue( workbook,1,1 );
 		expect( actual ).toBe( expected );
 	});
 

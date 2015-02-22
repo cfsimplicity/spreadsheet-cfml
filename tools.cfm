@@ -85,10 +85,10 @@ private void function autoSizeColumnFix(
 	,string dateMask=variables.defaultFormats[ "TIMESTAMP" ]
 ){
 	if( isDateColumn ){
-		newWidth = estimateColumnWidth( dateMask & "00000" );
+		newWidth = estimateColumnWidth( workbook,dateMask & "00000" );
 		getActiveSheet( workbook ).setColumnWidth( columnIndex,newWidth );
 	} else {
-		getActiveSheet( workbook ).autoSizeColumn( JavaCast( "int",columnIndex),true );
+		getActiveSheet( workbook ).autoSizeColumn( JavaCast( "int",columnIndex ),true );
 	}
 }
 
@@ -106,25 +106,6 @@ private struct function binaryInfo( required workbook ){
 		,lastAuthor = coreProperties.getLastAuthor()?:""
 		,keywords = coreProperties.getKeywords()?:""
 		,lastSaved = coreProperties.getLastSaveDateTime()?:""
-		,manager = documentProperties.getManager()?:""
-		,company = documentProperties.getCompany()?:""
-	};
-}
-
-private struct function xmlInfo( required workbook ){
-	var documentProperties = workbook.getProperties().getExtendedProperties().getUnderlyingProperties();
-	var coreProperties = workbook.getProperties().getCoreProperties();
-	return {
-		author = coreProperties.getCreator()?:""
-		,category = coreProperties.getCategory()?:""
-		,comments = coreProperties.getDescription()?:""
-		,creationDate = coreProperties.getCreated()?:""
-		,lastEdited = coreProperties.getModified()?:""
-		,subject = coreProperties.getSubject()?:""
-		,title = coreProperties.getTitle()?:""
-		,lastAuthor = coreProperties.getUnderlyingProperties().getLastModifiedByProperty().getValue()?:""
-		,keywords = coreProperties.getKeywords()?:""
-		,lastSaved = ""// not available in xml
 		,manager = documentProperties.getManager()?:""
 		,company = documentProperties.getCompany()?:""
 	};
@@ -165,6 +146,23 @@ private function createWorkBook( required string sheetName,boolean useXmlFormat=
 
 private void function deleteSheetAtIndex( required workbook,required numeric sheetIndex ){
 	workbook.removeSheetAt( JavaCast( "int",sheetIndex ) );
+}
+
+private numeric function estimateColumnWidth( required workbook,required any value ){
+	/* Estimates approximate column width based on cell value and default character width. */
+	/* 
+	"Excel bases its measurement of column widths on the number of digits (specifically, 
+		the number of zeros) in the column, using the Normal style font."
+			
+		This function approximates the column width using the number of characters and 
+		the default character width in the normal font. POI expresses the width in 1/256
+		of Excel's character unit.  The maximum size in POI is: (255 * 256)
+	 */
+	var defaultWidth = getDefaultCharWidth( workbook );
+	var numOfChars = Len( arguments.value );
+	var width = ( numOfChars*defaultWidth+5 ) / ( defaultWidth*256 );
+    // Do not allow the size to exceed POI's maximum
+	return Min( width,( 255*256 ) );
 }
 
 private array function extractRanges( required string rangeList ){
@@ -220,6 +218,18 @@ private function getActiveSheetName( required workbook ){
 	return this.getActiveSheet( workbook ).getSheetName();
 }
 
+private numeric function getAWTFontStyle( required any poiFont ){
+	var font = loadPOI( "java.awt.Font" );
+	var isBold = poiFont.getBoldweight() == poiFont.BOLDWEIGHT_BOLD;
+	if( isBold && arguments.poiFont.getItalic() )
+  	return BitOr( font.BOLD,font.ITALIC );
+	if( isBold )
+		return font.BOLD;
+	if( poiFont.getItalic() )
+		return font.ITALIC;
+	return font.PLAIN;	
+}
+
 private function getCellAt( required workbook,required numeric rowNumber,required numeric columnNumber ){
 	if( !cellExists( argumentCollection=arguments ) )
 		throw( type=exceptionType,message="Invalid cell",detail="The requested cell [#rowNumber#,#columnNumber#] does not exist in the active sheet" );
@@ -232,6 +242,41 @@ private function getCellUtil(){
 	if( IsNull( variables.cellUtil ) )
 		variables.cellUtil = loadPoi( "org.apache.poi.ss.util.CellUtil" );
 	return variables.cellUtil;
+}
+
+private function getCellValueAsType( required workbook,required cell ){
+	/* When getting the value of a cell, it is important to know what type of cell value we are dealing with. If you try to grab the wrong value type, an error might be thrown. For that reason, we must check to see what type of cell we are working with. These are the cell types and they are constants of the cell object itself:
+		 		
+		0 - CELL_TYPE_NUMERIC
+		1 - CELL_TYPE_STRING
+		2 - CELL_TYPE_FORMULA
+		3 - CELL_TYPE_BLANK
+		4 - CELL_TYPE_BOOLEAN
+		5 - CELL_TYPE_ERROR */
+	
+	var cellType = cell.GetCellType();
+	/* Get the value of the cell based on the data type. The thing to worry about here is cell forumlas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values. */
+	if( cellType EQ cell.CELL_TYPE_NUMERIC ){
+		/* Get numeric cell data. This could be a standard number, could also be a date value. */
+		var dateUtil = this.getDateUtil();
+		if( dateUtil.isCellDateFormatted( cell ) )
+			return cell.getDateCellValue();
+		return cell.getNumericCellValue();
+	}
+	if( cellType EQ cell.CELL_TYPE_FORMULA ){
+		var formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
+		return formatter.formatCellValue( cell,formulaEvaluator );
+	}
+	if( cellType EQ cell.CELL_TYPE_BOOLEAN )
+		return cell.getBooleanCellValue();
+ if( cellType EQ cell.CELL_TYPE_BLANK )
+		return "";
+	try{
+		return cell.getStringCellValue();
+	}
+	catch( any exception3 ){
+		return "";
+	}
 }
 
 private function getDateUtil(){
@@ -249,6 +294,20 @@ private string function getDateTimeValueFormat( required any value ){
 	if( DateCompare( "1899-12-30",dateOnly,"d" ) EQ 0 )
 		return variables.defaultFormats.TIME;
 	return variables.defaultFormats.TIMESTAMP;
+}
+
+private numeric function getDefaultCharWidth( required workbook ){
+	/* Estimates the default character width using Excel's 'Normal' font */
+	/* this is a compromise between hard coding a default value and the more complex method of using an AttributedString and TextLayout */
+	var defaultFont = workbook.getFontAt( 0 );
+	var style = getAWTFontStyle( defaultFont );
+	var font = loadPOI( "java.awt.Font" );
+	var javaFont = font.init( defaultFont.getFontName(),style,defaultFont.getFontHeightInPoints() );
+	// this works
+	var transform = CreateObject( "java","java.awt.geom.AffineTransform" );
+	var fontContext = CreateObject( "java","java.awt.font.FontRenderContext" ).init( transform,true,true );
+	var bounds = javaFont.getStringBounds( "0",fontContext );
+	return bounds.getWidth();
 }
 
 private numeric function getFirstRowNum( required workbook ){
@@ -390,11 +449,50 @@ private array function parseRowData( required string line,required string delimi
 		  if( isEmbeddedValue AND startAt GTE 0 AND endAt GT startAt )
 			  finalValue = finalValue.substring( startAt+1,endAt );
 		  values.add( finalValue );
-		  buffer.setLength(0);
+		  buffer.setLength( 0 );
 		  isEmbeddedValue = false;
 	  }	  
   }
   return values;
+}
+
+private void function setCellValueAsType( required workbook,required cell,required value ){
+	if( IsNumeric( value ) AND !REFind( value,"^0[\d]+" ) ){ /*  skip numeric strings with leading zeroes. treat those as text  */
+		/*  NUMERIC  */
+		cell.setCellType( cell.CELL_TYPE_NUMERIC );
+		cell.setCellValue( JavaCast( "double",Val( value ) ) );
+		return;
+	}
+	if( IsDate( value ) ){
+		/*  DATE  */
+		var cellFormat = this.getDateTimeValueFormat( value );
+		cell.setCellStyle( this.buildCellStyle( workbook,{ dataFormat=cellFormat } ) );
+		cell.setCellType( cell.CELL_TYPE_NUMERIC );
+		/*  Excel's uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling - */
+		if( cellFormat EQ variables.defaultFormats.TIME ){
+			var dateUtil = this.getDateUtil();
+			value = TimeFormat( value, "HH:MM:SS" );
+		 	cell.setCellValue( dateUtil.convertTime( value ) );
+		} else {
+			cell.setCellValue( ParseDateTime( value ) );
+		}
+		return;
+	}
+	if( IsBoolean( value ) ){
+		/* BOOLEAN */
+		cell.setCellType( cell.CELL_TYPE_BOOLEAN );
+		cell.setCellValue( JavaCast( "boolean",value ) );
+		return;
+	}
+	if( !value.Trim().Len() ){
+		/* EMPTY */
+		cell.setCellType( cell.CELL_TYPE_BLANK );
+		cell.setCellValue( "" );
+		return;
+	}
+	/* STRING */
+	cell.setCellType( cell.CELL_TYPE_STRING );
+	cell.setCellValue( JavaCast( "string",value ) );
 }
 
 private boolean function sheetExists( required workbook,string sheetName,numeric sheetNumber ){
@@ -451,42 +549,7 @@ private query function sheetToQuery( required workbook,string sheetName,numeric 
 				if( !includeHeaderRow )
 					continue;
 			}
-			/* When getting the value of a cell, it is important to know what type of cell value we are dealing with. If you try to grab the wrong value type, an error might be thrown. For that reason, we must check to see what type of cell we are working with. These are the cell types and they are constants of the cell object itself:
-		 		
-				0 - CELL_TYPE_NUMERIC
-				1 - CELL_TYPE_STRING
-				2 - CELL_TYPE_FORMULA
-				3 - CELL_TYPE_BLANK
-				4 - CELL_TYPE_BOOLEAN
-				5 - CELL_TYPE_ERROR */
-			
-			var cellType = cell.GetCellType();
-			var cellValue = "";
-			/* Get the value of the cell based on the data type. The thing to worry about here is cell forumlas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values. */
-			if( cellType EQ cell.CELL_TYPE_NUMERIC ) {
-				/* Get numeric cell data. This could be a standard number, could also be a date value. I am going to leave it up to the calling program to decide. */
-				cellValue = cell.GetNumericCellValue();
-			} else if( cellType EQ cell.CELL_TYPE_STRING ){
-				cellValue = cell.GetStringCellValue();
-			} else if( cellType EQ cell.CELL_TYPE_FORMULA ){
-				/* 	Since most forumlas deal with numbers, I am going to try to grab the value as a number. If that throws an error, I will just grab it as a string value. */
-				try{
-					cellValue = cell.GetNumericCellValue();
-				}
-				catch( any exception1 ){
-					// The numeric grab failed. Try to get the value as a string. If this fails, just force the empty string.
-					try{
-						cellValue = cell.GetStringCellValue();
-					} catch( any exception2 ){
-						// Force empty string.
-						cellValue = "";
-	 				}
-				}
-			} else if( cellType EQ cell.CELL_TYPE_BLANK ){
-				cellValue = "";
-			} else if( cellType EQ cell.CELL_TYPE_BOOLEAN ){
-				cellValue = cell.GetBooleanCellValue();
-			}
+			var cellValue = this.getCellValueAsType( workbook,cell );
 			rowData.append( JavaCast( "string",cellValue ) );
 		}//end column loop
 		if( !isHeaderRow OR includeHeaderRow )
@@ -544,5 +607,24 @@ private function workbookFromFile( required string path ){
 	finally{
 		file.close();
 	}
+}
+
+private struct function xmlInfo( required workbook ){
+	var documentProperties = workbook.getProperties().getExtendedProperties().getUnderlyingProperties();
+	var coreProperties = workbook.getProperties().getCoreProperties();
+	return {
+		author = coreProperties.getCreator()?:""
+		,category = coreProperties.getCategory()?:""
+		,comments = coreProperties.getDescription()?:""
+		,creationDate = coreProperties.getCreated()?:""
+		,lastEdited = coreProperties.getModified()?:""
+		,subject = coreProperties.getSubject()?:""
+		,title = coreProperties.getTitle()?:""
+		,lastAuthor = coreProperties.getUnderlyingProperties().getLastModifiedByProperty().getValue()?:""
+		,keywords = coreProperties.getKeywords()?:""
+		,lastSaved = ""// not available in xml
+		,manager = documentProperties.getManager()?:""
+		,company = documentProperties.getCompany()?:""
+	};
 }
 </cfscript>
