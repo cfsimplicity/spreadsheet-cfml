@@ -174,13 +174,12 @@ component{
 		if( arguments.KeyExists( "imageData" ) AND !arguments.KeyExists( "imageType" ) )
 			throw( type=exceptionType,message="Invalid argument combination",detail="If you specify an image object, you must also provide the imageType argument" );
 		var numberOfAnchorElements = ListLen( anchor );
-		if( ( numberOfAnchorElements NEQ 4 ) AND numberOfAnchorElements NEQ 8 )
+		if( ( numberOfAnchorElements NEQ 4 ) AND ( numberOfAnchorElements NEQ 8 ) )
 			throw( type=exceptionType,message="Invalid anchor argument",detail="The anchor argument must be a comma-delimited list of integers with either 4 or 8 elements" );
-		var toolkit = this.loadPOI( "java.awt.Toolkit" );
-		/* TODO: need to look into createDrawingPatriarch() vs. getDrawingPatriarch() since create will kill any existing images. getDrawingPatriarch() throws  a null pointer exception when an attempt is made to add a second image to the spreadsheet  */
-		var drawingPatriarch = getActiveSheet( workbook ).createDrawingPatriarch();
 		//we'll need the image type int in all cases
 		if( arguments.KeyExists( "filepath" ) ){
+			if( !FileExists( filepath ) )
+				throw( type=exceptionType,message="Non-existent file",detail="The specified file does not exist." );
 			try{
 				arguments.imageType = ListLast( FileGetMimeType( filepath ),"/" );
 			}
@@ -230,6 +229,8 @@ component{
 			theAnchor.setRow2( JavaCast( "int",ListGetAt( anchor,7 )-1 ) );
 			theAnchor.setCol2( JavaCast( "int",ListLast( anchor )-1 ) );
 		}
+		/* TODO: need to look into createDrawingPatriarch() vs. getDrawingPatriarch() since create will kill any existing images. getDrawingPatriarch() throws  a null pointer exception when an attempt is made to add a second image to the spreadsheet  */
+		var drawingPatriarch = getActiveSheet( workbook ).createDrawingPatriarch();
 		picture = drawingPatriarch.createPicture( theAnchor,imageIndex );
 		<!--- disabling this for now--maybe let people pass in a boolean indicating 
 				whether or not they want the image resized? --->
