@@ -75,23 +75,6 @@ private void function addInfoXml( required workbook,required struct info ){
 	}
 }
 
-/* Workaround for an issue with autoSizeColumn(). It does not seem to handle 
-	date cells properly. It measures the length of the date "number", instead of 
-	the  visible date string ie mm//dd/yyyy. As a result columns are too narrow */
-private void function autoSizeColumnFix(
-	required workbook
-	,required numeric columnIndex /* Base-0 */
-	,boolean isDateColumn=false
-	,string dateMask=variables.defaultFormats[ "TIMESTAMP" ]
-){
-	if( isDateColumn ){
-		newWidth = estimateColumnWidth( workbook,dateMask & "00000" );
-		getActiveSheet( workbook ).setColumnWidth( columnIndex,newWidth );
-	} else {
-		getActiveSheet( workbook ).autoSizeColumn( JavaCast( "int",columnIndex ),true );
-	}
-}
-
 private struct function binaryInfo( required workbook ){
 	var documentProperties = workbook.getDocumentSummaryInformation();
 	var coreProperties = workbook.getSummaryInformation();

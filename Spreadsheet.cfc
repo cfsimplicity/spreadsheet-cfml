@@ -83,6 +83,7 @@ component{
 		,numeric startColumn
 		,boolean insert=true
 		,string delimiter=","
+		,boolean autoSize=false
 	){
 		var row 				= 0;
 		var cell 				= 0;
@@ -101,6 +102,7 @@ component{
 			else
 				cellNum = 0;
 		}
+		var columnNumber = cellNum+1;
 		var columnData = ListToArray( data,delimiter );
 		for( var cellValue in columnData ){
 			/* if rowNum is greater than the last row of the sheet, need to create a new row  */
@@ -128,6 +130,8 @@ component{
 			this.setCellValueAsType( workbook,cell,cellValue );
 			rowNum++;
 		}
+		if( autoSize )
+			this.autoSizeColumn( workbook,columnNumber );
 	}
 
 	void function addFreezePane(
@@ -253,6 +257,7 @@ component{
 		,boolean insert=true
 		,string delimiter=","
 		,boolean handleEmbeddedCommas=true /* When true, values enclosed in single quotes are treated as a single element like in ACF. Only applies when the delimiter is a comma. */
+		,boolean autoSizeColumns=false
 	){
 		if( arguments.KeyExists( "row" ) AND ( row LTE 0 ) )
 			throw( type=exceptionType,message="Invalid row value",detail="The value for row must be greater than or equal to 1." );
@@ -274,19 +279,20 @@ component{
 		for( var cellValue in rowValues ){
 			var cell = this.createCell( theRow,cellIndex );
 			this.setCellValueAsType( workbook,cell,cellValue.Trim() )
-			var isDateColumn  = false;
-			var dateMask  = "";
-			if( IsDate( cellValue ) ){
-				var cellFormat = this.getDateTimeValueFormat( cellValue );
-				dateMask = cellFormat;
-				isDateColumn = true;
-			}
-			this.autoSizeColumnFix( workbook,cellIndex,isDateColumn,dateMask );
+			if( autoSizeColumns )
+				this.autoSizeColumn( workbook,column );
 			cellIndex++;
 		}
 	}
 
-	void function addRows( required workbook,required query data,numeric row,numeric column=1,boolean insert=true ){
+	void function addRows(
+		required workbook
+		,required query data
+		,numeric row
+		,numeric column=1
+		,boolean insert=true
+		,boolean autoSizeColumns=false
+	){
 		var lastRow = this.getNextEmptyRow( workbook );
 		if( arguments.KeyExists( "row" ) AND ( row LTE lastRow ) AND insert )
 			shiftRows( workbook,row,lastRow,data.recordCount );
@@ -338,6 +344,14 @@ component{
    		}
    		rowNum++;
 		}
+		if( autoSizeColumns ){
+			var numberOfColumns = queryColumns.Len();
+			var thisColumn = column;
+			for( var i=thisColumn; i LTE numberOfColumns; i++ ){
+				this.autoSizeColumn( workbook,thisColumn );
+				thisColumn++;
+			}
+		}
 	}
 
 	void function addSplitPane(
@@ -357,6 +371,14 @@ component{
 			,JavaCast( "int",topRow )
 			,JavaCast( "int",activePane )
 		);
+	}
+
+	void function autoSizeColumn( required workbook,required numeric column,boolean useMergedCells=false ){
+		if( column LTE 0 )
+			throw( type=exceptionType,message="Invalid column value",detail="The value for column must be greater than or equal to 1." );
+		/* Adjusts the width of the specified column to fit the contents. For performance reasons, this should normally be called only once per column. */
+		var columnIndex = column-1;
+		this.getActiveSheet( workbook ).autoSizeColumn( columnIndex,useMergedCells );
 	}
 
 	void function createSheet( required workbook,string sheetName,overwrite=false ){
@@ -1027,7 +1049,6 @@ function getCellValue( required workbook,required numeric row,required numeric c
 		throw( type=exceptionType,message="Function not yet implemented" );
 	}
 	/* Railo extension */
-	function autoSizeColumn(){ notYetImplemented(); }
 	function clearCell(){ notYetImplemented(); }
 	function clearCellRange(){ notYetImplemented(); }
 	function renameSheet(){ notYetImplemented(); }
