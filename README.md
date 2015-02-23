@@ -60,6 +60,7 @@ spreadsheet.addRows( workbook,data );
 - `formatColumns`
 - `formatRow`
 - `formatRows`
+- `getCellComment`
 - `getCellFormula`
 - `getCellValue`
 - `info`
@@ -70,6 +71,7 @@ spreadsheet.addRows( workbook,data );
 - `removeSheet`
 - `setActiveSheet`
 - `setActiveSheetNumber`
+- `setCellComment`
 - `setCellFormula`
 - `setCellValue`
 - `setColumnWidth`

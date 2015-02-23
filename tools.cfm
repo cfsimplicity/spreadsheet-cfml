@@ -324,6 +324,21 @@ private function getFormatter(){
 	return dataFormatter;
 }
 
+private struct function getJavaColorRGB( required string colorName ){
+	/* Returns a struct containing RGB values from java.awt.Color for the color name passed in */
+	var findColor = colorName.Trim().UCase();
+	var color = CreateObject( "Java","java.awt.Color" );
+	if( IsNull( color[ findColor ] ) OR !IsInstanceOf( color[ findColor ],"java.awt.Color" ) )//don't use member functions on color
+		throw( type=exceptionType,message="Invalid color",detail="The color provided (#colorName#) is not valid." );
+	color = color[ findColor ];
+	var colorRGB = {
+		red = color.getRed()
+		,green = color.getGreen()
+		,blue = color.getBlue()
+	};
+	return colorRGB;
+}
+
 private numeric function getLastRowNum( required workbook ){
 	var lastRow = getActiveSheet( workbook ).getLastRowNum();
 	if( lastRow EQ 0 AND getActiveSheet( workbook ).getPhysicalNumberOfRows() EQ 0 )

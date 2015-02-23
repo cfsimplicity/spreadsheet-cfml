@@ -144,15 +144,15 @@ component{
 		/* createFreezePane() operates on the logical row/column numbers as opposed to physical, so no need for n-1 stuff here */
 		if( !arguments.KeyExists( "leftmostColumn" ) ){
 			this.getActiveSheet( workbook ).createFreezePane( JavaCast( "int",splitColumn ),JavaCast( "int",splitRow ) );
-		} else {
-			// POI lets you specify an active pane if you use createSplitPane() here
-			this.getActiveSheet( workbook ).createFreezePane(
-				JavaCast( "int",splitColumn )
-				,JavaCast( "int",splitRow )
-				,JavaCast( "int",leftmostColumn )
-				,JavaCast( "int",topRow )
-			);
+			return;
 		}
+		// POI lets you specify an active pane if you use createSplitPane() here
+		this.getActiveSheet( workbook ).createFreezePane(
+			JavaCast( "int",splitColumn )
+			,JavaCast( "int",splitRow )
+			,JavaCast( "int",leftmostColumn )
+			,JavaCast( "int",topRow )
+		);
 	}
 
 	void function addInfo( required workbook,required struct info ){
@@ -426,6 +426,46 @@ component{
 		}
 	}
 
+	function getCellComment( required workbook,numeric row,numeric column ){
+		if( arguments.keyExists( "row" ) AND !arguments.KeyExists( "column" ) )
+			throw( type=exceptionType,message="Invalid argument combination",detail="If you specify the row you must also specify the column" );
+		if( arguments.keyExists( "column" ) AND !arguments.KeyExists( "row" ) )
+			throw( type=exceptionType,message="Invalid argument combination",detail="If you specify the column you must also specify the row" );
+		if( arguments.KeyExists( "row" ) ){
+			var cell = this.getCellAt( workbook,row,column );
+			var commentObject = cell.getCellComment();
+			if( !IsNull( commentObject ) ){
+				return {
+					author = commentObject.getAuthor()
+					,comment = commentObject.getString().getString()
+					,column = column
+					,row = row
+				}
+			}
+			return {};
+		}
+		/* TODO: Look into checking all sheets in the workbook */
+		/* row and column weren't provided so loop over the whole sheet and return all the comments as an array of structs */
+		var result = [];
+		var rowIterator = this.getActiveSheet( workbook ).rowIterator();
+		while( rowIterator.hasNext() ){
+			var cellIterator = rowIterator.next().cellIterator();
+			while( cellIterator.hasNext() ){
+				var commentObject = cellIterator.next().getCellComment();
+				if( !IsNull( commentObject ) ){
+					var comment = {
+						author = commentObject.getAuthor()
+						,comment = commentObject.getString().getString()
+						,column = column
+						,row = row
+					}
+					comments.Append( comment );
+				}
+			}
+		}
+		return comments;
+	}
+
 	function getCellFormula( required workbook,numeric row,numeric column ){
 		if( arguments.KeyExists( "row" ) AND arguments.KeyExists( "column" ) ){
 			if( cellExists( workbook,row,column ) ){
@@ -637,6 +677,144 @@ function getCellValue( required workbook,required numeric row,required numeric c
 		this.setActiveSheet( argumentCollection=arguments );
 	}
 
+	void function setCellComment(
+		required workbook
+		,required struct comment
+		,required numeric row
+		,required numeric column
+	){
+		/* 
+		The comment struct may contain the following keys: 
+			* anchor
+			* author
+			* bold
+			* color
+			* comment
+			* fillcolor
+			* font
+			* horizontalalignment
+			* italic
+			* linestyle
+			* linestylecolor
+			* size
+			* strikeout
+			* underline
+			* verticalalignment
+			* visible
+		 */
+		var drawingPatriarch = this.getActiveSheet( workbook ).createDrawingPatriarch();
+		var commentString = this.loadPoi( "org.apache.poi.hssf.usermodel.HSSFRichTextString" ).init( JavaCast( "string",comment.comment ) );
+		var javaColorRGB = 0;
+		if( comment.KeyExists( "anchor" ) )
+			var clientAnchor = loadPoi( "org.apache.poi.hssf.usermodel.HSSFClientAnchor" ).init(
+				JavaCast( "int",0 )
+				,JavaCast( "int",0 )
+				,JavaCast( "int",0 )
+				,JavaCast( "int",0 )
+				,JavaCast( "int",ListGetAt( comment.anchor,1 ) )
+				,JavaCast( "int",ListGetAt( comment.anchor,2 ) )
+				,JavaCast( "int",ListGetAt( comment.anchor,3 ) )
+				,JavaCast( "int",ListGetAt( comment.anchor,4 ) )
+			);
+		else
+		var clientAnchor = loadPoi( "org.apache.poi.hssf.usermodel.HSSFClientAnchor" ).init(
+				JavaCast( "int",0 )
+				,JavaCast( "int",0 )
+				,JavaCast( "int",0 )
+				,JavaCast( "int",0 )
+				,JavaCast( "int",column )
+				,JavaCast( "int",row )
+				,JavaCast( "int",column+2 )
+				,JavaCast( "int",row+2 )
+			);
+		var commentObject = drawingPatriarch.createComment( clientAnchor );
+		if( comment.KeyExists( "author" ) )
+			commentObject.setAuthor( JavaCast( "string",comment.author ) );
+		/* If we're going to do anything font related, need to create a font. Didn't really want to create it above since it might not be needed.  */
+		if( comment.KeyExists( "bold" ) 
+				OR comment.KeyExists( "color" ) 
+				OR comment.KeyExists( "font" )
+				OR comment.KeyExists( "italic" )
+				OR comment.KeyExists( "size" ) 
+				OR comment.KeyExists( "strikeout" ) 
+				OR comment.KeyExists( "underline" )
+		){
+			var font = workbook.createFont();
+			if( comment.KeyExists( "bold" ) ){
+				if( comment.bold )
+					font.setBoldWeight( font.BOLDWEIGHT_BOLD );
+				else
+					font.setBoldWeight( font.BOLDWEIGHT_NORMAL );
+			}
+			if( comment.KeyExists( "color" ) )
+				font.setColor( JavaCast( "int",getColorIndex( comment.color ) ) );
+			if( comment.KeyExists( "font" ) )
+				font.setFontName( JavaCast( "string",comment.font ) );
+			if( comment.KeyExists( "italic" ) )
+				font.setItalic( JavaCast( "string",comment.italic ) );
+			if( comment.KeyExists( "size" ) )
+				font.setFontHeightInPoints( JavaCast( "int",comment.size ) );
+			if( comment.KeyExists( "strikeout" ) )
+				font.setStrikeout( JavaCast( "boolean",comment.strikeout ) );
+			if( comment.KeyExists( "underline" ) )
+				font.setUnderline( JavaCast( "boolean",comment.underline ) );
+			commentString.applyFont( font );
+		}
+		if( comment.KeyExists( "fillColor" ) ){
+			javaColorRGB = this.getJavaColorRGB( comment.fillColor );
+			commentObject.setFillColor(
+				JavaCast( "int",javaColorRGB.red )
+				,JavaCast( "int",javaColorRGB.green )
+				,JavaCast( "int",javaColorRGB.blue )
+			);
+		}
+		/* 
+			Horizontal alignment can be left, center, right, justify, or distributed. Note that the constants on the Java class are slightly different in some cases:
+				'center' = CENTERED
+				'justify' = JUSTIFIED
+		 */
+		if( comment.KeyExists( "horizontalAlignment" ) ){
+			if( comment.horizontalAlignment.UCase() IS "CENTER" )
+				comment.horizontalAlignment = "CENTERED";
+			if( comment.horizontalAlignment.UCase() IS "JUSTIFY" )
+				comment.horizontalAlignment = "JUSTIFIED";
+			commentObject.setHorizontalAlignment( JavaCast( "int",commentObject[ "HORIZONTAL_ALIGNMENT_" & comment.horizontalalignment.UCase() ] ) );
+		}
+		/* 
+		Valid values for linestyle are:
+				* solid
+				* dashsys
+				* dashdotsys
+				* dashdotdotsys
+				* dotgel
+				* dashgel
+				* longdashgel
+				* dashdotgel
+				* longdashdotgel
+				* longdashdotdotgel
+		 */
+		if( comment.KeyExists( "lineStyle" ) )
+		 	commentObject.setLineStyle( JavaCast( "int",commentObject[ "LINESTYLE_" & comment.lineStyle.UCase() ] ) );
+		if( comment.KeyExists( "lineStyleColor" ) ){
+			javaColorRGB = this.getJavaColorRGB( comment.lineStyleColor );
+			commentObject.setLineStyleColor(
+				JavaCast( "int",javaColorRGB.red )
+				,JavaCast( "int",javaColorRGB.green )
+				,JavaCast( "int",javaColorRGB.blue )
+			);
+		}
+		/* 
+			Vertical alignment can be top, center, bottom, justify, and distributed. Note that center and justify are DIFFERENT than the constants for horizontal alignment, which are CENTERED and JUSTIFIED.
+		*/
+		if( comment.KeyExists( "verticalAlignment" ) )
+			commentObject.setVerticalAlignment( JavaCast( "int",commentObject[ "VERTICAL_ALIGNMENT_" & comment.verticalAlignment.UCase() ] ) );
+		if( comment.KeyExists( "visible" ) )
+			commentObject.setVisible( JavaCast( "boolean",comment.visible ) );//doesn't seem to work
+		commentObject.setString( commentString );
+		var cell = this.initializeCell( workbook,row,column );
+		cell.setCellComment( commentObject );
+	}
+
 	void function setCellFormula( required workbook,required string formula,required numeric row,required numeric column ){
 		//Automatically create the cell if it does not exist, instead of throwing an error
 		var cell = initializeCell( workbook,row,column );
@@ -768,8 +946,6 @@ function getCellValue( required workbook,required numeric row,required numeric c
 	}
 	/* ACF9 */
 	function addImage(){ notYetImplemented(); }
-	function getCellComment(){ notYetImplemented(); }
-	function setCellComment(){ notYetImplemented(); }
 	/* Railo extension */
 	function autoSizeColumn(){ notYetImplemented(); }
 	function clearCell(){ notYetImplemented(); }
