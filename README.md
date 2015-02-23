@@ -45,6 +45,7 @@ spreadsheet.addRows( workbook,data );
 
 - `addColumn`
 - `addFreezePane`
+- `addImage`
 - `addInfo`
 - `addRow`
 - `addRows`

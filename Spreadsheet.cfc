@@ -155,6 +155,88 @@ component{
 		);
 	}
 
+	void function addImage(
+		required workbook
+		,string filepath
+		,imageData
+		,string imageType
+		,required string anchor
+	){
+		/* 
+			TODO: Should we allow for passing in of a boolean indicating whether or not an image resize should happen (only works on jpg and png)? Currently does not resize. If resize is performed, it does mess up passing in x/y coordinates for image positioning.
+		 */
+		if( !arguments.KeyExists( "filepath" ) AND !arguments.KeyExists( "imageData" ) )
+			throw( type=exceptionType,message="Invalid argument combination",detail="You must provide either a file path or an image object" );
+		if( arguments.KeyExists( "imageData" ) AND !arguments.KeyExists( "imageType" ) )
+			throw( type=exceptionType,message="Invalid argument combination",detail="If you specify an image object, you must also provide the imageType argument" );
+		var numberOfAnchorElements = ListLen( anchor );
+		if( ( numberOfAnchorElements NEQ 4 ) AND numberOfAnchorElements NEQ 8 )
+			throw( type=exceptionType,message="Invalid anchor argument",detail="The anchor argument must be a comma-delimited list of integers with either 4 or 8 elements" );
+		var toolkit = this.loadPOI( "java.awt.Toolkit" );
+		/* TODO: need to look into createDrawingPatriarch() vs. getDrawingPatriarch() since create will kill any existing images. getDrawingPatriarch() throws  a null pointer exception when an attempt is made to add a second image to the spreadsheet  */
+		var drawingPatriarch = getActiveSheet( workbook ).createDrawingPatriarch();
+		//we'll need the image type int in all cases
+		if( arguments.KeyExists( "filepath" ) ){
+			try{
+				arguments.imageType = ListLast( FileGetMimeType( filepath ),"/" );
+			}
+			catch( any exception ){
+				throw( type=exceptionType,message="Could Not Determine Image Type",detail="An image type could not be determined from the filepath provided" );
+			}
+		} else if( !arguments.KeyExists( "imageType" ) ){
+			throw( type=exceptionType,message="Could Not Determine Image Type",detail="An image type could not be determined from the filepath or imagetype provided" );
+		}
+		arguments.imageType	=	imageType.UCase();
+		switch( imageType ){
+			case "DIB": case "EMF": case "JPEG": case "PICT": case "PNG": case "WMF":
+				var imageTypeIndex = workbook[ "PICTURE_TYPE_" & imageType ];
+			break;
+			case "JPG":
+				imageTypeIndex = workbook.PICTURE_TYPE_JPEG;
+			break;
+			default:
+				throw( type=exceptionType,message="Invalid Image Type",detail="Valid image types are DIB, EMF, JPG, JPEG, PICT, PNG, and WMF" );
+		}
+		if( arguments.KeyExists( "filepath" ) ){
+			try{
+				var inputStream = CreateObject( "java","java.io.FileInputStream" ).init( JavaCast("string",filepath ) );
+				var ioUtils = this.loadPoi( "org.apache.poi.util.IOUtils" );
+				var bytes = ioUtils.toByteArray( inputStream );
+			}
+			finally{
+				inputStream.close();
+			}
+		} else {
+			var bytes = ToBinary( imageData );
+		}
+		var imageIndex = workbook.addPicture( bytes,JavaCast( "int",imageTypeIndex ) );
+		var theAnchor = this.loadPoi( "org.apache.poi.hssf.usermodel.HSSFClientAnchor" ).init();
+		if( numberOfAnchorElements EQ 4 ){
+			theAnchor.setRow1( JavaCast( "int",ListFirst( anchor )-1 ) );
+			theAnchor.setCol1( JavaCast( "int",ListGetAt( anchor, 2 )-1 ) );
+			theAnchor.setRow2( JavaCast( "int",ListGetAt( anchor, 3 )-1 ) );
+			theAnchor.setCol2( JavaCast( "int",ListLast( anchor )-1 ) );
+		} else if( numberOfAnchorElements EQ 8 ){
+			theAnchor.setDx1( JavaCast( "int",ListFirst( anchor ) ) );
+			theAnchor.setDy1( JavaCast( "int",ListGetAt( anchor,2 ) ) );
+			theAnchor.setDx2( JavaCast( "int",ListGetAt( anchor,3 ) ) );
+			theAnchor.setDy2( JavaCast( "int",ListGetAt( anchor,4 ) ) );
+			theAnchor.setRow1( JavaCast( "int",ListGetAt( anchor,5 )-1 ) );
+			theAnchor.setCol1( JavaCast( "int",ListGetAt( anchor,6 )-1 ) );
+			theAnchor.setRow2( JavaCast( "int",ListGetAt( anchor,7 )-1 ) );
+			theAnchor.setCol2( JavaCast( "int",ListLast( anchor )-1 ) );
+		}
+		picture = drawingPatriarch.createPicture( theAnchor,imageIndex );
+		<!--- disabling this for now--maybe let people pass in a boolean indicating 
+				whether or not they want the image resized? --->
+		<!--- if this is a png or jpg, resize the picture to its original size 
+				(this doesn't work for formats other than jpg and png) --->
+		<!--- <cfif imgTypeIndex eq getWorkbook().PICTURE_TYPE_JPEG 
+				or imgTypeIndex eq getWorkbook().PICTURE_TYPE_PNG>
+			<cfset picture.resize() />
+		</cfif> --->
+	}
+
 	void function addInfo( required workbook,required struct info ){
 		/* Valid struct keys are author, category, lastauthor, comments, keywords, manager, company, subject, title */
 		if( this.isBinaryFormat( workbook ) )
@@ -944,8 +1026,6 @@ function getCellValue( required workbook,required numeric row,required numeric c
 	private void function notYetImplemented(){
 		throw( type=exceptionType,message="Function not yet implemented" );
 	}
-	/* ACF9 */
-	function addImage(){ notYetImplemented(); }
 	/* Railo extension */
 	function autoSizeColumn(){ notYetImplemented(); }
 	function clearCell(){ notYetImplemented(); }
