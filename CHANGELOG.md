@@ -1,3 +1,34 @@
+## 0.3.0 - 24 February 2015
+
+- Breaking changes
+	- \#27 Drop `deleteSheet[Number]()` in favour of `removeSheet[Number]()`
+- Bug fixes:
+	- \#25 Font values not being applied
+	- \#40 Ensure non-string data types (numeric, date, boolean) are respected when processing cells
+- Enhancements:
+	- \#17 Add `setActiveSheetNumber()`
+	- \#18 Add `formatRows()`
+	- \#19 Support reading sheets by name
+	- \#20 Add `deleteRows()`
+	- \#21 Add `deleteColumn()` and `deleteColumns()`
+	- \#22 Add `shiftColumns()`
+	- \#23 Add `getCellValue()` and `setCellValue()`
+	- \#24 Add `formatColumn()`, `formatColumns()` and `formatCellRange()`
+	- \#23 Add `isBinaryFormat()` and `isXmlFormat()`
+	- \#28 Add `mergeCells()`
+	- \#29 Add `addFreezePane()` and `addSplitPane()`
+	- \#30 Add `addInfo()` and `info()`
+	- \#31 Add `setCellFormula()` and `getCellFormula()`
+	- \#34 Add `setColumnWidth()`
+	- \#35 Add `setRowHeight()`
+	- \#36 Add `setHeader()` and `setFooter()`
+	- \#33 Add `setCellComment()` and `getCellComment()`
+	- \#32 Add `addImage()`
+	- \#37 Add `autoSizeColumn()`
+	- \#41 Add option to auto size columns when using addColumn, addRow and addRow
+	- \#39 Add `renameSheet()`
+	- \#38 Add `clearCell()` and `clearCellRange()`
+
 ## 0.2.0 - 18 February 2015
 
 - Breaking changes
