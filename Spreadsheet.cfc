@@ -136,24 +136,24 @@ component{
 
 	void function addFreezePane(
 		required workbook
-		,required numeric splitColumn // horizontal position of split
-		,required numeric splitRow //vertical position of split
+		,required numeric freezeColumn
+		,required numeric freezeRow
 		,numeric leftmostColumn //left column visible in right pane
 		,numeric topRow //top row visible in bottom pane
 	){
 		if( arguments.KeyExists( "leftmostColumn" ) AND !arguments.KeyExists( "topRow" ) )
-			arguments.topRow = splitRow;
+			arguments.topRow = freezeRow;
 		if( arguments.KeyExists( "topRow" ) AND !arguments.KeyExists( "leftmostColumn" ) )
-			arguments.leftmostColumn = splitColumn;
+			arguments.leftmostColumn = freezeColumn;
 		/* createFreezePane() operates on the logical row/column numbers as opposed to physical, so no need for n-1 stuff here */
 		if( !arguments.KeyExists( "leftmostColumn" ) ){
-			this.getActiveSheet( workbook ).createFreezePane( JavaCast( "int",splitColumn ),JavaCast( "int",splitRow ) );
+			this.getActiveSheet( workbook ).createFreezePane( JavaCast( "int",freezeColumn ),JavaCast( "int",freezeRow ) );
 			return;
 		}
 		// POI lets you specify an active pane if you use createSplitPane() here
 		this.getActiveSheet( workbook ).createFreezePane(
-			JavaCast( "int",splitColumn )
-			,JavaCast( "int",splitRow )
+			JavaCast( "int",freezeColumn )
+			,JavaCast( "int",freezeRow )
 			,JavaCast( "int",leftmostColumn )
 			,JavaCast( "int",topRow )
 		);
