@@ -27,6 +27,7 @@ component extends="testbox.system.BaseSpec"{
 			include "tests/cellComment.cfm";
 			include "tests/cellFormula.cfm";
 			include "tests/cellValue.cfm";
+			include "tests/clearCell.cfm";
 			include "tests/createSheet.cfm";
 			include "tests/deleteColumn.cfm";
 			include "tests/deleteColumns.cfm";

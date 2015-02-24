@@ -19,8 +19,8 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
  - the functions work more like those in ACF: you pass in an existing workbook explicitly as the first argument.
 - Offers additional convenience methods, e.g. `downloadFileFromQuery()`.
 - Uses a newer version of the java POI library (3.11).
-- Fixes various outstanding bugs/omissions
-- No dependency on Railo/Lucee within the included jar files
+- Fixes various outstanding bugs/omissions.
+- No dependency on Railo/Lucee within the included jar files.
 - Written entirely in Lucee script.
 
 ##Downsides
@@ -43,7 +43,7 @@ workbook = spreadsheet.new();
 spreadsheet.addRows( workbook,data );
 ```
 
-##Currently supported Adobe ColdFusion functions
+##Supported ColdFusion 9 functions
 
 - `addColumn`
 - `addFreezePane`
@@ -88,6 +88,8 @@ spreadsheet.addRows( workbook,data );
 ###Extra functions
 
 - `autoSizeColumn`
+- `clearCell`
+- `clearCellRange`
 - `isBinaryFormat`
 - `isXmlFormat`
 - `renameSheet`

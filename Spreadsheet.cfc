@@ -382,6 +382,36 @@ component{
 		this.getActiveSheet( workbook ).autoSizeColumn( columnIndex,useMergedCells );
 	}
 
+	void function clearCell( required workbook,required numeric row,required numeric column ){
+		/* Clears the specified cell of all styles and values */
+		var defaultStyle  = workbook.getCellStyleAt( JavaCast( "short",0 ) );
+		var rowIndex = row-1;
+		var rowObject = this.getActiveSheet( workbook ).getRow( JavaCast( "int",rowIndex ) );
+		if( IsNull( rowObject ) )
+			return;
+		var columnIndex = column-1;
+		var cell = rowObject.getCell( JavaCast( "int",columnIndex ) );
+		if( IsNull( cell ) )
+			return;
+		cell.setCellStyle( defaultStyle );
+		cell.setCellType( cell.CELL_TYPE_BLANK );
+	}
+	
+	void function clearCellRange(
+		required workbook
+		,required numeric startRow
+		,required numeric startColumn
+		,required numeric endRow
+		,required numeric endColumn
+	){
+		/* Clears the specified cell range of all styles and values */
+		for( var rowNumber=startRow; rowNumber LTE endRow; rowNumber++ ){
+			for( var columnNumber=startColumn; columnNumber LTE endColumn; columnNumber++ ){
+				clearCell( workbook,rowNumber,columnNumber );
+			}
+		}
+	}
+
 	void function createSheet( required workbook,string sheetName,overwrite=false ){
 		if( arguments.KeyExists( "sheetName" ) )
 			this.validateSheetName( sheetName );
@@ -1053,14 +1083,5 @@ component{
 			outputStream.close();
 		}
 	}
-
-	/* NOT YET IMPLEMENTED */
-
-	private void function notYetImplemented(){
-		throw( type=exceptionType,message="Function not yet implemented" );
-	}
-	/* Railo extension */
-	function clearCell(){ notYetImplemented(); }
-	function clearCellRange(){ notYetImplemented(); }
 
 }
