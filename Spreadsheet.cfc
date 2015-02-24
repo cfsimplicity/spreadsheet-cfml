@@ -74,7 +74,7 @@ component{
 		this.write( workbook=workbook,filepath=filepath,overwrite=overwrite );
 	}
 
-	/* STANDARD CFML API */
+	/* MAIN API */
 
 	void function addColumn(
 		required workbook
@@ -604,7 +604,7 @@ component{
 		return formulas;
 	}
 
-function getCellValue( required workbook,required numeric row,required numeric column ){
+	function getCellValue( required workbook,required numeric row,required numeric column ){
 		if( !this.cellExists( workbook,row,column ) )
 			return "";
 		var rowIndex = row-1;
@@ -766,6 +766,16 @@ function getCellValue( required workbook,required numeric row,required numeric c
 		validateSheetNumber( workbook,sheetNumber );
 		var sheetIndex = sheetNumber-1;
 		this.deleteSheetAtIndex( workbook,sheetIndex );
+	}
+
+	void function renameSheet( required workbook,required string sheetName,required numeric sheetNumber ){
+		this.validateSheetName( sheetName );
+		this.validateSheetNumber( workbook,sheetNumber );
+		var sheetIndex = sheetNumber-1;
+		var foundAt = workbook.getSheetIndex( JavaCast( "string",sheetName ) );
+		if( ( foundAt GT 0 ) AND ( foundAt NEQ sheetIndex ) )
+			throw( type=exceptionType,message="Invalid Sheet Name [#sheetName#]",detail="The workbook already contains a sheet named [#sheetName#]. Sheet names must be unique" );
+		workbook.setSheetName( JavaCast( "int",sheetIndex ),JavaCast( "string",sheetName ) );
 	}
 
 	void function setActiveSheet( required workbook,string sheetName,numeric sheetNumber ){
@@ -1052,6 +1062,5 @@ function getCellValue( required workbook,required numeric row,required numeric c
 	/* Railo extension */
 	function clearCell(){ notYetImplemented(); }
 	function clearCellRange(){ notYetImplemented(); }
-	function renameSheet(){ notYetImplemented(); }
 
 }

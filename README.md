@@ -19,11 +19,13 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
  - the functions work more like those in ACF: you pass in an existing workbook explicitly as the first argument.
 - Offers additional convenience methods, e.g. `downloadFileFromQuery()`.
 - Uses a newer version of the java POI library (3.11).
+- Fixes various outstanding bugs/omissions
+- No dependency on Railo/Lucee within the included jar files
 - Written entirely in Lucee script.
 
 ##Downsides
 
-- Not all spreadsheet functions implemented
+- A few aspects of the Extension's functionality not yet implemented (supports the vast majority though).
 - Existing code needs adapting to invoke the library. Existing CFML spreadsheet functions and the `<cfspreadsheet>` tag won't work with it.
 
 ##Usage
@@ -83,6 +85,14 @@ spreadsheet.addRows( workbook,data );
 - `shiftRows`
 - `write`
 
+###Extra functions
+
+- `autoSizeColumn`
+- `isBinaryFormat`
+- `isXmlFormat`
+- `renameSheet`
+- `removeSheetNumber`
+
 ###Enhanced Read() method
 
 In Adobe ColdFusion, the `SpreadsheetRead()` script function is limited to just returning a spreadsheet object, whereas the `<cfspreadsheet action="read">` tag has a range of options for reading and returning data from a spreadsheet file. 
@@ -104,25 +114,7 @@ myQuery = spreadsheet.read( src=mypath,format="query" );
 - `includeHeaderRow` boolean default=false: whether to include the header row from the spreadsheet (NB: the default is the opposite to Adobe ColdFusion 9, which is `excludeHeaderRow=false`). 
 - `includeBlankRows` boolean default=false: whether to include blank rows from the spreadsheet in the query data set. By default blank rows are suppressed.
 
-###Additional/convenience methods
-
-####isBinaryFormat()/isXmlFormat()
-
-Boolean tests for the binary "xls" or XML "xlsx" formats.
-
-#####Required arguments for both
- - `workbook` object: the spreadsheet object
-
-####removeSheetNumber()
-
-Remove/delete a sheet by number rather than its name
-```
-spreadsheet.removeSheetNumber( workbook,2 );
-```
-
-#####Required arguments
- - `workbook` object: the spreadsheet object
- - `sheetNumber` numeric: the number of the sheet to delete
+###Additional Convenience methods
 
 ####downloadFileFromQuery()
 

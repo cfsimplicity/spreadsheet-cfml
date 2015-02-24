@@ -43,6 +43,7 @@ component extends="testbox.system.BaseSpec"{
 			include "tests/readBinary.cfm";
 			include "tests/removeSheet.cfm";
 			include "tests/removeSheetNumber.cfm";
+			include "tests/renameSheet.cfm";
 			include "tests/setActiveSheet.cfm";
 			include "tests/setActiveSheetNumber.cfm";
 			include "tests/shiftColumns.cfm";
