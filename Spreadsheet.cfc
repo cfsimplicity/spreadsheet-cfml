@@ -20,8 +20,8 @@ component{
 
 	/* CUSTOM METHODS */
 
-	any function workbookFromQuery( required query data,boolean addHeaderRow=true,boldHeaderRow=true,xmlformat=false ){
-		var workbook = this.new( xmlformat=xmlformat );
+	any function workbookFromQuery( required query data,boolean addHeaderRow=true,boldHeaderRow=true,xmlFormat=false ){
+		var workbook = this.new( xmlFormat=xmlFormat );
 		if( addHeaderRow ){
 			var columns	=	QueryColumnArray( data );
 			this.addRow( workbook,columns.ToList() );
@@ -34,7 +34,7 @@ component{
 		return workbook;
 	}
 
-	binary function binaryFromQuery( required query data,boolean addHeaderRow=true,boldHeaderRow=true,xmlformat=false ){
+	binary function binaryFromQuery( required query data,boolean addHeaderRow=true,boldHeaderRow=true,xmlFormat=false ){
 		/* Pass in a query and get a spreadsheet binary file ready to stream to the browser */
 		var workbook = this.workbookFromQuery( argumentCollection=arguments );
 		return this.readBinary( workbook );
@@ -45,14 +45,14 @@ component{
 		,required string filename
 		,boolean addHeaderRow=true
 		,boolean boldHeaderRow=true
-		,boolean xmlformat=false
+		,boolean xmlFormat=false
 		,string contentType
 	){
 		var safeFilename	=	this.filenameSafe( filename );
 		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$","" );
-		var binary = this.binaryFromQuery( data,addHeaderRow,boldHeaderRow,xmlformat );
+		var binary = this.binaryFromQuery( data,addHeaderRow,boldHeaderRow,xmlFormat );
 		if( !arguments.KeyExists( "contentType" ) )
-			arguments.contentType = xmlformat? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/msexcel";
+			arguments.contentType = xmlFormat? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/msexcel";
 		var extension = xmlFormat? "xlsx": "xls";
 		header name="Content-Disposition" value="attachment; filename=#Chr(34)##filenameWithoutExtension#.#extension##Chr(34)#";
 		content type=contentType variable="#binary#" reset="true";
@@ -64,12 +64,12 @@ component{
 		,boolean overwrite=false
 		,boolean addHeaderRow=true
 		,boldHeaderRow=true
-		,xmlformat=false
+		,xmlFormat=false
 	){
-		if( !xmlformat AND ( ListLast( filepath,"." ) IS "xlsx" ) )
-			arguments.xmlformat=true;
+		if( !xmlFormat AND ( ListLast( filepath,"." ) IS "xlsx" ) )
+			arguments.xmlFormat=true;
 		var workbook = this.workbookFromQuery( data,addHeaderRow,boldHeaderRow,xmlFormat );
-		if( xmlformat AND ( ListLast( filepath,"." ) IS "xls" ) )
+		if( xmlFormat AND ( ListLast( filepath,"." ) IS "xls" ) )
 			arguments.filePath &="x";// force to .xlsx
 		this.write( workbook=workbook,filepath=filepath,overwrite=overwrite );
 	}
