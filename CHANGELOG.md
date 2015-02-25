@@ -1,3 +1,7 @@
+## 0.4.0 - 25 February 2015
+- Breaking changes
+	- Use "freeze" instead of "split" for argument names of addFreezePane
+	
 ## 0.3.0 - 24 February 2015
 
 - Breaking changes

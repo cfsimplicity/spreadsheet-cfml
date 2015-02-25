@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "0.3.0";
+	variables.version = "0.4.0";
 
 	variables.defaultFormats = { DATE = "yyyy-mm-dd", TIMESTAMP = "yyyy-mm-dd hh:mm:ss", TIME = "hh:mm:ss" };
 	variables.exceptionType	=	"cfsimplicity.lucee.spreadsheet";
