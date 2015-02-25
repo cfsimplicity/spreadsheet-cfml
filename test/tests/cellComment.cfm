@@ -1,5 +1,5 @@
 <cfscript>
-describe( "cellFormula tests",function(){
+describe( "cellComment tests",function(){
 
 	it( "Gets the comment from the specified cell",function() {
 		workbook = s.new();
@@ -14,7 +14,7 @@ describe( "cellFormula tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	describe( "cellFormula exceptions",function(){
+	describe( "cellComment exceptions",function(){
 
 		it( "Throws an exception if column specified but not row, or vice versa",function() {
 			expect( function(){
