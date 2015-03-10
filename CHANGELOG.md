@@ -1,3 +1,7 @@
+## 0.4.1 - 10 March 2015
+- Bug fix:
+	- POI Loader server variable name should be unique to the current library path
+
 ## 0.4.0 - 25 February 2015
 - Breaking changes
 	- Use "freeze" instead of "split" for argument names of addFreezePane

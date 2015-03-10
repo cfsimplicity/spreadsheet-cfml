@@ -1,6 +1,7 @@
 component{
 
-	variables.version = "0.4.0";
+	variables.version = "0.4.1";
+	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
 	variables.defaultFormats = { DATE = "yyyy-mm-dd", TIMESTAMP = "yyyy-mm-dd hh:mm:ss", TIME = "hh:mm:ss" };
 	variables.exceptionType	=	"cfsimplicity.lucee.spreadsheet";
@@ -14,7 +15,7 @@ component{
 
 	void function flushPoiLoader(){
 		lock scope="server" timeout="10"{
-			StructDelete( server,"_poiLoader" );
+			StructDelete( server,poiLoaderName );
 		};
 	}
 
