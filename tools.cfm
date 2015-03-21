@@ -532,7 +532,7 @@ private query function sheetToQuery( required workbook,string sheetName,numeric 
 			var cell = row.GetCell( JavaCast( "int",colIndex ) );
 			if( IsNull( cell ) ){
 				if( includeBlankRows )
-					rowData.append( JavaCast( "string","" ) );
+					rowData.Append( JavaCast( "string","" ) );
 				continue;
 			}
 			if( isHeaderRow ){
@@ -543,12 +543,12 @@ private query function sheetToQuery( required workbook,string sheetName,numeric 
 					/* There was an error grabbing the text of the header column type. */
 					var value="column#( colIndex+1 )#";
 				}
-				columnNames.append( value );
+				columnNames.Append( value );
 				if( !includeHeaderRow )
 					continue;
 			}
 			var cellValue = this.getCellValueAsType( workbook,cell );
-			rowData.append( JavaCast( "string",cellValue ) );
+			rowData.Append( JavaCast( "string",cellValue ) );
 		}//end column loop
 		if( !isHeaderRow OR includeHeaderRow )
 			sheetData.Append( rowData );
