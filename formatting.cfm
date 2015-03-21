@@ -60,9 +60,7 @@ private any function buildCellStyle( required workbook,required struct format ){
 				font.setColor( getColorIndex( StructFind( format,setting ) ) );
 				cellStyle.setFont( font );
 			break;
-			/*  TODO: this is returning the correct data format index from HSSFDataFormat but 
-							doesn't seem to have any effect on the cell. Could be that I'm testing 
-							with OpenOffice so I'll have to check things in MS Excel  */
+			/*  TODO: this is returning the correct data format index from HSSFDataFormat but doesn't seem to have any effect on the cell. Could be that I'm testing with OpenOffice so I'll have to check things in MS Excel  */
 			case "dataformat":
 				cellStyle.setDataFormat( formatter.getFormat( JavaCast( "string",format[ setting ] ) ) );
 			break;
@@ -72,9 +70,7 @@ private any function buildCellStyle( required workbook,required struct format ){
 				if( !arguments.KeyExists( "fillpattern" ) )
 					cellStyle.setFillPattern( cellStyle.SOLID_FOREGROUND );
 			break;
-			/*  TODO: CF 9 docs list "nofill" as opposed to "no_fill"; docs wrong? The rest match POI 
-							settings exactly.If it really is nofill instead of no_fill, just change to no_fill 
-							before calling setFillPattern  */
+			/*  TODO: CF 9 docs list "nofill" as opposed to "no_fill"; docs wrong? The rest match POI settings exactly.If it really is nofill instead of no_fill, just change to no_fill before calling setFillPattern  */
 			case "fillpattern":
 				cellStyle.setFillPattern( Evaluate( "cellStyle." & UCase( StructFind( format,setting ) ) ) );
 			break;

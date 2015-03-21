@@ -50,7 +50,6 @@ private void function addInfoXml( required workbook,required struct info ){
 				coreProperties.setCategory( value );
 				break;
 			case "lastauthor": 
-				// TODO: This does not seem to be working. Not sure why
 				coreProperties.getUnderlyingProperties().setLastModifiedByProperty( value );
 				break;
 			case "comments": 				
@@ -134,13 +133,9 @@ private void function deleteSheetAtIndex( required workbook,required numeric she
 private numeric function estimateColumnWidth( required workbook,required any value ){
 	/* Estimates approximate column width based on cell value and default character width. */
 	/* 
-	"Excel bases its measurement of column widths on the number of digits (specifically, 
-		the number of zeros) in the column, using the Normal style font."
-			
-		This function approximates the column width using the number of characters and 
-		the default character width in the normal font. POI expresses the width in 1/256
-		of Excel's character unit.  The maximum size in POI is: (255 * 256)
-	 */
+	"Excel bases its measurement of column widths on the number of digits (specifically, the number of zeros) in the column, using the Normal style font."
+	This function approximates the column width using the number of characters and the default character width in the normal font. POI expresses the width in 1/256 of Excel's character unit. The maximum size in POI is: (255 * 256)
+	*/
 	var defaultWidth = getDefaultCharWidth( workbook );
 	var numOfChars = Len( arguments.value );
 	var width = ( numOfChars*defaultWidth+5 ) / ( defaultWidth*256 );
@@ -150,8 +145,8 @@ private numeric function estimateColumnWidth( required workbook,required any val
 
 private array function extractRanges( required string rangeList ){
 	/*
-		A range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. Ignores any white space.
-		Parses and validates a list of row/column numbers. Returns an array of structures with the keys: startAt, endAt
+	A range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. Ignores any white space.
+	Parses and validates a list of row/column numbers. Returns an array of structures with the keys: startAt, endAt
 	*/
 	var result = [];
 	var rangeTest = "^[0-9]{1,}(-[0-9]{1,})?$";
@@ -350,9 +345,7 @@ private array function getQueryColumnFormats( required workbook,required query q
 				col.cellDataType = "TIME";
 				col.defaultCellStyle 	= this.buildCellStyle( workbook,{ dataFormat = variables.defaultFormats[ col.typeName ] } );
 			break;
-			/* Note: Excel only supports "double" for numbers. Casting very large DECIMIAL/NUMERIC
-			    or BIGINT values to double may result in a loss of precision or conversion to 
-				NEGATIVE_INFINITY / POSITIVE_INFINITY. */
+			/* Note: Excel only supports "double" for numbers. Casting very large DECIMIAL/NUMERIC or BIGINT values to double may result in a loss of precision or conversion to NEGATIVE_INFINITY / POSITIVE_INFINITY. */
 			case "DECIMAL": case "BIGINT": case "NUMERIC": case "DOUBLE": case "FLOAT": case "INTEGER": case "REAL": case "SMALLINT": case "TINYINT":
 				col.cellDataType = "DOUBLE";
 			break;
@@ -406,10 +399,7 @@ private array function parseRowData( required string line,required string delimi
 		potentialQuotes = arguments.line.replaceAll("[^']", "").length();		
 	if (potentialQuotes <= 1)
 	  return elements;
-	/*
-		For ACF compatibility, find any values enclosed in single 
-		quotes and treat them as a single element.
-	*/ 
+	//For ACF compatibility, find any values enclosed in single quotes and treat them as a single element. 
 	var currentValue = 0;
 	var nextValue = "";
 	var isEmbeddedValue = false;
@@ -428,10 +418,11 @@ private array function parseRowData( required string line,required string delimi
 		  isEmbeddedValue = true;
 	  if( isEmbeddedValue AND hasTrailingQuote )
 		  isComplete = true;
-	  // We are finished with this value if:  
-	  // * no quotes were found OR
-	  // * it is the final value OR
-	  // * the next value is embedded in quotes
+	  /* We are finished with this value if:  
+		  * no quotes were found OR
+		  * it is the final value OR
+		  * the next value is embedded in quotes
+	  */
 	  if( !isEmbeddedValue || isFinalElement || nextValue.startsWith( "'" ) )
 		  isComplete = true;		  
 	  if( isEmbeddedValue || isComplete ){

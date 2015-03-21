@@ -233,14 +233,12 @@ component{
 		/* TODO: need to look into createDrawingPatriarch() vs. getDrawingPatriarch() since create will kill any existing images. getDrawingPatriarch() throws  a null pointer exception when an attempt is made to add a second image to the spreadsheet  */
 		var drawingPatriarch = getActiveSheet( workbook ).createDrawingPatriarch();
 		picture = drawingPatriarch.createPicture( theAnchor,imageIndex );
-		<!--- disabling this for now--maybe let people pass in a boolean indicating 
-				whether or not they want the image resized? --->
-		<!--- if this is a png or jpg, resize the picture to its original size 
-				(this doesn't work for formats other than jpg and png) --->
-		<!--- <cfif imgTypeIndex eq getWorkbook().PICTURE_TYPE_JPEG 
-				or imgTypeIndex eq getWorkbook().PICTURE_TYPE_PNG>
-			<cfset picture.resize() />
-		</cfif> --->
+		/* Disabling this for now--maybe let people pass in a boolean indicating whether or not they want the image resized?
+		 if this is a png or jpg, resize the picture to its original size (this doesn't work for formats other than jpg and png)
+			<cfif imgTypeIndex eq getWorkbook().PICTURE_TYPE_JPEG or imgTypeIndex eq getWorkbook().PICTURE_TYPE_PNG>
+				<cfset picture.resize() />
+			</cfif>
+		*/
 	}
 
 	void function addInfo( required workbook,required struct info ){
@@ -268,7 +266,7 @@ component{
 		if( !insert AND !arguments.KeyExists( "row") )
 			throw( type=exceptionType,message="Missing row value",detail="To replace a row using 'insert', please specify the row to replace." );
 		var lastRow = this.getNextEmptyRow( workbook );
-		//If the requested row already exists ...
+		//If the requested row already exists...
 		if( arguments.KeyExists( "row" ) AND ( row LTE lastRow ) ){
 			if( arguments.insert )
 				shiftRows( workbook,row,lastRow,1 );//shift the existing rows down (by one row)
@@ -305,9 +303,10 @@ component{
 			var newRow = this.createRow( workbook,rowNum,false );
 			var cellIndex = ( column-1 );
 			/* Note: To properly apply date/number formatting:
-   				- cell type must be CELL_TYPE_NUMERIC
-   				- cell value must be applied as a java.util.Date or java.lang.Double (NOT as a string)
-   				- cell style must have a dataFormat (datetime values only) */
+ 				- cell type must be CELL_TYPE_NUMERIC
+ 				- cell value must be applied as a java.util.Date or java.lang.Double (NOT as a string)
+ 				- cell style must have a dataFormat (datetime values only)
+   		*/
    		/* populate all columns in the row */
    		for( var queryColumn in queryColumns ){
    			var cell 	= this.createCell( newRow, cellIndex, false );
@@ -916,8 +915,8 @@ component{
 		}
 		/* 
 			Horizontal alignment can be left, center, right, justify, or distributed. Note that the constants on the Java class are slightly different in some cases:
-				'center' = CENTERED
-				'justify' = JUSTIFIED
+			'center' = CENTERED
+			'justify' = JUSTIFIED
 		 */
 		if( comment.KeyExists( "horizontalAlignment" ) ){
 			if( comment.horizontalAlignment.UCase() IS "CENTER" )
@@ -949,9 +948,7 @@ component{
 				,JavaCast( "int",javaColorRGB.blue )
 			);
 		}
-		/* 
-			Vertical alignment can be top, center, bottom, justify, and distributed. Note that center and justify are DIFFERENT than the constants for horizontal alignment, which are CENTERED and JUSTIFIED.
-		*/
+		/* Vertical alignment can be top, center, bottom, justify, and distributed. Note that center and justify are DIFFERENT than the constants for horizontal alignment, which are CENTERED and JUSTIFIED. */
 		if( comment.KeyExists( "verticalAlignment" ) )
 			commentObject.setVerticalAlignment( JavaCast( "int",commentObject[ "VERTICAL_ALIGNMENT_" & comment.verticalAlignment.UCase() ] ) );
 		if( comment.KeyExists( "visible" ) )
