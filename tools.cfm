@@ -517,7 +517,7 @@ private query function sheetToQuery( required workbook,string sheetName,numeric 
 	var sheetData = [];
 	var lastRowNumber = sheet.GetLastRowNum();
 	// Loop over the rows in the Excel sheet.
-	for( rowIndex=0; rowIndex LTE lastRowNumber; rowIndex++ ){
+	for( var rowIndex=0; rowIndex LTE lastRowNumber; rowIndex++ ){
 		var isHeaderRow = ( hasHeaderRow AND ( rowIndex EQ poiHeaderRow ) );
 		var rowData	=	[];
 		var row = sheet.GetRow( JavaCast( "int",rowIndex ) );
@@ -528,7 +528,7 @@ private query function sheetToQuery( required workbook,string sheetName,numeric 
 		}
 		var columnCount = row.GetLastCellNum();
 		totalColumnCount = Max( totalColumnCount,columnCount );
-		for( colIndex=0; colIndex LT columnCount; colIndex++ ){
+		for( var colIndex=0; colIndex LT columnCount; colIndex++ ){
 			var cell = row.GetCell( JavaCast( "int",colIndex ) );
 			if( IsNull( cell ) ){
 				if( includeBlankRows )
