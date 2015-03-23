@@ -20,38 +20,11 @@ component extends="testbox.system.BaseSpec"{
 					FileDelete( tempXlsPath );
 			});
 
-			include "tests/addColumn.cfm";
-			include "tests/addRow.cfm";
-			include "tests/addRows.cfm";
-			include "tests/binaryFromQuery.cfm";
-			include "tests/cellComment.cfm";
-			include "tests/cellFormula.cfm";
-			include "tests/cellValue.cfm";
-			include "tests/clearCell.cfm";
-			include "tests/createSheet.cfm";
-			include "tests/deleteColumn.cfm";
-			include "tests/deleteColumns.cfm";
-			include "tests/deleteRow.cfm";
-			include "tests/deleteRows.cfm";
-			include "tests/formatColumn.cfm";
-			include "tests/formatColumns.cfm";
-			include "tests/formatRows.cfm";
-			include "tests/info.cfm";
-			include "tests/isXmlOrBinaryFormat.cfm";
-			include "tests/mergeCells.cfm";
-			include "tests/new.cfm";
-			include "tests/read.cfm";
-			include "tests/readBinary.cfm";
-			include "tests/removeSheet.cfm";
-			include "tests/removeSheetNumber.cfm";
-			include "tests/renameSheet.cfm";
-			include "tests/setActiveSheet.cfm";
-			include "tests/setActiveSheetNumber.cfm";
-			include "tests/shiftColumns.cfm";
-			include "tests/shiftRows.cfm";
-			include "tests/workbookFromQuery.cfm";
-			include "tests/write.cfm";
-			include "tests/writeFileFromQuery.cfm";
+			var testFiles = DirectoryList( ExpandPath( "tests" ),false,"name","*.cfm" );
+			// run every file in the tests folder
+			for( var file in testFiles ){
+				include "tests/#file#";	
+			}
 
 		});
 
