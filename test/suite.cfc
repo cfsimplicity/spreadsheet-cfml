@@ -20,10 +20,10 @@ component extends="testbox.system.BaseSpec"{
 					FileDelete( tempXlsPath );
 			});
 
-			var testFiles = DirectoryList( ExpandPath( "tests" ),false,"name","*.cfm" );
+			var specs = DirectoryList( ExpandPath( "specs" ),false,"name","*.cfm" );
 			// run every file in the tests folder
-			for( var file in testFiles ){
-				include "tests/#file#";	
+			for( var file in specs ){
+				include "specs/#file#";	
 			}
 
 		});
