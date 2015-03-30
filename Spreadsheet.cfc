@@ -196,7 +196,7 @@ component{
 				var imageTypeIndex = workbook[ "PICTURE_TYPE_" & imageType ];
 			break;
 			case "JPG":
-				imageTypeIndex = workbook.PICTURE_TYPE_JPEG;
+				var imageTypeIndex = workbook.PICTURE_TYPE_JPEG;
 			break;
 			default:
 				throw( type=exceptionType,message="Invalid Image Type",detail="Valid image types are DIB, EMF, JPG, JPEG, PICT, PNG, and WMF" );
@@ -232,7 +232,7 @@ component{
 		}
 		/* TODO: need to look into createDrawingPatriarch() vs. getDrawingPatriarch() since create will kill any existing images. getDrawingPatriarch() throws  a null pointer exception when an attempt is made to add a second image to the spreadsheet  */
 		var drawingPatriarch = getActiveSheet( workbook ).createDrawingPatriarch();
-		picture = drawingPatriarch.createPicture( theAnchor,imageIndex );
+		var picture = drawingPatriarch.createPicture( theAnchor,imageIndex );
 		/* Disabling this for now--maybe let people pass in a boolean indicating whether or not they want the image resized?
 		 if this is a png or jpg, resize the picture to its original size (this doesn't work for formats other than jpg and png)
 			<cfif imgTypeIndex eq getWorkbook().PICTURE_TYPE_JPEG or imgTypeIndex eq getWorkbook().PICTURE_TYPE_PNG>
@@ -862,7 +862,7 @@ component{
 				,JavaCast( "int",ListGetAt( comment.anchor,4 ) )
 			);
 		else
-		var clientAnchor = loadPoi( "org.apache.poi.hssf.usermodel.HSSFClientAnchor" ).init(
+			var clientAnchor = loadPoi( "org.apache.poi.hssf.usermodel.HSSFClientAnchor" ).init(
 				JavaCast( "int",0 )
 				,JavaCast( "int",0 )
 				,JavaCast( "int",0 )
@@ -1017,7 +1017,7 @@ component{
 		var startIndex = start-1;
 		var endIndex = arguments.KeyExists( "end" )? end-1: startIndex;
 		while( rowIterator.hasNext() ){
-			row = rowIterator.next();
+			var row = rowIterator.next();
 			if( offset GT 0 ){
 				for( var i=endIndex; i GTE startIndex; i-- ){
 					var tempCell = row.getCell( JavaCast( "int",i ) );
