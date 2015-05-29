@@ -738,6 +738,7 @@ component{
 		,numeric sheetNumber // 1-based
 		,boolean includeHeaderRow=false
 		,boolean includeBlankRows=false
+		,boolean fillMergedCellsWithVisibleValue=false
 	){
 		if( arguments.KeyExists( "query" ) )
 			throw( type=exceptionType,message="Invalid argument 'query'.",details="Just use format='query' to return a query object" );
@@ -779,8 +780,8 @@ component{
 					args.headerRow=headerRow;
 					args.includeHeaderRow = includeHeaderRow;
 				}
-				if( arguments.KeyExists( "includeBlankRows" ) )
-					args.includeBlankRows=includeBlankRows;
+				args.includeBlankRows=includeBlankRows;
+				args.fillMergedCellsWithVisibleValue=fillMergedCellsWithVisibleValue;
 				return this.sheetToQuery( argumentCollection=args );
 		}
 		return workbook;

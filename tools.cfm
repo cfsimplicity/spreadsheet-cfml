@@ -175,6 +175,20 @@ private string function filenameSafe( required string input ){
 	return result;
 }
 
+private void function fillMergedCellsWithVisibleValue( required workbook,required sheet ){
+	if( !sheetHasMergedRegions( sheet ) )
+		return;
+	for( var regionIndex=0; regionIndex LT sheet.getNumMergedRegions(); regionIndex++ ){
+		var region=sheet.getMergedRegion( regionIndex );
+		var regionStartRowNumber=region.getFirstRow()+1;
+		var regionEndRowNumber=region.getLastRow()+1;
+		var regionStartColumnNumber=region.getFirstColumn()+1;
+		var regionEndColumnNumber=region.getLastColumn()+1;
+		var visibleValue=getCellValue( workbook,regionStartRowNumber,regionStartColumnNumber );
+		setCellRangeValue( workbook,visibleValue,regionStartRowNumber,regionEndRowNumber,regionStartColumnNumber,regionEndColumnNumber );
+	}
+}
+
 private string function generateUniqueSheetName( required workbook ){
 	/* Generates a unique sheet name (Sheet1, Sheet2, etecetera). */
 	var startNumber = workbook.getNumberOfSheets()+1;
@@ -503,7 +517,19 @@ private boolean function sheetExists( required workbook,string sheetName,numeric
 	return false;
 }
 
-private query function sheetToQuery( required workbook,string sheetName,numeric sheetNumber=1,numeric headerRow,boolean includeHeaderRow=false,boolean includeBlankRows=false ){
+private boolean function sheetHasMergedRegions( required sheet ){
+	return ( sheet.getNumMergedRegions() GT 0 );
+}
+
+private query function sheetToQuery(
+	required workbook
+	,string sheetName
+	,numeric sheetNumber=1
+	,numeric headerRow
+	,boolean includeHeaderRow=false
+	,boolean includeBlankRows=false
+	,boolean fillMergedCellsWithVisibleValue=false
+){
 	/* Based on https://github.com/bennadel/POIUtility.cfc */
 	var hasHeaderRow = arguments.KeyExists( "headerRow" );
 	var poiHeaderRow = ( hasHeaderRow AND headerRow )? headerRow-1: 0;
@@ -514,6 +540,8 @@ private query function sheetToQuery( required workbook,string sheetName,numeric 
 		arguments.sheetNumber = getSheetIndexFromName( workbook,sheetName )+1;
 	}
 	var sheet = workbook.GetSheetAt( JavaCast( "int",sheetNumber-1 ) );
+	if( fillMergedCellsWithVisibleValue )
+		this.fillMergedCellsWithVisibleValue( workbook,sheet );
 	var sheetData = [];
 	var lastRowNumber = sheet.GetLastRowNum();
 	// Loop over the rows in the Excel sheet.

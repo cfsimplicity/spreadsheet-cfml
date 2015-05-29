@@ -107,6 +107,20 @@ describe( "read tests",function(){
 		expect( IsDate( s.getCellValue( workbook,1,3 ) ) ).tobeTrue();
 	});
 
+	it( "Can fill each of the empty cells in merged regions with the visible merged cell value without conflicting with includeBlankRows=true",function() {
+		data = QueryNew( "column1,column2","VarChar,VarChar",[ [ "a","b" ],[ "c","d" ],[ "","" ] ] );
+		workbook = s.workbookFromQuery( data,false );
+		s.mergeCells( workbook,1,2,1,2,true );//force empty merged cells
+		s.write( workbook,tempXlsPath,true );
+		expected = QueryNew( "column1,column2","VarChar,VarChar",[ [ "a","a" ],[ "a","a" ] ] );
+		actual = s.read( src=tempXlsPath,format="query",fillMergedCellsWithVisibleValue=true );
+		expect( actual ).toBe( expected );
+		//test retention of blank row not part of merge region
+		expected=QueryNew( "column1,column2","VarChar,VarChar",[ [ "a","a" ],[ "a","a" ],[ "","" ] ] );
+		actual = s.read( src=tempXlsPath,format="query",fillMergedCellsWithVisibleValue=true,includeBlankRows=true );
+		expect( actual ).toBe( expected );
+	});
+
 	describe( "read exceptions",function(){
 
 		it( "Throws an exception if the 'query' argument is passed",function() {
