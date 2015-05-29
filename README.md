@@ -18,7 +18,7 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
  - the functions work more like those in ACF: you pass in an existing workbook explicitly as the first argument.
 - `read()` method offers some of the features of the `<cfspreadsheet action="read">` tag in script in addition to the basic options of `SpreadsheetRead()`.
 - Offers additional convenience methods, e.g. `downloadFileFromQuery()`.
-- Uses a newer version of the java POI library (3.11).
+- Uses a newer version of the java POI library (3.12).
 - Fixes various outstanding bugs/omissions.
 - No dependency on Railo/Lucee within the included jar files.
 - Written entirely in Lucee script.
