@@ -1,5 +1,30 @@
-<cfscript>
+<cfscript>	
 describe( "mergeCells tests",function(){
+
+	beforeEach( function(){
+		variables.data = querySim(
+			"column1,column2
+			a|b
+			c|d");
+		workbook = s.workbookFromQuery( data,false );
+	});
+
+	it( "Retains merged cell data by default",function() {
+		s.mergeCells( workbook,1,2,1,2 );
+		expect( s.getCellValue( workbook,1,1 ) ).toBe( "a" );
+		expect( s.getCellValue( workbook,1,2 ) ).toBe( "b" );
+		expect( s.getCellValue( workbook,2,1 ) ).toBe( "c" );
+		expect( s.getCellValue( workbook,2,2 ) ).toBe( "d" );
+	});
+
+	it( "Can empty all but the top-left-most cell of a merged region",function() {
+		s.mergeCells( workbook,1,2,1,2,true );
+		s.write( workbook,tempXlsPath,true );
+		expect( s.getCellValue( workbook,1,1 ) ).toBe( "a" );
+		expect( s.getCellValue( workbook,1,2 ) ).toBe( "" );
+		expect( s.getCellValue( workbook,2,1 ) ).toBe( "" );
+		expect( s.getCellValue( workbook,2,2 ) ).toBe( "" );
+	});
 
 	describe( "mergeCells exceptions",function(){
 
