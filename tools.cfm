@@ -390,9 +390,9 @@ private function loadPoi( required string javaclass ){
 	if( !server.KeyExists( poiLoaderName ) ){
 		var paths = [];
 		var libPath = ExpandPath( GetDirectoryFromPath( GetCurrentTemplatePath() ) & "lib/" );
-		paths.Append( libPath & "poi-3.11-20141221.jar" );
-		paths.Append( libPath & "poi-ooxml-3.11-20141221.jar" );
-		paths.Append( libPath & "poi-ooxml-schemas-3.11-20141221.jar" );
+		paths.Append( libPath & "poi-3.12-20150511.jar" );
+		paths.Append( libPath & "poi-ooxml-3.12-20150511.jar" );
+		paths.Append( libPath & "poi-ooxml-schemas-3.12-20150511.jar" );
 		paths.Append( libPath & "xmlbeans-2.6.0.jar" );
 		if( !server.KeyExists( poiLoaderName ) ){
 			server[ poiLoaderName ] = CreateObject( "component","javaLoader.JavaLoader" ).init( loadPaths=paths,loadColdFusionClassPath=true,trustedSource=true );
