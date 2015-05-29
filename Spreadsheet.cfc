@@ -970,6 +970,22 @@ component{
 		this.setCellValueAsType( workbook,cell,value );
 	}
 
+	void function setCellRangeValue(
+		required workbook
+		,required value
+		,required numeric startRow
+		,required numeric endRow
+		,required numeric startColumn
+		,required numeric endColumn
+	){
+		/* Sets the same value to a range of cells */
+		for( var rowNumber=startRow; rowNumber LTE endRow; rowNumber++ ){
+			for( var columnNumber=startColumn; columnNumber LTE endColumn; columnNumber++ ){
+				setCellValue( workbook,value,rowNumber,columnNumber );
+			}
+		}
+	}
+
 	void function setColumnWidth( required workbook,required numeric column,required numeric width ){
 		var columnIndex = column-1;
 		this.getActiveSheet( workbook ).setColumnWidth( JavaCast( "int",columnIndex ),JavaCast( "int",width*256 ) );

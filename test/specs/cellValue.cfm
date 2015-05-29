@@ -45,5 +45,17 @@ describe( "cellValue tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Sets the specified range of cells to the specified value",function() {
+		value="a";
+		s.setCellRangeValue( workbook,value,1,2,1,2 );
+		expected = querySim(
+			"column1,column2
+			a|a
+			a|a");
+		s.write( workbook,tempXlsPath,true );
+		actual = s.read( src=tempXlsPath,format="query" );
+		expect( actual ).toBe( expected );
+	});
+
 });	
 </cfscript>
