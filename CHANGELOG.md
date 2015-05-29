@@ -1,3 +1,12 @@
+## 0.4.2 - 29 May 2015
+- Enhancements:
+	- \#47 Add `fillMergedCellsWithVisibleValue` option to `read()`
+	- \#48 Add `setCellRangeValue()`
+	- \#49 Add `emptyInvisibleCells` option to `mergeCells()`
+- Bug fixes:
+	- Fix read() includeBlankRows=false option only suppressing null rows and not empty ones
+	- Missing var declarations
+
 ## 0.4.1 - 10 March 2015
 - Bug fix:
 	- POI Loader server variable name should be unique to the current library path
