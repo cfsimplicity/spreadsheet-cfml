@@ -10,7 +10,7 @@ describe( "shiftRows tests",function(){
 		s.addRows( workbook,data );
 		s.shiftRows( workbook,1,1,1 )
 		expected = QueryNew( "column1,column2","VarChar,VarChar",[ [ "","" ],[ "a","b" ] ] );
-		actual = s.sheetToQuery( workbook );
+		actual = s.sheetToQuery( workbook=workbook,includeBlankRows=true );
 		expect( actual ).toBe( expected );
 	});
 
