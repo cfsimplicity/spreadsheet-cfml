@@ -73,7 +73,17 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Includes blank rows in query if includeBlankRows is true",function() {
+	it( "Excludes null and blank rows in query by default",function() {
+		data = QueryNew( "column1,column2","VarChar,VarChar",[ [ "","" ],[ "a","b" ] ] );
+		workbook = s.new();
+		s.addRows( workbook,data );
+		s.write( workbook,tempXlsPath,true );
+		expected = QueryNew( "column1,column2","VarChar,VarChar",[ [ "a","b" ] ] );;
+		actual = s.read( src=tempXlsPath,format="query" );
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Includes null and blank rows in query if includeBlankRows is true",function() {
 		data = QueryNew( "column1,column2","VarChar,VarChar",[ [ "","" ],[ "a","b" ] ] );
 		workbook = s.new();
 		s.addRows( workbook,data );

@@ -445,6 +445,15 @@ private array function parseRowData( required string line,required string delimi
   return values;
 }
 
+private boolean function rowIsEmpty( required row ){
+	for( var i=row.getFirstCellNum(); i LT row.getLastCellNum(); i++ ){
+    var cell = row.getCell( i );
+    if( !IsNull( cell ) && ( cell.getCellType() != cell.CELL_TYPE_BLANK ) )
+      return false;
+  }
+  return true;
+}
+
 private void function setCellValueAsType( required workbook,required cell,required value ){
 	if( IsNumeric( value ) AND !REFind( value,"^0[\d]+" ) ){ /*  skip numeric strings with leading zeroes. treat those as text  */
 		/*  NUMERIC  */
@@ -517,6 +526,8 @@ private query function sheetToQuery( required workbook,string sheetName,numeric 
 				sheetData.Append( rowData );
 			continue;
 		}
+		if( rowIsEmpty( row ) AND !includeBlankRows )
+			continue;
 		var columnCount = row.GetLastCellNum();
 		totalColumnCount = Max( totalColumnCount,columnCount );
 		for( var colIndex=0; colIndex LT columnCount; colIndex++ ){
