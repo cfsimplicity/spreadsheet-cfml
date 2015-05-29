@@ -697,6 +697,7 @@ component{
 		,required numeric endRow
 		,required numeric startColumn
 		,required numeric endColumn
+		,boolean emptyInvisibleCells=false
 	){
 		if( startRow LT 1 OR startRow GT endRow )
 			throw( type=exceptionType,message="Invalid startRow or endRow",detail="Row values must be greater than 0 and the startRow cannot be greater than the endRow." );
@@ -709,6 +710,14 @@ component{
 			,JavaCast( "int",endColumn - 1 )
 		);
 		this.getActiveSheet( workbook ).addMergedRegion( cellRangeAddress );
+		if( !emptyInvisibleCells )
+			return;
+		// stash the value to retain
+		var visibleValue	=	getCellValue( workbook,startRow,startColumn );
+		//empty all cells in the merged region
+		setCellRangeValue( workbook,"",startRow,endRow,startColumn,endColumn );
+		//restore the stashed value
+		setCellValue( workbook,visibleValue,startRow,startColumn );
 	}
 
 	function new( string sheetName="Sheet1",boolean xmlformat=false ){
@@ -968,6 +977,22 @@ component{
 		//Automatically create the cell if it does not exist, instead of throwing an error
 		var cell = initializeCell( workbook,row,column );
 		this.setCellValueAsType( workbook,cell,value );
+	}
+
+	void function setCellRangeValue(
+		required workbook
+		,required value
+		,required numeric startRow
+		,required numeric endRow
+		,required numeric startColumn
+		,required numeric endColumn
+	){
+		/* Sets the same value to a range of cells */
+		for( var rowNumber=startRow; rowNumber LTE endRow; rowNumber++ ){
+			for( var columnNumber=startColumn; columnNumber LTE endColumn; columnNumber++ ){
+				setCellValue( workbook,value,rowNumber,columnNumber );
+			}
+		}
 	}
 
 	void function setColumnWidth( required workbook,required numeric column,required numeric width ){
