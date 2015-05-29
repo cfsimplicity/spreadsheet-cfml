@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "0.4.2b";
+	variables.version = "0.4.3";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
 	variables.defaultFormats = { DATE = "yyyy-mm-dd", TIMESTAMP = "yyyy-mm-dd hh:mm:ss", TIME = "hh:mm:ss" };

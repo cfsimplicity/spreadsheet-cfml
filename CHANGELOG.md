@@ -1,3 +1,6 @@
+## 0.4.3 - 29 May 2015
+	- Upgrade POI to 3.12
+
 ## 0.4.2 - 29 May 2015
 - Enhancements:
 	- \#47 Add `fillMergedCellsWithVisibleValue` option to `read()`
