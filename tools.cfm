@@ -425,8 +425,8 @@ private array function parseRowData( required string line,required string delimi
 	  currentValue = Trim( elements[ i ] );
 	  nextValue = i < maxElements ? elements[ i + 1 ] : "";
 	  var isComplete = false;
-	  var hasLeadingQuote = currentValue.startsWith( "'" );
-	  var hasTrailingQuote = currentValue.endsWith( "'" );
+	  var hasLeadingQuote = currentValue.hasPrefix( "'" );
+	  var hasTrailingQuote = currentValue.hasSuffix( "'" );
 	  var isFinalElement = ( i==maxElements );
 	  if( hasLeadingQuote )
 		  isEmbeddedValue = true;
@@ -437,7 +437,7 @@ private array function parseRowData( required string line,required string delimi
 		  * it is the final value OR
 		  * the next value is embedded in quotes
 	  */
-	  if( !isEmbeddedValue || isFinalElement || nextValue.startsWith( "'" ) )
+	  if( !isEmbeddedValue || isFinalElement || nextValue.hasPrefix( "'" ) )
 		  isComplete = true;		  
 	  if( isEmbeddedValue || isComplete ){
 		  // if this a partial value, append the delimiter
