@@ -93,6 +93,13 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Can handle null/empty cells",function() {
+		path = ExpandPath( "/root/test/files/nullCell.xls" );
+		actual = s.read( src=path ,format="query",headerRow=1 );
+		expected=QueryNew( "column1,column2","VarChar,VarChar",[ [ "","a" ] ] );
+		expect( actual ).toBe( expected );
+	});
+
 	it( "Writes and reads numeric, boolean and date values correctly",function() {
 		var dateValue = CreateDate( 2015,04,12 );
 		var data = QueryNew( "column1,column2,column3","Numeric,Boolean,Date",[ [ 2,true,dateValue ] ] );

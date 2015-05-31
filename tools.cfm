@@ -561,8 +561,7 @@ private query function sheetToQuery(
 		for( var colIndex=0; colIndex LT columnCount; colIndex++ ){
 			var cell = row.GetCell( JavaCast( "int",colIndex ) );
 			if( IsNull( cell ) ){
-				if( includeBlankRows )
-					rowData.Append( JavaCast( "string","" ) );
+				rowData.Append( JavaCast( "string","" ) );
 				continue;
 			}
 			if( isHeaderRow ){
