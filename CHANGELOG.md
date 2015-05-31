@@ -1,3 +1,7 @@
+## 0.4.4 - 31 May 2015
+-	Bug fix:
+ 	- \#51  Empty cells are skipped when reading a spreadsheet into a query.
+
 ## 0.4.3 - 29 May 2015
 	- Upgrade POI to 3.12
 
