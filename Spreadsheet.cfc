@@ -751,8 +751,6 @@ component{
 			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'columns' argument is not yet supported." );
 		if( arguments.KeyExists( "columnNames" ) )
 			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'columnNames' argument is not yet supported." );
-		if( arguments.KeyExists( "rows" ) )
-			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'rows' argument is not yet supported." );		
 		//END TODO
 		if( !FileExists( src ) )
 			throw( type=exceptionType,message="Non-existent file",detail="Cannot find the file #src#." );
@@ -780,6 +778,8 @@ component{
 					args.headerRow=headerRow;
 					args.includeHeaderRow = includeHeaderRow;
 				}
+				if( arguments.KeyExists( "rows" ) )
+					args.rows = rows;
 				args.includeBlankRows=includeBlankRows;
 				args.fillMergedCellsWithVisibleValue=fillMergedCellsWithVisibleValue;
 				return this.sheetToQuery( argumentCollection=args );
@@ -1097,9 +1097,13 @@ component{
 		// TODO: workbook.isWriteProtected() returns true but the workbook opens without prompting for a password
 		if( arguments.KeyExists( "password" ) AND !password.Trim().IsEmpty() )
 			workbook.writeProtectWorkbook( JavaCast( "string",password ),JavaCast( "string","user" ) );
-		var outputStream = CreateObject( "java","java.io.FileOutputStream" ).init( filepath );
+		lock name="#filepath#" timeout=5{
+			var outputStream = CreateObject( "java","java.io.FileOutputStream" ).init( filepath );
+		}
 		try{
-			workbook.write( outputStream );
+			lock name="#filepath#" timeout=5{
+				workbook.write( outputStream );
+			}
 			outputStream.flush();
 		}
 		finally{

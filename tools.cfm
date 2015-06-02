@@ -521,6 +521,51 @@ private boolean function sheetHasMergedRegions( required sheet ){
 	return ( sheet.getNumMergedRegions() GT 0 );
 }
 
+private void function addRowToSheetData( required workbook,required struct sheet,required numeric rowIndex ){
+	var row={
+		isHeaderRow = ( sheet.hasHeaderRow AND ( rowIndex EQ sheet.headerRowIndex ) )
+		,object=sheet.object.GetRow( JavaCast( "int",rowIndex ) )
+		,data=[]
+	};
+	if( IsNull( row.object ) ){
+		if( !row.isHeaderRow OR sheet.includeHeaderRow )
+			sheet.data.Append( row.data );
+		return;
+	}
+	if( rowIsEmpty( row.object ) AND !sheet.includeBlankRows )
+		return;
+	row.columnCount = row.object.GetLastCellNum();
+	sheet.totalColumnCount = Max( sheet.totalColumnCount,row.columnCount );
+
+	for( var colIndex=0; colIndex LT row.columnCount; colIndex++ ){
+		this.addCellToRowData( workbook,sheet,row,colIndex );
+	}//end column loop
+	if( !row.isHeaderRow OR sheet.includeHeaderRow )
+		sheet.data.Append( row.data );
+}
+
+private function addCellToRowData( required workbook,required struct sheet,required struct row,required numeric colIndex ){
+	var cell = row.object.GetCell( JavaCast( "int",colIndex ) );
+	if( IsNull( cell ) ){
+		row.data.Append( JavaCast( "string","" ) );
+		return;
+	}
+	if( row.isHeaderRow ){
+		try{
+			var value = cell.getStringCellValue();
+		}
+		catch ( any exception ) {
+			/* There was an error grabbing the text of the header column type. */
+			var value="column#( colIndex+1 )#";
+		}
+		sheet.columnNames.Append( value );
+		if( !sheet.includeHeaderRow )
+			return;
+	}
+	var cellValue = this.getCellValueAsType( workbook,cell );
+	row.data.Append( JavaCast( "string",cellValue ) );
+}
+
 private query function sheetToQuery(
 	required workbook
 	,string sheetName
@@ -529,69 +574,55 @@ private query function sheetToQuery(
 	,boolean includeHeaderRow=false
 	,boolean includeBlankRows=false
 	,boolean fillMergedCellsWithVisibleValue=false
+	,string rows //range
 ){
-	/* Based on https://github.com/bennadel/POIUtility.cfc */
-	var hasHeaderRow = arguments.KeyExists( "headerRow" );
-	var poiHeaderRow = ( hasHeaderRow AND headerRow )? headerRow-1: 0;
-	var columnNames=[];
-	var totalColumnCount=0
+	var sheet={
+		includeHeaderRow=includeHeaderRow
+		,hasHeaderRow = arguments.KeyExists( "headerRow" )
+		,includeBlankRows=includeBlankRows
+		,columnNames=[]
+		,totalColumnCount=0
+	};
+	sheet.headerRowIndex = ( sheet.hasHeaderRow AND headerRow )? headerRow-1: 0;
 	if( arguments.KeyExists( "sheetName" ) ){
 		validateSheetExistsWithName( workbook,sheetName );
 		arguments.sheetNumber = getSheetIndexFromName( workbook,sheetName )+1;
 	}
-	var sheet = workbook.GetSheetAt( JavaCast( "int",sheetNumber-1 ) );
+	sheet.object = workbook.GetSheetAt( JavaCast( "int",sheetNumber-1 ) );
 	if( fillMergedCellsWithVisibleValue )
-		this.fillMergedCellsWithVisibleValue( workbook,sheet );
-	var sheetData = [];
-	var lastRowNumber = sheet.GetLastRowNum();
-	// Loop over the rows in the Excel sheet.
-	for( var rowIndex=0; rowIndex LTE lastRowNumber; rowIndex++ ){
-		var isHeaderRow = ( hasHeaderRow AND ( rowIndex EQ poiHeaderRow ) );
-		var rowData	=	[];
-		var row = sheet.GetRow( JavaCast( "int",rowIndex ) );
-		if( IsNull( row ) ){
-			if( !isHeaderRow OR includeHeaderRow )
-				sheetData.Append( rowData );
-			continue;
-		}
-		if( rowIsEmpty( row ) AND !includeBlankRows )
-			continue;
-		var columnCount = row.GetLastCellNum();
-		totalColumnCount = Max( totalColumnCount,columnCount );
-		for( var colIndex=0; colIndex LT columnCount; colIndex++ ){
-			var cell = row.GetCell( JavaCast( "int",colIndex ) );
-			if( IsNull( cell ) ){
-				rowData.Append( JavaCast( "string","" ) );
+		this.fillMergedCellsWithVisibleValue( workbook,sheet.object );
+	sheet.data = [];
+	if( arguments.KeyExists( "rows" ) ){
+		var allRanges = this.extractRanges( arguments.rows );
+		for( var thisRange in allRanges ){
+			if( thisRange.startAt EQ thisRange.endAt ){
+				/* Just one row */
+				var rowIndex=thisRange.startAt-1;
+				this.addRowToSheetData( workbook,sheet,rowIndex );
 				continue;
 			}
-			if( isHeaderRow ){
-				try{
-					var value = cell.getStringCellValue();
-				}
-				catch ( any exception ) {
-					/* There was an error grabbing the text of the header column type. */
-					var value="column#( colIndex+1 )#";
-				}
-				columnNames.Append( value );
-				if( !includeHeaderRow )
-					continue;
+			for( var rowNumber=thisRange.startAt; rowNumber LTE thisRange.endAt; rowNumber++ ){
+				var rowIndex=rowNumber-1;
+				this.addRowToSheetData( workbook,sheet,rowIndex );
 			}
-			var cellValue = this.getCellValueAsType( workbook,cell );
-			rowData.Append( JavaCast( "string",cellValue ) );
-		}//end column loop
-		if( !isHeaderRow OR includeHeaderRow )
-			sheetData.Append( rowData );
-	}//end row loop
-	if( !columnNames.Len() ){
-		for( var i=1; i LTE totalColumnCount; i++ ){
-			columnNames.Append( "column" & i );
+		}
+	} else {
+		var lastRowNumber = sheet.object.GetLastRowNum();
+		// Loop over the rows in the Excel sheet.
+		for( var rowIndex=0; rowIndex LTE lastRowNumber; rowIndex++ ){
+			this.addRowToSheetData( workbook,sheet,rowIndex );
+		}//end row loop
+	}	
+	if( !sheet.columnNames.Len() ){
+		for( var i=1; i LTE sheet.totalColumnCount; i++ ){
+			sheet.columnNames.Append( "column" & i );
 		}
 	}
 	var columnTypes = [];
-	for( var columnName in columnNames ){
+	for( var columnName in sheet.columnNames ){
 		columnTypes.Append( "VarChar" );
 	}
-	var result = QueryNew( columnNames,columnTypes,sheetData );
+	var result = QueryNew( sheet.columnNames,columnTypes,sheet.data );
 	return result;
 }
 
@@ -627,8 +658,10 @@ private void function validateSheetNameOrNumberWasProvided(){
 private function workbookFromFile( required string path ){
 	// works with both xls and xlsx
 	try{
-		var file = CreateObject( "java","java.io.FileInputStream" ).init( path );
-		var workbook = loadPoi( "org.apache.poi.ss.usermodel.WorkbookFactory" ).create( file );
+		lock name="#path#" timeout=5{
+			var file = CreateObject( "java","java.io.FileInputStream" ).init( path );
+			var workbook = loadPoi( "org.apache.poi.ss.usermodel.WorkbookFactory" ).create( file );
+		}
 		return workbook;
 	}
 	finally{

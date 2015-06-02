@@ -128,6 +128,50 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Can read specified rows only",function() {
+		data=QuerySim( "column1
+			a
+			b
+			c
+			d
+			e")
+		workbook = s.workbookFromQuery( data,false );
+		s.write( workbook,tempXlsPath,true );
+		var actual	=	s.read( src=tempXlsPath,format="query",rows="2,4-5" );
+		expected = data=QuerySim( "column1
+			b
+			d
+			e");
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Can read specified column numbers only",function() {
+		data=QuerySim( "column1,column2,column3,column4,column5
+			a|b|c|d|e
+		")
+		workbook = s.workbookFromQuery( data,false );
+		s.write( workbook,tempXlsPath,true );
+		var actual	=	s.read( src=tempXlsPath,format="query",columns="2,4-5" );
+		expected = data=QuerySim( "column1
+			b
+			d
+			e")
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Can read specified column names only",function() {
+		data=QuerySim( "column1,column2,column3,column4,column5
+			a|b|c|d|e
+		")
+		workbook = s.workbookFromQuery( data,false );
+		s.write( workbook,tempXlsPath,true );
+		var actual	=	s.read( src=tempXlsPath,format="query",columns="column2,column4" );
+		expected = data=QuerySim( "column1
+			b
+			d")
+		expect( actual ).toBe( expected );
+	});
+
 	describe( "read exceptions",function(){
 
 		it( "Throws an exception if the 'query' argument is passed",function() {
