@@ -16,7 +16,7 @@ describe( "addColumn tests",function(){
 	it( "Adds a column at a given start row",function() {
 		s.addColumn( workbook,data,2 );
 		expected = QueryNew( "column1","VarChar",[ [ "" ],[ "a" ],[ "b" ] ] );
-		actual = s.sheetToQuery( workbook );
+		actual = s.sheetToQuery( workbook=workbook,includeBlankRows=true );
 		expect( actual ).toBe( expected );
 	});
 
