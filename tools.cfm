@@ -585,6 +585,7 @@ private query function sheetToQuery(
 	,boolean fillMergedCellsWithVisibleValue=false
 	,string rows //range
 	,string columns //range
+	,string columnNames
 ){
 	var sheet={
 		includeHeaderRow=includeHeaderRow
@@ -621,8 +622,14 @@ private query function sheetToQuery(
 			this.addRowToSheetData( workbook,sheet,rowIndex );
 		}
 	}
-	//query columns
-	if( sheet.hasHeaderRow ){
+	//generate the query columns
+	if( arguments.KeyExists( "columnNames" ) AND arguments.columnNames.Len() ){
+		arguments.columnNames=arguments.columnNames.ListToArray();
+		for( var i=1; i LTE sheet.totalColumnCount; i++ ){
+			var columnName=columnNames[ i ]?: "column" & i; 
+			sheet.columnNames.Append( columnName );
+		}
+	} else if( sheet.hasHeaderRow ){
 		var headerRow=sheet.object.GetRow( JavaCast( "int",sheet.headerRowIndex ) );
 		var rowData=getRowData( workbook,headerRow,sheet.columnRanges );
 		var i=1;

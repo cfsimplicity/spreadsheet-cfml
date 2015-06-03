@@ -731,7 +731,7 @@ component{
 		required string src
 		,string format
 		,string columns
-		,string columnNames //TODO
+		,string columnNames
 		,numeric headerRow
 		,string rows
 		,string sheetName
@@ -742,14 +742,10 @@ component{
 	){
 		if( arguments.KeyExists( "query" ) )
 			throw( type=exceptionType,message="Invalid argument 'query'.",details="Just use format='query' to return a query object" );
-		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query",format ) ) //,csv,html,tab,pipe
-			throw( type=exceptionType,message="Invalid format",detail="Supported formats are: QUERY, HTML, CSV, TAB and PIPE" );
+		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query",format ) )
+			throw( type=exceptionType,message="Invalid format",detail="Only query is supported as a read format" );
 		if( arguments.KeyExists( "sheetName" ) AND arguments.KeyExists( "sheetNumber" ) )
 			throw( type=exceptionType,message="Cannot provide both sheetNumber and sheetName arguments",detail="Only one of either 'sheetNumber' or 'sheetName' arguments may be provided." );
-		 //TODO
-		if( arguments.KeyExists( "columnNames" ) )
-			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'columnNames' argument is not yet supported." );
-		//END TODO
 		if( !FileExists( src ) )
 			throw( type=exceptionType,message="Non-existent file",detail="Cannot find the file #src#." );
 		var workbook = this.workbookFromFile( src );
@@ -780,6 +776,8 @@ component{
 					args.rows = rows;
 				if( arguments.KeyExists( "columns" ) )
 					args.columns = columns;
+				if( arguments.KeyExists( "columnNames" ) )
+					args.columnNames = columnNames;
 				args.includeBlankRows=includeBlankRows;
 				args.fillMergedCellsWithVisibleValue=fillMergedCellsWithVisibleValue;
 				return this.sheetToQuery( argumentCollection=args );

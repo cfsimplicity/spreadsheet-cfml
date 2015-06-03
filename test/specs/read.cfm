@@ -128,7 +128,7 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Can read specified rows only",function() {
+	it( "Can read specified rows only into a query",function() {
 		data=QuerySim( "A
 			A1
 			A2
@@ -160,7 +160,7 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	}); 
 
-	it( "Can read specified column numbers only",function() {
+	it( "Can read specified column numbers only into a query",function() {
 		data=QuerySim( "A,B,C,D,E
 			A1|B1|C1|D1|E1")
 		//With no header row, so no column names specified
@@ -187,7 +187,7 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Can read specific rows and columns only",function() {
+	it( "Can read specific rows and columns only into a query",function() {
 		data=QuerySim( "A1,B1,C1,D1,E1
 			A2|B2|C2|D2|E2
 			A3|B3|C3|D3|E3
@@ -201,6 +201,30 @@ describe( "read tests",function(){
 			B2|D2|E2
 			B4|D4|E4
 			B5|D5|E5");
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Allows column names to be specified as a list when reading a sheet into a query",function() {
+		path = ExpandPath( "/root/test/files/test.xls" );
+		// only one column name specified. The other will be the default
+		actual = s.read( src=path,format="query",columnNames="One" );
+		expected = QuerySim( "One,column2
+			a|b
+			c|d");
+		expect( actual ).toBe( expected );
+		//both names specified
+		actual = s.read( src=path,format="query",columnNames="One,Two" );
+		expected = QuerySim( "One,Two
+			a|b
+			c|d");
+		expect( actual ).toBe( expected );
+	});
+
+	it( "ColumnNames list overrides headerRow: none of the header row values will be used",function() {
+		path = ExpandPath( "/root/test/files/test.xls" );
+		actual = s.read( src=path,format="query",columnNames="One,Two",headerRow=1 );
+		expected = QuerySim( "One,Two
+			c|d");
 		expect( actual ).toBe( expected );
 	});
 
