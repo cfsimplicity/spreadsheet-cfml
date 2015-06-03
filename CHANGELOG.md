@@ -1,6 +1,11 @@
+## 0.4.5 - 3 June 2015
+	- Enhancements:
+	 - \#44 Support reading specified row or column ranges
+	 - \#45 Support being able to specify the column names when reading a spreadsheet from file
+
 ## 0.4.4 - 31 May 2015
 -	Bug fix:
- 	- \#51  Empty cells are skipped when reading a spreadsheet into a query.
+ 	- \#51 Empty cells are skipped when reading a spreadsheet into a query.
 
 ## 0.4.3 - 29 May 2015
 	- Upgrade POI to 3.12
@@ -23,7 +28,6 @@
 	- Use "freeze" instead of "split" for argument names of addFreezePane
 	
 ## 0.3.0 - 24 February 2015
-
 - Breaking changes
 	- \#27 Drop `deleteSheet[Number]()` in favour of `removeSheet[Number]()`
 - Bug fixes:
@@ -54,7 +58,6 @@
 	- \#38 Add `clearCell()` and `clearCellRange()`
 
 ## 0.2.0 - 18 February 2015
-
 - Breaking changes
  - `read()` method `sheet` argument should now be `sheetNumber` (for consistency)
  - When specifying 1-based sheet numbers as arguments, always use `sheetNumber` (not `sheet` or `sheetIndex`).
@@ -65,7 +68,6 @@
  - \#15 Add `deleteSheet()` which can delete a sheet by name or number
 
 ## 0.1.0 - 17 February 2015
-
 - Bug fixes:
  - Treat null rows/cells as blank not null
  - \#5 `new()` method ignores xmlFormat argument
@@ -83,18 +85,15 @@
  - \#12 Change ACF `excludeHeaderRow` default=false to `includeHeaderRow`, default=false 
 
 ## 0.0.5 - 13 February 2015
-
 - `read` method
 	- changed radically to work under Lucee. Some attributes/functionality disabled for now, but can return a query or workbook object.
 	- changed `excludeHeaderRow` default from false to true
 - Added `flushPoiLoader` utility method
 
 ## 0.0.4 - 12 February 2015
-
 - Added
  - `write` method matching `SpreadSheetWrite()`
  - `writeFileFromQuery` custom method
-
 
 ## 0.0.3 - 25 January 2015
 - Workbook creation separated from instantiation. Create a workbook using `new()` and then pass it to other functions. Same as ACF functions.
@@ -105,10 +104,9 @@
  - `setActiveSheet`
 
 ## 0.0.2 - 19 January 2015
-Added custom method: `downloadFileFromQuery`
+- Added custom method: `downloadFileFromQuery`
 
 ## 0.0.1 - 18 January 2015
-
 - Initial release with support for the following standard CFML functions only:
 	- `addColumn`
 	- `addRow`

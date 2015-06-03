@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "0.4.4";
+	variables.version = "0.5.0";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
 	variables.defaultFormats = { DATE = "yyyy-mm-dd", TIMESTAMP = "yyyy-mm-dd hh:mm:ss", TIME = "hh:mm:ss" };
@@ -730,10 +730,10 @@ component{
 	function read(
 		required string src
 		,string format
-		,string columns //TODO
-		,string columnNames //TODO
+		,string columns
+		,string columnNames
 		,numeric headerRow
-		,string rows //TODO
+		,string rows
 		,string sheetName
 		,numeric sheetNumber // 1-based
 		,boolean includeHeaderRow=false
@@ -742,18 +742,10 @@ component{
 	){
 		if( arguments.KeyExists( "query" ) )
 			throw( type=exceptionType,message="Invalid argument 'query'.",details="Just use format='query' to return a query object" );
-		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query",format ) ) //,csv,html,tab,pipe
-			throw( type=exceptionType,message="Invalid format",detail="Supported formats are: QUERY, HTML, CSV, TAB and PIPE" );
+		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query",format ) )
+			throw( type=exceptionType,message="Invalid format",detail="Only query is supported as a read format" );
 		if( arguments.KeyExists( "sheetName" ) AND arguments.KeyExists( "sheetNumber" ) )
 			throw( type=exceptionType,message="Cannot provide both sheetNumber and sheetName arguments",detail="Only one of either 'sheetNumber' or 'sheetName' arguments may be provided." );
-		 //TODO
-		if( arguments.KeyExists( "columns" ) )
-			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'columns' argument is not yet supported." );
-		if( arguments.KeyExists( "columnNames" ) )
-			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'columnNames' argument is not yet supported." );
-		if( arguments.KeyExists( "rows" ) )
-			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'rows' argument is not yet supported." );		
-		//END TODO
 		if( !FileExists( src ) )
 			throw( type=exceptionType,message="Non-existent file",detail="Cannot find the file #src#." );
 		var workbook = this.workbookFromFile( src );
@@ -780,6 +772,12 @@ component{
 					args.headerRow=headerRow;
 					args.includeHeaderRow = includeHeaderRow;
 				}
+				if( arguments.KeyExists( "rows" ) )
+					args.rows = rows;
+				if( arguments.KeyExists( "columns" ) )
+					args.columns = columns;
+				if( arguments.KeyExists( "columnNames" ) )
+					args.columnNames = columnNames;
 				args.includeBlankRows=includeBlankRows;
 				args.fillMergedCellsWithVisibleValue=fillMergedCellsWithVisibleValue;
 				return this.sheetToQuery( argumentCollection=args );
@@ -1097,9 +1095,13 @@ component{
 		// TODO: workbook.isWriteProtected() returns true but the workbook opens without prompting for a password
 		if( arguments.KeyExists( "password" ) AND !password.Trim().IsEmpty() )
 			workbook.writeProtectWorkbook( JavaCast( "string",password ),JavaCast( "string","user" ) );
-		var outputStream = CreateObject( "java","java.io.FileOutputStream" ).init( filepath );
+		lock name="#filepath#" timeout=5{
+			var outputStream = CreateObject( "java","java.io.FileOutputStream" ).init( filepath );
+		}
 		try{
-			workbook.write( outputStream );
+			lock name="#filepath#" timeout=5{
+				workbook.write( outputStream );
+			}
 			outputStream.flush();
 		}
 		finally{

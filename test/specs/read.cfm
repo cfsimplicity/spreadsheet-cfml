@@ -128,6 +128,106 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Can read specified rows only into a query",function() {
+		data=QuerySim( "A
+			A1
+			A2
+			A3
+			A4
+			A5");
+		workbook = s.workbookFromQuery( data,false );
+		s.write( workbook,tempXlsPath,true );
+		var actual	=	s.read( src=tempXlsPath,format="query",rows="2,4-5" );
+		expected =	QuerySim( "column1
+			A2
+			A4
+			A5");
+		expect( actual ).toBe( expected );
+		//with header row included in row 1
+		data=QuerySim( "A1
+			A2
+			A3
+			A4
+			A5
+			A6");
+		workbook = s.workbookFromQuery( data,true );
+		s.write( workbook,tempXlsPath,true );
+		var actual	=	s.read( src=tempXlsPath,format="query",rows="2,4-5",headerRow=1 );
+		expected =	QuerySim( "A1
+			A2
+			A4
+			A5");
+		expect( actual ).toBe( expected );
+	}); 
+
+	it( "Can read specified column numbers only into a query",function() {
+		data=QuerySim( "A,B,C,D,E
+			A1|B1|C1|D1|E1")
+		//With no header row, so no column names specified
+		workbook = s.workbookFromQuery( data,false );
+		s.write( workbook,tempXlsPath,true );
+		var actual	=	s.read( src=tempXlsPath,format="query",columns="2,4-5" );
+		expected = QuerySim( "column1,column2,column3
+			B1|D1|E1");
+		expect( actual ).toBe( expected );
+		//With column names specified from the header row
+		workbook = s.workbookFromQuery( data,true );
+		s.write( workbook,tempXlsPath,true );
+		actual	=	s.read( src=tempXlsPath,format="query",columns="2,4-5",headerRow=1 );
+		expected = QuerySim( "B,D,E
+			B1|D1|E1");
+		expect( actual ).toBe( expected );
+		//Include the header row with specified column names
+		workbook = s.workbookFromQuery( data,true );
+		s.write( workbook,tempXlsPath,true );
+		actual	=	s.read( src=tempXlsPath,format="query",columns="2,4-5",headerRow=1,includeHeaderRow=true );
+		expected =	QuerySim( "B,D,E
+			B|D|E
+			B1|D1|E1");
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Can read specific rows and columns only into a query",function() {
+		data=QuerySim( "A1,B1,C1,D1,E1
+			A2|B2|C2|D2|E2
+			A3|B3|C3|D3|E3
+			A4|B4|C4|D4|E4
+			A5|B5|C5|D5|E5");
+		//First row is header
+		workbook = s.workbookFromQuery( data,true );
+		s.write( workbook,tempXlsPath,true );
+		actual	=	s.read( src=tempXlsPath,format="query",columns="2,4-5",rows="2,4-5",headerRow=1 );
+		expected = QuerySim( "B1,D1,E1
+			B2|D2|E2
+			B4|D4|E4
+			B5|D5|E5");
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Allows column names to be specified as a list when reading a sheet into a query",function() {
+		path = ExpandPath( "/root/test/files/test.xls" );
+		// only one column name specified. The other will be the default
+		actual = s.read( src=path,format="query",columnNames="One" );
+		expected = QuerySim( "One,column2
+			a|b
+			c|d");
+		expect( actual ).toBe( expected );
+		//both names specified
+		actual = s.read( src=path,format="query",columnNames="One,Two" );
+		expected = QuerySim( "One,Two
+			a|b
+			c|d");
+		expect( actual ).toBe( expected );
+	});
+
+	it( "ColumnNames list overrides headerRow: none of the header row values will be used",function() {
+		path = ExpandPath( "/root/test/files/test.xls" );
+		actual = s.read( src=path,format="query",columnNames="One,Two",headerRow=1 );
+		expected = QuerySim( "One,Two
+			c|d");
+		expect( actual ).toBe( expected );
+	});
+
 	describe( "read exceptions",function(){
 
 		it( "Throws an exception if the 'query' argument is passed",function() {
