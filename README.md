@@ -26,7 +26,7 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 ##Downsides
 
 - Existing code needs adapting to invoke the library. Existing CFML spreadsheet functions and the `<cfspreadsheet>` tag won't work with it.
-- The `read()` method doesn't currently support exporting to HTML or CSV, or specifying rows/columns.
+- The `read()` method doesn't currently support exporting to HTML or CSV.
 
 ##Usage
 

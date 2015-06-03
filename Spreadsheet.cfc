@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "0.4.4";
+	variables.version = "0.5.0";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
 	variables.defaultFormats = { DATE = "yyyy-mm-dd", TIMESTAMP = "yyyy-mm-dd hh:mm:ss", TIME = "hh:mm:ss" };
@@ -730,10 +730,10 @@ component{
 	function read(
 		required string src
 		,string format
-		,string columns //TODO
+		,string columns
 		,string columnNames //TODO
 		,numeric headerRow
-		,string rows //TODO
+		,string rows
 		,string sheetName
 		,numeric sheetNumber // 1-based
 		,boolean includeHeaderRow=false
@@ -747,8 +747,6 @@ component{
 		if( arguments.KeyExists( "sheetName" ) AND arguments.KeyExists( "sheetNumber" ) )
 			throw( type=exceptionType,message="Cannot provide both sheetNumber and sheetName arguments",detail="Only one of either 'sheetNumber' or 'sheetName' arguments may be provided." );
 		 //TODO
-		if( arguments.KeyExists( "columns" ) )
-			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'columns' argument is not yet supported." );
 		if( arguments.KeyExists( "columnNames" ) )
 			throw( type=exceptionType,message="Argument not yet supported",detail="Sorry the 'columnNames' argument is not yet supported." );
 		//END TODO
@@ -780,6 +778,8 @@ component{
 				}
 				if( arguments.KeyExists( "rows" ) )
 					args.rows = rows;
+				if( arguments.KeyExists( "columns" ) )
+					args.columns = columns;
 				args.includeBlankRows=includeBlankRows;
 				args.fillMergedCellsWithVisibleValue=fillMergedCellsWithVisibleValue;
 				return this.sheetToQuery( argumentCollection=args );

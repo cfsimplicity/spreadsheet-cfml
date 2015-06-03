@@ -74,6 +74,26 @@ private void function addInfoXml( required workbook,required struct info ){
 	}
 }
 
+private void function addRowToSheetData( required workbook,required struct sheet,required numeric rowIndex ){
+	if( ( rowIndex EQ sheet.headerRowIndex ) AND !sheet.includeHeaderRow )
+		return;
+	var rowData=[];
+	var row=sheet.object.GetRow( JavaCast( "int",rowIndex ) );
+	if( IsNull( row ) ){
+		if( sheet.includeBlankRows )
+			sheet.data.Append( rowData );
+		return;
+	}
+	if( rowIsEmpty( row ) AND !sheet.includeBlankRows )
+		return;
+	rowData=getRowData( workbook,row,sheet.columnRanges );
+	sheet.data.Append( rowData );
+	if( !sheet.columnRanges.Len() ){
+		var rowColumnCount = row.GetLastCellNum();
+		sheet.totalColumnCount = Max( sheet.totalColumnCount,rowColumnCount );
+	}
+}
+
 private struct function binaryInfo( required workbook ){
 	var documentProperties = workbook.getDocumentSummaryInformation();
 	var coreProperties = workbook.getSummaryInformation();
@@ -98,6 +118,16 @@ private boolean function cellExists( required workbook,required numeric rowNumbe
 	var columnIndex = columnNumber-1;
 	var checkRow = this.getActiveSheet( workbook ).getRow( JavaCast( "int",rowIndex ) );
 	return !IsNull( checkRow ) AND !IsNull( checkRow.getCell( JavaCast( "int",columnIndex ) ) );
+}
+
+private numeric function columnCountFromRanges( required array ranges ){
+	var result=0;
+	for( var thisRange in ranges ){
+		for( var i=thisRange.startAt; i LTE thisRange.endAt; i++ ){
+			result++;
+		}
+	}
+	return result;
 }
 
 private function createCell( required row,numeric cellNum=arguments.row.getLastCellNum(),overwrite=true ){
@@ -373,6 +403,30 @@ private array function getQueryColumnFormats( required workbook,required query q
 	return metadata;
 }
 
+private array function getRowData( required workbook,required row,array columnRanges=[] ){
+	var result=[];
+	if( !columnRanges.Len() ){
+		var columnRange={
+			startAt=1
+			,endAt=row.GetLastCellNum()
+		};
+		arguments.columnRanges=[ columnRange ];
+	}
+	for( var thisRange in columnRanges ){
+		for( var i=thisRange.startAt; i LTE thisRange.endAt; i++ ){
+			var colIndex=i-1;
+			var cell = row.GetCell( JavaCast( "int",colIndex ) );
+			if( IsNull( cell ) ){
+				result.Append( "" );
+				continue;
+			}
+			var cellValue = this.getCellValueAsType( workbook,cell );
+			result.Append( JavaCast( "string",cellValue ) );
+		}
+	}
+	return result;
+}
+
 private numeric function getSheetIndexFromName( required workbook,required string sheetName ){
 	//returns -1 if non-existent
 	return workbook.getSheetIndex( JavaCast( "string",sheetName ) );
@@ -521,51 +575,6 @@ private boolean function sheetHasMergedRegions( required sheet ){
 	return ( sheet.getNumMergedRegions() GT 0 );
 }
 
-private void function addRowToSheetData( required workbook,required struct sheet,required numeric rowIndex ){
-	var row={
-		isHeaderRow = ( sheet.hasHeaderRow AND ( rowIndex EQ sheet.headerRowIndex ) )
-		,object=sheet.object.GetRow( JavaCast( "int",rowIndex ) )
-		,data=[]
-	};
-	if( IsNull( row.object ) ){
-		if( !row.isHeaderRow OR sheet.includeHeaderRow )
-			sheet.data.Append( row.data );
-		return;
-	}
-	if( rowIsEmpty( row.object ) AND !sheet.includeBlankRows )
-		return;
-	row.columnCount = row.object.GetLastCellNum();
-	sheet.totalColumnCount = Max( sheet.totalColumnCount,row.columnCount );
-
-	for( var colIndex=0; colIndex LT row.columnCount; colIndex++ ){
-		this.addCellToRowData( workbook,sheet,row,colIndex );
-	}//end column loop
-	if( !row.isHeaderRow OR sheet.includeHeaderRow )
-		sheet.data.Append( row.data );
-}
-
-private function addCellToRowData( required workbook,required struct sheet,required struct row,required numeric colIndex ){
-	var cell = row.object.GetCell( JavaCast( "int",colIndex ) );
-	if( IsNull( cell ) ){
-		row.data.Append( JavaCast( "string","" ) );
-		return;
-	}
-	if( row.isHeaderRow ){
-		try{
-			var value = cell.getStringCellValue();
-		}
-		catch ( any exception ) {
-			/* There was an error grabbing the text of the header column type. */
-			var value="column#( colIndex+1 )#";
-		}
-		sheet.columnNames.Append( value );
-		if( !sheet.includeHeaderRow )
-			return;
-	}
-	var cellValue = this.getCellValueAsType( workbook,cell );
-	row.data.Append( JavaCast( "string",cellValue ) );
-}
-
 private query function sheetToQuery(
 	required workbook
 	,string sheetName
@@ -575,15 +584,21 @@ private query function sheetToQuery(
 	,boolean includeBlankRows=false
 	,boolean fillMergedCellsWithVisibleValue=false
 	,string rows //range
+	,string columns //range
 ){
 	var sheet={
 		includeHeaderRow=includeHeaderRow
-		,hasHeaderRow = arguments.KeyExists( "headerRow" )
+		,hasHeaderRow=( arguments.KeyExists( "headerRow" ) AND Val( headerRow ) )
 		,includeBlankRows=includeBlankRows
 		,columnNames=[]
+		,columnRanges=[]
 		,totalColumnCount=0
 	};
-	sheet.headerRowIndex = ( sheet.hasHeaderRow AND headerRow )? headerRow-1: 0;
+	sheet.headerRowIndex = sheet.hasHeaderRow? headerRow-1: -1;
+	if( arguments.KeyExists( "columns" ) ){
+		sheet.columnRanges=this.extractRanges( arguments.columns );
+		sheet.totalColumnCount=columnCountFromRanges( sheet.columnRanges );
+	}
 	if( arguments.KeyExists( "sheetName" ) ){
 		validateSheetExistsWithName( workbook,sheetName );
 		arguments.sheetNumber = getSheetIndexFromName( workbook,sheetName )+1;
@@ -595,35 +610,35 @@ private query function sheetToQuery(
 	if( arguments.KeyExists( "rows" ) ){
 		var allRanges = this.extractRanges( arguments.rows );
 		for( var thisRange in allRanges ){
-			if( thisRange.startAt EQ thisRange.endAt ){
-				/* Just one row */
-				var rowIndex=thisRange.startAt-1;
-				this.addRowToSheetData( workbook,sheet,rowIndex );
-				continue;
-			}
 			for( var rowNumber=thisRange.startAt; rowNumber LTE thisRange.endAt; rowNumber++ ){
 				var rowIndex=rowNumber-1;
 				this.addRowToSheetData( workbook,sheet,rowIndex );
 			}
 		}
 	} else {
-		var lastRowNumber = sheet.object.GetLastRowNum();
-		// Loop over the rows in the Excel sheet.
-		for( var rowIndex=0; rowIndex LTE lastRowNumber; rowIndex++ ){
+		var lastRowIndex = sheet.object.GetLastRowNum();// zero based
+		for( var rowIndex=0; rowIndex LTE lastRowIndex; rowIndex++ ){
 			this.addRowToSheetData( workbook,sheet,rowIndex );
-		}//end row loop
-	}	
-	if( !sheet.columnNames.Len() ){
+		}
+	}
+	//query columns
+	if( sheet.hasHeaderRow ){
+		var headerRow=sheet.object.GetRow( JavaCast( "int",sheet.headerRowIndex ) );
+		var rowData=getRowData( workbook,headerRow,sheet.columnRanges );
+		var i=1;
+		for( var value in rowData ){
+			var columnName="column" & i;
+			if( value.Len() )
+				columnName=value;
+			sheet.columnNames.Append( columnName );
+			i++;
+		}
+	} else {
 		for( var i=1; i LTE sheet.totalColumnCount; i++ ){
 			sheet.columnNames.Append( "column" & i );
 		}
 	}
-	var columnTypes = [];
-	for( var columnName in sheet.columnNames ){
-		columnTypes.Append( "VarChar" );
-	}
-	var result = QueryNew( sheet.columnNames,columnTypes,sheet.data );
-	return result;
+	return QueryNew( sheet.columnNames,"",sheet.data );
 }
 
 private void function validateSheetExistsWithName( required workbook,required string sheetName ){
