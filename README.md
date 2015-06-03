@@ -109,7 +109,7 @@ You will probably want to place the spreadsheet library files in a central locat
 
 In Adobe ColdFusion, the `SpreadsheetRead()` script function is limited to just returning a spreadsheet object, whereas the `<cfspreadsheet action="read">` tag has a range of options for reading and returning data from a spreadsheet file. 
 
-Not all of these options are available yet, but with the `read()` method in this library you can currently read a spreadsheet file into a query and return that instead of a spreadsheet object.
+The `read()` method in this library allows you to read a spreadsheet file into a query and return that instead of a spreadsheet object. It has a range of options for controlling how the spreadsheet-to-query conversion is processed.
 
 ```
 myQuery = spreadsheet.read( src=mypath,format="query" );
