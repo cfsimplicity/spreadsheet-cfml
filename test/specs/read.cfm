@@ -228,6 +228,19 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Returns HTML table rows from an Excel file",function() {
+		path = ExpandPath( "/root/test/files/test.xls" );
+		actual = s.read( src=path,format="html" );
+		expected="<tbody><tr><td>a</td><td>b</td></tr><tr><td>c</td><td>d</td></tr></tbody>";
+		expect( actual ).toBe( expected );
+		actual = s.read( src=path,format="html",headerRow=1 );
+		expected="<thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>c</td><td>d</td></tr></tbody>";
+		expect( actual ).toBe( expected );
+		actual = s.read( src=path,format="html",headerRow=1,includeHeaderRow=true );
+		expected="<thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>a</td><td>b</td></tr><tr><td>c</td><td>d</td></tr></tbody>";
+		expect( actual ).toBe( expected );
+	});
+
 	describe( "read exceptions",function(){
 
 		it( "Throws an exception if the 'query' argument is passed",function() {
