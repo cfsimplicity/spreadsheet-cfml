@@ -287,7 +287,7 @@ private function getCellValueAsType( required workbook,required cell ){
 	}
 	if( cellType EQ cell.CELL_TYPE_FORMULA ){
 		var formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
-		return formatter.formatCellValue( cell,formulaEvaluator );
+		return this.getFormatter().formatCellValue( cell,formulaEvaluator );
 	}
 	if( cellType EQ cell.CELL_TYPE_BOOLEAN )
 		return cell.getBooleanCellValue();
