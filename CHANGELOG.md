@@ -1,3 +1,10 @@
+## 0.4.6 - 6 June 2015
+	- Enhancements:
+	 - \#43 Add html format support to `read()`.
+	 - \#54 Allow default date formats to be overridden
+	- Bug fixes:
+	 - \#53 Fix incorrect formatter reference when evaluating formula cells.
+
 ## 0.4.5 - 3 June 2015
 	- Enhancements:
 	 - \#44 Support reading specified row or column ranges
