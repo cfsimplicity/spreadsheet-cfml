@@ -3,7 +3,12 @@ component{
 	variables.version = "0.4.5";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
-	variables.defaultFormats = { DATE = "yyyy-mm-dd", TIMESTAMP = "yyyy-mm-dd hh:mm:ss", TIME = "hh:mm:ss" };
+	variables.defaultFormats = {
+		DATE 				= "yyyy-mm-dd"
+		,DATETIME		=	"yyyy-mm-dd HH:nn:ss"
+		,TIME 			= "hh:mm:ss"
+		,TIMESTAMP 	= "yyyy-mm-dd hh:mm:ss"
+	};
 	variables.exceptionType	=	"cfsimplicity.lucee.spreadsheet";
 
 	include "tools.cfm";
@@ -742,8 +747,8 @@ component{
 	){
 		if( arguments.KeyExists( "query" ) )
 			throw( type=exceptionType,message="Invalid argument 'query'.",details="Just use format='query' to return a query object" );
-		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query",format ) )
-			throw( type=exceptionType,message="Invalid format",detail="Only query is supported as a read format" );
+		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query,html",format ) )
+			throw( type=exceptionType,message="Invalid format",detail="Supported formats are: 'query', 'html'" );
 		if( arguments.KeyExists( "sheetName" ) AND arguments.KeyExists( "sheetNumber" ) )
 			throw( type=exceptionType,message="Cannot provide both sheetNumber and sheetName arguments",detail="Only one of either 'sheetNumber' or 'sheetName' arguments may be provided." );
 		if( !FileExists( src ) )
@@ -754,13 +759,10 @@ component{
 		if( !arguments.keyExists( "format" ) )
 			return workbook;
 		switch( format ){
-			case "csv": case "tab": case "pipe":
+			case "csv":
 				throw( type=exceptionType,message="Format not yet supported",detail="Sorry #format# is not yet supported as an ouput format" );
 				break;
-			case "html":
-				throw( type=exceptionType,message="Format not yet supported",detail="Sorry #format# is not yet supported as an ouput format" );
-				break;
-			case "query":
+			case "query": case "html":
 				var args = {
 					workbook = workbook
 				};
@@ -780,7 +782,17 @@ component{
 					args.columnNames = columnNames;
 				args.includeBlankRows=includeBlankRows;
 				args.fillMergedCellsWithVisibleValue=fillMergedCellsWithVisibleValue;
-				return this.sheetToQuery( argumentCollection=args );
+				var generatedQuery=this.sheetToQuery( argumentCollection=args );
+				if( format IS "query" )
+					return generatedQuery;
+				var args={
+					query=generatedQuery
+				};
+				if( arguments.KeyExists( "headerRow" ) ){
+					args.headerRow=headerRow;
+					args.includeHeaderRow = includeHeaderRow;
+				}
+				return this.queryToHtml( argumentCollection=args );
 		}
 		return workbook;
 	}

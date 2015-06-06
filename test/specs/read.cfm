@@ -18,9 +18,11 @@ describe( "read tests",function(){
 		expected = querySim(
 			"column1,column2
 			a|b
-			c|d");
+			1|#ParseDateTime( '2015-04-01 00:00:00' )#
+			#ParseDateTime( '2015-04-01 01:01:01' )#|2");
 		actual = s.read( src=path,format="query" );
 		expect( actual ).toBe( expected );
+
 	});
 
 	it( "Can read an OOXML file into a query",function() {
@@ -32,9 +34,7 @@ describe( "read tests",function(){
 			c|g
 			I am|ooxml");
 		actual = s.read( src=path,format="query" );
-		expect( actual ).toBe( expected );
 	});
-
 
 	it( "Reads from the specified sheet name",function(){
 		path = ExpandPath( "/root/test/files/test.xls" );// has 2 sheets
@@ -58,7 +58,8 @@ describe( "read tests",function(){
 		path = ExpandPath( "/root/test/files/test.xls" );
 		expected = querySim(
 			"a,b
-			c|d");
+			1|#ParseDateTime( '2015-04-01 00:00:00' )#
+			#ParseDateTime( '2015-04-01 01:01:01' )#|2");
 		actual = s.read( src=path,format="query",headerRow=1 );
 		expect( actual ).toBe( expected );
 	});
@@ -68,7 +69,8 @@ describe( "read tests",function(){
 		expected = querySim(
 			"a,b
 			a|b
-			c|d");
+			1|#ParseDateTime( '2015-04-01 00:00:00' )#
+			#ParseDateTime( '2015-04-01 01:01:01' )#|2");
 		actual = s.read( src=path,format="query",headerRow=1,includeHeaderRow=true );
 		expect( actual ).toBe( expected );
 	});
@@ -210,13 +212,15 @@ describe( "read tests",function(){
 		actual = s.read( src=path,format="query",columnNames="One" );
 		expected = QuerySim( "One,column2
 			a|b
-			c|d");
+			1|#ParseDateTime( '2015-04-01 00:00:00' )#
+			#ParseDateTime( '2015-04-01 01:01:01' )#|2");
 		expect( actual ).toBe( expected );
 		//both names specified
 		actual = s.read( src=path,format="query",columnNames="One,Two" );
 		expected = QuerySim( "One,Two
 			a|b
-			c|d");
+			1|#ParseDateTime( '2015-04-01 00:00:00' )#
+			#ParseDateTime( '2015-04-01 01:01:01' )#|2");
 		expect( actual ).toBe( expected );
 	});
 
@@ -224,7 +228,21 @@ describe( "read tests",function(){
 		path = ExpandPath( "/root/test/files/test.xls" );
 		actual = s.read( src=path,format="query",columnNames="One,Two",headerRow=1 );
 		expected = QuerySim( "One,Two
-			c|d");
+			1|#ParseDateTime( '2015-04-01 00:00:00' )#
+			#ParseDateTime( '2015-04-01 01:01:01' )#|2");
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Returns HTML table rows from an Excel file",function() {
+		path = ExpandPath( "/root/test/files/test.xls" );
+		actual = s.read( src=path,format="html" );
+		expected="<tbody><tr><td>a</td><td>b</td></tr><tr><td>1</td><td>2015-04-01 00:00:00</td></tr><tr><td>2015-04-01 01:01:01</td><td>2</td></tr></tbody>";
+		expect( actual ).toBe( expected );
+		actual = s.read( src=path,format="html",headerRow=1 );
+		expected="<thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>1</td><td>2015-04-01 00:00:00</td></tr><tr><td>2015-04-01 01:01:01</td><td>2</td></tr></tbody>";
+		expect( actual ).toBe( expected );
+		actual = s.read( src=path,format="html",headerRow=1,includeHeaderRow=true );
+		expected="<thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>a</td><td>b</td></tr><tr><td>1</td><td>2015-04-01 00:00:00</td></tr><tr><td>2015-04-01 01:01:01</td><td>2</td></tr></tbody>";
 		expect( actual ).toBe( expected );
 	});
 

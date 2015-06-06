@@ -287,7 +287,7 @@ private function getCellValueAsType( required workbook,required cell ){
 	}
 	if( cellType EQ cell.CELL_TYPE_FORMULA ){
 		var formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
-		return formatter.formatCellValue( cell,formulaEvaluator );
+		return this.getFormatter().formatCellValue( cell,formulaEvaluator );
 	}
 	if( cellType EQ cell.CELL_TYPE_BOOLEAN )
 		return cell.getBooleanCellValue();
@@ -421,7 +421,7 @@ private array function getRowData( required workbook,required row,array columnRa
 				continue;
 			}
 			var cellValue = this.getCellValueAsType( workbook,cell );
-			result.Append( JavaCast( "string",cellValue ) );
+			result.Append( cellValue );
 		}
 	}
 	return result;
@@ -438,6 +438,14 @@ private function initializeCell( required workbook,required numeric rowNumber,re
 	var rowObject = getCellUtil().getRow( rowIndex,getActiveSheet( workbook ) );
 	var cellObject = getCellUtil().getCell( rowObject,columnIndex );
 	return cellObject; 
+}
+
+private boolean function isDateObject( required input ){
+	return input.getClass().getName() IS "java.util.Date";
+}
+
+private boolean function isString( required input ){
+	return input.getClass().getName() IS "java.lang.String";
 }
 
 private function loadPoi( required string javaclass ){
@@ -511,6 +519,40 @@ private array function parseRowData( required string line,required string delimi
 	  }	  
   }
   return values;
+}
+
+private string function queryToHtml( required query query,numeric headerRow,boolean includeHeaderRow ){
+	var result=[];
+	var columns=query.ColumnArray();
+	var hasHeaderRow=( arguments.KeyExists( "headerRow" ) AND Val( headerRow ) );
+	if( hasHeaderRow ){
+		result.Append( "<thead>" );
+		result.Append( generateHtmlRow( columns,true ) );
+		result.Append( "</thead>" );
+	}
+	result.Append( "<tbody>" );
+	for( var row in query ){
+		var rowValues=[];
+		for( column in columns ){
+			rowValues.Append( row[ column ] );
+		}
+		result.Append( generateHtmlRow( rowValues ) );
+	}
+	result.Append( "</tbody>" );
+	return result.ToList( "" );
+}
+
+private string function generateHtmlRow( required array values,boolean isHeader=false ){
+	var result=[ "<tr>" ];
+	var columnTag=isHeader? "th": "td";
+	for( var value in values ){
+		if( this.isDateObject( value ) ){
+			value= DateTimeFormat( value,defaultFormats.DATETIME );
+		}
+		result.Append( "<#columnTag#>#value#</#columnTag#>" );
+	}
+	result.Append( "</tr>" );
+	return result.ToList( "" );
 }
 
 private boolean function rowIsEmpty( required row ){
@@ -635,7 +677,7 @@ private query function sheetToQuery(
 		var i=1;
 		for( var value in rowData ){
 			var columnName="column" & i;
-			if( value.Len() )
+			if( this.isString( value ) AND value.Len() )
 				columnName=value;
 			sheet.columnNames.Append( columnName );
 			i++;
