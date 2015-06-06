@@ -312,10 +312,10 @@ private string function getDateTimeValueFormat( required any value ){
 	var dateTime = ParseDateTime( value );
 	var dateOnly = CreateDate( Year( dateTime ),Month( dateTime ),Day( dateTime ) );
 	if( DateCompare( value,dateOnly,"s" ) EQ 0 )
-		return variables.defaultFormats.DATE;
+		return variables.dateFormats.DATE;
 	if( DateCompare( "1899-12-30",dateOnly,"d" ) EQ 0 )
-		return variables.defaultFormats.TIME;
-	return variables.defaultFormats.TIMESTAMP;
+		return variables.dateFormats.TIME;
+	return variables.dateFormats.TIMESTAMP;
 }
 
 private numeric function getDefaultCharWidth( required workbook ){
@@ -383,11 +383,11 @@ private array function getQueryColumnFormats( required workbook,required query q
 			/* apply basic formatting to dates and times for increased readability */
 			case "DATE": case "TIMESTAMP":
 				col.cellDataType = "DATE";
-				col.defaultCellStyle 	= this.buildCellStyle( workbook,{ dataFormat = variables.defaultFormats[ col.typeName ] } );
+				col.defaultCellStyle 	= this.buildCellStyle( workbook,{ dataFormat = variables.dateFormats[ col.typeName ] } );
 			break;
 			case "TIME":
 				col.cellDataType = "TIME";
-				col.defaultCellStyle 	= this.buildCellStyle( workbook,{ dataFormat = variables.defaultFormats[ col.typeName ] } );
+				col.defaultCellStyle 	= this.buildCellStyle( workbook,{ dataFormat = variables.dateFormats[ col.typeName ] } );
 			break;
 			/* Note: Excel only supports "double" for numbers. Casting very large DECIMIAL/NUMERIC or BIGINT values to double may result in a loss of precision or conversion to NEGATIVE_INFINITY / POSITIVE_INFINITY. */
 			case "DECIMAL": case "BIGINT": case "NUMERIC": case "DOUBLE": case "FLOAT": case "INTEGER": case "REAL": case "SMALLINT": case "TINYINT":
@@ -547,7 +547,7 @@ private string function generateHtmlRow( required array values,boolean isHeader=
 	var columnTag=isHeader? "th": "td";
 	for( var value in values ){
 		if( this.isDateObject( value ) ){
-			value= DateTimeFormat( value,defaultFormats.DATETIME );
+			value= DateTimeFormat( value,dateFormats.DATETIME );
 		}
 		result.Append( "<#columnTag#>#value#</#columnTag#>" );
 	}
@@ -577,7 +577,7 @@ private void function setCellValueAsType( required workbook,required cell,requir
 		cell.setCellStyle( this.buildCellStyle( workbook,{ dataFormat=cellFormat } ) );
 		cell.setCellType( cell.CELL_TYPE_NUMERIC );
 		/*  Excel's uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling - */
-		if( cellFormat EQ variables.defaultFormats.TIME ){
+		if( cellFormat EQ variables.dateFormats.TIME ){
 			var dateUtil = this.getDateUtil();
 			value = TimeFormat( value, "HH:MM:SS" );
 		 	cell.setCellValue( dateUtil.convertTime( value ) );

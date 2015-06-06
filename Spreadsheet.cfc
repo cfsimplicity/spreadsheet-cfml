@@ -3,7 +3,7 @@ component{
 	variables.version = "0.4.5";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
-	variables.defaultFormats = {
+	variables.dateFormats = {
 		DATE 				= "yyyy-mm-dd"
 		,DATETIME		=	"yyyy-mm-dd HH:nn:ss"
 		,TIME 			= "hh:mm:ss"
@@ -14,14 +14,29 @@ component{
 	include "tools.cfm";
 	include "formatting.cfm";
 
-	function init(){
+	function init( struct dateFormats ){
+		if( arguments.KeyExists( "dateFormats" ) )
+			this.overrideDefaultDateFormats( arguments.dateFormats );
 		return this;
+	}
+
+	private void function overrideDefaultDateFormats( required struct formats ){
+		for( var format in formats ){
+			if( !variables.dateFormats.KeyExists( format ) )
+				throw( type=exceptionType,message="Invalid date format key",detail="'#format#' is not a valid dateformat key. Valid keys are DATE, DATETIME, TIME and TIMESTAMP" );
+			variables.dateFormats[ format ]=formats[ format ];
+		}
 	}
 
 	void function flushPoiLoader(){
 		lock scope="server" timeout="10"{
 			StructDelete( server,poiLoaderName );
 		};
+	}
+
+	/* META INFO */
+	public struct function getDateFormats(){
+		return dateFormats;
 	}
 
 	/* CUSTOM METHODS */
