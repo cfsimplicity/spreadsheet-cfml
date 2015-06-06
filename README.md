@@ -119,6 +119,21 @@ An additional option `fillMergedCellsWithVisibleValue` allows all empty cells in
 
 [Full documentation of read()](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/read)
 
+###Date formats
+
+The following international date masks are used by default to read and write cell values formatted as dates:
+
+* DATE=`yyyy-mm-dd`
+* DATETIME=`yyyy-mm-dd HH:nn:ss`
+* TIME=`hh:mm:ss`
+* TIMESTAMP=`yyyy-mm-dd hh:mm:ss`
+
+Each of these can be overridden by passing in a struct including the value(s) to be overridden when instantiating the Spreadsheet compoenent. For example:
+
+```
+spreadsheet = New root.spreadsheet( dateFormats={ DATE="mm/dd/yyyy" } );
+```
+
 ##Test Suite
 The automated tests require [TestBox 2.1](https://github.com/Ortus-Solutions/TestBox). You will need to create an application mapping for `/testbox`
 
