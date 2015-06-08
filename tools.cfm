@@ -521,6 +521,35 @@ private array function parseRowData( required string line,required string delimi
   return values;
 }
 
+private string function queryToCsv( required query query,numeric headerRow,boolean includeHeaderRow ){
+	var result=[];
+	var crlf=Chr( 13 ) & Chr( 10 );
+	var columns=query.ColumnArray();
+	var hasHeaderRow=( arguments.KeyExists( "headerRow" ) AND Val( headerRow ) );
+	if( hasHeaderRow )
+		result.Append( generateCsvRow( columns ) );
+	for( var row in query ){
+		var rowValues=[];
+		for( column in columns ){
+			rowValues.Append( row[ column ] );
+		}
+		result.Append( generateCsvRow( rowValues ) );
+	}
+	return result.ToList( crlf );
+}
+
+private string function generateCsvRow( required array values,delimiter="," ){
+	var result=[];
+	for( var value in values ){
+		if( this.isDateObject( value ) ){
+			value= DateTimeFormat( value,dateFormats.DATETIME );
+		}
+		value=Replace( value,'"','""',"ALL" );//can't use member function in case its a non-string
+		result.Append( '"#value#"' );
+	}
+	return result.ToList( delimiter );
+}
+
 private string function queryToHtml( required query query,numeric headerRow,boolean includeHeaderRow ){
 	var result=[];
 	var columns=query.ColumnArray();

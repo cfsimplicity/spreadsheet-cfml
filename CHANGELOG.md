@@ -1,3 +1,7 @@
+## 0.4.7 - 8 June 2015
+	- Enhancements:
+	 - \#52 Add csv format support to `read()`
+
 ## 0.4.6 - 6 June 2015
 	- Enhancements:
 	 - \#43 Add html format support to `read()`.

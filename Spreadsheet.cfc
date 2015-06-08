@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "0.4.6";
+	variables.version = "0.4.7";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
 	variables.dateFormats = {
@@ -762,8 +762,8 @@ component{
 	){
 		if( arguments.KeyExists( "query" ) )
 			throw( type=exceptionType,message="Invalid argument 'query'.",details="Just use format='query' to return a query object" );
-		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query,html",format ) )
-			throw( type=exceptionType,message="Invalid format",detail="Supported formats are: 'query', 'html'" );
+		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query,html,csv",format ) )
+			throw( type=exceptionType,message="Invalid format",detail="Supported formats are: 'query', 'html' and 'csv'" );
 		if( arguments.KeyExists( "sheetName" ) AND arguments.KeyExists( "sheetNumber" ) )
 			throw( type=exceptionType,message="Cannot provide both sheetNumber and sheetName arguments",detail="Only one of either 'sheetNumber' or 'sheetName' arguments may be provided." );
 		if( !FileExists( src ) )
@@ -773,43 +773,39 @@ component{
 			this.setActiveSheet( workbook=workbook,sheetName=sheetName );
 		if( !arguments.keyExists( "format" ) )
 			return workbook;
-		switch( format ){
-			case "csv":
-				throw( type=exceptionType,message="Format not yet supported",detail="Sorry #format# is not yet supported as an ouput format" );
-				break;
-			case "query": case "html":
-				var args = {
-					workbook = workbook
-				};
-				if( arguments.KeyExists( "sheetName" ) )
-					args.sheetName = sheetName;
-				if( arguments.KeyExists( "sheetNumber" ) )
-					args.sheetNumber = sheetNumber;
-				if( arguments.KeyExists( "headerRow" ) ){
-					args.headerRow=headerRow;
-					args.includeHeaderRow = includeHeaderRow;
-				}
-				if( arguments.KeyExists( "rows" ) )
-					args.rows = rows;
-				if( arguments.KeyExists( "columns" ) )
-					args.columns = columns;
-				if( arguments.KeyExists( "columnNames" ) )
-					args.columnNames = columnNames;
-				args.includeBlankRows=includeBlankRows;
-				args.fillMergedCellsWithVisibleValue=fillMergedCellsWithVisibleValue;
-				var generatedQuery=this.sheetToQuery( argumentCollection=args );
-				if( format IS "query" )
-					return generatedQuery;
-				var args={
-					query=generatedQuery
-				};
-				if( arguments.KeyExists( "headerRow" ) ){
-					args.headerRow=headerRow;
-					args.includeHeaderRow = includeHeaderRow;
-				}
-				return this.queryToHtml( argumentCollection=args );
+		var args = {
+			workbook = workbook
+		};
+		if( arguments.KeyExists( "sheetName" ) )
+			args.sheetName = sheetName;
+		if( arguments.KeyExists( "sheetNumber" ) )
+			args.sheetNumber = sheetNumber;
+		if( arguments.KeyExists( "headerRow" ) ){
+			args.headerRow=headerRow;
+			args.includeHeaderRow = includeHeaderRow;
 		}
-		return workbook;
+		if( arguments.KeyExists( "rows" ) )
+			args.rows = rows;
+		if( arguments.KeyExists( "columns" ) )
+			args.columns = columns;
+		if( arguments.KeyExists( "columnNames" ) )
+			args.columnNames = columnNames;
+		args.includeBlankRows=includeBlankRows;
+		args.fillMergedCellsWithVisibleValue=fillMergedCellsWithVisibleValue;
+		var generatedQuery=this.sheetToQuery( argumentCollection=args );
+		if( format IS "query" )
+			return generatedQuery;
+		var args={
+			query=generatedQuery
+		};
+		if( arguments.KeyExists( "headerRow" ) ){
+			args.headerRow=headerRow;
+			args.includeHeaderRow = includeHeaderRow;
+		}
+		switch( format ){
+			case "csv": return this.queryToCsv( argumentCollection=args );
+			case "html": return this.queryToHtml( argumentCollection=args );
+		}
 	}
 
 	binary function readBinary( required workbook ){

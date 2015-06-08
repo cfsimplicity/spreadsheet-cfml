@@ -16,7 +16,7 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
  - a blank workbook isn't created unnecessarily when reading an existing spreadsheet
  - the library can be stored as a singleton in application scope
  - the functions work more like those in ACF: you pass in an existing workbook explicitly as the first argument.
-- `read()` method offers most of the features of the `<cfspreadsheet action="read">` tag in script in addition to the basic options of `SpreadsheetRead()`.
+- `read()` method offers all the features of the `<cfspreadsheet action="read">` tag in script in addition to the basic options of `SpreadsheetRead()`.
 - Offers additional convenience methods, e.g. `downloadFileFromQuery()`.
 - Uses a newer version of the java POI library (3.12).
 - Fixes various outstanding bugs/omissions.
@@ -26,7 +26,7 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 ##Downsides
 
 - Existing code needs adapting to invoke the library. Existing CFML spreadsheet functions and the `<cfspreadsheet>` tag won't work with it.
-- The `read()` method doesn't currently support exporting to CSV.
+- Populating a spreadsheet from CSV is not supported.
 
 ##Usage
 
@@ -109,7 +109,7 @@ You will probably want to place the spreadsheet library files in a central locat
 
 In Adobe ColdFusion, the `SpreadsheetRead()` script function is limited to just returning a spreadsheet object, whereas the `<cfspreadsheet action="read">` tag has a range of options for reading and returning data from a spreadsheet file. 
 
-The `read()` method in this library allows you to read a spreadsheet file into a query and return that instead of a spreadsheet object. It includes most of the options available in `<cfspreadsheet action="read">`.
+The `read()` method in this library allows you to read a spreadsheet file into a query and return that instead of a spreadsheet object. It includes all of the options available in `<cfspreadsheet action="read">`.
 
 ```
 myQuery = spreadsheet.read( src=mypath,format="query" );
