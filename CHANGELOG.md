@@ -1,4 +1,4 @@
-## 0.4.7 - 8 June 2015
+## 0.4.8 - 8 June 2015
 	- Enhancements:
 	 - \#52 Add csv format support to `read()`
 	 - \#55 Allow csv file to be downloaded from a spreadsheet file
