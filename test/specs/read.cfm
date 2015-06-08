@@ -233,7 +233,7 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Returns HTML table rows from an Excel file",function() {
+	it( "Can return HTML table rows from an Excel file",function() {
 		path = ExpandPath( "/root/test/files/test.xls" );
 		actual = s.read( src=path,format="html" );
 		expected="<tbody><tr><td>a</td><td>b</td></tr><tr><td>1</td><td>2015-04-01 00:00:00</td></tr><tr><td>2015-04-01 01:01:01</td><td>2</td></tr></tbody>";
@@ -243,6 +243,27 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 		actual = s.read( src=path,format="html",headerRow=1,includeHeaderRow=true );
 		expected="<thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>a</td><td>b</td></tr><tr><td>1</td><td>2015-04-01 00:00:00</td></tr><tr><td>2015-04-01 01:01:01</td><td>2</td></tr></tbody>";
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Can return a CSV string from an Excel file",function() {
+		path = ExpandPath( "/root/test/files/test.xls" );
+		var crlf=Chr( 13 ) & Chr( 10 );
+		expected='"a","b"#crlf#"1","2015-04-01 00:00:00"#crlf#"2015-04-01 01:01:01","2"';
+		actual = s.read( src=path,format="csv" );
+		expect( actual ).toBe( expected );
+		expected='"a","b"#crlf#"a","b"#crlf#"1","2015-04-01 00:00:00"#crlf#"2015-04-01 01:01:01","2"';
+		actual = s.read( src=path,format="csv",headerRow=1,includeHeaderRow=true );
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Escapes double-quotes in string values when reading to CSV",function() {
+		data = QueryNew( "column1","VarChar",[ [ 'a "so-called" test' ] ] );
+		workbook = s.new();
+		s.addRows( workbook,data );
+		s.write( workbook,tempXlsPath,true );
+		expected = '"a ""so-called"" test"';
+		actual = s.read( src=tempXlsPath,format="csv" );
 		expect( actual ).toBe( expected );
 	});
 
