@@ -79,6 +79,29 @@ component{
 		content type=contentType variable="#binary#" reset="true";
 	}
 
+	void function downloadCsvFromFile(
+		required string src
+		,required string filename
+		,string contentType="text/csv"
+		,string columns
+		,string columnNames
+		,numeric headerRow
+		,string rows
+		,string sheetName
+		,numeric sheetNumber // 1-based
+		,boolean includeHeaderRow=false
+		,boolean includeBlankRows=false
+		,boolean fillMergedCellsWithVisibleValue=false
+	){
+		arguments.format="csv";
+		var csv=this.read( argumentCollection=arguments );
+		var binary=ToBinary( ToBase64( csv.Trim() ) );
+		var safeFilename	=	this.filenameSafe( filename );
+		var filenameWithoutExtension = safeFilename.REReplace( "\.csv$","" );
+		header name="Content-Disposition" value="attachment; filename=#Chr(34)##filenameWithoutExtension#.csv#Chr(34)#";
+		content type=contentType variable="#binary#" reset="true";
+	}
+
 	void function writeFileFromQuery(
 		required query data
 		,required string filepath
