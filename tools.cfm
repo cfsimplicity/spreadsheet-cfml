@@ -158,7 +158,7 @@ private function createWorkBook( required string sheetName,boolean useXmlFormat=
 
 private void function deleteHiddenColumnsFromQuery( required sheet,required query result ){
 	var startIndex=( sheet.totalColumnCount-1 );
-	for( colIndex=startIndex; colIndex GTE 0; colIndex-- ){
+	for( var colIndex=startIndex; colIndex GTE 0; colIndex-- ){
 		if( !sheet.object.isColumnHidden( JavaCast( "integer",colIndex ) ) )
 			continue;
 		var columnNumber=colIndex+1;
