@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "0.4.8";
+	variables.version = "0.4.9";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
 	variables.dateFormats = {
@@ -529,7 +529,7 @@ component{
 	}
 
 	void function formatCell( required workbook,required struct format,required numeric row,required numeric column,any cellStyle ){
-		var cell = this.initializeCell( workbook,row,column );
+		var cell = this.initializeCell( workbook,row,column );		
 		if( arguments.KeyExists( "cellStyle" ) )
 			cell.setCellStyle( cellStyle );// reuse an existing style
 		else
@@ -726,6 +726,10 @@ component{
 		return info; 
 	}
 
+	void function hideColumn( required workbook,required column ){
+		this.toggleColumnHidden( workbook,column,true );
+	}
+
 	boolean function isBinaryFormat( required workbook ){
 		return workbook.getClass().getCanonicalName() IS "org.apache.poi.hssf.usermodel.HSSFWorkbook";
 	}
@@ -782,6 +786,7 @@ component{
 		,boolean includeHeaderRow=false
 		,boolean includeBlankRows=false
 		,boolean fillMergedCellsWithVisibleValue=false
+		,boolean includeHiddenColumns=true
 	){
 		if( arguments.KeyExists( "query" ) )
 			throw( type=exceptionType,message="Invalid argument 'query'.",details="Just use format='query' to return a query object" );
@@ -815,6 +820,7 @@ component{
 			args.columnNames = columnNames;
 		args.includeBlankRows=includeBlankRows;
 		args.fillMergedCellsWithVisibleValue=fillMergedCellsWithVisibleValue;
+		args.includeHiddenColumns=includeHiddenColumns;
 		var generatedQuery=this.sheetToQuery( argumentCollection=args );
 		if( format IS "query" )
 			return generatedQuery;
@@ -1132,6 +1138,10 @@ component{
 			,JavaCast( "int",arguments.end - 1 )
 			,JavaCast( "int",arguments.offset )
 		);
+	}
+
+	void function showColumn( required workbook,required column ){
+		this.toggleColumnHidden( workbook,column,false );
 	}
 
 	void function write( required workbook,required string filepath,boolean overwrite=false,string password ){

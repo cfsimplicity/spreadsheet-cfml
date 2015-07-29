@@ -1,3 +1,8 @@
+## 0.4.9 - 29 July 2015
+	- Enhancements:
+	 - \#56 Add extra argument to `read()` to allow excluding hidden columns
+	 - \#58 Add `hideColumn()` and `showColumn()`
+
 ## 0.4.8 - 8 June 2015
 	- Enhancements:
 	 - \#52 Add csv format support to `read()`

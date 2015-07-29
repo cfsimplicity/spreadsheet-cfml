@@ -92,11 +92,13 @@ You will probably want to place the spreadsheet library files in a central locat
 * [autoSizeColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/autoSizeColumn)
 * [clearCell](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCell)
 * [clearCellRange](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCellRange)
+* [hideColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/hideColumn)
 * [isBinaryFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isBinaryFormat)
 * [isXmlFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isXmlFormat)
 * [renameSheet](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/renameSheet)
 * [removeSheetNumber](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/removeSheetNumber)
 * [setCellRangeValue](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setCellRangeValue)
+* [showColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/showColumn)
 
 ###Additional Convenience methods
 
