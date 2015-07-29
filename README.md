@@ -129,7 +129,7 @@ The following international date masks are used by default to read and write cel
 * TIME=`hh:mm:ss`
 * TIMESTAMP=`yyyy-mm-dd hh:mm:ss`
 
-Each of these can be overridden by passing in a struct including the value(s) to be overridden when instantiating the Spreadsheet compoenent. For example:
+Each of these can be overridden by passing in a struct including the value(s) to be overridden when instantiating the Spreadsheet component. For example:
 
 ```
 spreadsheet = New root.spreadsheet( dateFormats={ DATE="mm/dd/yyyy" } );
