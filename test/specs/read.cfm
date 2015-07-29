@@ -164,7 +164,7 @@ describe( "read tests",function(){
 
 	it( "Can read specified column numbers only into a query",function() {
 		data=QuerySim( "A,B,C,D,E
-			A1|B1|C1|D1|E1")
+			A1|B1|C1|D1|E1");
 		//With no header row, so no column names specified
 		workbook = s.workbookFromQuery( data,false );
 		s.write( workbook,tempXlsPath,true );
@@ -264,6 +264,30 @@ describe( "read tests",function(){
 		s.write( workbook,tempXlsPath,true );
 		expected = '"a ""so-called"" test"';
 		actual = s.read( src=tempXlsPath,format="csv" );
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Can exclude columns formatted as 'hidden'",function() {
+		workbook = s.new();
+		s.addColumn( workbook,"a1" );
+		s.addColumn( workbook,"b1" );
+		s.hideColumn( workbook,1 );
+		s.write( workbook,tempXlsPath,true );
+		var actual	=	s.read( src=tempXlsPath,format="query",includeHiddenColumns=false );
+		expected=QuerySim( "column2
+			b1");
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Returns an empty query if excluding hidden columns and ALL columns are hidden",function() {
+		workbook = s.new();
+		s.addColumn( workbook,"a1" );
+		s.addColumn( workbook,"b1" );
+		s.hideColumn( workbook,1 );
+		s.hideColumn( workbook,2 );
+		s.write( workbook,tempXlsPath,true );
+		var actual	=	s.read( src=tempXlsPath,format="query",includeHiddenColumns=false );
+		expected=Query();
 		expect( actual ).toBe( expected );
 	});
 
