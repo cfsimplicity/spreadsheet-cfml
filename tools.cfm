@@ -715,8 +715,19 @@ private query function sheetToQuery(
 		for( var i=1; i LTE sheet.totalColumnCount; i++ ){
 			sheet.columnNames.Append( "column" & i );
 		}
+	}	var result=QueryNew( sheet.columnNames,"",sheet.data );
+
+	if( ! arguments.includeHiddenColumns ){
+		for( var colIndex=sheet.totalColumnCount; colIndex GT 0; colIndex-- ){
+			if( sheet.object.isColumnHidden(colIndex) ){
+				queryDeleteColumn( result,sheet.columnNames[colIndex+1] );
+				sheet.totalColumnCount--;
+				sheet.columnNames.deleteAt(colIndex+1);
+			}
+		}
 	}
-	return QueryNew( sheet.columnNames,"",sheet.data );
+
+	return result;
 }
 
 private void function validateSheetExistsWithName( required workbook,required string sheetName ){
