@@ -726,7 +726,7 @@ component{
 		return info; 
 	}
 
-	void function hideColumn( required workbook,required column ){
+	void function hideColumn( required workbook,required numeric column ){
 		this.toggleColumnHidden( workbook,column,true );
 	}
 
@@ -1140,7 +1140,7 @@ component{
 		);
 	}
 
-	void function showColumn( required workbook,required column ){
+	void function showColumn( required workbook,required numeric column ){
 		this.toggleColumnHidden( workbook,column,false );
 	}
 
