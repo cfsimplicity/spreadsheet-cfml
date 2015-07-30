@@ -1,4 +1,111 @@
 <cfscript>
+private string function richStringCellValueToHtml( required workbook, required cell ){
+	if( cell.getCellType() neq cell.CELL_TYPE_STRING ){
+		throw();
+	}
+
+	var rich=cell.getRichStringCellValue();
+	var numRuns = rich.numFormattingRuns();
+	writeLog('#rich.getClass()# #rich.numFormattingRuns()# ');
+	if( numRuns gt 0 ){
+		var res='';
+
+		var base=workbook.getFontAt(cell.getCellStyle().getFontIndex());
+		var runs=[]
+		for(var run=0;run lt numRuns;run++){
+			//for each run,
+			 var font=workbook.getFontAt(rich.getFontOfFormattingRun(run)) ;
+			 //build font as HTML font tag
+			 runs.append( fontToHtml( workbook,base,font ) );
+		}
+
+		var rts = rich.toString();
+
+		//first run starts here (after unformatted start), with this font
+		var end=-1;
+		var currentRunIndex=0;
+		var start=rich.getIndexOfFormattingRun(currentRunIndex);
+
+		res=rts.mid( 1,start );//first bit isn't formatted.
+
+		for(var i=start+1;i lte rts.len();i++){
+			for(var p=i+1;p lte rts.len();p++){ //no way to get the length of the run, so scan ahead to end
+				if( rich.getFontAtIndex(p) neq currentRunIndex ){
+					end = p;
+				}
+			}
+
+			res&= '<span style="'&runs[ currentRunIndex+1 ]& '">' & rts.mid( i,end-start ) & '</span>' ;
+
+			//round again
+			currentRunIndex++;
+			i = end;
+		}
+
+	}else{
+		var res = getCellValueAsType( workbook,cell );
+	}
+
+	return res;
+}
+
+private string function fontToHtml( workbook,baseFont,hssfFont ){
+	/*
+	Does not yet handle
+    .attributes    = 0x0009
+       .macoutlined= false
+       .macshadowed= false
+    .supersubscript= 0x0000
+    .family        = 0x02
+    .charset       = 0x00
+	*/
+	var sty='';
+	var hasSetDec=false;
+	if( baseFont.getFontHeightInPoints() neq hssfFont.getFontHeightInPoints() ){
+		sty&='font-size:#hssfFont.getFontHeightInPoints()#pt;';
+	}
+
+	if( baseFont.getStrikeout() neq hssfFont.getStrikeout() and hssfFont.getStrikeout()  ){
+		sty&='text-decoration: line-through;';
+		hasSetDec=true;
+	}
+	if( baseFont.getStrikeout() neq hssfFont.getStrikeout() and !hssfFont.getStrikeout()  ){
+		sty&='text-decoration: none;';
+	}
+
+	if( baseFont.getItalic() neq hssfFont.getItalic() and hssfFont.getItalic()  ){
+		sty&='font-style: italic;';
+	}
+	if( baseFont.getItalic() neq hssfFont.getItalic() and !hssfFont.getItalic()  ){
+		sty&='font-style: normal;';
+	}
+
+	if( baseFont.getBoldweight() neq hssfFont.getBoldweight() ){
+		sty&='font-weight: '& (hssfFont.getBoldweight() eq 700 )?'bold':'normal' &';';
+	}
+
+	if( baseFont.getUnderline() neq hssfFont.getUnderline() ){
+		if( hasSetDec ){
+			throw();
+		}
+		sty&='text-decoration: '& (hssfFont.getUnderline() eq 0 )?'none':'underline' &';';
+	}
+
+	if( baseFont.getColor() neq hssfFont.getColor()  ){
+		//http://ragnarock99.blogspot.co.uk/2012/04/getting-hex-color-from-excel-cell.html
+		var col = hssfFont.getColor();
+		var rgb=workbook.getCustomPalette().getColor(col).getTriple();
+		var c = createObject( 'java.awt.Color' ).init(rgb[0], rgb[1], rgb[2]);
+		sty&='color: ##'& createObject( 'java.lang.Integer' ).toHexString( c.getRGB() ) &';';
+	}
+
+	if( baseFont.getFontName() neq hssfFont.getFontName()){
+		sty&='font-family: '& hssfFont.getFontName() &';';
+	}
+
+	return sty;
+}
+
 private any function buildCellStyle( required workbook,required struct format ){
 	/*  TODO: Reuse styles  */
 	var cellStyle = workbook.createCellStyle();
@@ -7,7 +114,7 @@ private any function buildCellStyle( required workbook,required struct format ){
 	var setting = 0;
 	var settingValue = 0;
 	var formatIndex = 0;
-	/* 
+	/*
 		Valid values of the format struct are:
 		* alignment
 		* bold
@@ -75,12 +182,12 @@ private any function buildCellStyle( required workbook,required struct format ){
 				cellStyle.setFillPattern( Evaluate( "cellStyle." & UCase( StructFind( format,setting ) ) ) );
 			break;
 			case "font":
-				font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );					
+				font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
 				font.setFontName( JavaCast( "string",StructFind( format,setting ) ) );
 				cellStyle.setFont( font );
 			break;
 			case "fontsize":
-				font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );					
+				font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
 				font.setFontHeightInPoints( JavaCast( "int",StructFind( format,setting ) ) );
 				cellStyle.setFont( font );
 			break;
