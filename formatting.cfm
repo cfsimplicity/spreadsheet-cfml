@@ -6,7 +6,7 @@ private string function richStringCellValueToHtml( required workbook, required c
 
 	var rich=cell.getRichStringCellValue();
 	var numRuns = rich.numFormattingRuns();
-	writeLog('#rich.getClass()# #rich.numFormattingRuns()# ');
+
 	if( numRuns gt 0 ){
 		var res='';
 
