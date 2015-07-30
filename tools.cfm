@@ -156,6 +156,18 @@ private function createWorkBook( required string sheetName,boolean useXmlFormat=
 	return loadPoi( className ).init();
 }
 
+private void function deleteHiddenColumnsFromQuery( required sheet,required query result ){
+	var startIndex=( sheet.totalColumnCount-1 );
+	for( var colIndex=startIndex; colIndex GTE 0; colIndex-- ){
+		if( !sheet.object.isColumnHidden( JavaCast( "integer",colIndex ) ) )
+			continue;
+		var columnNumber=colIndex+1;
+		QueryDeleteColumn( result,sheet.columnNames[ columnNumber ] );
+		sheet.totalColumnCount--;
+		sheet.columnNames.deleteAt( columnNumber );
+	}
+}
+
 private void function deleteSheetAtIndex( required workbook,required numeric sheetIndex ){
 	workbook.removeSheetAt( JavaCast( "int",sheetIndex ) );
 }
@@ -653,6 +665,7 @@ private query function sheetToQuery(
 	,numeric headerRow
 	,boolean includeHeaderRow=false
 	,boolean includeBlankRows=false
+	,boolean includeHiddenColumns=false
 	,boolean fillMergedCellsWithVisibleValue=false
 	,string rows //range
 	,string columns //range
@@ -715,24 +728,24 @@ private query function sheetToQuery(
 		for( var i=1; i LTE sheet.totalColumnCount; i++ ){
 			sheet.columnNames.Append( "column" & i );
 		}
-	}	var result=QueryNew( sheet.columnNames,"",sheet.data );
-
-	if( ! arguments.includeHiddenColumns ){
-		for( var colIndex=sheet.totalColumnCount; colIndex GT 0; colIndex-- ){
-			if( sheet.object.isColumnHidden(colIndex) ){
-				queryDeleteColumn( result,sheet.columnNames[colIndex+1] );
-				sheet.totalColumnCount--;
-				sheet.columnNames.deleteAt(colIndex+1);
-			}
-		}
 	}
-
+	var result=QueryNew( sheet.columnNames,"",sheet.data );
+	if( !includeHiddenColumns ){
+		deleteHiddenColumnsFromQuery( sheet,result );
+		if( sheet.totalColumnCount EQ 0 )
+			return Query();// all columns were hidden: return a blank query.
+	}
 	return result;
+}
+
+void function toggleColumnHidden( required workbook,required numeric columnNumber, required boolean state ){
+	var sheet=this.getActiveSheet( workbook );
+	sheet.setColumnHidden( JavaCast( "integer",columnNumber-1 ),JavaCast( "boolean",state ) );
 }
 
 private void function validateSheetExistsWithName( required workbook,required string sheetName ){
 	if( !this.sheetExists( workbook=workbook,sheetName=sheetName ) )
-		throw( type=exceptionType,message="Invalid sheet name [#sheetName#]", detail="The specified sheet was not found in the current workbook." );
+		throw( type=exceptionType,message="Invalid sheet name [#sheetName#]",detail="The specified sheet was not found in the current workbook." );
 }
 
 private void function validateSheetNumber( required workbook,required numeric sheetNumber ){
