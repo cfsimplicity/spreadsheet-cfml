@@ -4,24 +4,24 @@ private string function richStringCellValueToHtml( required workbook, required c
 		throw();
 	}
 
-writeOutput("@ row "&cell.getRowIndex() );
-
 	var rich=cell.getRichStringCellValue();
 	var numRuns = rich.numFormattingRuns();
 
-writeOutput(" numRuns "&numRuns );
 	if( numRuns gt 0 ){
 		var res='';
 
 		var base=workbook.getFontAt(cell.getCellStyle().getFontIndex());
-		var runs=[]
+		var runs=[];
+		var indexOfThisRun={};
 		for(var run=0;run lt numRuns;run++){
 			//for each run,
 			 var font=workbook.getFontAt(rich.getFontOfFormattingRun(run)) ;
 			 //build font as HTML font tag
 			 runs.append( fontToHtml( workbook,base,font ) );
+
+			 indexOfThisRun[ font ]  = run+1;
 		}
-request.runs=runs;
+
 		var rts = rich.toString();
 
 		//first run starts here (after maybe some unformatted start), with this font
@@ -29,18 +29,14 @@ request.runs=runs;
 		var currentRunIndex= 0;
 		var start=rich.getIndexOfFormattingRun(currentRunIndex);
 
-
-writeOutput(" start "&start& " font at idx "&rich.getFontAtIndex(0) );
 		res=rts.mid( 1,start );//first bit isn't formatted.
 		var cellStyle=fontToHtml( workbook, cell.getCellStyle().getFont(workbook) );
 		if( cellStyle neq ''){
 			res='<span style="#cellStyle#">#res#</span>';
 		}
-writeOutput(" so far res "&res );
 
 		for(var i=start+1;i lte rts.len();i++){
 			for(var p=i+1;p lt rts.len();p++){ //no way to get the length of the run, so scan ahead to end
-writeOutput(" test  @#p# for #currentRunIndex# got idx #rich.getFontAtIndex(p)#  ");
 				if( rich.getFontAtIndex(p) neq currentRunIndex ){
 					end = p;
 				}
@@ -48,12 +44,11 @@ writeOutput(" test  @#p# for #currentRunIndex# got idx #rich.getFontAtIndex(p)# 
 			if( p eq rts.len() ){ //got to end with no change, so close here
 				end = p;
 			}
-writeOutput(" #p#==#rts.len()# end "&end );
 
-			res&= '<span style="'&runs[ currentRunIndex+1 ]& '">' & rts.mid( i,end-start ) & '</span>' ;
+			res&= '<span style="'&runs[ indexOfThisRun[ workbook.getFontAt( rich.getFontAtIndex(p) ) ]  ]& '">' & rts.mid( i,end-start ) & '</span>' ;
 
 			//round again
-			currentRunIndex++;
+			currentRunIndex=rich.getFontAtIndex(p);
 			i = end;
 		}
 
@@ -61,7 +56,6 @@ writeOutput(" #p#==#rts.len()# end "&end );
 		var res = getCellValueAsType( workbook,cell );
 	}
 
-writeOutput(" DONE "&res&"<br>" );
 	return res;
 }
 
@@ -92,13 +86,12 @@ private string function fontToHtml( workbook,baseFont,hssfFont ){
 		sty&='text-decoration: line-through;';
 		hasSetDec=true;
 	}
+	if( baseFont.getStrikeout() neq hssfFont.getStrikeout() and !hssfFont.getStrikeout()  ){
+		sty&='text-decoration: none;';
+	}
 	if( outputAll && arguments.hssfFont.getStrikeout() ){
 		sty&='text-decoration: line-through;';
 		hasSetDec=true;
-	}
-
-	if( baseFont.getStrikeout() neq hssfFont.getStrikeout() and !hssfFont.getStrikeout()  ){
-		sty&='text-decoration: none;';
 	}
 
 	if( baseFont.getItalic() neq hssfFont.getItalic() and hssfFont.getItalic()  ){
