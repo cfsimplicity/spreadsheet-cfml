@@ -4,9 +4,12 @@ private string function richStringCellValueToHtml( required workbook, required c
 		throw();
 	}
 
+writeOutput("@ row "&cell.getRowIndex() );
+
 	var rich=cell.getRichStringCellValue();
 	var numRuns = rich.numFormattingRuns();
 
+writeOutput(" numRuns "&numRuns );
 	if( numRuns gt 0 ){
 		var res='';
 
@@ -26,7 +29,9 @@ private string function richStringCellValueToHtml( required workbook, required c
 		var currentRunIndex=0;
 		var start=rich.getIndexOfFormattingRun(currentRunIndex);
 
+writeOutput(" start "&start );
 		res=rts.mid( 1,start );//first bit isn't formatted.
+writeOutput(" res "&res );
 
 		for(var i=start+1;i lte rts.len();i++){
 			for(var p=i+1;p lte rts.len();p++){ //no way to get the length of the run, so scan ahead to end
