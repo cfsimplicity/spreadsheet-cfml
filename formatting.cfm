@@ -21,24 +21,34 @@ writeOutput(" numRuns "&numRuns );
 			 //build font as HTML font tag
 			 runs.append( fontToHtml( workbook,base,font ) );
 		}
-
+request.runs=runs;
 		var rts = rich.toString();
 
-		//first run starts here (after unformatted start), with this font
+		//first run starts here (after maybe some unformatted start), with this font
 		var end=-1;
-		var currentRunIndex=0;
+		var currentRunIndex= 0;
 		var start=rich.getIndexOfFormattingRun(currentRunIndex);
 
-writeOutput(" start "&start );
+
+writeOutput(" start "&start& " font at idx "&rich.getFontAtIndex(0) );
 		res=rts.mid( 1,start );//first bit isn't formatted.
-writeOutput(" res "&res );
+		var cellStyle=fontToHtml( workbook, cell.getCellStyle().getFont(workbook) );
+		if( cellStyle neq ''){
+			res='<span style="#cellStyle#">#res#</span>';
+		}
+writeOutput(" so far res "&res );
 
 		for(var i=start+1;i lte rts.len();i++){
-			for(var p=i+1;p lte rts.len();p++){ //no way to get the length of the run, so scan ahead to end
+			for(var p=i+1;p lt rts.len();p++){ //no way to get the length of the run, so scan ahead to end
+writeOutput(" test  @#p# for #currentRunIndex# got idx #rich.getFontAtIndex(p)#  ");
 				if( rich.getFontAtIndex(p) neq currentRunIndex ){
 					end = p;
 				}
 			}
+			if( p eq rts.len() ){ //got to end with no change, so close here
+				end = p;
+			}
+writeOutput(" #p#==#rts.len()# end "&end );
 
 			res&= '<span style="'&runs[ currentRunIndex+1 ]& '">' & rts.mid( i,end-start ) & '</span>' ;
 
@@ -51,6 +61,7 @@ writeOutput(" res "&res );
 		var res = getCellValueAsType( workbook,cell );
 	}
 
+writeOutput(" DONE "&res&"<br>" );
 	return res;
 }
 
@@ -64,6 +75,13 @@ private string function fontToHtml( workbook,baseFont,hssfFont ){
     .family        = 0x02
     .charset       = 0x00
 	*/
+
+	var outputAll=false;
+	if( not isDefined('arguments.hssfFont') ){//it's making a cell font
+		arguments.hssfFont=arguments.baseFont;
+		outputAll=true;
+	}
+
 	var sty='';
 	var hasSetDec=false;
 	if( baseFont.getFontHeightInPoints() neq hssfFont.getFontHeightInPoints() ){
@@ -74,6 +92,11 @@ private string function fontToHtml( workbook,baseFont,hssfFont ){
 		sty&='text-decoration: line-through;';
 		hasSetDec=true;
 	}
+	if( outputAll && arguments.hssfFont.getStrikeout() ){
+		sty&='text-decoration: line-through;';
+		hasSetDec=true;
+	}
+
 	if( baseFont.getStrikeout() neq hssfFont.getStrikeout() and !hssfFont.getStrikeout()  ){
 		sty&='text-decoration: none;';
 	}
@@ -84,16 +107,19 @@ private string function fontToHtml( workbook,baseFont,hssfFont ){
 	if( baseFont.getItalic() neq hssfFont.getItalic() and !hssfFont.getItalic()  ){
 		sty&='font-style: normal;';
 	}
+	if( outputAll && arguments.hssfFont.getItalic() ){
+		sty&='font-style: italic;';
+	}
 
 	if( baseFont.getBoldweight() neq hssfFont.getBoldweight() ){
-		sty&='font-weight: '& (hssfFont.getBoldweight() eq 700 )?'bold':'normal' &';';
+		sty&='font-weight: '& ((hssfFont.getBoldweight() eq 700 )?'bold':'normal') &';';
 	}
 
 	if( baseFont.getUnderline() neq hssfFont.getUnderline() ){
 		if( hasSetDec ){
 			throw();
 		}
-		sty&='text-decoration: '& (hssfFont.getUnderline() eq 0 )?'none':'underline' &';';
+		sty&='text-decoration: '& ((hssfFont.getUnderline() eq 0 )?'none':'underline') &';';
 	}
 
 	if( baseFont.getColor() neq hssfFont.getColor()  ){
