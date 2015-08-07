@@ -37,7 +37,6 @@ describe( "rich text format tests",function(){
 		expected = "<span style=""font-style: italic;"">£99</span><span style=""font-weight:bold;""> £57</span>";
 		actual = s.read( src=path,format="query",exportRichText="true",includeHeaderRow=true,rows=4 );
 		expect( actual.column1 ).toBe( expected );
-writeDump(request.runs);
 	});
 	it( "parses the complex file line 5",function() {
 		path = ExpandPath( "/root/test/files/format.xls" );
