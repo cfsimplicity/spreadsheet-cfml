@@ -74,7 +74,7 @@ private void function addInfoXml( required workbook,required struct info ){
 	}
 }
 
-private void function addRowToSheetData( required workbook,required struct sheet,required numeric rowIndex,boolean exportRichText=false ){
+private void function addRowToSheetData( required workbook,required struct sheet,required numeric rowIndex,boolean includeRichTextFormatting=false ){
 	if( ( rowIndex EQ sheet.headerRowIndex ) AND !sheet.includeHeaderRow )
 		return;
 	var rowData=[];
@@ -86,7 +86,7 @@ private void function addRowToSheetData( required workbook,required struct sheet
 	}
 	if( rowIsEmpty( row ) AND !sheet.includeBlankRows )
 		return;
-	rowData=getRowData( workbook,row,sheet.columnRanges,exportRichText );
+	rowData=getRowData( workbook,row,sheet.columnRanges,includeRichTextFormatting );
 	sheet.data.Append( rowData );
 	if( !sheet.columnRanges.Len() ){
 		var rowColumnCount = row.GetLastCellNum();
@@ -415,7 +415,7 @@ private array function getQueryColumnFormats( required workbook,required query q
 	return metadata;
 }
 
-private array function getRowData( required workbook,required row,array columnRanges=[],boolean exportRichText=false ){
+private array function getRowData( required workbook,required row,array columnRanges=[],boolean includeRichTextFormatting=false ){
 	var result=[];
 	if( !columnRanges.Len() ){
 		var columnRange={
@@ -433,14 +433,8 @@ private array function getRowData( required workbook,required row,array columnRa
 				continue;
 			}
 			var cellValue = this.getCellValueAsType( workbook,cell );
-
-			if( arguments.exportRichText and cell.GetCellType() eq cell.CELL_TYPE_STRING ){
-				var rich=cell.getRichStringCellValue();
-				if( rich.numFormattingRuns() gt 0 ){
-					cellValue = richStringCellValueToHtml( workbook,cell );
-				}
-			}
-
+			if( includeRichTextFormatting AND ( cell.GetCellType() EQ cell.CELL_TYPE_STRING ) )
+				cellValue = richStringCellValueToHtml( workbook,cell,cellValue );
 			result.Append( cellValue );
 		}
 	}
@@ -675,7 +669,7 @@ private query function sheetToQuery(
 	,boolean includeBlankRows=false
 	,boolean includeHiddenColumns=false
 	,boolean fillMergedCellsWithVisibleValue=false
-	,boolean exportRichText=false
+	,boolean includeRichTextFormatting=false
 	,string rows //range
 	,string columns //range
 	,string columnNames
@@ -706,13 +700,13 @@ private query function sheetToQuery(
 		for( var thisRange in allRanges ){
 			for( var rowNumber=thisRange.startAt; rowNumber LTE thisRange.endAt; rowNumber++ ){
 				var rowIndex=rowNumber-1;
-				this.addRowToSheetData( workbook,sheet,rowIndex,exportRichText );
+				this.addRowToSheetData( workbook,sheet,rowIndex,includeRichTextFormatting );
 			}
 		}
 	} else {
 		var lastRowIndex = sheet.object.GetLastRowNum();// zero based
 		for( var rowIndex=0; rowIndex LTE lastRowIndex; rowIndex++ ){
-			this.addRowToSheetData( workbook,sheet,rowIndex,exportRichText );
+			this.addRowToSheetData( workbook,sheet,rowIndex,includeRichTextFormatting );
 		}
 	}
 	//generate the query columns

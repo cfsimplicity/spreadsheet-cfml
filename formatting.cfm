@@ -1,133 +1,130 @@
 <cfscript>
-private string function richStringCellValueToHtml( required workbook, required cell ){
-	if( cell.getCellType() neq cell.CELL_TYPE_STRING ){
-		throw();
+private string function richStringCellValueToHtml( required workbook,required cell,required cellValue ){
+	var richTextValue=cell.getRichStringCellValue();
+	var totalRuns=richTextValue.numFormattingRuns();
+	var baseFont=cell.getCellStyle().getFont( workbook );
+	if( totalRuns EQ 0  )
+		return baseFontToHtml( workbook,cellValue,baseFont );
+	// Runs never start at the beginning: the string before the first run is always in the baseFont format
+	var startOfFirstRun=richTextValue.getIndexOfFormattingRun( 0 );
+	var initialContents=cellValue.Mid( 1,startOfFirstRun );//before the first run
+	var initialHtml=baseFontToHtml( workbook,initialContents,baseFont );
+	result = [ initialHtml ];// to an array for concatenation
+	var endOfCellValuePosition=cellValue.Len();
+	for( var runIndex=0; runIndex LT totalRuns; runIndex++ ){
+		var run={};
+		run.index=runIndex;
+		run.number=runIndex+1;
+		run.font=workbook.getFontAt( richTextValue.getFontOfFormattingRun( runIndex ) );
+		run.css=runFontToHtml( workbook,baseFont,run.font );
+		run.isLast = ( run.number EQ totalRuns );
+		run.startPosition=richTextValue.getIndexOfFormattingRun( runIndex )+1;
+		run.endPosition=run.isLast? endOfCellValuePosition: richTextValue.getIndexOfFormattingRun( runIndex+1 );
+		run.length=( ( run.endPosition+1 ) -run.startPosition );
+		run.content=cellValue.Mid( run.startPosition,run.length );
+		run.html='<span style="#run.css#">#run.content#</span>';
+		result.Append( run.html );
 	}
-
-	var rich=cell.getRichStringCellValue();
-	var numRuns = rich.numFormattingRuns();
-
-	if( numRuns gt 0 ){
-		var res='';
-
-		var base=workbook.getFontAt(cell.getCellStyle().getFontIndex());
-		var runs=[];
-		var indexOfThisRun={};
-		for(var run=0;run lt numRuns;run++){
-			//for each run,
-			 var font=workbook.getFontAt(rich.getFontOfFormattingRun(run)) ;
-			 //build font as HTML font tag
-			 runs.append( fontToHtml( workbook,base,font ) );
-
-			 indexOfThisRun[ font ]  = run+1;
-		}
-
-		var rts = rich.toString();
-
-		//first run starts here (after maybe some unformatted start), with this font
-		var end=-1;
-		var currentRunIndex= 0;
-		var start=rich.getIndexOfFormattingRun(currentRunIndex);
-
-		res=rts.mid( 1,start );//first bit isn't formatted.
-		var cellStyle=fontToHtml( workbook, cell.getCellStyle().getFont(workbook) );
-		if( cellStyle neq ''){
-			res='<span style="#cellStyle#">#res#</span>';
-		}
-
-		for(var i=start+1;i lte rts.len();i++){
-			for(var p=i+1;p lt rts.len();p++){ //no way to get the length of the run, so scan ahead to end
-				if( rich.getFontAtIndex(p) neq currentRunIndex ){
-					end = p;
-				}
-			}
-			if( p eq rts.len() ){ //got to end with no change, so close here
-				end = p;
-			}
-
-			res&= '<span style="'&runs[ indexOfThisRun[ workbook.getFontAt( rich.getFontAtIndex(p) ) ]  ]& '">' & rts.mid( i,end-start ) & '</span>' ;
-
-			//round again
-			currentRunIndex=rich.getFontAtIndex(p);
-			i = end;
-		}
-
-	}else{
-		var res = getCellValueAsType( workbook,cell );
-	}
-
-	return res;
+	return result.ToList( "" );
 }
 
-private string function fontToHtml( workbook,baseFont,hssfFont ){
-	/*
-	Does not yet handle
-    .attributes    = 0x0009
-       .macoutlined= false
-       .macshadowed= false
-    .supersubscript= 0x0000
-    .family        = 0x02
-    .charset       = 0x00
-	*/
-
-	var outputAll=false;
-	if( not isDefined('arguments.hssfFont') ){//it's making a cell font
-		arguments.hssfFont=arguments.baseFont;
-		outputAll=true;
-	}
-
-	var sty='';
-	var hasSetDec=false;
-	if( baseFont.getFontHeightInPoints() neq hssfFont.getFontHeightInPoints() ){
-		sty&='font-size:#hssfFont.getFontHeightInPoints()#pt;';
-	}
-
-	if( baseFont.getStrikeout() neq hssfFont.getStrikeout() and hssfFont.getStrikeout()  ){
-		sty&='text-decoration: line-through;';
-		hasSetDec=true;
-	}
-	if( baseFont.getStrikeout() neq hssfFont.getStrikeout() and !hssfFont.getStrikeout()  ){
-		sty&='text-decoration: none;';
-	}
-	if( outputAll && arguments.hssfFont.getStrikeout() ){
-		sty&='text-decoration: line-through;';
-		hasSetDec=true;
-	}
-
-	if( baseFont.getItalic() neq hssfFont.getItalic() and hssfFont.getItalic()  ){
-		sty&='font-style: italic;';
-	}
-	if( baseFont.getItalic() neq hssfFont.getItalic() and !hssfFont.getItalic()  ){
-		sty&='font-style: normal;';
-	}
-	if( outputAll && arguments.hssfFont.getItalic() ){
-		sty&='font-style: italic;';
-	}
-
-	if( baseFont.getBoldweight() neq hssfFont.getBoldweight() ){
-		sty&='font-weight: '& ((hssfFont.getBoldweight() eq 700 )?'bold':'normal') &';';
-	}
-
-	if( baseFont.getUnderline() neq hssfFont.getUnderline() ){
-		if( hasSetDec ){
-			throw();
+private string function runFontToHtml( required workbook,required baseFont,required runFont ){
+	/* NB: the order of processing is important for the tests to match */
+	var cssStyles=[];
+	/* bold */
+	if( Compare( runFont.getBold(),baseFont.getBold() ) )
+		cssStyles.Append( fontStyleToCss( "bold",runFont.getBold() ) );
+	/* color */
+	if( ( baseFont.getColor() NEQ runFont.getColor() ) AND !fontColorIsBlack( runFont.getColor() ) )
+		cssStyles.Append( fontStyleToCss( "color",runFont.getColor(),workbook ) );
+	/* italic */
+	if( Compare( runFont.getItalic(),baseFont.getItalic() ) )
+		cssStyles.Append( fontStyleToCss( "italic",runFont.getItalic() ) );
+	/* underline/strike */
+	if( Compare( runFont.getStrikeout(),baseFont.getStrikeout() ) OR Compare( runFont.getUnderline(),baseFont.getUnderline() ) ){
+		// run differs from base format
+		var decorationValue	=	[];
+		if( !baseFont.getStrikeout() AND runFont.getStrikeout() )
+			decorationValue.Append( "line-through" );
+		if( !baseFont.getUnderline() AND runFont.getUnderline() )
+			decorationValue.Append( "underline" );
+		//if either or both are in the base format, and either or both are NOT in the run format, set the run to none.
+		if(
+				( baseFont.getUnderline() OR baseFont.getStrikeout() )
+				AND
+				( !runFont.getUnderline() OR !runFont.getUnderline() )
+			){
+			cssStyles.Append( fontStyleToCss( "decoration","none" ) );
+		} else {
+			cssStyles.Append( fontStyleToCss( "decoration",decorationValue.ToList( " " ) ) );
 		}
-		sty&='text-decoration: '& ((hssfFont.getUnderline() eq 0 )?'none':'underline') &';';
 	}
+	return cssStyles.ToList( "" );
+}
 
-	if( baseFont.getColor() neq hssfFont.getColor()  ){
-		//http://ragnarock99.blogspot.co.uk/2012/04/getting-hex-color-from-excel-cell.html
-		var col = hssfFont.getColor();
-		var rgb=workbook.getCustomPalette().getColor(col).getTriple();
-		var c = createObject( 'java.awt.Color' ).init(rgb[0], rgb[1], rgb[2]);
-		sty&='color: ##'& createObject( 'java.lang.Integer' ).toHexString( c.getRGB() ) &';';
+private string function baseFontToHtml( required workbook,required contents,required baseFont ){
+	/* NB: the order of processing is important for the tests to match */
+	var cssStyles=[];
+	/* bold */
+	if( baseFont.getBold() )
+		cssStyles.Append( fontStyleToCss( "bold",true ) );
+	/* color */
+	if( !fontColorIsBlack( baseFont.getColor() ) )
+		cssStyles.Append( fontStyleToCss( "color",baseFont.getColor(),workbook ) );
+	/* italic */
+	if( baseFont.getItalic() )
+		cssStyles.Append( fontStyleToCss( "italic",true ) );
+	/* underline/strike */
+	if( baseFont.getStrikeout() OR baseFont.getUnderline() ){
+		var decorationValue	=	[];
+		if( baseFont.getStrikeout() )
+			decorationValue.Append( "line-through" );
+		if( baseFont.getUnderline() )
+			decorationValue.Append( "underline" );
+		cssStyles.Append( fontStyleToCss( "decoration",decorationValue.ToList( " " ) ) );
 	}
+	if( cssStyles.IsEmpty() )
+		return contents;
+	return "<span style=""#cssStyles.ToList( "" )#"">#contents#</span>";
+}
 
-	if( baseFont.getFontName() neq hssfFont.getFontName()){
-		sty&='font-family: '& hssfFont.getFontName() &';';
+private string function fontStyleToCss( required string styleType,required any styleValue,workbook ){
+	/*
+	Support limited to:
+		bold
+		color
+		italic
+		strikethrough
+		underline
+
+	font family and size not supported because all cells would trigger formatting of these attributes: defaults can't be assumed
+	*/
+	switch( styleType ){
+		case "bold":
+			return "font-weight:" & ( styleValue? "bold;": "normal;" );
+		case "color":
+			if( !arguments.KeyExists( "workbook" ) )
+				throw( type=exceptionType,message="The 'workbook' argument is required when generating color css styles" );
+			//http://ragnarock99.blogspot.co.uk/2012/04/getting-hex-color-from-excel-cell.html
+			var rgb=workbook.getCustomPalette().getColor( styleValue ).getTriplet();
+			var javaColor = CreateObject( "Java","java.awt.Color" ).init( JavaCast( "int",rgb[ 1 ] ),JavaCast( "int",rgb[ 2 ] ),JavaCast( "int",rgb[ 3 ] ) );
+			var hex	=	CreateObject( "Java","java.lang.Integer" ).toHexString( javaColor.getRGB() );
+			hex=hex.subString( 2,hex.length() );
+			return "color:##" & hex & ";";
+		case "italic":
+			return "font-style:" & ( styleValue? "italic;": "normal;" ); 
+		case "decoration":
+			return "text-decoration:#styleValue#;";//need to pass desired combination of "underline" and "line-through"
+		/* case "size":
+			return "font-size:#styleValue#pt;"; */
+		/* case "family":
+			return "font-family:#styleValue#;"; */
 	}
+	throw( type=exceptionType,message="Unrecognised style for css conversion" );
+}
 
-	return sty;
+private boolean function fontColorIsBlack( required fontColor ){
+	return ( fontColor IS 8 ) OR ( fontColor IS 32767 );
 }
 
 private any function buildCellStyle( required workbook,required struct format ){

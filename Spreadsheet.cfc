@@ -787,7 +787,7 @@ component{
 		,boolean includeBlankRows=false
 		,boolean fillMergedCellsWithVisibleValue=false
 		,boolean includeHiddenColumns=true
-		,boolean exportRichText=false
+		,boolean includeRichTextFormatting=false
 	){
 		if( arguments.KeyExists( "query" ) )
 			throw( type=exceptionType,message="Invalid argument 'query'.",details="Just use format='query' to return a query object" );
@@ -822,7 +822,7 @@ component{
 		args.includeBlankRows=includeBlankRows;
 		args.fillMergedCellsWithVisibleValue=fillMergedCellsWithVisibleValue;
 		args.includeHiddenColumns=includeHiddenColumns;
-		args.exportRichText=exportRichText;
+		args.includeRichTextFormatting=includeRichTextFormatting;
 		var generatedQuery=this.sheetToQuery( argumentCollection=args );
 		if( format IS "query" )
 			return generatedQuery;
