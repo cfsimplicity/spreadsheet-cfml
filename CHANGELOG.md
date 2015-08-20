@@ -1,3 +1,7 @@
+## 0.5.0 - 20 August 2015
+	- Enhancements:
+	 - \#57 Add `includeRichTextFormatting` option to `read()`
+
 ## 0.4.9 - 29 July 2015
 	- Enhancements:
 	 - \#56 Add extra argument to `read()` to allow excluding hidden columns

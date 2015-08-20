@@ -118,7 +118,10 @@ The `read()` method in this library allows you to read a spreadsheet file into a
 myQuery = spreadsheet.read( src=mypath,format="query" );
 ```
 
-An additional option `fillMergedCellsWithVisibleValue` allows all empty cells in a merged region in the source file to be filled with the visible value (stored in the top-left-most cell) when read. This is useful where you want the query or workbook object to include the visible value instead of a blank in each row/column or cell in the merged region.
+The `read()` method also features the following additional options not available in ColdFusion or the Spreadsheet Extension:
+
+* `fillMergedCellsWithVisibleValue`
+* `includeRichTextFormatting`
 
 [Full documentation of read()](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/read)
 
