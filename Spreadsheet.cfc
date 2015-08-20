@@ -210,7 +210,7 @@ component{
 		,string imageType
 		,required string anchor
 	){
-		/* 
+		/*
 			TODO: Should we allow for passing in of a boolean indicating whether or not an image resize should happen (only works on jpg and png)? Currently does not resize. If resize is performed, it does mess up passing in x/y coordinates for image positioning.
 		 */
 		if( !arguments.KeyExists( "filepath" ) AND !arguments.KeyExists( "imageData" ) )
@@ -360,7 +360,7 @@ component{
 				if( queryColumn.cellDataType IS "DOUBLE" AND IsNumeric( value ) ){
 					cell.setCellValue( JavaCast( "double",Val( value ) ) );
 				} else if( queryColumn.cellDataType IS "TIME" AND IsDate( value ) ){
-					value = TimeFormat( ParseDateTime( value ),"HH:MM:SS");				
+					value = TimeFormat( ParseDateTime( value ),"HH:MM:SS");
 					cell.setCellValue( dateUtil.convertTime( value ) );
 					forceDefaultStyle = true;
 				} else if( queryColumn.cellDataType EQ "DATE" AND IsDate( value ) ){
@@ -439,7 +439,7 @@ component{
 		cell.setCellStyle( defaultStyle );
 		cell.setCellType( cell.CELL_TYPE_BLANK );
 	}
-	
+
 	void function clearCellRange(
 		required workbook
 		,required numeric startRow
@@ -529,7 +529,7 @@ component{
 	}
 
 	void function formatCell( required workbook,required struct format,required numeric row,required numeric column,any cellStyle ){
-		var cell = this.initializeCell( workbook,row,column );		
+		var cell = this.initializeCell( workbook,row,column );
 		if( arguments.KeyExists( "cellStyle" ) )
 			cell.setCellStyle( cellStyle );// reuse an existing style
 		else
@@ -693,7 +693,7 @@ component{
 	}
 
 	struct function info( required workbook ){
-		/* 
+		/*
 		workbook properties returned in the struct are:
 			* AUTHOR
 			* CATEGORY
@@ -723,7 +723,7 @@ component{
 			info.sheetnames = sheetnames.ToList();
 		}
 		info.spreadSheetType = this.isXmlFormat( workbook )? "Excel (2007)": "Excel";
-		return info; 
+		return info;
 	}
 
 	void function hideColumn( required workbook,required numeric column ){
@@ -787,6 +787,7 @@ component{
 		,boolean includeBlankRows=false
 		,boolean fillMergedCellsWithVisibleValue=false
 		,boolean includeHiddenColumns=true
+		,boolean includeRichTextFormatting=false
 	){
 		if( arguments.KeyExists( "query" ) )
 			throw( type=exceptionType,message="Invalid argument 'query'.",details="Just use format='query' to return a query object" );
@@ -821,6 +822,7 @@ component{
 		args.includeBlankRows=includeBlankRows;
 		args.fillMergedCellsWithVisibleValue=fillMergedCellsWithVisibleValue;
 		args.includeHiddenColumns=includeHiddenColumns;
+		args.includeRichTextFormatting=includeRichTextFormatting;
 		var generatedQuery=this.sheetToQuery( argumentCollection=args );
 		if( format IS "query" )
 			return generatedQuery;
@@ -888,8 +890,8 @@ component{
 		,required numeric row
 		,required numeric column
 	){
-		/* 
-		The comment struct may contain the following keys: 
+		/*
+		The comment struct may contain the following keys:
 			* anchor
 			* author
 			* bold
@@ -936,12 +938,12 @@ component{
 		if( comment.KeyExists( "author" ) )
 			commentObject.setAuthor( JavaCast( "string",comment.author ) );
 		/* If we're going to do anything font related, need to create a font. Didn't really want to create it above since it might not be needed.  */
-		if( comment.KeyExists( "bold" ) 
-				OR comment.KeyExists( "color" ) 
+		if( comment.KeyExists( "bold" )
+				OR comment.KeyExists( "color" )
 				OR comment.KeyExists( "font" )
 				OR comment.KeyExists( "italic" )
-				OR comment.KeyExists( "size" ) 
-				OR comment.KeyExists( "strikeout" ) 
+				OR comment.KeyExists( "size" )
+				OR comment.KeyExists( "strikeout" )
 				OR comment.KeyExists( "underline" )
 		){
 			var font = workbook.createFont();
@@ -973,7 +975,7 @@ component{
 				,JavaCast( "int",javaColorRGB.blue )
 			);
 		}
-		/* 
+		/*
 			Horizontal alignment can be left, center, right, justify, or distributed. Note that the constants on the Java class are slightly different in some cases:
 			'center' = CENTERED
 			'justify' = JUSTIFIED
@@ -985,7 +987,7 @@ component{
 				comment.horizontalAlignment = "JUSTIFIED";
 			commentObject.setHorizontalAlignment( JavaCast( "int",commentObject[ "HORIZONTAL_ALIGNMENT_" & comment.horizontalalignment.UCase() ] ) );
 		}
-		/* 
+		/*
 		Valid values for linestyle are:
 				* solid
 				* dashsys
@@ -1147,7 +1149,7 @@ component{
 	void function write( required workbook,required string filepath,boolean overwrite=false,string password ){
 		if( !overwrite AND FileExists( filepath ) )
 			throw( type=exceptionType,message="File already exists",detail="The file path specified already exists. Use 'overwrite=true' if you wish to overwrite it." );
-		// writeProtectWorkbook takes both a user name and a password, but since CF 9 tag only takes a password, just making up a user name 
+		// writeProtectWorkbook takes both a user name and a password, but since CF 9 tag only takes a password, just making up a user name
 		// TODO: workbook.isWriteProtected() returns true but the workbook opens without prompting for a password
 		if( arguments.KeyExists( "password" ) AND !password.Trim().IsEmpty() )
 			workbook.writeProtectWorkbook( JavaCast( "string",password ),JavaCast( "string","user" ) );

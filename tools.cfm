@@ -2,11 +2,11 @@
 private void function addInfoBinary( required workbook,required struct info ){
 	workbook.createInformationProperties(); // creates the following if missing
 	var documentSummaryInfo = workbook.getDocumentSummaryInformation();
-	var summaryInfo = workbook.getSummaryInformation();	
+	var summaryInfo = workbook.getSummaryInformation();
 	for( var key in info ){
 		var value = JavaCast( "string",info[ key ] );
 		switch( key ){
-			case "author": 				
+			case "author":
 				summaryInfo.setAuthor( value );
 				break;
 			case "category":
@@ -16,7 +16,7 @@ private void function addInfoBinary( required workbook,required struct info ){
 				summaryInfo.setLastAuthor( value );
 				break;
 			case "comments":
-				summaryInfo.setComments( value );	
+				summaryInfo.setComments( value );
 				break;
 			case "keywords":
 				summaryInfo.setKeywords( value );
@@ -34,7 +34,7 @@ private void function addInfoBinary( required workbook,required struct info ){
 				summaryInfo.setTitle( value );
 				break;
 		}
-	}	
+	}
 }
 
 private void function addInfoXml( required workbook,required struct info ){
@@ -43,38 +43,38 @@ private void function addInfoXml( required workbook,required struct info ){
 	for( var key in info ){
 		var value = JavaCast( "string",info[ key ] );
 		switch( key ){
-			case "author": 				
+			case "author":
 				coreProperties.setCreator( value  );
 				break;
-			case "category": 				
+			case "category":
 				coreProperties.setCategory( value );
 				break;
-			case "lastauthor": 
+			case "lastauthor":
 				coreProperties.getUnderlyingProperties().setLastModifiedByProperty( value );
 				break;
-			case "comments": 				
-				coreProperties.setDescription( value );	
+			case "comments":
+				coreProperties.setDescription( value );
 				break;
-			case "keywords": 				
+			case "keywords":
 				coreProperties.setKeywords( value );
 				break;
-			case "subject": 				
+			case "subject":
 				coreProperties.setSubjectProperty( value );
 				break;
-			case "title": 				
+			case "title":
 				coreProperties.setTitle( value );
 				break;
-			case "manager": 	
+			case "manager":
 				documentProperties.setManager( value );
 				break;
-			case "company": 				
+			case "company":
 				documentProperties.setCompany( value );
 				break;
 		}
 	}
 }
 
-private void function addRowToSheetData( required workbook,required struct sheet,required numeric rowIndex ){
+private void function addRowToSheetData( required workbook,required struct sheet,required numeric rowIndex,boolean includeRichTextFormatting=false ){
 	if( ( rowIndex EQ sheet.headerRowIndex ) AND !sheet.includeHeaderRow )
 		return;
 	var rowData=[];
@@ -86,7 +86,7 @@ private void function addRowToSheetData( required workbook,required struct sheet
 	}
 	if( rowIsEmpty( row ) AND !sheet.includeBlankRows )
 		return;
-	rowData=getRowData( workbook,row,sheet.columnRanges );
+	rowData=getRowData( workbook,row,sheet.columnRanges,includeRichTextFormatting );
 	sheet.data.Append( rowData );
 	if( !sheet.columnRanges.Len() ){
 		var rowColumnCount = row.GetLastCellNum();
@@ -174,7 +174,7 @@ private void function deleteSheetAtIndex( required workbook,required numeric she
 
 private numeric function estimateColumnWidth( required workbook,required any value ){
 	/* Estimates approximate column width based on cell value and default character width. */
-	/* 
+	/*
 	"Excel bases its measurement of column widths on the number of digits (specifically, the number of zeros) in the column, using the Normal style font."
 	This function approximates the column width using the number of characters and the default character width in the normal font. POI expresses the width in 1/256 of Excel's character unit. The maximum size in POI is: (255 * 256)
 	*/
@@ -261,7 +261,7 @@ private numeric function getAWTFontStyle( required any poiFont ){
 		return font.BOLD;
 	if( poiFont.getItalic() )
 		return font.ITALIC;
-	return font.PLAIN;	
+	return font.PLAIN;
 }
 
 private function getCellAt( required workbook,required numeric rowNumber,required numeric columnNumber ){
@@ -280,14 +280,14 @@ private function getCellUtil(){
 
 private function getCellValueAsType( required workbook,required cell ){
 	/* When getting the value of a cell, it is important to know what type of cell value we are dealing with. If you try to grab the wrong value type, an error might be thrown. For that reason, we must check to see what type of cell we are working with. These are the cell types and they are constants of the cell object itself:
-		 		
+
 		0 - CELL_TYPE_NUMERIC
 		1 - CELL_TYPE_STRING
 		2 - CELL_TYPE_FORMULA
 		3 - CELL_TYPE_BLANK
 		4 - CELL_TYPE_BOOLEAN
 		5 - CELL_TYPE_ERROR */
-	
+
 	var cellType = cell.GetCellType();
 	/* Get the value of the cell based on the data type. The thing to worry about here is cell forumlas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values. */
 	if( cellType EQ cell.CELL_TYPE_NUMERIC ){
@@ -415,7 +415,7 @@ private array function getQueryColumnFormats( required workbook,required query q
 	return metadata;
 }
 
-private array function getRowData( required workbook,required row,array columnRanges=[] ){
+private array function getRowData( required workbook,required row,array columnRanges=[],boolean includeRichTextFormatting=false ){
 	var result=[];
 	if( !columnRanges.Len() ){
 		var columnRange={
@@ -433,6 +433,8 @@ private array function getRowData( required workbook,required row,array columnRa
 				continue;
 			}
 			var cellValue = this.getCellValueAsType( workbook,cell );
+			if( includeRichTextFormatting AND ( cell.GetCellType() EQ cell.CELL_TYPE_STRING ) )
+				cellValue = richStringCellValueToHtml( workbook,cell,cellValue );
 			result.Append( cellValue );
 		}
 	}
@@ -449,7 +451,7 @@ private function initializeCell( required workbook,required numeric rowNumber,re
 	var columnIndex = JavaCast( "int",columnNumber-1 );
 	var rowObject = getCellUtil().getRow( rowIndex,getActiveSheet( workbook ) );
 	var cellObject = getCellUtil().getCell( rowObject,columnIndex );
-	return cellObject; 
+	return cellObject;
 }
 
 private boolean function isDateObject( required input ){
@@ -484,17 +486,17 @@ private array function parseRowData( required string line,required string delimi
 	var potentialQuotes = 0;
 	arguments.line = ToString( arguments.line );
 	if( arguments.delimiter EQ "," AND arguments.handleEmbeddedCommas )
-		potentialQuotes = arguments.line.replaceAll("[^']", "").length();		
+		potentialQuotes = arguments.line.replaceAll("[^']", "").length();
 	if (potentialQuotes <= 1)
 	  return elements;
-	//For ACF compatibility, find any values enclosed in single quotes and treat them as a single element. 
+	//For ACF compatibility, find any values enclosed in single quotes and treat them as a single element.
 	var currentValue = 0;
 	var nextValue = "";
 	var isEmbeddedValue = false;
 	var values = [];
 	var buffer = CreateObject( "Java","java.lang.StringBuilder" ).init();
 	var maxElements = ArrayLen( elements );
-	
+
 	for( var i=1; i LTE maxElements; i++) {
 	  currentValue = Trim( elements[ i ] );
 	  nextValue = i < maxElements ? elements[ i + 1 ] : "";
@@ -506,17 +508,17 @@ private array function parseRowData( required string line,required string delimi
 		  isEmbeddedValue = true;
 	  if( isEmbeddedValue AND hasTrailingQuote )
 		  isComplete = true;
-	  /* We are finished with this value if:  
+	  /* We are finished with this value if:
 		  * no quotes were found OR
 		  * it is the final value OR
 		  * the next value is embedded in quotes
 	  */
 	  if( !isEmbeddedValue || isFinalElement || nextValue.hasPrefix( "'" ) )
-		  isComplete = true;		  
+		  isComplete = true;
 	  if( isEmbeddedValue || isComplete ){
 		  // if this a partial value, append the delimiter
 		  if( isEmbeddedValue AND buffer.length() GT 0 )
-			  buffer.append( "," ); 
+			  buffer.append( "," );
 		  buffer.append( elements[i] );
 	  }
 	  if( isComplete ){
@@ -528,7 +530,7 @@ private array function parseRowData( required string line,required string delimi
 		  values.add( finalValue );
 		  buffer.setLength( 0 );
 		  isEmbeddedValue = false;
-	  }	  
+	  }
   }
   return values;
 }
@@ -667,6 +669,7 @@ private query function sheetToQuery(
 	,boolean includeBlankRows=false
 	,boolean includeHiddenColumns=false
 	,boolean fillMergedCellsWithVisibleValue=false
+	,boolean includeRichTextFormatting=false
 	,string rows //range
 	,string columns //range
 	,string columnNames
@@ -697,20 +700,20 @@ private query function sheetToQuery(
 		for( var thisRange in allRanges ){
 			for( var rowNumber=thisRange.startAt; rowNumber LTE thisRange.endAt; rowNumber++ ){
 				var rowIndex=rowNumber-1;
-				this.addRowToSheetData( workbook,sheet,rowIndex );
+				this.addRowToSheetData( workbook,sheet,rowIndex,includeRichTextFormatting );
 			}
 		}
 	} else {
 		var lastRowIndex = sheet.object.GetLastRowNum();// zero based
 		for( var rowIndex=0; rowIndex LTE lastRowIndex; rowIndex++ ){
-			this.addRowToSheetData( workbook,sheet,rowIndex );
+			this.addRowToSheetData( workbook,sheet,rowIndex,includeRichTextFormatting );
 		}
 	}
 	//generate the query columns
 	if( arguments.KeyExists( "columnNames" ) AND arguments.columnNames.Len() ){
 		arguments.columnNames=arguments.columnNames.ListToArray();
 		for( var i=1; i LTE sheet.totalColumnCount; i++ ){
-			var columnName=columnNames[ i ]?: "column" & i; 
+			var columnName=columnNames[ i ]?: "column" & i;
 			sheet.columnNames.Append( columnName );
 		}
 	} else if( sheet.hasHeaderRow ){

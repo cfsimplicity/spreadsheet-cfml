@@ -1,4 +1,132 @@
 <cfscript>
+private string function richStringCellValueToHtml( required workbook,required cell,required cellValue ){
+	var richTextValue=cell.getRichStringCellValue();
+	var totalRuns=richTextValue.numFormattingRuns();
+	var baseFont=cell.getCellStyle().getFont( workbook );
+	if( totalRuns EQ 0  )
+		return baseFontToHtml( workbook,cellValue,baseFont );
+	// Runs never start at the beginning: the string before the first run is always in the baseFont format
+	var startOfFirstRun=richTextValue.getIndexOfFormattingRun( 0 );
+	var initialContents=cellValue.Mid( 1,startOfFirstRun );//before the first run
+	var initialHtml=baseFontToHtml( workbook,initialContents,baseFont );
+	result = [ initialHtml ];// to an array for concatenation
+	var endOfCellValuePosition=cellValue.Len();
+	for( var runIndex=0; runIndex LT totalRuns; runIndex++ ){
+		var run={};
+		run.index=runIndex;
+		run.number=runIndex+1;
+		run.font=workbook.getFontAt( richTextValue.getFontOfFormattingRun( runIndex ) );
+		run.css=runFontToHtml( workbook,baseFont,run.font );
+		run.isLast = ( run.number EQ totalRuns );
+		run.startPosition=richTextValue.getIndexOfFormattingRun( runIndex )+1;
+		run.endPosition=run.isLast? endOfCellValuePosition: richTextValue.getIndexOfFormattingRun( runIndex+1 );
+		run.length=( ( run.endPosition+1 ) -run.startPosition );
+		run.content=cellValue.Mid( run.startPosition,run.length );
+		run.html='<span style="#run.css#">#run.content#</span>';
+		result.Append( run.html );
+	}
+	return result.ToList( "" );
+}
+
+private string function runFontToHtml( required workbook,required baseFont,required runFont ){
+	/* NB: the order of processing is important for the tests to match */
+	var cssStyles=[];
+	/* bold */
+	if( Compare( runFont.getBold(),baseFont.getBold() ) )
+		cssStyles.Append( fontStyleToCss( "bold",runFont.getBold() ) );
+	/* color */
+	if( ( baseFont.getColor() NEQ runFont.getColor() ) AND !fontColorIsBlack( runFont.getColor() ) )
+		cssStyles.Append( fontStyleToCss( "color",runFont.getColor(),workbook ) );
+	/* italic */
+	if( Compare( runFont.getItalic(),baseFont.getItalic() ) )
+		cssStyles.Append( fontStyleToCss( "italic",runFont.getItalic() ) );
+	/* underline/strike */
+	if( Compare( runFont.getStrikeout(),baseFont.getStrikeout() ) OR Compare( runFont.getUnderline(),baseFont.getUnderline() ) ){
+		// run differs from base format
+		var decorationValue	=	[];
+		if( !baseFont.getStrikeout() AND runFont.getStrikeout() )
+			decorationValue.Append( "line-through" );
+		if( !baseFont.getUnderline() AND runFont.getUnderline() )
+			decorationValue.Append( "underline" );
+		//if either or both are in the base format, and either or both are NOT in the run format, set the run to none.
+		if(
+				( baseFont.getUnderline() OR baseFont.getStrikeout() )
+				AND
+				( !runFont.getUnderline() OR !runFont.getUnderline() )
+			){
+			cssStyles.Append( fontStyleToCss( "decoration","none" ) );
+		} else {
+			cssStyles.Append( fontStyleToCss( "decoration",decorationValue.ToList( " " ) ) );
+		}
+	}
+	return cssStyles.ToList( "" );
+}
+
+private string function baseFontToHtml( required workbook,required contents,required baseFont ){
+	/* NB: the order of processing is important for the tests to match */
+	var cssStyles=[];
+	/* bold */
+	if( baseFont.getBold() )
+		cssStyles.Append( fontStyleToCss( "bold",true ) );
+	/* color */
+	if( !fontColorIsBlack( baseFont.getColor() ) )
+		cssStyles.Append( fontStyleToCss( "color",baseFont.getColor(),workbook ) );
+	/* italic */
+	if( baseFont.getItalic() )
+		cssStyles.Append( fontStyleToCss( "italic",true ) );
+	/* underline/strike */
+	if( baseFont.getStrikeout() OR baseFont.getUnderline() ){
+		var decorationValue	=	[];
+		if( baseFont.getStrikeout() )
+			decorationValue.Append( "line-through" );
+		if( baseFont.getUnderline() )
+			decorationValue.Append( "underline" );
+		cssStyles.Append( fontStyleToCss( "decoration",decorationValue.ToList( " " ) ) );
+	}
+	if( cssStyles.IsEmpty() )
+		return contents;
+	return "<span style=""#cssStyles.ToList( "" )#"">#contents#</span>";
+}
+
+private string function fontStyleToCss( required string styleType,required any styleValue,workbook ){
+	/*
+	Support limited to:
+		bold
+		color
+		italic
+		strikethrough
+		underline
+
+	font family and size not supported because all cells would trigger formatting of these attributes: defaults can't be assumed
+	*/
+	switch( styleType ){
+		case "bold":
+			return "font-weight:" & ( styleValue? "bold;": "normal;" );
+		case "color":
+			if( !arguments.KeyExists( "workbook" ) )
+				throw( type=exceptionType,message="The 'workbook' argument is required when generating color css styles" );
+			//http://ragnarock99.blogspot.co.uk/2012/04/getting-hex-color-from-excel-cell.html
+			var rgb=workbook.getCustomPalette().getColor( styleValue ).getTriplet();
+			var javaColor = CreateObject( "Java","java.awt.Color" ).init( JavaCast( "int",rgb[ 1 ] ),JavaCast( "int",rgb[ 2 ] ),JavaCast( "int",rgb[ 3 ] ) );
+			var hex	=	CreateObject( "Java","java.lang.Integer" ).toHexString( javaColor.getRGB() );
+			hex=hex.subString( 2,hex.length() );
+			return "color:##" & hex & ";";
+		case "italic":
+			return "font-style:" & ( styleValue? "italic;": "normal;" ); 
+		case "decoration":
+			return "text-decoration:#styleValue#;";//need to pass desired combination of "underline" and "line-through"
+		/* case "size":
+			return "font-size:#styleValue#pt;"; */
+		/* case "family":
+			return "font-family:#styleValue#;"; */
+	}
+	throw( type=exceptionType,message="Unrecognised style for css conversion" );
+}
+
+private boolean function fontColorIsBlack( required fontColor ){
+	return ( fontColor IS 8 ) OR ( fontColor IS 32767 );
+}
+
 private any function buildCellStyle( required workbook,required struct format ){
 	/*  TODO: Reuse styles  */
 	var cellStyle = workbook.createCellStyle();
@@ -7,7 +135,7 @@ private any function buildCellStyle( required workbook,required struct format ){
 	var setting = 0;
 	var settingValue = 0;
 	var formatIndex = 0;
-	/* 
+	/*
 		Valid values of the format struct are:
 		* alignment
 		* bold
@@ -75,12 +203,12 @@ private any function buildCellStyle( required workbook,required struct format ){
 				cellStyle.setFillPattern( Evaluate( "cellStyle." & UCase( StructFind( format,setting ) ) ) );
 			break;
 			case "font":
-				font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );					
+				font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
 				font.setFontName( JavaCast( "string",StructFind( format,setting ) ) );
 				cellStyle.setFont( font );
 			break;
 			case "fontsize":
-				font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );					
+				font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
 				font.setFontHeightInPoints( JavaCast( "int",StructFind( format,setting ) ) );
 				cellStyle.setFont( font );
 			break;
