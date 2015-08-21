@@ -1,3 +1,7 @@
+## 0.5.2 - 21 August 2015
+	- REMOVED:
+	 - \#61 Support for font family and size with `read()` and `includeRichTextFormatting` when different from the cell's base font. Better to be consistent and not support these attributes anywhere so the expectation is clear.
+
 ## 0.5.1 - 21 August 2015
 	- Enhancements:
 	 - \#61 Support font family and size with `read()` and `includeRichTextFormatting` when different from the cell's base font

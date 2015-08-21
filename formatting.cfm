@@ -62,12 +62,6 @@ private string function runFontToHtml( required workbook,required baseFont,requi
 			cssStyles.Append( fontStyleToCss( "decoration",decorationValue.ToList( " " ) ) );
 		}
 	}
-	/* font family */
-	if( Compare( runFont.getFontName(),baseFont.getFontName() ) )
-		cssStyles.Append( fontStyleToCss( "font-family",runFont.getFontName() ) );
-	/* font size */
-	if( Compare( runFont.getFontHeightInPoints(),baseFont.getFontHeightInPoints() ) )
-		cssStyles.Append( fontStyleToCss( "font-size",runFont.getFontHeightInPoints() ) );
 	return cssStyles.ToList( "" );
 }
 
@@ -103,8 +97,6 @@ private string function fontStyleToCss( required string styleType,required any s
 	Support limited to:
 		bold
 		color
-		font-family
-		font-size
 		italic
 		strikethrough
 		underline
@@ -125,10 +117,6 @@ private string function fontStyleToCss( required string styleType,required any s
 			return "font-style:" & ( styleValue? "italic;": "normal;" ); 
 		case "decoration":
 			return "text-decoration:#styleValue#;";//need to pass desired combination of "underline" and "line-through"
-		case "font-family":
-			return "font-family:#styleValue#;";
-		case "font-size":
-			return "font-size:#styleValue#pt;";
 	}
 	throw( type=exceptionType,message="Unrecognised style for css conversion" );
 }
