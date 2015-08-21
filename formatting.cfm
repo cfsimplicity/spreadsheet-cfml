@@ -39,7 +39,7 @@ private string function runFontToHtml( required workbook,required baseFont,requi
 	if( Compare( runFont.getBold(),baseFont.getBold() ) )
 		cssStyles.Append( fontStyleToCss( "bold",runFont.getBold() ) );
 	/* color */
-	if( ( baseFont.getColor() NEQ runFont.getColor() ) AND !fontColorIsBlack( runFont.getColor() ) )
+	if( Compare( runFont.getColor(),baseFont.getColor() ) AND !fontColorIsBlack( runFont.getColor() ) )
 		cssStyles.Append( fontStyleToCss( "color",runFont.getColor(),workbook ) );
 	/* italic */
 	if( Compare( runFont.getItalic(),baseFont.getItalic() ) )
