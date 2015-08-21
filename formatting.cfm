@@ -22,6 +22,10 @@ private string function richStringCellValueToHtml( required workbook,required ce
 		run.endPosition=run.isLast? endOfCellValuePosition: richTextValue.getIndexOfFormattingRun( runIndex+1 );
 		run.length=( ( run.endPosition+1 ) -run.startPosition );
 		run.content=cellValue.Mid( run.startPosition,run.length );
+		if( run.css.IsEmpty() ){
+			result.Append( run.content );
+			continue;
+		}
 		run.html='<span style="#run.css#">#run.content#</span>';
 		result.Append( run.html );
 	}
@@ -42,13 +46,12 @@ private string function runFontToHtml( required workbook,required baseFont,requi
 		cssStyles.Append( fontStyleToCss( "italic",runFont.getItalic() ) );
 	/* underline/strike */
 	if( Compare( runFont.getStrikeout(),baseFont.getStrikeout() ) OR Compare( runFont.getUnderline(),baseFont.getUnderline() ) ){
-		// run differs from base format
 		var decorationValue	=	[];
 		if( !baseFont.getStrikeout() AND runFont.getStrikeout() )
 			decorationValue.Append( "line-through" );
 		if( !baseFont.getUnderline() AND runFont.getUnderline() )
 			decorationValue.Append( "underline" );
-		//if either or both are in the base format, and either or both are NOT in the run format, set the run to none.
+		//if either or both are in the base format, and either or both are NOT in the run format, set the decoration to none.
 		if(
 				( baseFont.getUnderline() OR baseFont.getStrikeout() )
 				AND
@@ -59,11 +62,18 @@ private string function runFontToHtml( required workbook,required baseFont,requi
 			cssStyles.Append( fontStyleToCss( "decoration",decorationValue.ToList( " " ) ) );
 		}
 	}
+	/* font family */
+	if( Compare( runFont.getFontName(),baseFont.getFontName() ) )
+		cssStyles.Append( fontStyleToCss( "font-family",runFont.getFontName() ) );
+	/* font size */
+	if( Compare( runFont.getFontHeightInPoints(),baseFont.getFontHeightInPoints() ) )
+		cssStyles.Append( fontStyleToCss( "font-size",runFont.getFontHeightInPoints() ) );
 	return cssStyles.ToList( "" );
 }
 
 private string function baseFontToHtml( required workbook,required contents,required baseFont ){
-	/* NB: the order of processing is important for the tests to match */
+	/* the order of processing is important for the tests to match */
+	/* font family and size not parsed here because all cells would trigger formatting of these attributes: defaults can't be assumed */
 	var cssStyles=[];
 	/* bold */
 	if( baseFont.getBold() )
@@ -93,11 +103,11 @@ private string function fontStyleToCss( required string styleType,required any s
 	Support limited to:
 		bold
 		color
+		font-family
+		font-size
 		italic
 		strikethrough
 		underline
-
-	font family and size not supported because all cells would trigger formatting of these attributes: defaults can't be assumed
 	*/
 	switch( styleType ){
 		case "bold":
@@ -115,10 +125,10 @@ private string function fontStyleToCss( required string styleType,required any s
 			return "font-style:" & ( styleValue? "italic;": "normal;" ); 
 		case "decoration":
 			return "text-decoration:#styleValue#;";//need to pass desired combination of "underline" and "line-through"
-		/* case "size":
-			return "font-size:#styleValue#pt;"; */
-		/* case "family":
-			return "font-family:#styleValue#;"; */
+		case "font-family":
+			return "font-family:#styleValue#;";
+		case "font-size":
+			return "font-size:#styleValue#pt;";
 	}
 	throw( type=exceptionType,message="Unrecognised style for css conversion" );
 }

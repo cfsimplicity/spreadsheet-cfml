@@ -71,14 +71,24 @@ describe( "rich text formatting tests",function(){
 		expect( actual.column1[ 13 ] ).toBe( expected );
 	});
 
-	it( "parses line 14: bold + unformatted",function() {
-		expected = '<span style="font-weight:bold;">bold</span><span style="font-weight:normal;">unformatted</span>';
+	it( "parses line 14: unformatted + georgia 15pt",function() {
+		expected = 'unformatted<span style="font-family:georgia;font-size:15pt;">Georgia15pt</span>';
 		expect( actual.column1[ 14 ] ).toBe( expected );
 	});
 
-	it( "parses line 15: bold + red + italic + strike + underline",function() {
-		expected = '<span style="font-weight:bold;">bold</span><span style="font-weight:normal;color:##ff3333;">red</span><span style="font-weight:normal;font-style:italic;">italic</span><span style="font-weight:normal;text-decoration:line-through;">strike</span><span style="font-weight:normal;text-decoration:underline;">underline</span>';
+	it( "parses line 15: unformatted + shadow (= unsupported style)",function() {
+		expected = 'unformattedShadow';
 		expect( actual.column1[ 15 ] ).toBe( expected );
+	});
+
+	it( "parses line 16: bold + unformatted",function() {
+		expected = '<span style="font-weight:bold;">bold</span><span style="font-weight:normal;">unformatted</span>';
+		expect( actual.column1[ 16 ] ).toBe( expected );
+	});
+
+	it( "parses line 17: bold + red + italic + strike + underline",function() {
+		expected = '<span style="font-weight:bold;">bold</span><span style="font-weight:normal;color:##ff3333;">red</span><span style="font-weight:normal;font-style:italic;">italic</span><span style="font-weight:normal;text-decoration:line-through;">strike</span><span style="font-weight:normal;text-decoration:underline;">underline</span>';
+		expect( actual.column1[ 17 ] ).toBe( expected );
 	});
 
 });

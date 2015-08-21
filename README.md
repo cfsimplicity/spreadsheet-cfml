@@ -121,6 +121,7 @@ myQuery = spreadsheet.read( src=mypath,format="query" );
 The `read()` method also features the following additional options not available in ColdFusion or the Spreadsheet Extension:
 
 * `fillMergedCellsWithVisibleValue`
+* `includeHiddenColumns`
 * `includeRichTextFormatting`
 
 [Full documentation of read()](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/read)

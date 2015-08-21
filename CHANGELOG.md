@@ -1,3 +1,9 @@
+## 0.5.1 - 21 August 2015
+	- Enhancements:
+	 - \#61 Support font family and size with `read()` and `includeRichTextFormatting` when different from the cell's base font
+	- Bug fixes:
+	 - \#60 `includeRichTextFormatting` option in `read()` results in empty span style if format not supported
+
 ## 0.5.0 - 20 August 2015
 	- Enhancements:
 	 - \#57 Add `includeRichTextFormatting` option to `read()`
