@@ -9,7 +9,7 @@ private string function richStringCellValueToHtml( required workbook,required ce
 	var startOfFirstRun=richTextValue.getIndexOfFormattingRun( 0 );
 	var initialContents=cellValue.Mid( 1,startOfFirstRun );//before the first run
 	var initialHtml=baseFontToHtml( workbook,initialContents,baseFont );
-	result = [ initialHtml ];// to an array for concatenation
+	result = initialHtml;
 	var endOfCellValuePosition=cellValue.Len();
 	for( var runIndex=0; runIndex LT totalRuns; runIndex++ ){
 		var run={};
@@ -23,73 +23,73 @@ private string function richStringCellValueToHtml( required workbook,required ce
 		run.length=( ( run.endPosition+1 ) -run.startPosition );
 		run.content=cellValue.Mid( run.startPosition,run.length );
 		if( run.css.IsEmpty() ){
-			result.Append( run.content );
+			result &= run.content;
 			continue;
 		}
 		run.html='<span style="#run.css#">#run.content#</span>';
-		result.Append( run.html );
+		result &= run.html;
 	}
-	return result.ToList( "" );
+	return result;
 }
 
 private string function runFontToHtml( required workbook,required baseFont,required runFont ){
 	/* NB: the order of processing is important for the tests to match */
-	var cssStyles=[];
+	var cssStyles="";
 	/* bold */
 	if( Compare( runFont.getBold(),baseFont.getBold() ) )
-		cssStyles.Append( fontStyleToCss( "bold",runFont.getBold() ) );
+		cssStyles &= fontStyleToCss( "bold",runFont.getBold() );
 	/* color */
 	if( Compare( runFont.getColor(),baseFont.getColor() ) AND !fontColorIsBlack( runFont.getColor() ) )
-		cssStyles.Append( fontStyleToCss( "color",runFont.getColor(),workbook ) );
+		cssStyles &= fontStyleToCss( "color",runFont.getColor(),workbook );
 	/* italic */
 	if( Compare( runFont.getItalic(),baseFont.getItalic() ) )
-		cssStyles.Append( fontStyleToCss( "italic",runFont.getItalic() ) );
+		cssStyles &= fontStyleToCss( "italic",runFont.getItalic() );
 	/* underline/strike */
 	if( Compare( runFont.getStrikeout(),baseFont.getStrikeout() ) OR Compare( runFont.getUnderline(),baseFont.getUnderline() ) ){
-		var decorationValue	=	[];
+		var decorationValue	=	"";
 		if( !baseFont.getStrikeout() AND runFont.getStrikeout() )
-			decorationValue.Append( "line-through" );
+			decorationValue &= "line-through";
 		if( !baseFont.getUnderline() AND runFont.getUnderline() )
-			decorationValue.Append( "underline" );
+			decorationValue &= " underline";
 		//if either or both are in the base format, and either or both are NOT in the run format, set the decoration to none.
 		if(
 				( baseFont.getUnderline() OR baseFont.getStrikeout() )
 				AND
 				( !runFont.getUnderline() OR !runFont.getUnderline() )
 			){
-			cssStyles.Append( fontStyleToCss( "decoration","none" ) );
+			cssStyles &= fontStyleToCss( "decoration","none" );
 		} else {
-			cssStyles.Append( fontStyleToCss( "decoration",decorationValue.ToList( " " ) ) );
+			cssStyles &= fontStyleToCss( "decoration",decorationValue.Trim() );
 		}
 	}
-	return cssStyles.ToList( "" );
+	return cssStyles;
 }
 
 private string function baseFontToHtml( required workbook,required contents,required baseFont ){
 	/* the order of processing is important for the tests to match */
 	/* font family and size not parsed here because all cells would trigger formatting of these attributes: defaults can't be assumed */
-	var cssStyles=[];
+	var cssStyles="";
 	/* bold */
 	if( baseFont.getBold() )
-		cssStyles.Append( fontStyleToCss( "bold",true ) );
+		cssStyles &= fontStyleToCss( "bold",true );
 	/* color */
 	if( !fontColorIsBlack( baseFont.getColor() ) )
-		cssStyles.Append( fontStyleToCss( "color",baseFont.getColor(),workbook ) );
+		cssStyles &= fontStyleToCss( "color",baseFont.getColor(),workbook );
 	/* italic */
 	if( baseFont.getItalic() )
-		cssStyles.Append( fontStyleToCss( "italic",true ) );
+		cssStyles &= fontStyleToCss( "italic",true );
 	/* underline/strike */
 	if( baseFont.getStrikeout() OR baseFont.getUnderline() ){
-		var decorationValue	=	[];
+		var decorationValue	=	"";
 		if( baseFont.getStrikeout() )
-			decorationValue.Append( "line-through" );
+			decorationValue &= "line-through";
 		if( baseFont.getUnderline() )
-			decorationValue.Append( "underline" );
-		cssStyles.Append( fontStyleToCss( "decoration",decorationValue.ToList( " " ) ) );
+			decorationValue &= " underline";
+		cssStyles &= fontStyleToCss( "decoration",decorationValue.Trim() );
 	}
 	if( cssStyles.IsEmpty() )
 		return contents;
-	return "<span style=""#cssStyles.ToList( "" )#"">#contents#</span>";
+	return "<span style=""#cssStyles#"">#contents#</span>";
 }
 
 private string function fontStyleToCss( required string styleType,required any styleValue,workbook ){

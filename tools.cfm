@@ -565,37 +565,37 @@ private string function generateCsvRow( required array values,delimiter="," ){
 }
 
 private string function queryToHtml( required query query,numeric headerRow,boolean includeHeaderRow ){
-	var result=[];
+	var result="";
 	var columns=query.ColumnArray();
 	var hasHeaderRow=( arguments.KeyExists( "headerRow" ) AND Val( headerRow ) );
 	if( hasHeaderRow ){
-		result.Append( "<thead>" );
-		result.Append( generateHtmlRow( columns,true ) );
-		result.Append( "</thead>" );
+		result &= "<thead>";
+		result &= generateHtmlRow( columns,true );
+		result &= "</thead>";
 	}
-	result.Append( "<tbody>" );
+	result &= "<tbody>";
 	for( var row in query ){
 		var rowValues=[];
 		for( column in columns ){
 			rowValues.Append( row[ column ] );
 		}
-		result.Append( generateHtmlRow( rowValues ) );
+		result &= generateHtmlRow( rowValues );
 	}
-	result.Append( "</tbody>" );
-	return result.ToList( "" );
+	result &= "</tbody>";
+	return result;
 }
 
 private string function generateHtmlRow( required array values,boolean isHeader=false ){
-	var result=[ "<tr>" ];
+	var result="<tr>";
 	var columnTag=isHeader? "th": "td";
 	for( var value in values ){
 		if( this.isDateObject( value ) ){
 			value= DateTimeFormat( value,dateFormats.DATETIME );
 		}
-		result.Append( "<#columnTag#>#value#</#columnTag#>" );
+		result &= "<#columnTag#>#value#</#columnTag#>";
 	}
-	result.Append( "</tr>" );
-	return result.ToList( "" );
+	result &= "</tr>";
+	return result;
 }
 
 private boolean function rowIsEmpty( required row ){
