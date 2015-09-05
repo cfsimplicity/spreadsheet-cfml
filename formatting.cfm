@@ -28,7 +28,7 @@ private string function richStringCellValueToHtml( required workbook,required ce
 			continue;
 		}
 		run.html='<span style="#run.css#">#run.content#</span>';
-		result.Append( run.html );
+		result.append( run.html );
 	}
 	return result.toString();
 }
