@@ -536,7 +536,7 @@ private array function parseRowData( required string line,required string delimi
 }
 
 private string function queryToCsv( required query query,numeric headerRow,boolean includeHeaderRow ){
-	var result=[];
+	var result=CreateObject( "Java","java.lang.StringBuilder" ).init();
 	var crlf=Chr( 13 ) & Chr( 10 );
 	var columns=query.ColumnArray();
 	var hasHeaderRow=( arguments.KeyExists( "headerRow" ) AND Val( headerRow ) );
@@ -547,55 +547,56 @@ private string function queryToCsv( required query query,numeric headerRow,boole
 		for( column in columns ){
 			rowValues.Append( row[ column ] );
 		}
-		result.Append( generateCsvRow( rowValues ) );
+		result.append( crlf & generateCsvRow( rowValues ) );
 	}
-	return result.ToList( crlf );
+	return result.toString().Trim();
 }
 
 private string function generateCsvRow( required array values,delimiter="," ){
-	var result=[];
+	var result=CreateObject( "Java","java.lang.StringBuilder" ).init();
 	for( var value in values ){
 		if( this.isDateObject( value ) ){
 			value= DateTimeFormat( value,dateFormats.DATETIME );
 		}
 		value=Replace( value,'"','""',"ALL" );//can't use member function in case its a non-string
-		result.Append( '"#value#"' );
+		result.append( '#delimiter#"#value#"' );
 	}
-	return result.ToList( delimiter );
+	return result.toString().substring( 1 );
 }
 
 private string function queryToHtml( required query query,numeric headerRow,boolean includeHeaderRow ){
-	var result="";
+	var result=CreateObject( "Java","java.lang.StringBuilder" ).init();
 	var columns=query.ColumnArray();
 	var hasHeaderRow=( arguments.KeyExists( "headerRow" ) AND Val( headerRow ) );
 	if( hasHeaderRow ){
-		result &= "<thead>";
-		result &= generateHtmlRow( columns,true );
-		result &= "</thead>";
+		result.append( "<thead>" );
+		result.append( generateHtmlRow( columns,true ) );
+		result.append( "</thead>" );
 	}
-	result &= "<tbody>";
+	result.append( "<tbody>" );
 	for( var row in query ){
 		var rowValues=[];
 		for( column in columns ){
 			rowValues.Append( row[ column ] );
 		}
-		result &= generateHtmlRow( rowValues );
+		result.append( generateHtmlRow( rowValues ) );
 	}
-	result &= "</tbody>";
-	return result;
+	result.append( "</tbody>" );
+	return result.toString();
 }
 
 private string function generateHtmlRow( required array values,boolean isHeader=false ){
-	var result="<tr>";
+	var result=CreateObject( "Java","java.lang.StringBuilder" ).init();
+	result.append( "<tr>" );
 	var columnTag=isHeader? "th": "td";
 	for( var value in values ){
 		if( this.isDateObject( value ) ){
 			value= DateTimeFormat( value,dateFormats.DATETIME );
 		}
-		result &= "<#columnTag#>#value#</#columnTag#>";
+		result.append( "<#columnTag#>#value#</#columnTag#>" );
 	}
-	result &= "</tr>";
-	return result;
+	result.append( "</tr>" );
+	return result.toString();
 }
 
 private boolean function rowIsEmpty( required row ){
