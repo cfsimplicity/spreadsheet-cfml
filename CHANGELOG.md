@@ -1,3 +1,6 @@
+## 0.5.3 - 5 September 2015
+	- Improve performance of `read()` by using native Java concatenation instead of arrays which are slow in Lucee.
+
 ## 0.5.2 - 21 August 2015
 	- REMOVED:
 	 - \#61 Support for font family and size with `read()` and `includeRichTextFormatting` when different from the cell's base font. Better to be consistent and not support these attributes anywhere so the expectation is clear.
