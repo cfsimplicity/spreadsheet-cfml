@@ -103,6 +103,7 @@ You will probably want to place the spreadsheet library files in a central locat
 ###Additional Convenience methods
 
 * [binaryFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/binaryFromQuery)
+* [download](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/download)
 * [downloadCsvFromFile](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/downloadCsvFromFile)
 * [downloadFileFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/downloadFileFromQuery)
 * [workbookFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/workbookFromQuery)
