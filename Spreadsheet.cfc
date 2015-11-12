@@ -61,6 +61,17 @@ component{
 		return this.readBinary( workbook );
 	}
 
+	void function download( required workbook,required string filename,string contentType ){
+		var safeFilename=this.filenameSafe( filename );
+		var filenameWithoutExtension=safeFilename.REReplace( "\.xlsx?$","" );
+		var extension=this.isXmlFormat( workbook )? "xlsx": "xls";
+		arguments.filename=filenameWithoutExtension & "." & extension;
+		var binary=this.readBinary( workbook );
+		if( !arguments.KeyExists( "contentType" ) )
+			arguments.contentType=this.isXmlFormat( workbook )? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/msexcel";
+		this.downloadBinaryVariable( binary, filename, contentType );
+	}
+
 	void function downloadFileFromQuery(
 		required query data
 		,required string filename
@@ -69,14 +80,14 @@ component{
 		,boolean xmlFormat=false
 		,string contentType
 	){
-		var safeFilename	=	this.filenameSafe( filename );
-		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$","" );
-		var binary = this.binaryFromQuery( data,addHeaderRow,boldHeaderRow,xmlFormat );
+		var safeFilename=this.filenameSafe( filename );
+		var filenameWithoutExtension=safeFilename.REReplace( "\.xlsx?$","" );
+		var extension=xmlFormat? "xlsx": "xls";
+		arguments.filename=filenameWithoutExtension & "." & extension;
+		var binary=this.binaryFromQuery( data,addHeaderRow,boldHeaderRow,xmlFormat );
 		if( !arguments.KeyExists( "contentType" ) )
 			arguments.contentType = xmlFormat? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/msexcel";
-		var extension = xmlFormat? "xlsx": "xls";
-		header name="Content-Disposition" value="attachment; filename=#Chr(34)##filenameWithoutExtension#.#extension##Chr(34)#";
-		content type=contentType variable="#binary#" reset="true";
+		this.downloadBinaryVariable( binary, filename, contentType );
 	}
 
 	void function downloadCsvFromFile(
@@ -96,10 +107,11 @@ component{
 		arguments.format="csv";
 		var csv=this.read( argumentCollection=arguments );
 		var binary=ToBinary( ToBase64( csv.Trim() ) );
-		var safeFilename	=	this.filenameSafe( filename );
-		var filenameWithoutExtension = safeFilename.REReplace( "\.csv$","" );
-		header name="Content-Disposition" value="attachment; filename=#Chr(34)##filenameWithoutExtension#.csv#Chr(34)#";
-		content type=contentType variable="#binary#" reset="true";
+		var safeFilename=this.filenameSafe( filename );
+		var filenameWithoutExtension=safeFilename.REReplace( "\.csv$","" );
+		var extension="csv";
+		arguments.filename=filenameWithoutExtension & "." & extension;
+		this.downloadBinaryVariable( binary, filename, contentType );
 	}
 
 	void function writeFileFromQuery(

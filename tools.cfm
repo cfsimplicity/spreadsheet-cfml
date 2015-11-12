@@ -172,6 +172,11 @@ private void function deleteSheetAtIndex( required workbook,required numeric she
 	workbook.removeSheetAt( JavaCast( "int",sheetIndex ) );
 }
 
+private void function downloadBinaryVariable( required binaryVariable,required string filename,required contentType ){
+	header name="Content-Disposition" value="attachment; filename=#Chr(34)##filename##Chr(34)#";
+	content type=contentType variable="#binaryVariable#" reset="true";
+}
+
 private numeric function estimateColumnWidth( required workbook,required any value ){
 	/* Estimates approximate column width based on cell value and default character width. */
 	/*
