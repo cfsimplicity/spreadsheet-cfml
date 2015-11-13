@@ -43,5 +43,20 @@ describe( "addRows tests",function(){
 		expect( IsDate( s.getCellValue( workbook,1,3 ) ) ).tobeTrue();
 	});
 
+	it( "Can include the query column names",function(){
+		s.addRows( workbook=workbook, data=data, includeQueryColumnNames=true );
+		expected=QueryNew( "column1,column2","VarChar,VarChar",[ [ "column1","column2" ],[ "a","b" ],[ "c","d" ] ] );
+		actual=s.sheetToQuery( workbook );
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Can include the query column names starting at a specific row",function(){
+		s.addRow( workbook,"x,y" );
+		s.addRows( workbook=workbook, data=data, row=2, includeQueryColumnNames=true );
+		expected=QueryNew( "column1,column2","VarChar,VarChar",[ [ "x","y" ],[ "column1","column2" ],[ "a","b" ],[ "c","d" ] ] );
+		actual=s.sheetToQuery( workbook );
+		expect( actual ).toBe( expected );
+	});
+
 });	
 </cfscript>

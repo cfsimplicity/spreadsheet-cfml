@@ -1,7 +1,8 @@
 ## 0.5.4 - 12 November 2015
 	- Enhancements:
-		- \#65 Upgrade POI to 3.13
-		- \#64 Add download() function for an existing workbook object
+		- \#65 Upgrade POI to 3.13.
+		- \#64 Add `download()` function for an existing workbook object.
+		- \#63 Add `includeQueryColumnNames` option to `AddRows()`.
 
 ## 0.5.3 - 5 September 2015
 	- Improve performance of `read()` by using native Java concatenation instead of arrays which are slow in Lucee.

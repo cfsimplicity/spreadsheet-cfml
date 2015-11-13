@@ -347,16 +347,18 @@ component{
 		,numeric column=1
 		,boolean insert=true
 		,boolean autoSizeColumns=false
+		,boolean includeQueryColumnNames=false
 	){
-		var lastRow = this.getNextEmptyRow( workbook );
+		var lastRow=this.getNextEmptyRow( workbook );
+		var insertAtRowIndex=arguments.keyExists( "row" )? row-1: this.getNextEmptyRow( workbook );
 		if( arguments.KeyExists( "row" ) AND ( row LTE lastRow ) AND insert )
 			shiftRows( workbook,row,lastRow,data.recordCount );
-		var rowNum	=	arguments.keyExists( "row" )? row-1: this.getNextEmptyRow( workbook );
+		var currentRowIndex=insertAtRowIndex;
 		var queryColumns = this.getQueryColumnFormats( workbook,data );
 		var dateUtil = this.getDateUtil();
 		for( var dataRow in data ){
-			var newRow = this.createRow( workbook,rowNum,false );
-			var cellIndex = ( column-1 );
+			var newRow=this.createRow( workbook,currentRowIndex,false );
+			var cellIndex=( column-1 );
 			/* Note: To properly apply date/number formatting:
  				- cell type must be CELL_TYPE_NUMERIC
  				- cell value must be applied as a java.util.Date or java.lang.Double (NOT as a string)
@@ -364,23 +366,23 @@ component{
    		*/
    		/* populate all columns in the row */
    		for( var queryColumn in queryColumns ){
-   			var cell 	= this.createCell( newRow, cellIndex, false );
-				var value = dataRow[ queryColumn.name ];
-				var forceDefaultStyle = false;
-				queryColumn.index = cellIndex;
+   			var cell=this.createCell( newRow, cellIndex, false );
+				var value=dataRow[ queryColumn.name ];
+				var forceDefaultStyle=false;
+				queryColumn.index=cellIndex;
 				/* Cast the values to the correct type, so data formatting is properly applied  */
 				if( queryColumn.cellDataType IS "DOUBLE" AND IsNumeric( value ) ){
 					cell.setCellValue( JavaCast( "double",Val( value ) ) );
 				} else if( queryColumn.cellDataType IS "TIME" AND IsDate( value ) ){
-					value = TimeFormat( ParseDateTime( value ),"HH:MM:SS");
+					value=TimeFormat( ParseDateTime( value ),"HH:MM:SS");
 					cell.setCellValue( dateUtil.convertTime( value ) );
-					forceDefaultStyle = true;
+					forceDefaultStyle=true;
 				} else if( queryColumn.cellDataType EQ "DATE" AND IsDate( value ) ){
 					/* If the cell is NOT already formatted for dates, apply the default format brand new cells have a styleIndex == 0  */
-					var styleIndex = cell.getCellStyle().getDataFormat();
-					var styleFormat = cell.getCellStyle().getDataFormatString();
+					var styleIndex=cell.getCellStyle().getDataFormat();
+					var styleFormat=cell.getCellStyle().getDataFormatString();
 					if( styleIndex EQ 0 OR NOT dateUtil.isADateFormat( styleIndex,styleFormat ) )
-						forceDefaultStyle = true;
+						forceDefaultStyle=true;
 					cell.setCellValue( ParseDateTime( value ) );
 				} else if( queryColumn.cellDataType EQ "BOOLEAN" AND IsBoolean( value ) ){
 					cell.setCellValue( JavaCast( "boolean",value ) );
@@ -398,15 +400,21 @@ component{
 				}
 				cellIndex++;
    		}
-   		rowNum++;
+   		currentRowIndex++;
 		}
 		if( autoSizeColumns ){
-			var numberOfColumns = queryColumns.Len();
-			var thisColumn = column;
+			var numberOfColumns=queryColumns.Len();
+			var thisColumn=column;
 			for( var i=thisColumn; i LTE numberOfColumns; i++ ){
 				this.autoSizeColumn( workbook,thisColumn );
 				thisColumn++;
 			}
+		}
+		if( includeQueryColumnNames ){
+			var columnNames=QueryColumnArray( data );
+			var delimiter="|";
+			var columnNamesList=columnNames.ToList( delimiter );
+			this.addRow( workbook=workbook, data=columnNamesList, row=insertAtRowIndex+1, delimiter=delimiter  );
 		}
 	}
 
