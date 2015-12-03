@@ -1,3 +1,7 @@
+## 0.5.5 - 3 December 2015
+	- Enhancements:
+		- \#66 Add `setRepeatingColumns()` and `setRepeatingRows()`
+
 ## 0.5.4 - 12 November 2015
 	- Enhancements:
 		- \#65 Upgrade POI to 3.13.

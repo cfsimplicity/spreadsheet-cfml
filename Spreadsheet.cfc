@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "0.5.4";
+	variables.version = "0.5.5";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
 	variables.dateFormats = {
@@ -1099,6 +1099,28 @@ component{
 			this.getActiveSheet( workbook ).getHeader().setleft( JavaCast( "string",leftHeader ) );
 		if( !rightHeader.isEmpty() )
 			this.getActiveSheet( workbook ).getHeader().setright( JavaCast( "string",rightHeader ) );
+	}
+
+	void function setRepeatingColumns(
+		required workbook
+		,required string columnRange
+	){
+		columnRange=columnRange.Trim();
+		if( !IsValid( "regex",columnRange,"[A-Za-z]:[A-Za-z]" ) )
+			throw( type=exceptionType,message="Invalid columnRange argument",detail="The 'columnRange' argument should be in the form 'A:B'" );
+		var cellRangeAddress=loadPoi( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String",columnRange ) );
+		this.getActiveSheet( workbook ).setRepeatingColumns( cellRangeAddress );
+	}
+
+	void function setRepeatingRows(
+		required workbook
+		,required string rowRange
+	){
+		rowRange=rowRange.Trim();
+		if( !IsValid( "regex",rowRange,"\d+:\d+" ) )
+			throw( type=exceptionType,message="Invalid rowRange argument",detail="The 'rowRange' argument should be in the form 'n:n', e.g. '1:5'" );
+		var cellRangeAddress=loadPoi( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String",rowRange ) );
+		this.getActiveSheet( workbook ).setRepeatingRows( cellRangeAddress );
 	}
 
 	void function setRowHeight( required workbook,required numeric row,required numeric height ){
