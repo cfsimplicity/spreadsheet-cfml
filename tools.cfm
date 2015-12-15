@@ -177,6 +177,41 @@ private void function downloadBinaryVariable( required binaryVariable,required s
 	content type=contentType variable="#binaryVariable#" reset="true";
 }
 
+private void function encryptFile( required string filepath, required string password ){
+	/* See http://poi.apache.org/encryption.html */
+	/* NB: Not all spreadsheet programs support this type of encryption */
+	var fs=loadPoi( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
+	/*
+		Need to ensure our poiLoader is maintained as the "contextLoader" so that when POI objects load other POI objects, they find them. Otherwise Lucee's loader would be used, which isn't aware of our POI library. JavaLoader supports this via a complicated "mixin" procedure: https://github.com/markmandel/JavaLoader/wiki/Switching-the-ThreadContextClassLoader
+	*/
+	var info=New encryption( server[ poiLoaderName ] ).loadInfoWithSwitchedContextLoader();
+	var encryptor=info.getEncryptor();
+	encryptor.confirmPassword( JavaCast( "string",password ) );
+	var opcAccess=loadPoi( "org.apache.poi.openxml4j.opc.PackageAccess" );
+	try{
+		var file=CreateObject( "java","java.io.File" ).init( filepath );
+		var opc=loadPoi( "org.apache.poi.openxml4j.opc.OPCPackage" ).open( file,opcAccess.READ_WRITE );
+		var encryptedStream=encryptor.getDataStream( fs );
+		opc.save( encryptedStream );
+	}
+	finally{
+		opc.close();
+	}
+	lock name="#filepath#" timeout=5{
+		var outputStream=CreateObject( "java","java.io.FileOutputStream" ).init( filepath );
+	}
+	try{
+		lock name="#filepath#" timeout=5{
+			fs.writeFilesystem( outputStream );
+		}
+		outputStream.flush();
+	}
+	finally{
+		// always close the stream. otherwise file may be left in a locked state if an unexpected error occurs
+		outputStream.close();
+	}
+}
+
 private numeric function estimateColumnWidth( required workbook,required any value ){
 	/* Estimates approximate column width based on cell value and default character width. */
 	/*
@@ -792,41 +827,6 @@ private function workbookFromFile( required string path ){
 	}
 	finally{
 		file.close();
-	}
-}
-
-private void function encryptFile( required string filepath, required string password ){
-	/* See http://poi.apache.org/encryption.html */
-	/* NB: Not all spreadsheet programs support this type of encryption */
-	var fs=loadPoi( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
-	/*
-		Need to ensure our poiLoader is maintained as the "contextLoader" so that when POI objects load other POI objects, they find them. Otherwise Lucee's loader would be used, which isn't aware of our POI library. JavaLoader supports this via a complicated "mixin" procedure: https://github.com/markmandel/JavaLoader/wiki/Switching-the-ThreadContextClassLoader
-	*/
-	var info=New encryption( server[ poiLoaderName ] ).loadInfoWithSwitchedContextLoader();
-	var encryptor=info.getEncryptor();
-	encryptor.confirmPassword( JavaCast( "string",password ) );
-	var opcAccess=loadPoi( "org.apache.poi.openxml4j.opc.PackageAccess" );
-	try{
-		var file=CreateObject( "java","java.io.File" ).init( filepath );
-		var opc=loadPoi( "org.apache.poi.openxml4j.opc.OPCPackage" ).open( file,opcAccess.READ_WRITE );
-		var encryptedStream=encryptor.getDataStream( fs );
-		opc.save( encryptedStream );
-	}
-	finally{
-		opc.close();
-	}
-	lock name="#filepath#" timeout=5{
-		var outputStream=CreateObject( "java","java.io.FileOutputStream" ).init( filepath );
-	}
-	try{
-		lock name="#filepath#" timeout=5{
-			fs.writeFilesystem( outputStream );
-		}
-		outputStream.flush();
-	}
-	finally{
-		// always close the stream. otherwise file may be left in a locked state if an unexpected error occurs
-		outputStream.close();
 	}
 }
 
