@@ -1,3 +1,9 @@
+## 0.5.6 - 15 December 2015
+	- Enhancements:
+		- \#69  Add explicit `setReadOnly()` method for binary workbooks (only)
+	- Fixes:
+		-	\#68	Supplying a password to `write()` provides whole file encryption for XML spreadsheet files (only)
+
 ## 0.5.5 - 3 December 2015
 	- Enhancements:
 		- \#66 Add `setRepeatingColumns()` and `setRepeatingRows()`

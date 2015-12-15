@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "0.5.5";
+	variables.version = "0.5.6";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
 	variables.dateFormats = {
@@ -1101,6 +1101,13 @@ component{
 			this.getActiveSheet( workbook ).getHeader().setright( JavaCast( "string",rightHeader ) );
 	}
 
+	void function setReadOnly( required workbook, required string password ){
+		if( isXmlFormat( workbook ) )
+			throw( type=exceptionType,message="setReadOnly not supported for XML workbooks",detail="The setReadOnly() method only works on binary 'xls' workbooks." );
+		// writeProtectWorkbook takes both a user name and a password, just making up a user name
+		workbook.writeProtectWorkbook( JavaCast( "string",password ),JavaCast( "string","user" ) );
+	}
+
 	void function setRepeatingColumns(
 		required workbook
 		,required string columnRange
@@ -1188,13 +1195,12 @@ component{
 		this.toggleColumnHidden( workbook,column,false );
 	}
 
-	void function write( required workbook,required string filepath,boolean overwrite=false,string password ){
+	void function write( required workbook, required string filepath, boolean overwrite=false, string password ){
 		if( !overwrite AND FileExists( filepath ) )
 			throw( type=exceptionType,message="File already exists",detail="The file path specified already exists. Use 'overwrite=true' if you wish to overwrite it." );
-		// writeProtectWorkbook takes both a user name and a password, but since CF 9 tag only takes a password, just making up a user name
-		// TODO: workbook.isWriteProtected() returns true but the workbook opens without prompting for a password
-		if( arguments.KeyExists( "password" ) AND !password.Trim().IsEmpty() )
-			workbook.writeProtectWorkbook( JavaCast( "string",password ),JavaCast( "string","user" ) );
+		var passwordProtect=( arguments.KeyExists( "password" ) AND !password.Trim().IsEmpty() );
+		if( passwordProtect AND isBinaryFormat( workbook ) )
+			throw( type=exceptionType,message="Whole file password protection is not supported for binary workbooks",detail="Password protection only works with XML ('xlsx') workbooks." );
 		lock name="#filepath#" timeout=5{
 			var outputStream = CreateObject( "java","java.io.FileOutputStream" ).init( filepath );
 		}
@@ -1208,6 +1214,8 @@ component{
 			// always close the stream. otherwise file may be left in a locked state if an unexpected error occurs
 			outputStream.close();
 		}
+		if( passwordProtect )
+			this.encryptFile( filepath,password );
 	}
 
 }
