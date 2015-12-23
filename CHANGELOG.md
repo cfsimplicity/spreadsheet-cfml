@@ -1,3 +1,7 @@
+## 0.5.8 - 23 December 2015
+	- Enhancements:
+		- \#73  Allow encryption algorithm to be specified when writing password protected workbooks
+
 ## 0.5.7 - 23 December 2015
 	- Fixes:
 		-	\#71 and \#72	Adjust tests to support TestBox 2.2

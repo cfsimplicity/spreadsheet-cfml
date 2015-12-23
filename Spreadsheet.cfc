@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "0.5.7";
+	variables.version = "0.5.8";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
 	variables.dateFormats = {
@@ -1195,7 +1195,7 @@ component{
 		this.toggleColumnHidden( workbook,column,false );
 	}
 
-	void function write( required workbook, required string filepath, boolean overwrite=false, string password ){
+	void function write( required workbook, required string filepath, boolean overwrite=false, string password, string algorithm="binaryRC4" ){
 		if( !overwrite AND FileExists( filepath ) )
 			throw( type=exceptionType,message="File already exists",detail="The file path specified already exists. Use 'overwrite=true' if you wish to overwrite it." );
 		var passwordProtect=( arguments.KeyExists( "password" ) AND !password.Trim().IsEmpty() );
@@ -1215,7 +1215,7 @@ component{
 			outputStream.close();
 		}
 		if( passwordProtect )
-			this.encryptFile( filepath,password );
+			this.encryptFile( filepath, password, algorithm );
 	}
 
 }

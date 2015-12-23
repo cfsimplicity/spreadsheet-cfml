@@ -5,16 +5,26 @@ component{
 		https://github.com/markmandel/JavaLoader/wiki/Switching-the-ThreadContextClassLoader
 	*/
 
-	function init( required javaloader ){
+	function init( required javaloader,required string algorithm ){
 		variables.javaloader=javaloader;
 		variables.switchThreadContextClassLoader=javaloader.switchThreadContextClassLoader;
+		variables.algorithm=algorithm;
 		return this;
 	}
 
 	function loadInfo(){
 		var mode=javaloader.create( "org.apache.poi.poifs.crypt.EncryptionMode" );
-		//NB:  Excel viewer doesn't seem to be able to open the file if agile and standard modes are used
-		var info=javaloader.create( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.binaryRC4 );
+		switch( algorithm ){
+			case "agile":
+				var info=javaloader.create( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.agile );
+				break;
+			case "standard":
+				var info=javaloader.create( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.standard );
+				break;
+			case "binaryRC4":
+				var info=javaloader.create( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.binaryRC4 );
+				break;
+		}
 		return info;
 	}
 

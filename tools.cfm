@@ -177,14 +177,14 @@ private void function downloadBinaryVariable( required binaryVariable,required s
 	content type=contentType variable="#binaryVariable#" reset="true";
 }
 
-private void function encryptFile( required string filepath, required string password ){
+private void function encryptFile( required string filepath, required string password, required string algorithm ){
 	/* See http://poi.apache.org/encryption.html */
 	/* NB: Not all spreadsheet programs support this type of encryption */
 	var fs=loadPoi( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
 	/*
 		Need to ensure our poiLoader is maintained as the "contextLoader" so that when POI objects load other POI objects, they find them. Otherwise Lucee's loader would be used, which isn't aware of our POI library. JavaLoader supports this via a complicated "mixin" procedure: https://github.com/markmandel/JavaLoader/wiki/Switching-the-ThreadContextClassLoader
 	*/
-	var info=New encryption( server[ poiLoaderName ] ).loadInfoWithSwitchedContextLoader();
+	var info=New encryption( server[ poiLoaderName ], algorithm ).loadInfoWithSwitchedContextLoader();
 	var encryptor=info.getEncryptor();
 	encryptor.confirmPassword( JavaCast( "string",password ) );
 	var opcAccess=loadPoi( "org.apache.poi.openxml4j.opc.PackageAccess" );
