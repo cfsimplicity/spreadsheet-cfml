@@ -146,7 +146,7 @@ spreadsheet = New root.spreadsheet( dateFormats={ DATE="mm/dd/yyyy" } );
 ```
 
 ##Test Suite
-The automated tests require [TestBox 2.1](https://github.com/Ortus-Solutions/TestBox). You will need to create an application mapping for `/testbox`
+The automated tests require [TestBox 2.1](https://github.com/Ortus-Solutions/TestBox) or later. You will need to create an application mapping for `/testbox`
 
 ##Credits
 
