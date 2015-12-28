@@ -127,6 +127,7 @@ The `read()` method also features the following additional options not available
 * `fillMergedCellsWithVisibleValue`
 * `includeHiddenColumns`
 * `includeRichTextFormatting`
+* `password` to open encrypted XML (only) spreadsheets
 
 [Full documentation of read()](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/read)
 
