@@ -1,3 +1,8 @@
+## 0.5.9 - 28 December 2015
+	- Enhancements:
+		- \#70  Support reading encrypted XML files (only) using supplied password
+		- Better file handling when encrypting files
+
 ## 0.5.8 - 23 December 2015
 	- Enhancements:
 		- \#73  Allow encryption algorithm to be specified when writing password protected workbooks

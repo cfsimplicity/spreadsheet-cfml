@@ -291,6 +291,17 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Can write and read an encrypted OOXML file",function() {
+		data = QueryNew( "column1","VarChar",[ [ "a" ] ] );
+		workbook = s.new( xmlformat=true );
+		s.addRows( workbook,data );
+		tempXlsPath=ExpandPath( "temp.xlsx" );;
+		s.write( workbook=workbook,filepath=tempXlsPath,overwrite=true,password="pass" );
+		expected = data;
+		actual = s.read( src=tempXlsPath,format="query",password="pass" );
+		expect( actual ).toBe( expected );
+	});
+
 	describe( "read exceptions",function(){
 
 		it( "Throws an exception if the 'query' argument is passed",function() {
@@ -315,6 +326,24 @@ describe( "read tests",function(){
 			expect( function(){
 				s.read( src=path,format="query",sheetNumber=20 );
 			}).toThrow( regex="Invalid sheet|out of range" );
+		});
+
+		it( "Throws an exception if a password is supplied for a binary xls file",function() {
+			expect( function(){
+				path = ExpandPath( "/root/test/files/test.xls" );
+				s.read( src=path,format="query",password="pass" );
+			}).toThrow( regex="Invalid file type" );
+		});
+
+		it( "Throws an exception if the password for an encrypted file is incorrect",function() {
+			expect( function(){
+				data = QueryNew( "column1","VarChar",[ [ "a" ] ] );
+				workbook = s.new( xmlformat=true );
+				s.addRows( workbook,data );
+				tempXlsPath=ExpandPath( "temp.xlsx" );;
+				s.write( workbook=workbook,filepath=tempXlsPath,overwrite=true,password="pass" );
+				s.read( src=tempXlsPath,format="query",password="parse" );
+			}).toThrow( regex="Invalid password" );
 		});
 
 	});

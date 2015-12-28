@@ -1,15 +1,15 @@
 component{
 
-	variables.version = "0.5.8";
-	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
+	variables.version="0.5.9";
+	variables.poiLoaderName="_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
-	variables.dateFormats = {
+	variables.dateFormats={
 		DATE 				= "yyyy-mm-dd"
 		,DATETIME		=	"yyyy-mm-dd HH:nn:ss"
 		,TIME 			= "hh:mm:ss"
 		,TIMESTAMP 	= "yyyy-mm-dd hh:mm:ss"
 	};
-	variables.exceptionType	=	"cfsimplicity.lucee.spreadsheet";
+	variables.exceptionType="cfsimplicity.lucee.spreadsheet";
 
 	include "tools.cfm";
 	include "formatting.cfm";
@@ -808,6 +808,7 @@ component{
 		,boolean fillMergedCellsWithVisibleValue=false
 		,boolean includeHiddenColumns=true
 		,boolean includeRichTextFormatting=false
+		,string password
 	){
 		if( arguments.KeyExists( "query" ) )
 			throw( type=exceptionType,message="Invalid argument 'query'.",details="Just use format='query' to return a query object" );
@@ -817,7 +818,8 @@ component{
 			throw( type=exceptionType,message="Cannot provide both sheetNumber and sheetName arguments",detail="Only one of either 'sheetNumber' or 'sheetName' arguments may be provided." );
 		if( !FileExists( src ) )
 			throw( type=exceptionType,message="Non-existent file",detail="Cannot find the file #src#." );
-		var workbook = this.workbookFromFile( src );
+		var passwordProtected=( arguments.KeyExists( "password") AND !password.Trim().IsEmpty() );
+		var workbook=passwordProtected? this.decryptFile( src, password ): this.workbookFromFile( src );
 		if( arguments.KeyExists( "sheetName" ) )
 			this.setActiveSheet( workbook=workbook,sheetName=sheetName );
 		if( !arguments.keyExists( "format" ) )
