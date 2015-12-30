@@ -263,7 +263,8 @@ component{
 				var bytes = ioUtils.toByteArray( inputStream );
 			}
 			finally{
-				inputStream.close();
+				if( local.KeyExists( "inputStream" ) )
+					inputStream.close();
 			}
 		} else {
 			var bytes = ToBinary( imageData );
@@ -1214,7 +1215,8 @@ component{
 		}
 		finally{
 			// always close the stream. otherwise file may be left in a locked state if an unexpected error occurs
-			outputStream.close();
+			if( local.KeyExists( "outputStream" ) )
+				outputStream.close();
 		}
 		if( passwordProtect )
 			this.encryptFile( filepath, password, algorithm );

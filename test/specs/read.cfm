@@ -330,7 +330,7 @@ describe( "read tests",function(){
 
 		it( "Throws an exception if a password is supplied for a binary xls file",function() {
 			expect( function(){
-				path = ExpandPath( "/root/test/files/test.xls" );
+				var path = ExpandPath( "/root/test/files/test.xls" );
 				s.read( src=path,format="query",password="pass" );
 			}).toThrow( regex="Invalid file type" );
 		});
@@ -344,6 +344,13 @@ describe( "read tests",function(){
 				s.write( workbook=workbook,filepath=tempXlsPath,overwrite=true,password="pass" );
 				s.read( src=tempXlsPath,format="query",password="parse" );
 			}).toThrow( regex="Invalid password" );
+		});
+
+		it( "Throws a helpful exception if the source file is not a spreadsheet",function() {
+			expect( function(){
+				var path = ExpandPath( "/root/test/files/notaspreadsheet.txt" );
+				s.read( src=path,password="test" );
+			}).toThrow( regex="Invalid spreadsheet file" );
 		});
 
 	});

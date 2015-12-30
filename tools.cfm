@@ -174,8 +174,12 @@ private any function decryptFile( required string filepath, required string pass
 				throw( type=exceptionType,message="Invalid password",detail="The file cannot be read because the password is incorrect." );
 			}
 		}
+		catch( org.apache.poi.poifs.filesystem.NotOLE2FileException exception ){
+			throw( type=exceptionType, message="Invalid spreadsheet file", detail="The file #filepath# does not appear to be a spreadsheet" );
+		}
 		finally{
-			fs.close();
+			if( local.KeyExists( "fs" ) )
+				fs.close();
 		}
 	}
 }
@@ -221,7 +225,8 @@ private void function encryptFile( required string filepath, required string pas
 				opc.save( encryptedStream );
 			}
 			finally{
-				opc.close();
+				if( local.KeyExists( "opc" ) )
+					opc.close();
 			}
 			try{
 				var outputStream=CreateObject( "java","java.io.FileOutputStream" ).init( filepath );
@@ -230,11 +235,13 @@ private void function encryptFile( required string filepath, required string pas
 			}
 			finally{
 				// always close the stream. otherwise file may be left in a locked state if an unexpected error occurs
-				outputStream.close();
+				if( local.KeyExists( "outputStream" ) )
+					outputStream.close();
 			}
 		}
 		finally{
-			fs.close();
+			if( local.KeyExists( "fs" ) )
+				fs.close();
 		}
 	}
 }
@@ -852,8 +859,12 @@ private function workbookFromFile( required string path ){
 		}
 		return workbook;
 	}
+	catch( org.apache.poi.openxml4j.exceptions.InvalidFormatException exception ){
+		throw( type=exceptionType, message="Invalid spreadsheet file", detail="The file #path# does not appear to be a spreadsheet" );
+	}
 	finally{
-		file.close();
+		if( local.KeyExists( "file" ) )
+			file.close();
 	}
 }
 
