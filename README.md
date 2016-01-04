@@ -45,7 +45,7 @@ You will probably want to place the spreadsheet library files in a central locat
 
 [Full function reference](https://github.com/cfsimplicity/lucee-spreadsheet/wiki)
 
-##Supported ColdFusion 9 functions
+##Supported ColdFusion functions
 
 * [addColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addColumn)
 * [addFreezePane](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addFreezePane)
@@ -54,6 +54,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [addRow](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addRow)
 * [addRows](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addRows)
 * [addSplitPane](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addSplitPane)
+* autosize, implemented as [autoSizeColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/autoSizeColumn)
 * [createSheet](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/createSheet)
 * [deleteColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/deleteColumn)
 * [deleteColumns](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/deleteColumns)
@@ -89,7 +90,6 @@ You will probably want to place the spreadsheet library files in a central locat
 
 ###Extra functions not available in ColdFusion
 
-* [autoSizeColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/autoSizeColumn)
 * [clearCell](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCell)
 * [clearCellRange](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCellRange)
 * [hideColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/hideColumn)
