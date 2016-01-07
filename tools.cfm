@@ -145,8 +145,17 @@ private function createRow( required workbook,numeric rowNum=getNextEmptyRow( wo
 	var row = getActiveSheet( workbook ).getRow( JavaCast( "int",rowNum ) );
 	if( overwrite AND !IsNull( row ) )
 		getActiveSheet( workbook ).removeRow( row ) /* forcibly remove existing row and all cells  */
-	if( overwrite OR IsNull( getActiveSheet( workbook ).getRow( JavaCast( "int",rowNum ) ) ) )
-		row = getActiveSheet( workbook ).createRow( JavaCast("int", rowNum ) );
+	if( overwrite OR IsNull( getActiveSheet( workbook ).getRow( JavaCast( "int",rowNum ) ) ) ){
+		try{
+			row = getActiveSheet( workbook ).createRow( JavaCast( "int", rowNum ) );
+		}
+		catch( java.lang.IllegalArgumentException exception ){
+			if( exception.message.FindNoCase( "Invalid row number (65536)" ) )
+				throw( type=exceptionType,message="Too many rows",detail="Binary spreadsheets are limited to 65535 rows. Consider using an XML format spreadsheet instead." );
+			else
+				rethrow;
+		}
+	}
 	return row;
 }
 

@@ -58,5 +58,20 @@ describe( "addRows tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	describe( "addRow exceptions",function(){
+
+		it( "Throws an exception if adding more than 65536 rows to a binary spreadsheet",function() {
+			expect( function(){
+				var rows=[];
+				for( i=1; i <= 65537; i++ ){
+					rows.append( [ i ] );
+				}
+				var rowData=QueryNew( "ID","Integer",rows );
+				s.addRows( workbook,rowData );
+			}).toThrow( regex="Too many rows" );
+		});
+
+	});
+
 });	
 </cfscript>
