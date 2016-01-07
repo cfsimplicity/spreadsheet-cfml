@@ -1,84 +1,84 @@
 ## 0.5.11 - 7 January 2016
-	- Better exception message when adding too many rows to a binary spreadsheet.
+- Better exception message when adding too many rows to a binary spreadsheet.
 
 ## 0.5.10 - 30 December 2015
-	- Better exception message when `read()` `src` file is not a spreadhseet.
-	- Make final closing of java streams dependent on existence of stream variable to prevent embedded exceptions.
+- Better exception message when `read()` `src` file is not a spreadhseet.
+- Make final closing of java streams dependent on existence of stream variable to prevent embedded exceptions.
 
 ## 0.5.9 - 28 December 2015
-	- Enhancements:
-		- \#70  Support reading encrypted XML files (only) using supplied password
-		- Better file handling when encrypting files
+- Enhancements:
+	- \#70  Support reading encrypted XML files (only) using supplied password
+	- Better file handling when encrypting files
 
 ## 0.5.8 - 23 December 2015
-	- Enhancements:
-		- \#73  Allow encryption algorithm to be specified when writing password protected workbooks
+- Enhancements:
+	- \#73  Allow encryption algorithm to be specified when writing password protected workbooks
 
 ## 0.5.7 - 23 December 2015
-	- Fixes:
-		-	\#71 and \#72	Adjust tests to support TestBox 2.2
+- Fixes:
+	-	\#71 and \#72	Adjust tests to support TestBox 2.2
 
 ## 0.5.6 - 15 December 2015
-	- Enhancements:
-		- \#69  Add explicit `setReadOnly()` method for binary workbooks (only)
-	- Fixes:
-		-	\#68	Supplying a password to `write()` provides whole file encryption for XML spreadsheet files (only)
+- Enhancements:
+	- \#69  Add explicit `setReadOnly()` method for binary workbooks (only)
+- Fixes:
+	-	\#68	Supplying a password to `write()` provides whole file encryption for XML spreadsheet files (only)
 
 ## 0.5.5 - 3 December 2015
-	- Enhancements:
-		- \#66 Add `setRepeatingColumns()` and `setRepeatingRows()`
+- Enhancements:
+	- \#66 Add `setRepeatingColumns()` and `setRepeatingRows()`
 
 ## 0.5.4 - 12 November 2015
-	- Enhancements:
-		- \#65 Upgrade POI to 3.13.
-		- \#64 Add `download()` function for an existing workbook object.
-		- \#63 Add `includeQueryColumnNames` option to `AddRows()`.
+- Enhancements:
+	- \#65 Upgrade POI to 3.13.
+	- \#64 Add `download()` function for an existing workbook object.
+	- \#63 Add `includeQueryColumnNames` option to `AddRows()`.
 
 ## 0.5.3 - 5 September 2015
-	- Improve performance of `read()` by using native Java concatenation instead of arrays which are slow in Lucee.
+- Improve performance of `read()` by using native Java concatenation instead of arrays which are slow in Lucee.
 
 ## 0.5.2 - 21 August 2015
-	- REMOVED:
-	 - \#61 Support for font family and size with `read()` and `includeRichTextFormatting` when different from the cell's base font. Better to be consistent and not support these attributes anywhere so the expectation is clear.
+- REMOVED:
+ - \#61 Support for font family and size with `read()` and `includeRichTextFormatting` when different from the cell's base font. Better to be consistent and not support these attributes anywhere so the expectation is clear.
 
 ## 0.5.1 - 21 August 2015
-	- Enhancements:
-	 - \#61 Support font family and size with `read()` and `includeRichTextFormatting` when different from the cell's base font
-	- Bug fixes:
-	 - \#60 `includeRichTextFormatting` option in `read()` results in empty span style if format not supported
+- Enhancements:
+ - \#61 Support font family and size with `read()` and `includeRichTextFormatting` when different from the cell's base font
+- Bug fixes:
+ - \#60 `includeRichTextFormatting` option in `read()` results in empty span style if format not supported
 
 ## 0.5.0 - 20 August 2015
-	- Enhancements:
-	 - \#57 Add `includeRichTextFormatting` option to `read()`
+- Enhancements:
+ - \#57 Add `includeRichTextFormatting` option to `read()`
 
 ## 0.4.9 - 29 July 2015
-	- Enhancements:
-	 - \#56 Add extra argument to `read()` to allow excluding hidden columns
-	 - \#58 Add `hideColumn()` and `showColumn()`
+- Enhancements:
+ - \#56 Add extra argument to `read()` to allow excluding hidden columns
+ - \#58 Add `hideColumn()` and `showColumn()`
 
 ## 0.4.8 - 8 June 2015
-	- Enhancements:
-	 - \#52 Add csv format support to `read()`
-	 - \#55 Allow csv file to be downloaded from a spreadsheet file
+- Enhancements:
+ - \#52 Add csv format support to `read()`
+ - \#55 Allow csv file to be downloaded from a spreadsheet file
 
 ## 0.4.6 - 6 June 2015
-	- Enhancements:
-	 - \#43 Add html format support to `read()`.
-	 - \#54 Allow default date formats to be overridden
-	- Bug fixes:
-	 - \#53 Fix incorrect formatter reference when evaluating formula cells.
+- Enhancements:
+ - \#43 Add html format support to `read()`.
+ - \#54 Allow default date formats to be overridden
+- Bug fixes:
+ - \#53 Fix incorrect formatter reference when evaluating formula cells.
 
 ## 0.4.5 - 3 June 2015
-	- Enhancements:
-	 - \#44 Support reading specified row or column ranges
-	 - \#45 Support being able to specify the column names when reading a spreadsheet from file
+- Enhancements:
+ - \#44 Support reading specified row or column ranges
+ - \#45 Support being able to specify the column names when reading a spreadsheet from file
 
 ## 0.4.4 - 31 May 2015
 -	Bug fix:
  	- \#51 Empty cells are skipped when reading a spreadsheet into a query.
 
 ## 0.4.3 - 29 May 2015
-	- Upgrade POI to 3.12
+- Upgrade POI to 3.12
 
 ## 0.4.2 - 29 May 2015
 - Enhancements:
