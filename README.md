@@ -38,7 +38,7 @@ The following example assumes the file containing the script is in the same dire
 _/spreadsheetLibrary/
   Spreadsheet.cfc
   etc.
-script.cfm
+ script.cfm
 ``` 
 ```
 spreadsheet=New spreadsheet.spreadsheet();
