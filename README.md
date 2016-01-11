@@ -32,11 +32,17 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 
 Note that this is not a Lucee extension, so **does not need to be installed**. To use it, simply copy the files/folders to a location where `Spreadsheet.cfc` can be called by your application code.
 
-The following example assumes the file containing the script is in the same location as the spreadsheet.cfc.
+The following example assumes the file containing the script is in the same directory as the folder containing the spreadsheet library files, i.e.:
 ```
-spreadsheet	=	New spreadsheet();
-data = QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Julian","Halliwell" ] ] );
-workbook = spreadsheet.new();
+/root/
+_/spreadsheetLibrary/
+  Spreadsheet.cfc
+  etc.
+``` 
+```
+spreadsheet=New spreadsheet.spreadsheet();
+data=QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Julian","Halliwell" ] ] );
+workbook=spreadsheet.new();
 spreadsheet.addRows( workbook,data );
 ```
 You will probably want to place the spreadsheet library files in a central location with an application mapping, and instantiate the component using its dot path (e.g. `New myLibrary.spreadsheet.spreadsheet();`).
@@ -119,7 +125,7 @@ In Adobe ColdFusion, the `SpreadsheetRead()` script function is limited to just 
 The `read()` method in this library allows you to read a spreadsheet file into a query and return that instead of a spreadsheet object. It includes all of the options available in `<cfspreadsheet action="read">`.
 
 ```
-myQuery = spreadsheet.read( src=mypath,format="query" );
+myQuery=spreadsheet.read( src=mypath,format="query" );
 ```
 
 The `read()` method also features the following additional options not available in ColdFusion or the Spreadsheet Extension:
@@ -143,7 +149,7 @@ The following international date masks are used by default to read and write cel
 Each of these can be overridden by passing in a struct including the value(s) to be overridden when instantiating the Spreadsheet component. For example:
 
 ```
-spreadsheet = New root.spreadsheet( dateFormats={ DATE="mm/dd/yyyy" } );
+spreadsheet=New root.spreadsheet( dateFormats={ DATE="mm/dd/yyyy" } );
 ```
 
 ##Test Suite
