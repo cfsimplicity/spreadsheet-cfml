@@ -41,7 +41,7 @@ _/spreadsheetLibrary/
  script.cfm
 ``` 
 ```
-spreadsheet=New spreadsheet.spreadsheet();
+spreadsheet=New spreadsheetLibrary.spreadsheet();
 data=QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Julian","Halliwell" ] ] );
 workbook=spreadsheet.new();
 spreadsheet.addRows( workbook,data );
