@@ -48,20 +48,6 @@ spreadsheet.addRows( workbook,data );
 ```
 You will probably want to place the spreadsheet library files in a central location with an application mapping, and instantiate the component using its dot path (e.g. `New myLibrary.spreadsheet.spreadsheet();`).
 
-##CommandBox Installation
-
-You can also download this library through CommandBox.
-```
-box install lucee-spreadsheet
-```
-It will download the files into a modules directory and can be used just the same as downloading the files manually.
-
-If using ColdBox you can use either of the WireBox bindings like so:
-```
-spreadsheet = wirebox.getInstance("Spreadsheet@lucee-spreadsheet");
-spreadsheet = wirebox.getInstance("LuceeSpreadsheet");
-```
-
 [How to create mappings (StackOverflow)](http://stackoverflow.com/questions/12073714/components-mapping-in-railo).
 
 [Full function reference](https://github.com/cfsimplicity/lucee-spreadsheet/wiki)
@@ -165,6 +151,20 @@ Each of these can be overridden by passing in a struct including the value(s) to
 
 ```
 spreadsheet=New root.spreadsheet( dateFormats={ DATE="mm/dd/yyyy" } );
+```
+
+##CommandBox Installation
+
+You can also download this library through CommandBox.
+```
+box install lucee-spreadsheet
+```
+It will download the files into a modules directory and can be used just the same as downloading the files manually.
+
+If using ColdBox you can use either of the WireBox bindings like so:
+```
+spreadsheet = wirebox.getInstance("Spreadsheet@lucee-spreadsheet");
+spreadsheet = wirebox.getInstance("LuceeSpreadsheet");
 ```
 
 ##Test Suite
