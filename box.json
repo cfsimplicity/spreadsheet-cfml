@@ -1,0 +1,27 @@
+{
+    "name" : "LuceeSpreadsheet",
+    "slug" : "lucee-spreadsheet",
+    "version" : "0.5.11",
+    "author" : "Julian Halliwell",
+    "location" : "https://github.com/cfsimplicity/lucee-spreadsheet",
+    "Homepage" : "https://github.com/cfsimplicity/lucee-spreadsheet",
+    "Documentation" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/master/README.md",
+    "Repository" : { 
+        "type" : "git", "URL" : "https://github.com/cfsimplicity/lucee-spreadsheet"
+    },
+    "Bugs" : "https://github.com/cfsimplicity/lucee-spreadsheet/issues",
+    "shortDescription" : "Spreadsheet Library for Lucee",
+    "changelog" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/master/CHANGELOG.md",
+    "type" : "modules",
+    "keywords" : [ "cfspreadsheet", "lucee", "module", "spreadsheet" ],
+    "private" : "false",
+    "engines" : [
+        { "type" : "lucee", "version" : ">=4.5.x" }
+    ],
+    "defaultEngine" : "lucee",
+    "ProjectURL" : "https://github.com/cfsimplicity/lucee-spreadsheet",
+    "License" : [
+        { "type" : "MIT", "URL" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/master/LICENSE" }
+    ],
+    "ignore" : [ "test" ]
+}
