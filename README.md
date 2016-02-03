@@ -42,7 +42,7 @@ _/spreadsheetLibrary/
 ``` 
 ```
 spreadsheet=New spreadsheetLibrary.spreadsheet();
-data=QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Julian","Halliwell" ] ] );
+data=QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Frumpo","McNugget" ] ] );
 workbook=spreadsheet.new();
 spreadsheet.addRows( workbook,data );
 ```
@@ -150,7 +150,7 @@ The following international date masks are used by default to read and write cel
 Each of these can be overridden by passing in a struct including the value(s) to be overridden when instantiating the Spreadsheet component. For example:
 
 ```
-spreadsheet=New root.spreadsheet( dateFormats={ DATE="mm/dd/yyyy" } );
+spreadsheet=New spreadsheetLibrary.spreadsheet( dateFormats={ DATE="mm/dd/yyyy" } );
 ```
 
 ##CommandBox Installation
