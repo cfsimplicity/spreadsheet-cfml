@@ -2,7 +2,7 @@
 - Better exception message when adding too many rows to a binary spreadsheet.
 
 ## 0.5.10 - 30 December 2015
-- Better exception message when `read()` `src` file is not a spreadhseet.
+- Better exception message when `read()` `src` file is not a spreadsheet.
 - Make final closing of java streams dependent on existence of stream variable to prevent embedded exceptions.
 
 ## 0.5.9 - 28 December 2015
