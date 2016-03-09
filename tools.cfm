@@ -552,6 +552,9 @@ private function loadPoi( required string javaclass ){
 		paths.Append( libPath & "poi-3.14-20160307.jar" );
 		paths.Append( libPath & "poi-ooxml-3.14-20160307.jar" );
 		paths.Append( libPath & "poi-ooxml-schemas-3.14-20160307.jar" );
+		/* Note the above is a reduced set of the most commonly used schemas. Some xml operations require the FULL jar see http://poi.apache.org/faq.html#faq-N10025
+		//paths.Append( libPath & "ooxml-schemas-1.3.jar" ); //Needs to be downloaded but its 15MB
+		*/
 		paths.Append( libPath & "xmlbeans-2.6.0.jar" );
 		if( !server.KeyExists( poiLoaderName ) ){
 			server[ poiLoaderName ] = CreateObject( "component","javaLoader.JavaLoader" ).init( loadPaths=paths,loadColdFusionClassPath=true,trustedSource=true );

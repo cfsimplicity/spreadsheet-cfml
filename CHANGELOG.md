@@ -1,6 +1,7 @@
-## 0.6.0 - 8 March 2016
+## 0.6.0 - 9 March 2016
 - Enhancements:
 	- \#76 Upgrade POI to 3.14
+	- \#77 Add `getColumnCount()`
 
 ## 0.5.11 - 7 January 2016
 - Better exception message when adding too many rows to a binary spreadsheet.

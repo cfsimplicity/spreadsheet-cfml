@@ -713,6 +713,28 @@ component{
 		return formatter.formatCellValue( cell );
 	}
 
+	numeric function getColumnCount( required workbook, sheetNameOrNumber ){
+		if( arguments.KeyExists( "sheetNameOrNumber" ) ){
+			if( IsValid( "integer", sheetNameOrNumber ) AND IsNumeric( sheetNameOrNumber ) ){
+				var sheetNumber=sheetNameOrNumber;
+				this.validateSheetNumber( workbook, sheetNumber );
+			} else {
+				var sheetName=sheetNameOrNumber;
+				this.validateSheetExistsWithName( workbook,sheetName );
+				var sheetNumber=workbook.getSheetIndex( JavaCast( "string",sheetName ) ) + 1;
+			}
+			this.setActiveSheetNumber( workbook, sheetNumber );
+		}
+		var sheet=this.getActiveSheet( workbook );
+		var rowIterator=sheet.rowIterator();
+		var result=0;
+		while( rowIterator.hasNext() ){
+			var row=rowIterator.next();
+			result=Max( result, row.getLastCellNum() );
+		}
+		return result;
+	}
+
 	struct function info( required workbook ){
 		/*
 		workbook properties returned in the struct are:
