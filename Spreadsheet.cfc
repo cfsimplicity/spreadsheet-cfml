@@ -334,7 +334,7 @@ component{
 		var cellIndex = column-1;
 		for( var cellValue in rowValues ){
 			var cell = this.createCell( theRow,cellIndex );
-			this.setCellValueAsType( workbook,cell,cellValue.Trim() )
+			this.setCellValueAsType( workbook,cell,cellValue.Trim() );
 			if( autoSizeColumns )
 				this.autoSizeColumn( workbook,column );
 			cellIndex++;
@@ -639,7 +639,7 @@ component{
 					,comment = commentObject.getString().getString()
 					,column = column
 					,row = row
-				}
+				};
 			}
 			return {};
 		}
@@ -657,7 +657,7 @@ component{
 						,comment = commentObject.getString().getString()
 						,column = column
 						,row = row
-					}
+					};
 					comments.Append( comment );
 				}
 			}
@@ -834,7 +834,7 @@ component{
 		,string password
 	){
 		if( arguments.KeyExists( "query" ) )
-			throw( type=exceptionType,message="Invalid argument 'query'.",details="Just use format='query' to return a query object" );
+			throw( type=exceptionType,message="Invalid argument 'query'.",detail="Just use format='query' to return a query object" );
 		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query,html,csv",format ) )
 			throw( type=exceptionType,message="Invalid format",detail="Supported formats are: 'query', 'html' and 'csv'" );
 		if( arguments.KeyExists( "sheetName" ) AND arguments.KeyExists( "sheetNumber" ) )
@@ -921,7 +921,7 @@ component{
 			this.validateSheetExistsWithName( workbook,sheetName );
 			sheetNumber = workbook.getSheetIndex( JavaCast( "string",sheetName ) ) + 1;
 		}
-		this.validateSheetNumber( workbook,sheetNumber )
+		this.validateSheetNumber( workbook,sheetNumber );
 		workbook.setActiveSheet( JavaCast( "int",sheetNumber - 1 ) );
 	}
 
