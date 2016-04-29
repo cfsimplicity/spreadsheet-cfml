@@ -41,10 +41,12 @@ _/spreadsheetLibrary/
  script.cfm
 ``` 
 ```
+<cfscript>
 spreadsheet=New spreadsheetLibrary.spreadsheet();
 data=QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Frumpo","McNugget" ] ] );
 workbook=spreadsheet.new();
 spreadsheet.addRows( workbook,data );
+</cfscript>
 ```
 You will probably want to place the spreadsheet library files in a central location with an application mapping, and instantiate the component using its dot path (e.g. `New myLibrary.spreadsheet.spreadsheet();`).
 
@@ -127,7 +129,9 @@ In Adobe ColdFusion, the `SpreadsheetRead()` script function is limited to just 
 The `read()` method in this library allows you to read a spreadsheet file into a query and return that instead of a spreadsheet object. It includes all of the options available in `<cfspreadsheet action="read">`.
 
 ```
+<cfscript>
 myQuery=spreadsheet.read( src=mypath,format="query" );
+</cfscript>
 ```
 
 The `read()` method also features the following additional options not available in ColdFusion or the Spreadsheet Extension:
@@ -151,7 +155,9 @@ The following international date masks are used by default to read and write cel
 Each of these can be overridden by passing in a struct including the value(s) to be overridden when instantiating the Spreadsheet component. For example:
 
 ```
+<cfscript>
 spreadsheet=New spreadsheetLibrary.spreadsheet( dateFormats={ DATE="mm/dd/yyyy" } );
+</cfscript>
 ```
 
 ##CommandBox Installation
