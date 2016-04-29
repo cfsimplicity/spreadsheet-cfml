@@ -1,3 +1,8 @@
+## 0.6.1 - 28 April 2016
+- Fixes (preventing use with ACF):
+ - Missing colons at EOL
+ - Throw attribute typo
+
 ## 0.6.0 - 9 March 2016
 - Enhancements:
 	- \#76 Upgrade POI to 3.14
