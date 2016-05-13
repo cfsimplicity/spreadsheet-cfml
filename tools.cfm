@@ -1,5 +1,5 @@
 <cfscript>
-private void function addInfoBinary( required workbook,required struct info ){
+package void function addInfoBinary( required workbook,required struct info ){
 	workbook.createInformationProperties(); // creates the following if missing
 	var documentSummaryInfo = workbook.getDocumentSummaryInformation();
 	var summaryInfo = workbook.getSummaryInformation();
@@ -37,7 +37,7 @@ private void function addInfoBinary( required workbook,required struct info ){
 	}
 }
 
-private void function addInfoXml( required workbook,required struct info ){
+package void function addInfoXml( required workbook,required struct info ){
 	var documentProperties = workbook.getProperties().getExtendedProperties().getUnderlyingProperties();
 	var coreProperties = workbook.getProperties().getCoreProperties();
 	for( var key in info ){
@@ -74,7 +74,7 @@ private void function addInfoXml( required workbook,required struct info ){
 	}
 }
 
-private void function addRowToSheetData( required workbook,required struct sheet,required numeric rowIndex,boolean includeRichTextFormatting=false ){
+package void function addRowToSheetData( required workbook,required struct sheet,required numeric rowIndex,boolean includeRichTextFormatting=false ){
 	if( ( rowIndex EQ sheet.headerRowIndex ) AND !sheet.includeHeaderRow )
 		return;
 	var rowData=[];
@@ -94,7 +94,7 @@ private void function addRowToSheetData( required workbook,required struct sheet
 	}
 }
 
-private struct function binaryInfo( required workbook ){
+package struct function binaryInfo( required workbook ){
 	var documentProperties = workbook.getDocumentSummaryInformation();
 	var coreProperties = workbook.getSummaryInformation();
 	return {
@@ -113,14 +113,14 @@ private struct function binaryInfo( required workbook ){
 	};
 }
 
-private boolean function cellExists( required workbook,required numeric rowNumber,required numeric columnNumber ){
+package boolean function cellExists( required workbook,required numeric rowNumber,required numeric columnNumber ){
 	var rowIndex = rowNumber-1;
 	var columnIndex = columnNumber-1;
 	var checkRow = this.getActiveSheet( workbook ).getRow( JavaCast( "int",rowIndex ) );
 	return !IsNull( checkRow ) AND !IsNull( checkRow.getCell( JavaCast( "int",columnIndex ) ) );
 }
 
-private numeric function columnCountFromRanges( required array ranges ){
+package numeric function columnCountFromRanges( required array ranges ){
 	var result=0;
 	for( var thisRange in ranges ){
 		for( var i=thisRange.startAt; i LTE thisRange.endAt; i++ ){
@@ -130,7 +130,7 @@ private numeric function columnCountFromRanges( required array ranges ){
 	return result;
 }
 
-private function createCell( required row,numeric cellNum=arguments.row.getLastCellNum(),overwrite=true ){
+package function createCell( required row,numeric cellNum=arguments.row.getLastCellNum(),overwrite=true ){
 	/* get existing cell (if any)  */
 	var cell = row.getCell( JavaCast( "int",cellNum ) );
 	if( overwrite AND !IsNull( cell ) )
@@ -140,11 +140,11 @@ private function createCell( required row,numeric cellNum=arguments.row.getLastC
 	return cell;
 }
 
-private function createRow( required workbook,numeric rowNum=getNextEmptyRow( workbook ),boolean overwrite=true ){
+package function createRow( required workbook,numeric rowNum=getNextEmptyRow( workbook ),boolean overwrite=true ){
 	/* get existing row (if any)  */
 	var row = getActiveSheet( workbook ).getRow( JavaCast( "int",rowNum ) );
 	if( overwrite AND !IsNull( row ) )
-		getActiveSheet( workbook ).removeRow( row ) /* forcibly remove existing row and all cells  */
+		getActiveSheet( workbook ).removeRow( row ); /* forcibly remove existing row and all cells  */
 	if( overwrite OR IsNull( getActiveSheet( workbook ).getRow( JavaCast( "int",rowNum ) ) ) ){
 		try{
 			row = getActiveSheet( workbook ).createRow( JavaCast( "int", rowNum ) );
@@ -159,13 +159,13 @@ private function createRow( required workbook,numeric rowNum=getNextEmptyRow( wo
 	return row;
 }
 
-private function createWorkBook( required string sheetName,boolean useXmlFormat=false ){
+package function createWorkBook( required string sheetName,boolean useXmlFormat=false ){
 	this.validateSheetName( sheetName );
 	var className = useXmlFormat? "org.apache.poi.xssf.usermodel.XSSFWorkbook": "org.apache.poi.hssf.usermodel.HSSFWorkbook";
 	return loadPoi( className ).init();
 }
 
-private any function decryptFile( required string filepath, required string password ){
+package any function decryptFile( required string filepath, required string password ){
 	var isBinaryFile=( filepath.ListLast( "." ) IS "xls" );
 	if( isBinaryFile ){
 		throw( type=exceptionType,message="Invalid file type",detail="The library only supports opening encrypted XML (.xlsx) spreadsheets. This file appears to be a binary (.xls) spreadsheet." );
@@ -193,7 +193,7 @@ private any function decryptFile( required string filepath, required string pass
 	}
 }
 
-private void function deleteHiddenColumnsFromQuery( required sheet,required query result ){
+package void function deleteHiddenColumnsFromQuery( required sheet,required query result ){
 	var startIndex=( sheet.totalColumnCount-1 );
 	for( var colIndex=startIndex; colIndex GTE 0; colIndex-- ){
 		if( !sheet.object.isColumnHidden( JavaCast( "integer",colIndex ) ) )
@@ -205,16 +205,16 @@ private void function deleteHiddenColumnsFromQuery( required sheet,required quer
 	}
 }
 
-private void function deleteSheetAtIndex( required workbook,required numeric sheetIndex ){
+package void function deleteSheetAtIndex( required workbook,required numeric sheetIndex ){
 	workbook.removeSheetAt( JavaCast( "int",sheetIndex ) );
 }
 
-private void function downloadBinaryVariable( required binaryVariable,required string filename,required contentType ){
-	header name="Content-Disposition" value="attachment; filename=#Chr(34)##filename##Chr(34)#";
-	content type=contentType variable="#binaryVariable#" reset="true";
+package void function downloadBinaryVariable( required binaryVariable,required string filename,required contentType ){
+	cfheader( name="Content-Disposition", value='attachment; filename="#filename#"' );
+	cfcontent( type=contentType, variable="#binaryVariable#", reset="true" );
 }
 
-private void function encryptFile( required string filepath, required string password, required string algorithm ){
+package void function encryptFile( required string filepath, required string password, required string algorithm ){
 	/* See http://poi.apache.org/encryption.html */
 	/* NB: Not all spreadsheet programs support this type of encryption */
 	lock name="#filepath#" timeout=5{
@@ -255,7 +255,7 @@ private void function encryptFile( required string filepath, required string pas
 	}
 }
 
-private numeric function estimateColumnWidth( required workbook,required any value ){
+package numeric function estimateColumnWidth( required workbook,required any value ){
 	/* Estimates approximate column width based on cell value and default character width. */
 	/*
 	"Excel bases its measurement of column widths on the number of digits (specifically, the number of zeros) in the column, using the Normal style font."
@@ -268,7 +268,7 @@ private numeric function estimateColumnWidth( required workbook,required any val
 	return Min( width,( 255*256 ) );
 }
 
-private array function extractRanges( required string rangeList ){
+package array function extractRanges( required string rangeList ){
 	/*
 	A range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. Ignores any white space.
 	Parses and validates a list of row/column numbers. Returns an array of structures with the keys: startAt, endAt
@@ -292,7 +292,7 @@ private array function extractRanges( required string rangeList ){
 	return result;
 }
 
-private string function filenameSafe( required string input ){
+package string function filenameSafe( required string input ){
 	var charsToRemove	=	"\|\\\*\/\:""<>~&";
 	var result = input.REReplace( "[#charsToRemove#]+","","ALL" ).Left( 255 );
 	if( result.isEmpty() )
@@ -300,7 +300,7 @@ private string function filenameSafe( required string input ){
 	return result;
 }
 
-private void function fillMergedCellsWithVisibleValue( required workbook,required sheet ){
+package void function fillMergedCellsWithVisibleValue( required workbook,required sheet ){
 	if( !sheetHasMergedRegions( sheet ) )
 		return;
 	for( var regionIndex=0; regionIndex LT sheet.getNumMergedRegions(); regionIndex++ ){
@@ -314,7 +314,7 @@ private void function fillMergedCellsWithVisibleValue( required workbook,require
 	}
 }
 
-private string function generateUniqueSheetName( required workbook ){
+package string function generateUniqueSheetName( required workbook ){
 	/* Generates a unique sheet name (Sheet1, Sheet2, etecetera). */
 	var startNumber = workbook.getNumberOfSheets()+1;
 	var maxRetry = startNumber+250;
@@ -327,15 +327,15 @@ private string function generateUniqueSheetName( required workbook ){
 	throw( type=exceptionType,message="Unable to generate name",detail="Unable to generate a unique sheet name" );
 }
 
-private function getActiveSheet( required workbook ){
+package function getActiveSheet( required workbook ){
 	return workbook.getSheetAt( JavaCast( "int",workbook.getActiveSheetIndex() ) );
 }
 
-private function getActiveSheetName( required workbook ){
+package function getActiveSheetName( required workbook ){
 	return this.getActiveSheet( workbook ).getSheetName();
 }
 
-private numeric function getAWTFontStyle( required any poiFont ){
+package numeric function getAWTFontStyle( required any poiFont ){
 	var font = loadPOI( "java.awt.Font" );
 	var isBold = poiFont.getBoldweight() == poiFont.BOLDWEIGHT_BOLD;
 	if( isBold && arguments.poiFont.getItalic() )
@@ -347,7 +347,7 @@ private numeric function getAWTFontStyle( required any poiFont ){
 	return font.PLAIN;
 }
 
-private function getCellAt( required workbook,required numeric rowNumber,required numeric columnNumber ){
+package function getCellAt( required workbook,required numeric rowNumber,required numeric columnNumber ){
 	if( !cellExists( argumentCollection=arguments ) )
 		throw( type=exceptionType,message="Invalid cell",detail="The requested cell [#rowNumber#,#columnNumber#] does not exist in the active sheet" );
 	var rowIndex = rowNumber-1;
@@ -355,13 +355,13 @@ private function getCellAt( required workbook,required numeric rowNumber,require
 	return getActiveSheet( workbook ).getRow( JavaCast( "int",rowIndex ) ).getCell( JavaCast( "int",columnIndex ) );
 }
 
-private function getCellUtil(){
+package function getCellUtil(){
 	if( IsNull( variables.cellUtil ) )
 		variables.cellUtil = loadPoi( "org.apache.poi.ss.util.CellUtil" );
 	return variables.cellUtil;
 }
 
-private function getCellValueAsType( required workbook,required cell ){
+package function getCellValueAsType( required workbook,required cell ){
 	/* When getting the value of a cell, it is important to know what type of cell value we are dealing with. If you try to grab the wrong value type, an error might be thrown. For that reason, we must check to see what type of cell we are working with. These are the cell types and they are constants of the cell object itself:
 
 		0 - CELL_TYPE_NUMERIC
@@ -396,13 +396,13 @@ private function getCellValueAsType( required workbook,required cell ){
 	}
 }
 
-private function getDateUtil(){
+package function getDateUtil(){
 	if( IsNull( variables.dateUtil ) )
 		variables.dateUtil = loadPoi( "org.apache.poi.ss.usermodel.DateUtil" );
 	return variables.dateUtil;
 }
 
-private string function getDateTimeValueFormat( required any value ){
+package string function getDateTimeValueFormat( required any value ){
 	/* Returns the default date mask for the given value: DATE (only), TIME (only) or TIMESTAMP */
 	var dateTime = ParseDateTime( value );
 	var dateOnly = CreateDate( Year( dateTime ),Month( dateTime ),Day( dateTime ) );
@@ -413,7 +413,7 @@ private string function getDateTimeValueFormat( required any value ){
 	return variables.dateFormats.TIMESTAMP;
 }
 
-private numeric function getDefaultCharWidth( required workbook ){
+package numeric function getDefaultCharWidth( required workbook ){
 	/* Estimates the default character width using Excel's 'Normal' font */
 	/* this is a compromise between hard coding a default value and the more complex method of using an AttributedString and TextLayout */
 	var defaultFont = workbook.getFontAt( 0 );
@@ -427,21 +427,21 @@ private numeric function getDefaultCharWidth( required workbook ){
 	return bounds.getWidth();
 }
 
-private numeric function getFirstRowNum( required workbook ){
+package numeric function getFirstRowNum( required workbook ){
 	var firstRow = getActiveSheet( workbook ).getFirstRowNum();
 	if( firstRow EQ 0 AND getActiveSheet( workbook ).getPhysicalNumberOfRows() EQ 0 )
 		return -1;
 	return firstRow;
 }
 
-private function getFormatter(){
+package function getFormatter(){
 	/* Returns cell formatting utility object ie org.apache.poi.ss.usermodel.DataFormatter */
 	if( IsNull( variables.dataFormatter ) )
 		variables.dataFormatter = this.loadPOI( "org.apache.poi.ss.usermodel.DataFormatter" ).init();
 	return dataFormatter;
 }
 
-private struct function getJavaColorRGB( required string colorName ){
+package struct function getJavaColorRGB( required string colorName ){
 	/* Returns a struct containing RGB values from java.awt.Color for the color name passed in */
 	var findColor = colorName.Trim().UCase();
 	var color = CreateObject( "Java","java.awt.Color" );
@@ -456,18 +456,18 @@ private struct function getJavaColorRGB( required string colorName ){
 	return colorRGB;
 }
 
-private numeric function getLastRowNum( required workbook ){
+package numeric function getLastRowNum( required workbook ){
 	var lastRow = getActiveSheet( workbook ).getLastRowNum();
 	if( lastRow EQ 0 AND getActiveSheet( workbook ).getPhysicalNumberOfRows() EQ 0 )
 		return -1;//The sheet is empty. Return -1 instead of 0
 	return lastRow;
 }
 
-private numeric function getNextEmptyRow( workbook ){
+package numeric function getNextEmptyRow( workbook ){
 	return getLastRowNum( workbook )+1;
 }
 
-private array function getQueryColumnFormats( required workbook,required query query ){
+package array function getQueryColumnFormats( required workbook,required query query ){
 	/* extract the query columns and data types  */
 	//var cell	  	= CreateObject( "Java","org.apache.poi.ss.usermodel.Cell" );
 	var formatter	= workbook.getCreationHelper().createDataFormat();
@@ -498,7 +498,7 @@ private array function getQueryColumnFormats( required workbook,required query q
 	return metadata;
 }
 
-private array function getRowData( required workbook,required row,array columnRanges=[],boolean includeRichTextFormatting=false ){
+package array function getRowData( required workbook,required row,array columnRanges=[],boolean includeRichTextFormatting=false ){
 	var result=[];
 	if( !columnRanges.Len() ){
 		var columnRange={
@@ -524,12 +524,12 @@ private array function getRowData( required workbook,required row,array columnRa
 	return result;
 }
 
-private numeric function getSheetIndexFromName( required workbook,required string sheetName ){
+package numeric function getSheetIndexFromName( required workbook,required string sheetName ){
 	//returns -1 if non-existent
 	return workbook.getSheetIndex( JavaCast( "string",sheetName ) );
 }
 
-private function initializeCell( required workbook,required numeric rowNumber,required numeric columnNumber ){
+package function initializeCell( required workbook,required numeric rowNumber,required numeric columnNumber ){
 	var rowIndex = JavaCast( "int",rowNumber-1 );
 	var columnIndex = JavaCast( "int",columnNumber-1 );
 	var rowObject = getCellUtil().getRow( rowIndex,getActiveSheet( workbook ) );
@@ -537,37 +537,48 @@ private function initializeCell( required workbook,required numeric rowNumber,re
 	return cellObject;
 }
 
-private boolean function isDateObject( required input ){
+package boolean function isDateObject( required input ){
 	return input.getClass().getName() IS "java.util.Date";
 }
 
-private boolean function isString( required input ){
+package boolean function isString( required input ){
 	return input.getClass().getName() IS "java.lang.String";
 }
 
-private function loadPoi( required string javaclass ){
-	if( !server.KeyExists( poiLoaderName ) ){
-		var paths = [];
-		var libPath = ExpandPath( GetDirectoryFromPath( GetCurrentTemplatePath() ) & "lib/" );
-		paths.Append( libPath & "poi-3.14-20160307.jar" );
-		paths.Append( libPath & "poi-ooxml-3.14-20160307.jar" );
-		paths.Append( libPath & "poi-ooxml-schemas-3.14-20160307.jar" );
-		/* Note the above is a reduced set of the most commonly used schemas. Some xml operations require the FULL jar see http://poi.apache.org/faq.html#faq-N10025
-		//paths.Append( libPath & "ooxml-schemas-1.3.jar" ); //Needs to be downloaded but its 15MB
-		*/
-		paths.Append( libPath & "xmlbeans-2.6.0.jar" );
-		if( !server.KeyExists( poiLoaderName ) ){
-			server[ poiLoaderName ] = CreateObject( "component","javaLoader.JavaLoader" ).init( loadPaths=paths,loadColdFusionClassPath=true,trustedSource=true );
-		}
+package function loadPoi( required string javaclass ){
+	var javaObject = "";
+	
+	try {
+		// try our java class path first
+		javaObject = createObject( "Java", "#arguments.javaclass#" );
 	}
-	return server[ poiLoaderName ].create( arguments.javaclass );
+	catch (any error) {
+		// otherwise, use the javaloader
+		if( !server.KeyExists( poiLoaderName ) ){
+			var paths = [];
+			var libPath = ExpandPath( GetDirectoryFromPath( GetCurrentTemplatePath() ) & "lib/" );
+			paths.Append( libPath & "poi-3.14-20160307.jar" );
+			paths.Append( libPath & "poi-ooxml-3.14-20160307.jar" );
+			paths.Append( libPath & "poi-ooxml-schemas-3.14-20160307.jar" );
+			/* Note the above is a reduced set of the most commonly used schemas. Some xml operations require the FULL jar see http://poi.apache.org/faq.html#faq-N10025
+			//paths.Append( libPath & "ooxml-schemas-1.3.jar" ); //Needs to be downloaded but its 15MB
+			*/
+			paths.Append( libPath & "xmlbeans-2.6.0.jar" );
+			if( !server.KeyExists( poiLoaderName ) ){
+				server[ poiLoaderName ] = CreateObject( "component","javaLoader.JavaLoader" ).init( loadPaths=paths,loadColdFusionClassPath=true,trustedSource=true );
+			}
+		}
+		javaObject = server[ poiLoaderName ].create( arguments.javaclass );
+	}
+	
+	return javaObject; 
 }
 
-private void function moveSheet( required workbook,required string sheetName,required string moveToIndex ){
+package void function moveSheet( required workbook,required string sheetName,required string moveToIndex ){
 	workbook.setSheetOrder( JavaCast( "String",sheetName ),JavaCast( "int",moveToIndex ) );
 }
 
-private array function parseRowData( required string line,required string delimiter,boolean handleEmbeddedCommas=true ){
+package array function parseRowData( required string line,required string delimiter,boolean handleEmbeddedCommas=true ){
 	var elements = ListToArray( arguments.line,arguments.delimiter );
 	var potentialQuotes = 0;
 	arguments.line = ToString( arguments.line );
@@ -621,7 +632,7 @@ private array function parseRowData( required string line,required string delimi
   return values;
 }
 
-private string function queryToCsv( required query query,numeric headerRow,boolean includeHeaderRow ){
+package string function queryToCsv( required query query,numeric headerRow,boolean includeHeaderRow ){
 	var result=CreateObject( "Java","java.lang.StringBuilder" ).init();
 	var crlf=Chr( 13 ) & Chr( 10 );
 	var columns=query.ColumnArray();
@@ -638,7 +649,7 @@ private string function queryToCsv( required query query,numeric headerRow,boole
 	return result.toString().Trim();
 }
 
-private string function generateCsvRow( required array values,delimiter="," ){
+package string function generateCsvRow( required array values,delimiter="," ){
 	var result=CreateObject( "Java","java.lang.StringBuilder" ).init();
 	for( var value in values ){
 		if( this.isDateObject( value ) ){
@@ -650,7 +661,7 @@ private string function generateCsvRow( required array values,delimiter="," ){
 	return result.toString().substring( 1 );
 }
 
-private string function queryToHtml( required query query,numeric headerRow,boolean includeHeaderRow ){
+package string function queryToHtml( required query query,numeric headerRow,boolean includeHeaderRow ){
 	var result=CreateObject( "Java","java.lang.StringBuilder" ).init();
 	var columns=query.ColumnArray();
 	var hasHeaderRow=( arguments.KeyExists( "headerRow" ) AND Val( headerRow ) );
@@ -671,7 +682,7 @@ private string function queryToHtml( required query query,numeric headerRow,bool
 	return result.toString();
 }
 
-private string function generateHtmlRow( required array values,boolean isHeader=false ){
+package string function generateHtmlRow( required array values,boolean isHeader=false ){
 	var result=CreateObject( "Java","java.lang.StringBuilder" ).init();
 	result.append( "<tr>" );
 	var columnTag=isHeader? "th": "td";
@@ -685,7 +696,7 @@ private string function generateHtmlRow( required array values,boolean isHeader=
 	return result.toString();
 }
 
-private boolean function rowIsEmpty( required row ){
+package boolean function rowIsEmpty( required row ){
 	for( var i=row.getFirstCellNum(); i LT row.getLastCellNum(); i++ ){
     var cell = row.getCell( i );
     if( !IsNull( cell ) && ( cell.getCellType() != cell.CELL_TYPE_BLANK ) )
@@ -694,7 +705,7 @@ private boolean function rowIsEmpty( required row ){
   return true;
 }
 
-private void function setCellValueAsType( required workbook,required cell,required value ){
+package void function setCellValueAsType( required workbook,required cell,required value ){
 	if( IsNumeric( value ) AND !REFind( value,"^0[\d]+" ) ){ /*  skip numeric strings with leading zeroes. treat those as text  */
 		/*  NUMERIC  */
 		cell.setCellType( cell.CELL_TYPE_NUMERIC );
@@ -733,7 +744,7 @@ private void function setCellValueAsType( required workbook,required cell,requir
 	cell.setCellValue( JavaCast( "string",value ) );
 }
 
-private boolean function sheetExists( required workbook,string sheetName,numeric sheetNumber ){
+package boolean function sheetExists( required workbook,string sheetName,numeric sheetNumber ){
 	validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
 	if( arguments.KeyExists( "sheetName" ) )
 		arguments.sheetNumber = this.getSheetIndexFromName( workbook,sheetName )+1;
@@ -743,11 +754,11 @@ private boolean function sheetExists( required workbook,string sheetName,numeric
 	return false;
 }
 
-private boolean function sheetHasMergedRegions( required sheet ){
+package boolean function sheetHasMergedRegions( required sheet ){
 	return ( sheet.getNumMergedRegions() GT 0 );
 }
 
-private query function sheetToQuery(
+package query function sheetToQuery(
 	required workbook
 	,string sheetName
 	,numeric sheetNumber=1
@@ -804,8 +815,8 @@ private query function sheetToQuery(
 			sheet.columnNames.Append( columnName );
 		}
 	} else if( sheet.hasHeaderRow ){
-		var headerRow=sheet.object.GetRow( JavaCast( "int",sheet.headerRowIndex ) );
-		var rowData=getRowData( workbook,headerRow,sheet.columnRanges );
+		var local.headerRow=sheet.object.GetRow( JavaCast( "int",sheet.headerRowIndex ) );
+		var rowData=getRowData( workbook,local.headerRow,sheet.columnRanges );
 		var i=1;
 		for( var value in rowData ){
 			var columnName="column" & i;
@@ -833,19 +844,19 @@ void function toggleColumnHidden( required workbook,required numeric columnNumbe
 	sheet.setColumnHidden( JavaCast( "integer",columnNumber-1 ),JavaCast( "boolean",state ) );
 }
 
-private void function validateSheetExistsWithName( required workbook,required string sheetName ){
+package void function validateSheetExistsWithName( required workbook,required string sheetName ){
 	if( !this.sheetExists( workbook=workbook,sheetName=sheetName ) )
 		throw( type=exceptionType,message="Invalid sheet name [#sheetName#]",detail="The specified sheet was not found in the current workbook." );
 }
 
-private void function validateSheetNumber( required workbook,required numeric sheetNumber ){
+package void function validateSheetNumber( required workbook,required numeric sheetNumber ){
 	if( !this.sheetExists( workbook=workbook,sheetNumber=sheetNumber ) ){
 		var sheetCount = workbook.getNumberOfSheets();
 		throw( type=exceptionType,message="Invalid sheet number [#sheetNumber#]",detail="The sheetNumber must a whole number between 1 and the total number of sheets in the workbook [#sheetCount#]" );
 	}
 }
 
-private void function validateSheetName( required string sheetName ){
+package void function validateSheetName( required string sheetName ){
 	var poiTool = loadPoi( "org.apache.poi.ss.util.WorkbookUtil" );
 	try{
 		poiTool.validateSheetName( JavaCast( "String",sheetName ) );
@@ -855,14 +866,14 @@ private void function validateSheetName( required string sheetName ){
 	}
 }
 
-private void function validateSheetNameOrNumberWasProvided(){
+package void function validateSheetNameOrNumberWasProvided(){
 	if( !arguments.KeyExists( "sheetName" ) AND !arguments.KeyExists( "sheetNumber" ) )
 		throw( type=exceptionType,message="Missing Required Argument", detail="Either sheetName or sheetNumber must be provided" );
 	if( arguments.KeyExists( "sheetName" ) AND arguments.KeyExists( "sheetNumber" ) )
 		throw( type=exceptionType,message="Too Many Arguments", detail="Only one argument is allowed. Specify either a sheetName or sheetNumber, not both" );
 }
 
-private function workbookFromFile( required string path ){
+package function workbookFromFile( required string path ){
 	// works with both xls and xlsx
 	try{
 		lock name="#path#" timeout=5{
@@ -880,7 +891,7 @@ private function workbookFromFile( required string path ){
 	}
 }
 
-private struct function xmlInfo( required workbook ){
+package struct function xmlInfo( required workbook ){
 	var documentProperties = workbook.getProperties().getExtendedProperties().getUnderlyingProperties();
 	var coreProperties = workbook.getProperties().getCoreProperties();
 	return {
