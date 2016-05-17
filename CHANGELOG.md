@@ -1,3 +1,10 @@
+## 0.7.0 - 17 May 2016
+- More ACF compatibility fixes
+	- Move all private methods from includes to within the body of Spreadsheet.cfc
+	- Another missing colon at EOL
+	- Use compatible script syntax for downloads
+	- Variable name being used twice for different purposes
+
 ## 0.6.1 - 28 April 2016
 - Fixes (preventing use with ACF):
  - Missing colons at EOL
