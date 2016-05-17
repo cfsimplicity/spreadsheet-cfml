@@ -144,7 +144,7 @@ private function createRow( required workbook,numeric rowNum=getNextEmptyRow( wo
 	/* get existing row (if any)  */
 	var row = getActiveSheet( workbook ).getRow( JavaCast( "int",rowNum ) );
 	if( overwrite AND !IsNull( row ) )
-		getActiveSheet( workbook ).removeRow( row ) /* forcibly remove existing row and all cells  */
+		getActiveSheet( workbook ).removeRow( row ); /* forcibly remove existing row and all cells  */
 	if( overwrite OR IsNull( getActiveSheet( workbook ).getRow( JavaCast( "int",rowNum ) ) ) ){
 		try{
 			row = getActiveSheet( workbook ).createRow( JavaCast( "int", rowNum ) );
