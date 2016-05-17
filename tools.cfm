@@ -804,8 +804,8 @@ private query function sheetToQuery(
 			sheet.columnNames.Append( columnName );
 		}
 	} else if( sheet.hasHeaderRow ){
-		var headerRow=sheet.object.GetRow( JavaCast( "int",sheet.headerRowIndex ) );
-		var rowData=getRowData( workbook,headerRow,sheet.columnRanges );
+		var headerRowObject=sheet.object.GetRow( JavaCast( "int",sheet.headerRowIndex ) );
+		var rowData=getRowData( workbook,headerRowObject,sheet.columnRanges );
 		var i=1;
 		for( var value in rowData ){
 			var columnName="column" & i;
