@@ -210,8 +210,8 @@ private void function deleteSheetAtIndex( required workbook,required numeric she
 }
 
 private void function downloadBinaryVariable( required binaryVariable,required string filename,required contentType ){
-	header name="Content-Disposition" value="attachment; filename=#Chr(34)##filename##Chr(34)#";
-	content type=contentType variable="#binaryVariable#" reset="true";
+	cfheader( name="Content-Disposition", value='attachment; filename="#filename#"' );
+	cfcontent( type=contentType, variable="#binaryVariable#", reset="true" );
 }
 
 private void function encryptFile( required string filepath, required string password, required string algorithm ){
