@@ -1,3 +1,6 @@
+## 0.7.1 - 18 May 2016
+- Updates to test suite for case-sensitive filesystems
+
 ## 0.7.0 - 17 May 2016
 - More ACF compatibility fixes
 	- Move all private methods from includes to within the body of Spreadsheet.cfc
