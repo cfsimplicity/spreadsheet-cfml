@@ -2,7 +2,7 @@
 describe( "dateFormats customisability",function(){
 
 	it( "the default dateFormats can be overridden individually",function() {
-		var s=New root.spreadsheet();
+		var s=New root.Spreadsheet();
 		expected={
 			DATE="yyyy-mm-dd"
 			,DATETIME="yyyy-mm-dd HH:nn:ss"
@@ -11,7 +11,7 @@ describe( "dateFormats customisability",function(){
 		};
 		actual=s.getDateFormats();
 		expect( actual ).toBe( expected );
-		s=New root.spreadsheet( dateFormats={ DATE="mm/dd/yyyy" } );
+		s=New root.Spreadsheet( dateFormats={ DATE="mm/dd/yyyy" } );
 		expected={
 			DATE="mm/dd/yyyy"
 			,DATETIME="yyyy-mm-dd HH:nn:ss"
@@ -24,7 +24,7 @@ describe( "dateFormats customisability",function(){
 
 	it( "Throws an exception if a passed format key is invalid",function() {
 		expect( function(){
-			s=New root.spreadsheet( dateFormats={ DAT="mm/dd/yyyy" } );
+			s=New root.Spreadsheet( dateFormats={ DAT="mm/dd/yyyy" } );
 		}).toThrow( regex="Invalid date format key" );
 	});
 

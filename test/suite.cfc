@@ -9,7 +9,7 @@ component extends="testbox.system.BaseSpec"{
 		describe( "spreadsheet test suite",function() {
      
 			beforeEach( function( currentSpec ) {
-			  variables.s=New root.spreadsheet();
+			  variables.s=New root.Spreadsheet();
 			  makePublic( s,"sheetToQuery" );
 			  variables.tempXlsPath=ExpandPath( "temp.xls" );
 			});
