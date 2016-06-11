@@ -1,3 +1,9 @@
+## 0.7.2 - 11 June 2016
+- More ACF compatibility fixes
+	- Drop use of `this` scope for internal method calls
+	- Drop unnecessary `ExpandPath()` when getting POI jar paths for JavaLoader
+	- Another missing colon at EOL
+
 ## 0.7.1 - 18 May 2016
 - Updates to test suite for case-sensitive filesystems
 

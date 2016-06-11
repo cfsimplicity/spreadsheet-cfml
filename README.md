@@ -42,13 +42,13 @@ _/spreadsheetLibrary/
 ``` 
 ```
 <cfscript>
-spreadsheet=New spreadsheetLibrary.spreadsheet();
+spreadsheet=New spreadsheetLibrary.Spreadsheet();
 data=QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Frumpo","McNugget" ] ] );
 workbook=spreadsheet.new();
 spreadsheet.addRows( workbook,data );
 </cfscript>
 ```
-You will probably want to place the spreadsheet library files in a central location with an application mapping, and instantiate the component using its dot path (e.g. `New myLibrary.spreadsheet.spreadsheet();`).
+You will probably want to place the spreadsheet library files in a central location with an application mapping, and instantiate the component using its dot path (e.g. `New myLibrary.spreadsheet.Spreadsheet();`).
 
 [How to create mappings (StackOverflow)](http://stackoverflow.com/questions/12073714/components-mapping-in-railo).
 
