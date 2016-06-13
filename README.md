@@ -164,7 +164,7 @@ spreadsheet=New spreadsheetLibrary.spreadsheet( dateFormats={ DATE="mm/dd/yyyy" 
 
 You can also download this library through CommandBox.
 ```
-box install lucee-spreadsheet
+box install cfsimplicity/lucee-spreadsheet
 ```
 It will download the files into a modules directory and can be used just the same as downloading the files manually.
 
@@ -187,7 +187,7 @@ The code is very largely based on the work of [TeamCfAdvance](https://github.com
 
 ###The MIT License (MIT)
 
-Copyright (c) 2015 Julian Halliwell
+Copyright (c) 2015-16 Julian Halliwell
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
