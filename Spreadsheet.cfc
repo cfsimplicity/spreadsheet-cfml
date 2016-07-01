@@ -1,6 +1,6 @@
 component{
 
-	variables.version="0.7.3";
+	variables.version="0.7.4";
 	variables.poiLoaderName="_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
 	variables.dateFormats={
@@ -2129,6 +2129,7 @@ component{
 
 	private any function workbookFromFile( required string path ){
 		// works with both xls and xlsx
+		var invalidFileExceptionType="cfsimplicity.lucee.spreadsheet.invalidFile";
 		try{
 			lock name="#path#" timeout=5{
 				var file=CreateObject( "java","java.io.FileInputStream" ).init( path );
@@ -2137,8 +2138,11 @@ component{
 			return workbook;
 		}
 		catch( org.apache.poi.openxml4j.exceptions.InvalidFormatException exception ){
-			var invalidFileExceptionType=exceptionType & ".invalidFile";
 			throw( type=invalidFileExceptionType, message="Invalid spreadsheet file", detail="The file #path# does not appear to be a spreadsheet" );
+		}
+		catch( any exception ){
+			if( exception.message CONTAINS "Your InputStream was neither")
+				throw( type=invalidFileExceptionType, message="Invalid spreadsheet file", detail="The file #path# does not appear to be a spreadsheet" );
 		}
 		finally{
 			if( local.KeyExists( "file" ) )
