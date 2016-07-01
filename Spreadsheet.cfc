@@ -2141,7 +2141,7 @@ component{
 			throw( type=invalidFileExceptionType, message="Invalid spreadsheet file", detail="The file #path# does not appear to be a spreadsheet" );
 		}
 		catch( any exception ){
-			if( exception.message CONTAINS "Your InputStream was neither")
+			if( exception.message CONTAINS "Your InputStream was neither" ) //For ACF which doesn't return the correct exception type
 				throw( type=invalidFileExceptionType, message="Invalid spreadsheet file", detail="The file #path# does not appear to be a spreadsheet" );
 		}
 		finally{

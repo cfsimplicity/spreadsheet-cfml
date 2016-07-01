@@ -1,3 +1,6 @@
+## 0.7.4 - 1 July 2016
+- Fix `isSpreadsheetFile()` not working in ACF for non-spreadsheet files.
+
 ## 0.7.3 - 1 July 2016
 - Enhancements:
 	- \#83 Add `isSpreadsheetFile()` and `isSpreadsheetObject()`
