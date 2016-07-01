@@ -316,6 +316,13 @@ describe( "read tests",function(){
 			}).toThrow( regex="Invalid format" );
 		});
 
+		it( "Throws an exception if the file doesn't exist",function() {
+			expect( function(){
+				var path=ExpandPath( "/root/test/files/nonexistant.xls" );
+				s.read( src=path );
+			}).toThrow( regex="Non-existent file" );
+		});
+
 		it( "Throws an exception if the sheet name doesn't exist",function() {
 			expect( function(){
 				s.read( src=path,format="query",sheetName="nonexistant" );
