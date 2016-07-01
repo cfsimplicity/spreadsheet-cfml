@@ -1,3 +1,7 @@
+## 0.7.3 - 1 July 2016
+- Enhancements:
+	- \#83 Add `isSpreadsheetFile()` and `isSpreadsheetObject()`
+
 ## 0.7.2 - 11 June 2016
 - More ACF compatibility fixes
 	- Drop use of `this` scope for internal method calls

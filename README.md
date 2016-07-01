@@ -80,6 +80,8 @@ You will probably want to place the spreadsheet library files in a central locat
 * [getCellValue](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellValue)
 * [getColumnCount](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getColumnCount)
 * [info](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/info)
+* [isSpreadsheetFile](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isSpreadsheetFile)
+* [isSpreadsheetObject](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isSpreadsheetObject)
 * [mergeCells](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/mergeCells)
 * [new](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/new)
 * [read](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/read)
