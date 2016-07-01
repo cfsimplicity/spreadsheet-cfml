@@ -777,6 +777,22 @@ component{
 		return workbook.getClass().getCanonicalName() IS "org.apache.poi.hssf.usermodel.HSSFWorkbook";
 	}
 
+	public boolean function isSpreadsheetFile( required string path ){
+		if( !FileExists( path ) )
+			throw( type=exceptionType,message="Non-existent file",detail="Cannot find the file #path#." );
+		try{
+			var workbook=workbookFromFile( path );
+		}
+		catch( cfsimplicity.lucee.spreadsheet.invalidFile exception ){
+			return false;
+		}
+		return true;
+	}
+
+	public boolean function isSpreadsheetObject( required object ){
+		return isBinaryFormat( object ) OR isXmlFormat( object );
+	}
+
 	public boolean function isXmlFormat( required workbook ){
 		return workbook.getClass().getCanonicalName() IS "org.apache.poi.xssf.usermodel.XSSFWorkbook";
 	}
@@ -2121,7 +2137,8 @@ component{
 			return workbook;
 		}
 		catch( org.apache.poi.openxml4j.exceptions.InvalidFormatException exception ){
-			throw( type=exceptionType, message="Invalid spreadsheet file", detail="The file #path# does not appear to be a spreadsheet" );
+			var invalidFileExceptionType=exceptionType & ".invalidFile";
+			throw( type=invalidFileExceptionType, message="Invalid spreadsheet file", detail="The file #path# does not appear to be a spreadsheet" );
 		}
 		finally{
 			if( local.KeyExists( "file" ) )
