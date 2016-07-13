@@ -1,6 +1,6 @@
 component{
 
-	variables.version="0.7.4";
+	variables.version="0.7.5";
 	variables.poiLoaderName="_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
 	variables.dateFormats={
@@ -549,12 +549,10 @@ component{
 		}
 	}
 
-	public void function formatCell( required workbook,required struct format,required numeric row,required numeric column,any cellStyle ){
+	public void function formatCell( required workbook, required struct format, required numeric row, required numeric column, any cellStyle ){
 		var cell=initializeCell( workbook,row,column );
-		if( arguments.KeyExists( "cellStyle" ) )
-			cell.setCellStyle( cellStyle );// reuse an existing style
-		else
-			cell.setCellStyle( buildCellStyle( workbook,format ) );
+		var style=arguments.cellStyle?: buildCellStyle( workbook,format );
+		cell.setCellStyle( style );
 	}
 
 	public void function formatCellRange(
@@ -564,8 +562,9 @@ component{
 		,required numeric endRow
 		,required numeric startColumn
 		,required numeric endColumn
+		,any cellStyle
 		){
-		var style=buildCellStyle( workbook,format );
+		var style=arguments.cellStyle?: buildCellStyle( workbook,format );
 		for( var rowNumber=startRow; rowNumber LTE endRow; rowNumber++ ){
 			for( var columnNumber=startColumn; columnNumber LTE endColumn; columnNumber++ ){
 				formatCell( workbook,format,rowNumber,columnNumber,style );
@@ -573,54 +572,58 @@ component{
 		}
 	}
 
-	public void function formatColumn( required workbook,required struct format,required numeric column ){
+	public void function formatColumn( required workbook, required struct format, required numeric column, any cellStyle ){
 		if( column LT 1 )
 			throw( type=exceptionType,message="Invalid column value",detail="The column value must be greater than 0" );
+		var style=arguments.cellStyle?: buildCellStyle( workbook,format );
 		var rowIterator=getActiveSheet( workbook ).rowIterator();
 		var columnNumber=column;
 		while( rowIterator.hasNext() ){
 			var rowNumber=rowIterator.next().getRowNum() + 1;
-			formatCell( workbook,format,rowNumber,columnNumber );
+			formatCell( workbook, format, rowNumber, columnNumber, style );
 		}
 	}
 
-	public void function formatColumns( required workbook,required struct format,required string range ){
+	public void function formatColumns( required workbook,required struct format,required string range, any cellStyle ){
 		/* Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. */
 		var allRanges=extractRanges( range );
+		var style=arguments.cellStyle?: buildCellStyle( workbook,format );
 		for( var thisRange in allRanges ){
 			if( thisRange.startAt EQ thisRange.endAt ){
 				/* Just one column */
-				formatColumn( workbook,format,thisRange.startAt );
+				formatColumn( workbook, format, thisRange.startAt, style );
 				continue;
 			}
 			for( var columnNumber=thisRange.startAt; columnNumber LTE thisRange.endAt; columnNumber++ ){
-				formatColumn( workbook,format,columnNumber );
+				formatColumn( workbook, format, columnNumber, style );
 			}
 		}
 	}
 
-	public void function formatRow( required workbook,required struct format,required numeric row ){
+	public void function formatRow( required workbook, required struct format, required numeric row, any cellStyle ){
 		var rowIndex=row-1;
 		var theRow=getActiveSheet( workbook ).getRow( rowIndex );
 		if( IsNull( theRow ) )
 			return;
+		var style=arguments.cellStyle?: buildCellStyle( workbook,format );
 		var cellIterator=theRow.cellIterator();
 		while( cellIterator.hasNext() ){
-			formatCell( workbook,format,row,cellIterator.next().getColumnIndex()+1 );
+			formatCell( workbook, format, row, cellIterator.next().getColumnIndex()+1, style );
 		}
 	}
 
-	public void function formatRows( required workbook,required struct format,required string range ){
+	public void function formatRows( required workbook,required struct format,required string range, any cellStyle ){
 		/* Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. */
 		var allRanges=extractRanges( range );
+		var style=arguments.cellStyle?: buildCellStyle( workbook,format );
 		for( var thisRange in allRanges ){
 			if( thisRange.startAt EQ thisRange.endAt ){
 				/* Just one row */
-				formatRow( workbook,format,thisRange.startAt );
+				formatRow( workbook, format, thisRange.startAt, style );
 				continue;
 			}
 			for( var rowNumber=thisRange.startAt; rowNumber LTE thisRange.endAt; rowNumber++ ){
-				formatRow( workbook,format,rowNumber );
+				formatRow( workbook, format, rowNumber, style );
 			}
 		}
 	}
@@ -2471,7 +2474,7 @@ component{
 		try{
 			var findColor=colorName.Trim().UCase();
 			var IndexedColors=CreateObject( "Java","org.apache.poi.ss.usermodel.IndexedColors" );
-			var color	= IndexedColors.valueOf( JavaCast( "string",findColor ) );
+			var color=IndexedColors.valueOf( JavaCast( "string",findColor ) );
 			return color.getIndex();
 		}
 		catch( any exception ){

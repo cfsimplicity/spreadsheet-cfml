@@ -1,9 +1,16 @@
 <cfscript>
 describe( "formatColumn tests",function(){
 
+	it( "can format a column containing more than 4000 rows",function(){
+		var path=ExpandPath( "/root/test/files/4001.xls" );
+		var workbook=s.read( src=path );
+		var format={ italic="true" };
+		s.formatColumn( workbook,format,1 );
+	});
+
 	describe( "formatColumn exceptions",function(){
 
-		it( "Throws an exception if the column is 0 or below",function() {
+		it( "Throws an exception if the column is 0 or below",function(){
 			expect( function(){
 				workbook = s.new();
 				format = { italic="true" };
