@@ -1,8 +1,14 @@
+## 0.7.6 - 14 July 2016
+- Fix \##85 `AddRow()` causing "maximum number of cell styles was exceeded" error when inserting large number of rows including dates.
+
+## 0.7.5 - 13 July 2016
+- Fix \#84 `formatColumn()` fails when workbook contains more than 4000 rows
+
 ## 0.7.4 - 1 July 2016
 - Fix `isSpreadsheetFile()` not working in ACF for non-spreadsheet files.
 
 ## 0.7.3 - 1 July 2016
-- Enhancements:
+- Enhancements:37
 	- \#83 Add `isSpreadsheetFile()` and `isSpreadsheetObject()`
 
 ## 0.7.2 - 11 June 2016

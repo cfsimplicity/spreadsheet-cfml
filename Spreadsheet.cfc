@@ -1,6 +1,6 @@
 component{
 
-	variables.version="0.7.5";
+	variables.version="0.7.6";
 	variables.poiLoaderName="_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
 	variables.dateFormats={
@@ -1972,7 +1972,10 @@ component{
 		if( IsDate( value ) ){
 			/*  DATE  */
 			var cellFormat=getDateTimeValueFormat( value );
-			cell.setCellStyle( buildCellStyle( workbook,{ dataFormat=cellFormat } ) );
+			var formatter=workbook.getCreationHelper().createDataFormat();
+			//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
+			//TODO from POI 3.15 remove the workbook argument to setCellStyleProperty (deprecated)
+			getCellUtil().setCellStyleProperty( cell, workbook, getCellUtil().DATA_FORMAT, formatter.getFormat( JavaCast( "string",cellFormat ) ) );
 			cell.setCellType( cell.CELL_TYPE_NUMERIC );
 			/*  Excel's uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling - */
 			if( cellFormat EQ variables.dateFormats.TIME ){

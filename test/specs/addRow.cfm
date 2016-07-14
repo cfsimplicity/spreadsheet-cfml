@@ -56,6 +56,12 @@ describe( "addRow tests",function(){
 		expect( IsDate( s.getCellValue( workbook,1,3 ) ) ).tobeTrue();
 	});
 
+	it( "Can insert more than 4009 rows containing dates without triggering an exception",function(){
+		for( var i=1; i LTE 4010; i++ ){
+			s.addRow( workbook,"2016-07-14" );
+		}		
+	});
+
 	describe( "addRow exceptions",function(){
 
 		it( "Throws an exception if row is zero or less",function() {
