@@ -16,16 +16,12 @@ component{
 		var mode=javaloader.create( "org.apache.poi.poifs.crypt.EncryptionMode" );
 		switch( algorithm ){
 			case "agile":
-				var info=javaloader.create( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.agile );
-				break;
+				return javaloader.create( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.agile );
 			case "standard":
-				var info=javaloader.create( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.standard );
-				break;
+				return javaloader.create( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.standard );
 			case "binaryRC4":
-				var info=javaloader.create( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.binaryRC4 );
-				break;
+				return javaloader.create( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.binaryRC4 );
 		}
-		return info;
 	}
 
 	function loadInfoWithSwitchedContextLoader(){
