@@ -56,6 +56,16 @@ describe( "addRow tests",function(){
 		expect( IsDate( s.getCellValue( workbook,1,3 ) ) ).tobeTrue();
 	});
 
+	it( "Adds zeros as zeros, not booleans",function(){
+		s.addRow( workbook,0 );
+		expect( s.getCellValue( workbook, 1, 1 ) ).tobe( 0 );
+	});
+
+	it( "Adds strings with leading zeros as strings not numbers",function(){
+		s.addRow( workbook,"01" );
+		expect( IsNumeric( s.getCellValue( workbook, 1, 1 ) ) ).tobeFalse();
+	});
+
 	it( "Can insert more than 4009 rows containing dates without triggering an exception",function(){
 		for( var i=1; i LTE 4010; i++ ){
 			s.addRow( workbook,"2016-07-14" );

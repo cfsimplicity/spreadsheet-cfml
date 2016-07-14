@@ -56,5 +56,15 @@ describe( "addColumn tests",function(){
 		expect( IsDate( s.getCellValue( workbook,1,3 ) ) ).tobeTrue();
 	});
 
+	it( "Adds zeros as zeros, not booleans",function(){
+		s.addColumn( workbook,0 );
+		expect( s.getCellValue( workbook, 1, 1 ) ).tobe( 0 );
+	});
+
+	it( "Adds strings with leading zeros as strings not numbers",function(){
+		s.addColumn( workbook,"01" );
+		expect( IsNumeric( s.getCellValue( workbook, 1, 1 ) ) ).tobeFalse();
+	});
+
 });	
 </cfscript>

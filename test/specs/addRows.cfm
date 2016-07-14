@@ -43,6 +43,22 @@ describe( "addRows tests",function(){
 		expect( IsDate( s.getCellValue( workbook,1,3 ) ) ).tobeTrue();
 	});
 
+	it( "Adds zeros as zeros, not booleans",function(){
+		var rowData=QueryNew( "column1","Numeric",[ [ 0 ] ] );
+		s.addRows( workbook,rowData );
+		expected=rowData;
+		actual=s.sheetToQuery( workbook );
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Adds strings with leading zeros as strings not numbers",function(){
+		var rowData=QueryNew( "column1","VarChar",[ [ "01" ] ] );
+		s.addRows( workbook,rowData );
+		expected=rowData;
+		actual=s.sheetToQuery( workbook );
+		expect( actual ).toBe( expected );
+	});
+
 	it( "Can include the query column names",function(){
 		s.addRows( workbook=workbook, data=rowData, includeQueryColumnNames=true );
 		expected=QueryNew( "column1,column2","VarChar,VarChar",[ [ "column1","column2" ],[ "a","b" ],[ "c","d" ] ] );

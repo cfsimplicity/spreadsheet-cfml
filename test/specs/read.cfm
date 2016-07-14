@@ -102,18 +102,19 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Writes and reads numeric, boolean and date values correctly",function() {
-		var dateValue = CreateDate( 2015,04,12 );
-		var data = QueryNew( "column1,column2,column3","Numeric,Boolean,Date",[ [ 2,true,dateValue ] ] );
-		workbook = s.new();
+	it( "Writes and reads numeric, boolean, date and leading zero values correctly",function() {
+		var dateValue=CreateDate( 2015,04,12 );
+		var data=QueryNew( "column1,column2,column3,column4,column5","Numeric,Numeric,Boolean,Date,VarChar",[ [ 2,0,true,dateValue,"01" ] ] );
+		workbook=s.new();
 		s.addRows( workbook,data );
 		s.write( workbook,tempXlsPath,true );
-		expected = data;
-		actual = s.sheetToQuery( workbook );
+		expected=data;
+		actual=s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 		expect( IsNumeric( s.getCellValue( workbook,1,1 ) ) ).tobeTrue();
-		expect( IsBoolean( s.getCellValue( workbook,1,2 ) ) ).tobeTrue();
-		expect( IsDate( s.getCellValue( workbook,1,3 ) ) ).tobeTrue();
+		expect( s.getCellValue( workbook,1,2 ) ).tobe( 0 );
+		expect( IsBoolean( s.getCellValue( workbook,1,3 ) ) ).tobeTrue();
+		expect( IsDate( s.getCellValue( workbook,1,4 ) ) ).tobeTrue();
 	});
 
 	it( "Can fill each of the empty cells in merged regions with the visible merged cell value without conflicting with includeBlankRows=true",function() {
