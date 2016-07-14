@@ -1,3 +1,6 @@
+## 0.7.7 - 14 July 2016
+- Fix \##86 Zeros are being interpreted as boolean false by `addRow()` and other methods.
+
 ## 0.7.6 - 14 July 2016
 - Fix \##85 `AddRow()` causing "maximum number of cell styles was exceeded" error when inserting large number of rows including dates.
 
