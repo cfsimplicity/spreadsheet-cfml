@@ -1,3 +1,6 @@
+## 0.7.8 - 25 July 2016
+- Fix \##87 Invalid color after moving from Lucee 4.5.3 to Lucee 5.0
+
 ## 0.7.7 - 14 July 2016
 - Fix \##86 Zeros are being interpreted as boolean false by `addRow()` and other methods.
 

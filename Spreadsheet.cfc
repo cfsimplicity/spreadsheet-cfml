@@ -1,6 +1,6 @@
 component{
 
-	variables.version="0.7.7";
+	variables.version="0.7.8";
 	variables.poiLoaderName="_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
 	variables.dateFormats={
@@ -2474,9 +2474,9 @@ component{
 	}
 
 	private numeric function getColorIndex( required string colorName ){
+		var findColor=colorName.Trim().UCase();
+		var IndexedColors=loadPoi( "org.apache.poi.ss.usermodel.IndexedColors" );
 		try{
-			var findColor=colorName.Trim().UCase();
-			var IndexedColors=CreateObject( "Java","org.apache.poi.ss.usermodel.IndexedColors" );
 			var color=IndexedColors.valueOf( JavaCast( "string",findColor ) );
 			return color.getIndex();
 		}
