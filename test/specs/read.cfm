@@ -357,8 +357,15 @@ describe( "read tests",function(){
 		it( "Throws a helpful exception if the source file is not a spreadsheet",function() {
 			expect( function(){
 				var path = ExpandPath( "/root/test/files/notaspreadsheet.txt" );
-				s.read( src=path,password="test" );
+				s.read( src=path );
 			}).toThrow( regex="Invalid spreadsheet file" );
+		});
+
+		it( "Throws a helpful exception if the source file is in an old format not supported by POI",function() {
+			expect( function(){
+				var path=ExpandPath( "/root/test/files/oldformat.xls" );
+				s.read( src=path );
+			}).toThrow( regex="Invalid spreadsheet format" );
 		});
 
 	});

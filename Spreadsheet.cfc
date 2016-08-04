@@ -1,6 +1,6 @@
 component{
 
-	variables.version="0.7.8";
+	variables.version="0.7.9";
 	variables.poiLoaderName="_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
 	variables.dateFormats={
@@ -2146,9 +2146,13 @@ component{
 		catch( org.apache.poi.openxml4j.exceptions.InvalidFormatException exception ){
 			throw( type=invalidFileExceptionType, message="Invalid spreadsheet file", detail="The file #path# does not appear to be a spreadsheet" );
 		}
+		catch ( org.apache.poi.hssf.OldExcelFormatException exception ){
+			throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
+		}
 		catch( any exception ){
 			if( exception.message CONTAINS "Your InputStream was neither" ) //For ACF which doesn't return the correct exception type
 				throw( type=invalidFileExceptionType, message="Invalid spreadsheet file", detail="The file #path# does not appear to be a spreadsheet" );
+			rethrow;
 		}
 		finally{
 			if( local.KeyExists( "file" ) )

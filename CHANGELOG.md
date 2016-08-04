@@ -1,3 +1,6 @@
+## 0.7.9 - 4 August 2016
+- Fix \##88 When reading a file, warn if the Excel format is too old for POI.
+
 ## 0.7.8 - 25 July 2016
 - Fix \##87 Invalid color after moving from Lucee 4.5.3 to Lucee 5.0
 
