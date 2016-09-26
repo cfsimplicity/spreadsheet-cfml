@@ -1,6 +1,6 @@
 component{
 
-	variables.version="0.7.9";
+	variables.version="0.8.0";
 	variables.poiLoaderName="_poiLoader-" & Hash( GetCurrentTemplatePath() );
 
 	variables.dateFormats={
@@ -1817,9 +1817,10 @@ component{
 		if( !server.KeyExists( poiLoaderName ) ){
 			var paths=[];
 			var libPath=GetDirectoryFromPath( GetCurrentTemplatePath() ) & "lib/";
-			paths.Append( libPath & "poi-3.14-20160307.jar" );
-			paths.Append( libPath & "poi-ooxml-3.14-20160307.jar" );
-			paths.Append( libPath & "poi-ooxml-schemas-3.14-20160307.jar" );
+			paths.Append( libPath & "poi-3.15.jar" );
+			paths.Append( libPath & "poi-ooxml-3.15.jar" );
+			paths.Append( libPath & "poi-ooxml-schemas-3.15.jar" );
+			paths.Append( libPath & "commons-collections4-4.1.jar" );
 			/* Note the above is a reduced set of the most commonly used schemas. Some xml operations require the FULL jar see http://poi.apache.org/faq.html#faq-N10025
 			//paths.Append( libPath & "ooxml-schemas-1.3.jar" ); //Needs to be downloaded but its 15MB
 			*/
@@ -1974,8 +1975,7 @@ component{
 			var cellFormat=getDateTimeValueFormat( value );
 			var formatter=workbook.getCreationHelper().createDataFormat();
 			//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
-			//TODO from POI 3.15 remove the workbook argument to setCellStyleProperty (deprecated)
-			getCellUtil().setCellStyleProperty( cell, workbook, getCellUtil().DATA_FORMAT, formatter.getFormat( JavaCast( "string",cellFormat ) ) );
+			getCellUtil().setCellStyleProperty( cell, getCellUtil().DATA_FORMAT, formatter.getFormat( JavaCast( "string",cellFormat ) ) );
 			cell.setCellType( cell.CELL_TYPE_NUMERIC );
 			/*  Excel's uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling - */
 			if( cellFormat EQ variables.dateFormats.TIME ){
