@@ -12,7 +12,7 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 ##Benefits over the official extension
 
 - No installation/restart required, either at the server or individual web context level.
-- Invoking the library doesn't create a workbook instance (a.k.a *Spreadsheet Object*), meaning:
+- Invoking the library doesn't create a workbook instance (a.k.a. *Spreadsheet Object*), meaning:
  - a blank workbook isn't created unnecessarily when reading an existing spreadsheet
  - the library can be stored as a singleton in application scope
  - the functions work more like those in ACF: you pass in an existing workbook explicitly as the first argument.
