@@ -1,3 +1,8 @@
+## 0.8.0 - 26 September 2016
+- Enhancements:
+	- \##90 Upgrade POI to 3.15
+	- \##91 Allow an existing JavaLoader installation to be used instead of the bundled one.
+
 ## 0.7.9 - 4 August 2016
 - Fix \##88 When reading a file, warn if the Excel format is too old for POI.
 
