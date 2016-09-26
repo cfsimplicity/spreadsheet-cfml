@@ -2,6 +2,7 @@ component{
 
 	variables.version="0.8.0";
 	variables.poiLoaderName="_poiLoader-" & Hash( GetCurrentTemplatePath() );
+	variables.javaLoaderDotPath="javaLoader.JavaLoader";
 
 	variables.dateFormats={
 		DATE 				= "yyyy-mm-dd"
@@ -11,9 +12,11 @@ component{
 	};
 	variables.exceptionType="cfsimplicity.lucee.spreadsheet";
 
-	function init( struct dateFormats ){
+	function init( struct dateFormats, string javaLoaderDotPath ){
 		if( arguments.KeyExists( "dateFormats" ) )
 			overrideDefaultDateFormats( arguments.dateFormats );
+		if( arguments.KeyExists( "javaLoaderDotPath" ) ) // Option to use the dot path of an existing javaloader installation to save duplication
+			variables.javaLoaderDotPath=arguments.javaLoaderDotPath;
 		return this;
 	}
 
@@ -1826,7 +1829,7 @@ component{
 			*/
 			paths.Append( libPath & "xmlbeans-2.6.0.jar" );
 			if( !server.KeyExists( poiLoaderName ) ){
-				server[ poiLoaderName ]=CreateObject( "component","javaLoader.JavaLoader" ).init( loadPaths=paths,loadColdFusionClassPath=true,trustedSource=true );
+				server[ poiLoaderName ]=CreateObject( "component",javaLoaderDotPath ).init( loadPaths=paths,loadColdFusionClassPath=true,trustedSource=true );
 			}
 		}
 		return server[ poiLoaderName ].create( arguments.javaclass );

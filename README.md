@@ -162,6 +162,16 @@ spreadsheet=New spreadsheetLibrary.spreadsheet( dateFormats={ DATE="mm/dd/yyyy" 
 </cfscript>
 ```
 
+###JavaLoader
+
+The library requires and includes Mark Mandel's [JavaLoader](https://github.com/markmandel/JavaLoader), and will use the bundled version by default. If you already have JavaLoader available on your server and prefer to use that rather than duplicate the files, simply specify the dot path of the `JavaLoader.cfc` component as the `javaLoaderDotPath` init argument. For example:
+
+```
+<cfscript>
+spreadsheet=New spreadsheetLibrary.spreadsheet( javaLoaderDotPath="myLibrary.javaloader.JavaLoader" );
+</cfscript>
+```
+
 ##CommandBox Installation
 
 You can also download this library through CommandBox.
