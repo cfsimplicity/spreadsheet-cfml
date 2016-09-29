@@ -303,7 +303,31 @@ describe( "read tests",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Can read a spreadsheet containing a formula",function() {
+		workbook=s.new();
+		s.addColumn( workbook,"1,1" );
+		var theFormula="SUM(A1:A2)";
+		s.setCellFormula( workbook,theFormula,3,1 );
+		tempXlsPath=ExpandPath( "temp.xls" );
+		s.write( workbook=workbook,filepath=tempXlsPath,overwrite=true );
+		expected=QueryNew( "column1","numeric", [ [1],[1],[2] ] );
+		actual=s.read( src=tempXlsPath,format="query" );
+		expect( actual ).toBe( expected );
+	});
+
 	describe( "read exceptions",function(){
+
+		it( "Throws an exception if a formula can't be evaluated",function() {
+			expect( function(){
+				workbook=s.new();
+				s.addColumn( workbook,"1,1" );
+				var theFormula="SUS(A1:A2)";//invalid formula
+				s.setCellFormula( workbook,theFormula,3,1 );
+				tempXlsPath=ExpandPath( "temp.xls" );
+				s.write( workbook=workbook,filepath=tempXlsPath,overwrite=true );
+				s.read( src=tempXlsPath,format="query" );
+			}).toThrow( regex="Failed to run formula" );
+		});
 
 		it( "Throws an exception if the 'query' argument is passed",function() {
 			expect( function(){

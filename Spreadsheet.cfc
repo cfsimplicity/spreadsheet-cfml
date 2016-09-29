@@ -1,6 +1,6 @@
 component{
 
-	variables.version="0.8.0";
+	variables.version="0.8.1";
 	variables.poiLoaderName="_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath="javaLoader.JavaLoader";
 
@@ -1653,7 +1653,12 @@ component{
 		}
 		if( cellType EQ cell.CELL_TYPE_FORMULA ){
 			var formulaEvaluator=workbook.getCreationHelper().createFormulaEvaluator();
-			return getFormatter().formatCellValue( cell,formulaEvaluator );
+			try{
+				return getFormatter().formatCellValue( cell,formulaEvaluator );
+			}
+			catch( any exception ){
+				throw( type=exceptionType, message="Failed to run formula", detail="sheet #cell.getSheet().getSheetName()# row #( cell.getRowIndex() +1 )# column #( cell.getColumnIndex() +1 )#");
+			}
 		}
 		if( cellType EQ cell.CELL_TYPE_BOOLEAN )
 			return cell.getBooleanCellValue();
