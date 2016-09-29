@@ -1653,7 +1653,11 @@ component{
 		}
 		if( cellType EQ cell.CELL_TYPE_FORMULA ){
 			var formulaEvaluator=workbook.getCreationHelper().createFormulaEvaluator();
-			return getFormatter().formatCellValue( cell,formulaEvaluator );
+			try{
+				return getFormatter().formatCellValue( cell,formulaEvaluator );
+			}catch(any e){
+				throw (message="Failed to run formula", detail="sheet #cell.getSheet().getSheetName()# row #cell.getRowIndex()# column #cell.getColumnIndex()#");
+			}
 		}
 		if( cellType EQ cell.CELL_TYPE_BOOLEAN )
 			return cell.getBooleanCellValue();
