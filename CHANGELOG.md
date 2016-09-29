@@ -1,3 +1,6 @@
+## 0.8.1 - 29 September 2016
+- Enhancement: \##92 Catch formula errors when reading
+
 ## 0.8.0 - 26 September 2016
 - Enhancements:
 	- \##90 Upgrade POI to 3.15
@@ -22,7 +25,7 @@
 - Fix `isSpreadsheetFile()` not working in ACF for non-spreadsheet files.
 
 ## 0.7.3 - 1 July 2016
-- Enhancements:37
+- Enhancements:
 	- \#83 Add `isSpreadsheetFile()` and `isSpreadsheetObject()`
 
 ## 0.7.2 - 11 June 2016
