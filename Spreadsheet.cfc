@@ -1657,7 +1657,7 @@ component{
 				return getFormatter().formatCellValue( cell,formulaEvaluator );
 			}
 			catch( any exception ){
-				throw( type=exceptionType, message="Failed to run formula", detail="sheet #cell.getSheet().getSheetName()# row #( cell.getRowIndex() +1 )# column #( cell.getColumnIndex() +1 )#");
+				throw( type=exceptionType, message="Failed to run formula", detail="There is a problem with the formula in sheet #cell.getSheet().getSheetName()# row #( cell.getRowIndex() +1 )# column #( cell.getColumnIndex() +1 )#");
 			}
 		}
 		if( cellType EQ cell.CELL_TYPE_BOOLEAN )
