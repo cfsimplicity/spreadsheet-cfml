@@ -1828,11 +1828,11 @@ component{
 			paths.Append( libPath & "poi-3.15.jar" );
 			paths.Append( libPath & "poi-ooxml-3.15.jar" );
 			paths.Append( libPath & "poi-ooxml-schemas-3.15.jar" );
-			paths.Append( libPath & "commons-collections4-4.1.jar" );
 			/* Note the above is a reduced set of the most commonly used schemas. Some xml operations require the FULL jar see http://poi.apache.org/faq.html#faq-N10025
-			//paths.Append( libPath & "ooxml-schemas-1.3.jar" ); //Needs to be downloaded but its 15MB
+			//paths.Append( libPath & "ooxml-schemas-1.3.jar" ); //Needs to be downloaded but it's 15MB
 			*/
 			paths.Append( libPath & "xmlbeans-2.6.0.jar" );
+			paths.Append( libPath & "commons-collections4-4.1.jar" );
 			if( !server.KeyExists( poiLoaderName ) ){
 				server[ poiLoaderName ]=CreateObject( "component",javaLoaderDotPath ).init( loadPaths=paths,loadColdFusionClassPath=true,trustedSource=true );
 			}
@@ -1849,8 +1849,8 @@ component{
 		var potentialQuotes=0;
 		arguments.line=ToString( arguments.line );
 		if( arguments.delimiter EQ "," AND arguments.handleEmbeddedCommas )
-			potentialQuotes=arguments.line.replaceAll("[^']", "").length();
-		if (potentialQuotes <= 1)
+			potentialQuotes=arguments.line.replaceAll( "[^']", "" ).length();
+		if( potentialQuotes <= 1 )
 		  return elements;
 		//For ACF compatibility, find any values enclosed in single quotes and treat them as a single element.
 		var currentValue=0;
@@ -1860,7 +1860,7 @@ component{
 		var buffer=CreateObject( "Java","java.lang.StringBuilder" ).init();
 		var maxElements=ArrayLen( elements );
 
-		for( var i=1; i LTE maxElements; i++) {
+		for( var i=1; i LTE maxElements; i++ ) {
 		  currentValue=Trim( elements[ i ] );
 		  nextValue=i < maxElements ? elements[ i + 1 ] : "";
 		  var isComplete=false;
