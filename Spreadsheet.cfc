@@ -1983,7 +1983,7 @@ component{
 			var cellFormat=getDateTimeValueFormat( value );
 			var formatter=workbook.getCreationHelper().createDataFormat();
 			//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
-			getCellUtil().setCellStyleProperty( cell, arguments.workbook, formatter.getFormat( JavaCast( "string",cellFormat ) ), getCellUtil().DATA_FORMAT );
+			getCellUtil().setCellStyleProperty( cell, getCellUtil().DATA_FORMAT, formatter.getFormat( JavaCast( "string",cellFormat ) ) );
 			cell.setCellType( cell.CELL_TYPE_NUMERIC );
 			/*  Excel's uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling - */
 			if( cellFormat EQ variables.dateFormats.TIME ){
@@ -2306,7 +2306,7 @@ component{
 				hex=hex.subString( 2,hex.length() );
 				return "color:##" & hex & ";";
 			case "italic":
-				return "font-style:" & ( styleValue? "italic;": "normal;" );
+				return "font-style:" & ( styleValue? "italic;": "normal;" ); 
 			case "decoration":
 				return "text-decoration:#styleValue#;";//need to pass desired combination of "underline" and "line-through"
 		}
