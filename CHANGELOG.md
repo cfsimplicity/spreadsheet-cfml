@@ -1,26 +1,26 @@
 ## 0.8.2 - 
-- Improve performance of `readBinary()` by using java ByteBuffer.
-- Update JavaLoader to include post 1.1 release patches
+- Enhancement: Improve performance of `readBinary()` by using java ByteBuffer.
+- Fix: Update JavaLoader to include post 1.1 release patches to fix \#94
 
 ## 0.8.1 - 29 September 2016
-- Enhancement: \##92 Catch formula errors when reading
+- Enhancement: \#92 Catch formula errors when reading
 
 ## 0.8.0 - 26 September 2016
 - Enhancements:
-	- \##90 Upgrade POI to 3.15
-	- \##91 Allow an existing JavaLoader installation to be used instead of the bundled one.
+	- \#90 Upgrade POI to 3.15
+	- \#91 Allow an existing JavaLoader installation to be used instead of the bundled one.
 
 ## 0.7.9 - 4 August 2016
-- Fix \##88 When reading a file, warn if the Excel format is too old for POI.
+- Fix \#88 When reading a file, warn if the Excel format is too old for POI.
 
 ## 0.7.8 - 25 July 2016
-- Fix \##87 Invalid color after moving from Lucee 4.5.3 to Lucee 5.0
+- Fix \#87 Invalid color after moving from Lucee 4.5.3 to Lucee 5.0
 
 ## 0.7.7 - 14 July 2016
-- Fix \##86 Zeros are being interpreted as boolean false by `addRow()` and other methods.
+- Fix \#86 Zeros are being interpreted as boolean false by `addRow()` and other methods.
 
 ## 0.7.6 - 14 July 2016
-- Fix \##85 `AddRow()` causing "maximum number of cell styles was exceeded" error when inserting large number of rows including dates.
+- Fix \#85 `AddRow()` causing "maximum number of cell styles was exceeded" error when inserting large number of rows including dates.
 
 ## 0.7.5 - 13 July 2016
 - Fix \#84 `formatColumn()` fails when workbook contains more than 4000 rows
