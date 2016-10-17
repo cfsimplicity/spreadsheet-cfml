@@ -1,5 +1,6 @@
 ## 0.8.2 - 
 - Improve performance of `readBinary()` by using java ByteBuffer.
+- Update JavaLoader to include post 1.1 release patches
 
 ## 0.8.1 - 29 September 2016
 - Enhancement: \##92 Catch formula errors when reading
