@@ -1,4 +1,8 @@
-## 0.8.2 - 
+## 0.8.3 - 22 November 2016
+
+- Fix \#95 Change to `readBinary()` in 0.8.2 causes MS Excel to crash
+
+## 0.8.2 - 17 October 2016
 - Enhancement: Improve performance of `readBinary()` by using java ByteBuffer.
 - Fix: Update JavaLoader to include post 1.1 release patches to fix \#94
 

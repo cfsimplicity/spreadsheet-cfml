@@ -1,6 +1,6 @@
 component{
 
-	variables.version="0.8.2";
+	variables.version="0.8.3";
 	variables.poiLoaderName="_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath="javaLoader.JavaLoader";
 
@@ -907,10 +907,10 @@ component{
 	}
 
 	public binary function readBinary( required workbook ){
-		var byteBuffer=CreateObject( "Java","java.nio.ByteBuffer" );
-		var buffer=byteBuffer.allocate( JavaCast( "int", ArrayLen( workbook.getBytes() ) ) );
-		buffer.put( workbook.getBytes() );
-		return buffer.array();
+		var baos=CreateObject( "Java","org.apache.commons.io.output.ByteArrayOutputStream" ).init();
+		workbook.write( baos );
+		baos.flush();
+		return baos.toByteArray();
 	}
 
 	public void function removeSheet( required workbook,required string sheetName ){
