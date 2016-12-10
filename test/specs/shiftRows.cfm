@@ -1,5 +1,5 @@
 <cfscript>
-describe( "shiftRows tests",function(){
+describe( "shiftRows",function(){
 
 	beforeEach( function(){
 		variables.rowData = QueryNew( "column1,column2","VarChar,VarChar",[ [ "a","b" ],[ "c","d" ] ] );

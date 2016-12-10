@@ -1,5 +1,5 @@
 <cfscript>
-describe( "isXmlOrBinaryFormat tests",function(){
+describe( "isXmlOrBinaryFormat",function(){
 
 	it( "Reports a binary file's format correctly",function() {
 		path = ExpandPath( "/root/test/files/test.xls" );//binary file

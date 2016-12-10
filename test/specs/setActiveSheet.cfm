@@ -1,5 +1,5 @@
 <cfscript>
-describe( "setActiveSheet tests",function(){
+describe( "setActiveSheet",function(){
 
 	beforeEach( function(){
 		variables.workbook = s.new();

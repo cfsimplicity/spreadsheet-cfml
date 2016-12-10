@@ -1,5 +1,5 @@
 <cfscript>
-describe( "addColumn tests",function(){
+describe( "addColumn",function(){
 
 	beforeEach( function(){
 		variables.columnData = "a,b";

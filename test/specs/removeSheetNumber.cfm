@@ -1,5 +1,5 @@
 <cfscript>
-describe( "removeSheetNumber tests",function(){
+describe( "removeSheetNumber",function(){
 
 	beforeEach( function(){
 		variables.workbook = s.new();

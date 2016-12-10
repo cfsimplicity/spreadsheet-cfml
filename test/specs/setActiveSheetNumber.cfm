@@ -1,5 +1,5 @@
 <cfscript>
-describe( "setActiveSheetNumber tests",function(){
+describe( "setActiveSheetNumber",function(){
 
 	beforeEach( function(){
 		variables.workbook = s.new();

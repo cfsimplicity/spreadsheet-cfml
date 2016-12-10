@@ -1,5 +1,5 @@
 <cfscript>
-describe( "writeFileFromQuery tests",function(){
+describe( "writeFileFromQuery",function(){
 
 	beforeEach( function(){
 		variables.query = QueryNew( "Header1,Header2","VarChar,VarChar",[ [ "a","b" ],[ "c","d" ] ] );

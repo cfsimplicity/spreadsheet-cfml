@@ -1,5 +1,5 @@
 <cfscript>
-describe( "isSpreadsheetFile tests",function(){
+describe( "isSpreadsheetFile",function(){
 
 	it( "reports false for a non-spreadsheet file",function() {
 		path=ExpandPath( "/root/test/files/notaspreadsheet.txt" );

@@ -1,5 +1,5 @@
 <cfscript>
-describe( "createSheet tests",function(){
+describe( "createSheet",function(){
 
 	beforeEach( function(){
 		variables.workbook = s.new();

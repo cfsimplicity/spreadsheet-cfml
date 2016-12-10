@@ -1,5 +1,5 @@
 <cfscript>
-describe( "read tests",function(){
+describe( "read",function(){
 
 	it( "Can read a traditional XLS file",function() {
 		path = ExpandPath( "/root/test/files/test.xls" );

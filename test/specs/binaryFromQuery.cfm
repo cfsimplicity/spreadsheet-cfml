@@ -1,5 +1,5 @@
 <cfscript>
-describe( "binaryFromQuery tests",function(){
+describe( "binaryFromQuery",function(){
 
 	it( "Returns a binary object",function() {
 		data = QueryNew( "Header1,Header2","VarChar,VarChar",[ [ "a","b" ],[ "c","d" ] ] );

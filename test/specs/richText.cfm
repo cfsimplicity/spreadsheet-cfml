@@ -1,5 +1,5 @@
 <cfscript>
-describe( "rich text formatting tests",function(){
+describe( "rich text formatting",function(){
 
 	beforeEach( function(){
 		path = ExpandPath( "/root/test/files/formatting.xls" );

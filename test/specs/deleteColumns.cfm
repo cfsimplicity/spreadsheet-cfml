@@ -1,5 +1,5 @@
 <cfscript>
-describe( "deleteColumns tests",function(){
+describe( "deleteColumns",function(){
 
 	beforeEach( function(){
 		variables.workbook = s.new();

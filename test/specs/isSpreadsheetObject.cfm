@@ -1,5 +1,5 @@
 <cfscript>
-describe( "isSpreadsheetObject tests",function(){
+describe( "isSpreadsheetObject",function(){
 
 	it( "reports false for a variable which is not a spreadsheet object",function() {
 		var objectToTest="a string";

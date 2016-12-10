@@ -1,5 +1,5 @@
 <cfscript>
-describe( "workbookFromQuery tests",function(){
+describe( "workbookFromQuery",function(){
 
 	beforeEach( function(){
 		variables.query = QueryNew( "Header1,Header2","VarChar,VarChar",[ [ "a","b" ],[ "c","d" ] ] );

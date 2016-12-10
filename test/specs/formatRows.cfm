@@ -1,5 +1,5 @@
 <cfscript>
-describe( "formatRows tests",function(){
+describe( "formatRows",function(){
 
 	describe( "formatRows exceptions",function(){
 

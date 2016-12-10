@@ -1,5 +1,5 @@
 <cfscript>	
-describe( "mergeCells tests",function(){
+describe( "mergeCells",function(){
 
 	beforeEach( function(){
 		variables.data = querySim(

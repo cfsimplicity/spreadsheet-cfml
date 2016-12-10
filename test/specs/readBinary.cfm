@@ -1,5 +1,5 @@
 <cfscript>
-describe( "readBinary tests",function(){
+describe( "readBinary",function(){
 
 	it( "Returns a binary object",function() {
 		var workbook = s.new();

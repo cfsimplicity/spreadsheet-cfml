@@ -1,5 +1,5 @@
 <cfscript>
-describe( "new tests",function(){
+describe( "new",function(){
 
 	it( "Returns an HSSF workbook by default",function() {
 		var workbook = s.new();

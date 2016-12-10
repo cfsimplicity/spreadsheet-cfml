@@ -1,5 +1,5 @@
 <cfscript>
-describe( "addRow tests",function(){
+describe( "addRow",function(){
 
 	beforeEach( function(){
 		variables.rowData = "a,b";

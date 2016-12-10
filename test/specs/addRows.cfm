@@ -1,5 +1,5 @@
 <cfscript>
-describe( "addRows tests",function(){
+describe( "addRows",function(){
 
 	beforeEach( function(){
 		variables.rowData = QueryNew( "column1,column2","VarChar,VarChar",[ [ "a","b" ],[ "c","d" ] ] );

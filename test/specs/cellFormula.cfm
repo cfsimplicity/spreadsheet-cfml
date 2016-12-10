@@ -1,5 +1,5 @@
 <cfscript>
-describe( "cellFormula tests",function(){
+describe( "cellFormula",function(){
 
 	beforeEach( function(){
 		variables.workbook = s.new();

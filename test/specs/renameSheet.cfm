@@ -1,5 +1,5 @@
 <cfscript>
-describe( "renameSheet tests",function(){
+describe( "renameSheet",function(){
 
 	it( "Renames the specified sheet",function() {
 		var workbook = s.new();

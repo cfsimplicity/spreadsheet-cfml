@@ -1,5 +1,5 @@
 <cfscript>
-describe( "getColumnCount tests",function(){
+describe( "getColumnCount",function(){
 
 	it( "Can get the maximum number of columns in the first sheet of an XLS binary workbook",function() {
 		var workbook=s.new();

@@ -1,5 +1,5 @@
 <cfscript>
-describe( "clearCell tests",function(){
+describe( "clearCell",function(){
 
 	beforeEach( function(){
 		variables.workbook = s.new();

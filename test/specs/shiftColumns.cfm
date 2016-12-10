@@ -1,5 +1,5 @@
 <cfscript>
-describe( "shiftColumns tests",function(){
+describe( "shiftColumns",function(){
 
 	beforeEach( function(){
 		variables.workbook = s.new();

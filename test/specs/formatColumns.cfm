@@ -1,5 +1,5 @@
 <cfscript>
-describe( "formatColumns tests",function(){
+describe( "formatColumns",function(){
 
 	it( "can format columns in a spreadsheet containing more than 4009 rows",function(){
 		var path=ExpandPath( "/root/test/files/4010-rows.xls" );

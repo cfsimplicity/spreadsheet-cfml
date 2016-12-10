@@ -1,5 +1,5 @@
 <cfscript>
-describe( "cellComment tests",function(){
+describe( "cellComment",function(){
 
 	it( "Gets the comment from the specified cell",function() {
 		workbook = s.new();

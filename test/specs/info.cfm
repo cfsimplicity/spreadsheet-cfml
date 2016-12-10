@@ -1,5 +1,5 @@
 <cfscript>
-describe( "info tests",function(){
+describe( "info",function(){
 
 	beforeEach( function(){
 		variables.infoToAdd = {

@@ -1,5 +1,5 @@
 <cfscript>
-describe( "write tests",function(){
+describe( "write",function(){
 
 	it( "Writes a spreadsheet object correctly",function() {
 		data = QueryNew( "column1,column2","VarChar,VarChar",[ [ "a","b" ],[ "c","d" ] ] );
