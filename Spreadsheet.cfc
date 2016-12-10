@@ -1,6 +1,6 @@
 component{
 
-	variables.version="0.8.3";
+	variables.version="0.8.4";
 	variables.poiLoaderName="_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath="javaLoader.JavaLoader";
 
@@ -837,6 +837,14 @@ component{
 		createSheet( workbook,sheetName,xmlformat );
 		setActiveSheet( workbook,sheetName );
 		return workbook;
+	}
+
+	public any function newXls( string sheetName="Sheet1" ){
+		return new( sheetName=sheetName, xmlFormat=false );
+	}
+
+	public any function newXlsx( string sheetName="Sheet1" ){
+		return new( sheetName=sheetName, xmlFormat=true );
 	}
 
 	public any function read(
