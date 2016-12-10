@@ -1,3 +1,8 @@
+## 0.8.4 - 01 December 2016
+
+- Enhancement \#97 Add `newXlsx()` and `newXls()` as aliases for `new( xmlFormat=true/false )`
+- Fix \#96 Fix error when adding image to xlsx (xml format) spreadsheet
+
 ## 0.8.3 - 22 November 2016
 
 - Fix \#95 Change to `readBinary()` in 0.8.2 causes MS Excel to crash
