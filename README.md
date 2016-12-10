@@ -121,6 +121,8 @@ You will probably want to place the spreadsheet library files in a central locat
 * [download](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/download)
 * [downloadCsvFromFile](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/downloadCsvFromFile)
 * [downloadFileFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/downloadFileFromQuery)
+* [newXls](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/newXls)
+* [newXlsx](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/newXlsx)
 * [workbookFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/workbookFromQuery)
 * [writeFileFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/writeFileFromQuery)
 
