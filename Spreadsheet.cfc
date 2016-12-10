@@ -273,7 +273,11 @@ component{
 			var bytes=ToBinary( imageData );
 		}
 		var imageIndex=workbook.addPicture( bytes,JavaCast( "int",imageTypeIndex ) );
-		var theAnchor=loadPoi( "org.apache.poi.hssf.usermodel.HSSFClientAnchor" ).init();
+		var clientAnchorClass=isXmlFormat( workbook )
+				? "org.apache.poi.xssf.usermodel.XSSFClientAnchor"
+				: "org.apache.poi.hssf.usermodel.HSSFClientAnchor";
+		var theAnchor=loadPoi( clientAnchorClass ).init();
+
 		if( numberOfAnchorElements EQ 4 ){
 			theAnchor.setRow1( JavaCast( "int",ListFirst( anchor )-1 ) );
 			theAnchor.setCol1( JavaCast( "int",ListGetAt( anchor, 2 )-1 ) );
@@ -2314,7 +2318,7 @@ component{
 				hex=hex.subString( 2,hex.length() );
 				return "color:##" & hex & ";";
 			case "italic":
-				return "font-style:" & ( styleValue? "italic;": "normal;" ); 
+				return "font-style:" & ( styleValue? "italic;": "normal;" );
 			case "decoration":
 				return "text-decoration:#styleValue#;";//need to pass desired combination of "underline" and "line-through"
 		}
