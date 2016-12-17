@@ -1,9 +1,8 @@
 component{
 
-	variables.version="0.8.4";
+	variables.version="0.9.4-alpha";
 	variables.poiLoaderName="_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath="javaLoader.JavaLoader";
-
 	variables.dateFormats={
 		DATE 				= "yyyy-mm-dd"
 		,DATETIME		=	"yyyy-mm-dd HH:nn:ss"
@@ -1033,7 +1032,7 @@ component{
 					font.setBoldWeight( font.BOLDWEIGHT_NORMAL );
 			}
 			if( comment.KeyExists( "color" ) )
-				font.setColor( JavaCast( "int",getColorIndex( comment.color ) ) );
+				font.setColor( getColor( workbook, comment.color ) );
 			if( comment.KeyExists( "font" ) )
 				font.setFontName( JavaCast( "string",comment.font ) );
 			if( comment.KeyExists( "italic" ) )
@@ -2334,8 +2333,6 @@ component{
 		var cellStyle=workbook.createCellStyle();
 		var formatter=workbook.getCreationHelper().createDataFormat();
 		var font=0;
-		var setting=0;
-		var settingValue=0;
 		var formatIndex=0;
 		/*
 			Valid values of the format struct are:
@@ -2366,112 +2363,103 @@ component{
 			* verticalalignment  (added in CF9.0.1)
 		 */
 		for( var setting in format ){
-			settingValue=UCase( format[ setting ] );
+			var settingValue = format[ setting ];
 			switch( setting ){
 				case "alignment":
-					cellStyle.setAlignment( cellStyle[ "ALIGN_" & settingValue ] );
+					cellStyle.setAlignment( cellStyle[ "ALIGN_" & UCase( settingValue ) ] );
 				break;
 				case "bold":
-					font=cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
-					if( format.KeyExists( setting ) )
+					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
+					if( settingValue )
 						font.setBoldweight( font.BOLDWEIGHT_BOLD );
 					else
 						font.setBoldweight( font.BOLDWEIGHT_NORMAL );
 					cellStyle.setFont( font );
 				break;
 				case "bottomborder":
-					cellStyle.setBorderBottom( Evaluate( "cellStyle." & "BORDER_" & UCase( StructFind( format,setting ) ) ) );
+					cellStyle.setBorderBottom( cellStyle[ "BORDER_" & UCase( settingValue ) ] );
 				break;
 				case "bottombordercolor":
-					cellStyle.setBottomBorderColor( JavaCast( "int",getColorIndex( StructFind( format,setting ) ) ) );
+					cellStyle.setBottomBorderColor( getColor( workbook, settingValue ) );
 				break;
 				case "color":
-					font=cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
-					font.setColor( getColorIndex( StructFind( format,setting ) ) );
+					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font.setColor( getColor( workbook, settingValue ) );
 					cellStyle.setFont( font );
 				break;
 				/*  TODO: this is returning the correct data format index from HSSFDataFormat but doesn't seem to have any effect on the cell. Could be that I'm testing with OpenOffice so I'll have to check things in MS Excel  */
 				case "dataformat":
-					cellStyle.setDataFormat( formatter.getFormat( JavaCast( "string",format[ setting ] ) ) );
+					cellStyle.setDataFormat( formatter.getFormat( JavaCast( "string",settingValue ) ) );
 				break;
 				case "fgcolor":
-					cellStyle.setFillForegroundColor( getColorIndex( StructFind( format,setting ) ) );
+					cellStyle.setFillForegroundColor( getColor( workbook, settingValue ) );
 					/*  make sure we always apply a fill pattern or the color will not be visible  */
 					if( !arguments.KeyExists( "fillpattern" ) )
 						cellStyle.setFillPattern( cellStyle.SOLID_FOREGROUND );
 				break;
 				/*  TODO: CF 9 docs list "nofill" as opposed to "no_fill"; docs wrong? The rest match POI settings exactly.If it really is nofill instead of no_fill, just change to no_fill before calling setFillPattern  */
 				case "fillpattern":
-					cellStyle.setFillPattern( Evaluate( "cellStyle." & UCase( StructFind( format,setting ) ) ) );
+					cellStyle.setFillPattern( "cellStyle." & UCase( settingValue ) );
 				break;
 				case "font":
-					font=cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
-					font.setFontName( JavaCast( "string",StructFind( format,setting ) ) );
+					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font.setFontName( JavaCast( "string",settingValue ) );
 					cellStyle.setFont( font );
 				break;
 				case "fontsize":
-					font=cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
-					font.setFontHeightInPoints( JavaCast( "int",StructFind( format,setting ) ) );
+					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font.setFontHeightInPoints( JavaCast( "int", settingValue ) );
 					cellStyle.setFont( font );
 				break;
 				/*  TODO: I may just not understand what's supposed to be happening here, but this doesn't seem to do anything */
 				case "hidden":
-					cellStyle.setHidden( JavaCast( "boolean",StructFind( format, setting ) ) );
+					cellStyle.setHidden( JavaCast( "boolean", settingValue ) );
 				break;
 				/*  TODO: I may just not understand what's supposed to be happening here, but this doesn't seem to do anything */
 				case "indent":
-					cellStyle.setIndention( JavaCast( "int",StructFind( format, setting ) ) );
+					cellStyle.setIndention( JavaCast( "int", settingValue ) );
 				break;
 				case "italic":
-					font=cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex ( ) ) );
-					if( StructFind( format,setting ) )
-						font.setItalic( JavaCast( "boolean",true ) );
-					else
-						font.setItalic( JavaCast( "boolean",false ) );
+					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex ( ) ) );
+					font.setItalic( JavaCast( "boolean", settingValue ) );
 					cellStyle.setFont( font );
 				break;
 				case "leftborder":
-					cellStyle.setBorderLeft( Evaluate("cellStyle." & "BORDER_" & UCase( StructFind( format,setting ) ) ) );
+					cellStyle.setBorderLeft( cellStyle[ "BORDER_" & UCase( settingValue ) ] );
 				break;
 				case "leftbordercolor":
-					cellStyle.setLeftBorderColor( getColorIndex( StructFind( format,setting ) ) );
+					cellStyle.setLeftBorderColor( getColor( workbook, settingValue ) );
 				break;
 				/*  TODO: I may just not understand what's supposed to be happening here, but this doesn't seem to do anything */
 				case "locked":
-					cellStyle.setLocked( JavaCast( "boolean",StructFind( format,setting ) ) );
+					cellStyle.setLocked( JavaCast( "boolean", settingValue ) );
 				break;
 				case "rightborder":
-					cellStyle.setBorderRight( Evaluate("cellStyle." & "BORDER_" & UCase( StructFind( format,setting ) ) ) );
+					cellStyle.setBorderRight( cellStyle[ "BORDER_" & UCase( settingValue ) ] );
 				break;
 				case "rightbordercolor":
-					cellStyle.setRightBorderColor( getColorIndex( StructFind( format,setting ) ) );
+					cellStyle.setRightBorderColor( getColor( workbook, settingValue ) );
 				break;
 				case "rotation":
-					cellStyle.setRotation( JavaCast( "int",StructFind( format,setting ) ) );
+					cellStyle.setRotation( JavaCast( "int", settingValue ) );
 				break;
 				case "strikeout":
-					font=cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
-					if( StructFind( format,setting ) )
-						font.setStrikeout( JavaCast( "boolean",true ) );
-					else
-						font.setStrikeout( JavaCast( "boolean",false ) );
+					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font.setStrikeout( JavaCast( "boolean", settingValue ) );
 					cellStyle.setFont( font );
 				break;
 				case "textwrap":
-					cellStyle.setWrapText( JavaCast( "boolean",StructFind( format,setting ) ) );
+					cellStyle.setWrapText( JavaCast( "boolean", settingValue ) );
 				break;
 				case "topborder":
-					cellStyle.setBorderTop( Evaluate( "cellStyle." & "BORDER_" & UCase( StructFind( format,setting ) ) ) );
+					cellStyle.setBorderTop(  cellStyle[ "BORDER_" & UCase( settingValue ) ] );
 				break;
 				case "topbordercolor":
-					cellStyle.setTopBorderColor( getColorIndex( StructFind( format,setting ) ) );
+					cellStyle.setTopBorderColor( getColor( workbook, settingValue ) );
 				break;
 				case "underline":
-					font=cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
-					if( StructFind( format,setting ) )
-						font.setUnderline( JavaCast( "boolean",true ) );
-					else
-						font.setUnderline( JavaCast( "boolean",false ) );
+					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font.setUnderline( JavaCast( "boolean", settingValue ) );
 					cellStyle.setFont( font );
 				break;
 				case "verticalalignment":
@@ -2487,7 +2475,8 @@ component{
 		/*  copy the existing cell's font settings to the new font  */
 		newFont.setBoldweight( fontToClone.getBoldweight() );
 		newFont.setCharSet( fontToClone.getCharSet() );
-		newFont.setColor( fontToClone.getColor() );
+		// xlsx fonts contain XSSFColor objects which may have been set as RGB
+		newFont.setColor( isXmlFormat( workbook )? fontToClone.getXSSFColor(): fontToClone.getColor() );
 		newFont.setFontHeight( fontToClone.getFontHeight() );
 		newFont.setFontName( fontToClone.getFontName() );
 		newFont.setItalic( fontToClone.getItalic() );
@@ -2507,6 +2496,30 @@ component{
 		catch( any exception ){
 			throw( type=exceptionType,message="Invalid Color",detail="The color provided (#colorName#) is not valid." );
 		}
+	}
+
+	private any function getColor( required workbook, required string colorValue ){
+		/* if colorValue is a preset name, returns the index */
+		/* if colorValue is an RGB Triplet eg. "255,255,255" then the exact color object is returned for xlsx, or the nearest color's index if xls */
+		var isRGB = ListLen( colorValue ) EQ 3;
+		if( !isRGB )
+			return getColorIndex( colorValue );
+		var rgb = ListToArray( colorValue );
+		if( isXmlFormat( workbook ) ){
+			var javaColor = CreateObject( "Java","java.awt.Color" ).init(
+				JavaCast( "int", rgb[ 1 ] )
+				,JavaCast( "int", rgb[ 2 ] )
+				,JavaCast( "int", rgb[ 3 ] )
+			);
+			return loadPoi( "org.apache.poi.xssf.usermodel.XSSFColor" ).init( javaColor );
+		}
+		var palette = workbook.getCustomPalette();
+		var similarExistingColor = palette.findSimilarColor(
+			JavaCast( "int", rgb[ 1 ] )
+			,JavaCast( "int", rgb[ 2 ] )
+			,JavaCast( "int", rgb[ 3 ] )
+		);
+		return similarExistingColor.getIndex();
 	}
 
 }
