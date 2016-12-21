@@ -1,7 +1,12 @@
+## 0.9.4 - 21 December 2016
+
+- Enhancement: \#98 Allow cell format color values to be specified in RBG triplets
+- Fix: Refactor `buildCellStyle()` to improve performance and fix boolean issue with "bold".
+
 ## 0.8.4 - 01 December 2016
 
-- Enhancement \#97 Add `newXlsx()` and `newXls()` as aliases for `new( xmlFormat=true/false )`
-- Fix \#96 Fix error when adding image to xlsx (xml format) spreadsheet
+- Enhancement: \#97 Add `newXlsx()` and `newXls()` as aliases for `new( xmlFormat=true/false )`
+- Fix: \#96 Fix error when adding image to xlsx (xml format) spreadsheet
 
 ## 0.8.3 - 22 November 2016
 
