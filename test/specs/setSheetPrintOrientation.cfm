@@ -42,8 +42,12 @@ describe( "setSheetPrintOrientation",function(){
 		xls.createSheet( "test" );
 		var sheet = s.getSheetByNumber( xls, 2 );
 		expect( sheet.getPrintSetup().getLandscape() ).toBeFalse();
+		// named arguments
 		s.setSheetPrintOrientation( workbook=xls, mode="landscape", sheetNumber=2 );
 		expect( sheet.getPrintSetup().getLandscape() ).toBeTrue();
+		//positional
+		s.setSheetPrintOrientation( xls, "portrait", "", 2 );
+		expect( sheet.getPrintSetup().getLandscape() ).toBeFalse();
 	});
 
 });	

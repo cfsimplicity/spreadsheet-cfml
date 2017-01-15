@@ -1197,7 +1197,7 @@ component{
 		if( !ListFindNoCase( "landscape,portrait", mode ) )
 			throw( type=exceptionType, message="Invalid mode argument", detail="#mode# is not a valid 'mode' argument. Use 'portrait' or 'landscape'" );
 		var setToLandscape = ( LCase( mode ) IS "landscape" );
-		if( arguments.KeyExists( "sheetName" ) )
+		if( arguments.KeyExists( "sheetName" ) AND Len( sheetName ) )
 			var sheet = getSheetByName( workbook, sheetName );
 		else if( arguments.KeyExists( "sheetNumber" ) )
 			var sheet = getSheetByNumber( workbook, sheetNumber );
