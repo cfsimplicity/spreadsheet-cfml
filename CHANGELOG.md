@@ -1,3 +1,7 @@
+## 0.10.0 - 15 January 2017
+
+- Enhancement: \#99 Add `setSheetPrintOrientation()`.
+
 ## 0.9.4 - 21 December 2016
 
 - Enhancement: \#98 Allow cell format color values to be specified in RBG triplets

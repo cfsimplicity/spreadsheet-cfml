@@ -112,6 +112,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [setRepeatingColumns](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setRepeatingColumns)
 * [setRepeatingRows](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setRepeatingRows)
 * [setCellRangeValue](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setCellRangeValue)
+* [setSheetPrintOrientation](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setSheetPrintOrientation)
 * [setReadOnly](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setReadOnly)
 * [showColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/showColumn)
 
