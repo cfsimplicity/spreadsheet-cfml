@@ -1,6 +1,6 @@
 component{
 
-	variables.version="0.9.4";
+	variables.version="0.10.0";
 	variables.poiLoaderName="_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath="javaLoader.JavaLoader";
 	variables.dateFormats={
@@ -1193,7 +1193,20 @@ component{
 		getActiveSheet( workbook ).getRow( JavaCast( "int",rowIndex ) ).setHeightInPoints( JavaCast( "int",height ) );
 	}
 
-	void function shiftColumns( required workbook,required numeric start,numeric end=start,numeric offset=1 ){
+	public void function setSheetPrintOrientation( required workbook, required string mode, string sheetName, numeric sheetNumber ){
+		if( !ListFindNoCase( "landscape,portrait", mode ) )
+			throw( type=exceptionType, message="Invalid mode argument", detail="#mode# is not a valid 'mode' argument. Use 'portrait' or 'landscape'" );
+		var setToLandscape = ( LCase( mode ) IS "landscape" );
+		if( arguments.KeyExists( "sheetName" ) )
+			var sheet = getSheetByName( workbook, sheetName );
+		else if( arguments.KeyExists( "sheetNumber" ) )
+			var sheet = getSheetByNumber( workbook, sheetNumber );
+		else
+			var sheet = getActiveSheet( workbook );
+		sheet.getPrintSetup().setLandscape( JavaCast( "boolean", setToLandscape ) );
+	}
+
+	public void function shiftColumns( required workbook,required numeric start,numeric end=start,numeric offset=1 ){
 		if( start LTE 0 )
 			throw( type=exceptionType,message="Invalid start value",detail="The start value must be greater than or equal to 1" );
 		if( arguments.KeyExists( "end" ) AND ( end LTE 0 OR end LT start ) )
@@ -1811,6 +1824,17 @@ component{
 		return result;
 	}
 
+	private any function getSheetByName( required workbook, required string sheetName ){
+		validateSheetExistsWithName( workbook, sheetName );
+		return workbook.getSheet( JavaCast( "string", sheetName ) );
+	}
+
+	private any function getSheetByNumber( required workbook, required numeric sheetNumber ){
+		validateSheetNumber( workbook, sheetNumber );
+		var sheetIndex=sheetNumber-1;
+		return workbook.getSheetAt( sheetIndex );
+	}
+
 	private numeric function getSheetIndexFromName( required workbook,required string sheetName ){
 		//returns -1 if non-existent
 		return workbook.getSheetIndex( JavaCast( "string",sheetName ) );
@@ -2023,10 +2047,10 @@ component{
 		cell.setCellValue( JavaCast( "string",value ) );
 	}
 
-	private boolean function sheetExists( required workbook,string sheetName,numeric sheetNumber ){
+	private boolean function sheetExists( required workbook, string sheetName, numeric sheetNumber ){
 		validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
 		if( arguments.KeyExists( "sheetName" ) )
-			arguments.sheetNumber=getSheetIndexFromName( workbook,sheetName )+1;
+			arguments.sheetNumber = getSheetIndexFromName( workbook, sheetName )+1;
 			//the position is valid if it an integer between 1 and the total number of sheets in the workbook
 		if( sheetNumber AND ( sheetNumber EQ Round( sheetNumber ) ) AND ( sheetNumber LTE workbook.getNumberOfSheets() ) )
 			return true;
@@ -2068,7 +2092,7 @@ component{
 			validateSheetExistsWithName( workbook,sheetName );
 			arguments.sheetNumber=getSheetIndexFromName( workbook,sheetName )+1;
 		}
-		sheet.object=workbook.GetSheetAt( JavaCast( "int",sheetNumber-1 ) );
+		sheet.object = getSheetByNumber( workbook, sheetNumber );
 		if( fillMergedCellsWithVisibleValue )
 			doFillMergedCellsWithVisibleValue( workbook,sheet.object );
 		sheet.data=[];
