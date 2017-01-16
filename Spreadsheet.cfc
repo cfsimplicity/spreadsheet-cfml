@@ -1,6 +1,6 @@
 component{
 
-	variables.version="0.10.1";
+	variables.version="0.10.2";
 	variables.poiLoaderName="_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath="javaLoader.JavaLoader";
 	variables.dateFormats={
@@ -1025,12 +1025,8 @@ component{
 				OR comment.KeyExists( "underline" )
 		){
 			var font=workbook.createFont();
-			if( comment.KeyExists( "bold" ) ){
-				if( comment.bold )
-					font.setBoldWeight( font.BOLDWEIGHT_BOLD );
-				else
-					font.setBoldWeight( font.BOLDWEIGHT_NORMAL );
-			}
+			if( comment.KeyExists( "bold" ) )
+				font.setBold( comment.bold );
 			if( comment.KeyExists( "color" ) )
 				font.setColor( getColor( workbook, comment.color ) );
 			if( comment.KeyExists( "font" ) )
@@ -1635,7 +1631,7 @@ component{
 
 	private numeric function getAWTFontStyle( required any poiFont ){
 		var font=loadPOI( "java.awt.Font" );
-		var isBold=( poiFont.getBoldweight() == poiFont.BOLDWEIGHT_BOLD );
+		var isBold=poiFont.getBold();
 		if( isBold && arguments.poiFont.getItalic() )
 	  	return BitOr( font.BOLD,font.ITALIC );
 		if( isBold )
@@ -1661,6 +1657,8 @@ component{
 
 	private any function getCellValueAsType( required workbook,required cell ){
 		/* When getting the value of a cell, it is important to know what type of cell value we are dealing with. If you try to grab the wrong value type, an error might be thrown. For that reason, we must check to see what type of cell we are working with. These are the cell types and they are constants of the cell object itself:
+
+		20170116: In POI 4.0 getCellType() will no longer return an integer, but a CellType enum instead. Shouldn't affect things as we are only using the constants, not the integer literals.
 
 			0 - CELL_TYPE_NUMERIC
 			1 - CELL_TYPE_STRING
@@ -2397,10 +2395,7 @@ component{
 				break;
 				case "bold":
 					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
-					if( settingValue )
-						font.setBoldweight( font.BOLDWEIGHT_BOLD );
-					else
-						font.setBoldweight( font.BOLDWEIGHT_NORMAL );
+					font.setBold( settingValue );
 					cellStyle.setFont( font );
 				break;
 				case "bottomborder":
@@ -2500,7 +2495,7 @@ component{
 	private any function cloneFont( required workbook,required fontToClone ){
 		var newFont=workbook.createFont();
 		/*  copy the existing cell's font settings to the new font  */
-		newFont.setBoldweight( fontToClone.getBoldweight() );
+		newFont.setBold( fontToClone.getBold() );
 		newFont.setCharSet( fontToClone.getCharSet() );
 		// xlsx fonts contain XSSFColor objects which may have been set as RGB
 		newFont.setColor( isXmlFormat( workbook )? fontToClone.getXSSFColor(): fontToClone.getColor() );
