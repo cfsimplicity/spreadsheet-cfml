@@ -1,6 +1,6 @@
 component{
 
-	variables.version="0.10.0";
+	variables.version="0.10.1";
 	variables.poiLoaderName="_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath="javaLoader.JavaLoader";
 	variables.dateFormats={
@@ -1196,8 +1196,11 @@ component{
 	public void function setSheetPrintOrientation( required workbook, required string mode, string sheetName, numeric sheetNumber ){
 		if( !ListFindNoCase( "landscape,portrait", mode ) )
 			throw( type=exceptionType, message="Invalid mode argument", detail="#mode# is not a valid 'mode' argument. Use 'portrait' or 'landscape'" );
+		var sheetNameSupplied = ( arguments.KeyExists( "sheetName" ) AND Len( sheetName ) );
+		if( sheetNameSupplied AND arguments.KeyExists( "sheetNumber" ) )
+			throw( type=exceptionType, message="Invalid arguments", detail="Specify either a sheetName or sheetNumber, not both" );
 		var setToLandscape = ( LCase( mode ) IS "landscape" );
-		if( arguments.KeyExists( "sheetName" ) AND Len( sheetName ) )
+		if( sheetNameSupplied )
 			var sheet = getSheetByName( workbook, sheetName );
 		else if( arguments.KeyExists( "sheetNumber" ) )
 			var sheet = getSheetByNumber( workbook, sheetNumber );

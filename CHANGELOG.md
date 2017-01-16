@@ -1,3 +1,7 @@
+## 0.10.1 - 16 January 2017
+
+- Fix: Tweak argument handling of `setSheetPrintOrientation()` to catch errors.
+
 ## 0.10.0 - 15 January 2017
 
 - Enhancement: \#99 Add `setSheetPrintOrientation()`.
