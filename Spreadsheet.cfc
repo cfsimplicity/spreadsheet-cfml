@@ -1026,7 +1026,7 @@ component{
 		){
 			var font=workbook.createFont();
 			if( comment.KeyExists( "bold" ) )
-				font.setBold( comment.bold );
+				font.setBold( JavaCast( "boolean", comment.bold ) );
 			if( comment.KeyExists( "color" ) )
 				font.setColor( getColor( workbook, comment.color ) );
 			if( comment.KeyExists( "font" ) )
@@ -2395,7 +2395,7 @@ component{
 				break;
 				case "bold":
 					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
-					font.setBold( settingValue );
+					font.setBold( JavaCast( "boolean", settingValue ) );
 					cellStyle.setFont( font );
 				break;
 				case "bottomborder":
