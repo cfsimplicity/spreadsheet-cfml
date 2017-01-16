@@ -1,3 +1,7 @@
+## 0.10.2 - 16 January 2017
+
+- Fix: \#100 Replace deprecated 'boldweight' methods and constants with `getBold()`/`setBold()`.
+
 ## 0.10.1 - 16 January 2017
 
 - Fix: Tweak argument handling of `setSheetPrintOrientation()` to catch errors.
