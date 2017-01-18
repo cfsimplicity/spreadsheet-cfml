@@ -37,15 +37,20 @@ describe( "setSheetPrintOrientation",function(){
 
 	it( "sets the named sheet to the specified orientation",function() {
 		makePublic( s, "getSheetByName" );
-		xls.createSheet( "test" );
+		s.createSheet( xls, "test" );
 		s.setSheetPrintOrientation( xls, "landscape", "test" );
 		var sheet = s.getSheetByName( xls, "test" );
+		expect( sheet.getPrintSetup().getLandscape() ).toBeTrue();
+		// xlsx
+		s.createSheet( xlsx, "test" );
+		s.setSheetPrintOrientation( xlsx, "landscape", "test" );
+		var sheet = s.getSheetByName( xlsx, "test" );
 		expect( sheet.getPrintSetup().getLandscape() ).toBeTrue();
 	});
 
 	it( "sets the specified sheet number to the specified orientation",function() {
 		makePublic( s, "getSheetByNumber" );
-		xls.createSheet( "test" );
+		s.createSheet( xls, "test" );
 		var sheet = s.getSheetByNumber( xls, 2 );
 		expect( sheet.getPrintSetup().getLandscape() ).toBeFalse();
 		// named arguments
@@ -53,6 +58,16 @@ describe( "setSheetPrintOrientation",function(){
 		expect( sheet.getPrintSetup().getLandscape() ).toBeTrue();
 		//positional
 		s.setSheetPrintOrientation( xls, "portrait", "", 2 );
+		expect( sheet.getPrintSetup().getLandscape() ).toBeFalse();
+		//xlsx
+		s.createSheet( xlsx, "test" );
+		var sheet = s.getSheetByNumber( xlsx, 2 );
+		expect( sheet.getPrintSetup().getLandscape() ).toBeFalse();
+		// named arguments
+		s.setSheetPrintOrientation( workbook=xlsx, mode="landscape", sheetNumber=2 );
+		expect( sheet.getPrintSetup().getLandscape() ).toBeTrue();
+		//positional
+		s.setSheetPrintOrientation( xlsx, "portrait", "", 2 );
 		expect( sheet.getPrintSetup().getLandscape() ).toBeFalse();
 	});
 
