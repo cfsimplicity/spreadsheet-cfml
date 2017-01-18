@@ -21,7 +21,7 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 - Uses a newer version of the java POI library (3.15).
 - Fixes various outstanding bugs/omissions.
 - No dependency on Lucee within the included jar files.
-- Written entirely in Lucee script.
+- Written entirely in CFML script.
 
 ##Downsides
 
@@ -35,7 +35,7 @@ Note that this is not a Lucee extension, so **does not need to be installed**. T
 The following example assumes the file containing the script is in the same directory as the folder containing the spreadsheet library files, i.e.:
 ```
 /root/
-_/spreadsheetLibrary/
+ /spreadsheetLibrary/
   Spreadsheet.cfc
   etc.
  script.cfm
