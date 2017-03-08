@@ -2419,9 +2419,10 @@ component{
 					if( !arguments.KeyExists( "fillpattern" ) )
 						cellStyle.setFillPattern( cellStyle.SOLID_FOREGROUND );
 				break;
-				/*  TODO: CF 9 docs list "nofill" as opposed to "no_fill"; docs wrong? The rest match POI settings exactly.If it really is nofill instead of no_fill, just change to no_fill before calling setFillPattern  */
 				case "fillpattern":
-					cellStyle.setFillPattern( "cellStyle." & UCase( settingValue ) );
+					if( settingValue IS "nofill" ) //CF 9 docs list "nofill" as opposed to "no_fill"
+						settingValue = "NO_FILL";
+					cellStyle.setFillPattern( cellStyle[ UCase( settingValue ) ] );
 				break;
 				case "font":
 					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
