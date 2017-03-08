@@ -2331,7 +2331,7 @@ component{
 		var font = 0;
 		var formatIndex = 0;
 		/*
-			Valid values of the format struct are:
+			Valid keys of the format struct are:
 			* alignment
 			* bold
 			* bottomborder
@@ -2362,7 +2362,8 @@ component{
 			var settingValue = format[ setting ];
 			switch( setting ){
 				case "alignment":
-					cellStyle.setAlignment( cellStyle[ "ALIGN_" & UCase( settingValue ) ] );
+					var alignment = cellStyle.getAlignmentEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
+					cellStyle.setAlignment( alignment );
 				break;
 				case "bold":
 					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
@@ -2370,13 +2371,14 @@ component{
 					cellStyle.setFont( font );
 				break;
 				case "bottomborder":
-					cellStyle.setBorderBottom( cellStyle[ "BORDER_" & UCase( settingValue ) ] );
+					var borderStyle = cellStyle.getBorderBottomEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
+					cellStyle.setBorderBottom( borderStyle );
 				break;
 				case "bottombordercolor":
 					cellStyle.setBottomBorderColor( getColor( workbook, settingValue ) );
 				break;
 				case "color":
-					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font = cloneFont( workbook, workbook.getFontAt( cellStyle.getFontIndex() ) );
 					font.setColor( getColor( workbook, settingValue ) );
 					cellStyle.setFont( font );
 				break;
@@ -2387,13 +2389,16 @@ component{
 				case "fgcolor":
 					cellStyle.setFillForegroundColor( getColor( workbook, settingValue ) );
 					/*  make sure we always apply a fill pattern or the color will not be visible  */
-					if( !arguments.KeyExists( "fillpattern" ) )
-						cellStyle.setFillPattern( cellStyle.SOLID_FOREGROUND );
+					if( !arguments.KeyExists( "fillpattern" ) ){
+						var fillpattern = cellStyle.getFillPatternEnum()[ JavaCast( "string", "SOLID_FOREGROUND" ) ];
+						cellStyle.setFillPattern( fillpattern );
+					}
 				break;
 				case "fillpattern":
 					if( settingValue IS "nofill" ) //CF 9 docs list "nofill" as opposed to "no_fill"
 						settingValue = "NO_FILL";
-					cellStyle.setFillPattern( cellStyle[ UCase( settingValue ) ] );
+					var fillpattern = cellStyle.getFillPatternEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
+					cellStyle.setFillPattern( fillpattern );
 				break;
 				case "font":
 					font = cloneFont( workbook, workbook.getFontAt( cellStyle.getFontIndex() ) );
@@ -2419,7 +2424,8 @@ component{
 					cellStyle.setFont( font );
 				break;
 				case "leftborder":
-					cellStyle.setBorderLeft( cellStyle[ "BORDER_" & UCase( settingValue ) ] );
+					var borderStyle = cellStyle.getBorderLeftEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
+					cellStyle.setBorderLeft( borderStyle );
 				break;
 				case "leftbordercolor":
 					cellStyle.setLeftBorderColor( getColor( workbook, settingValue ) );
@@ -2428,8 +2434,13 @@ component{
 				case "locked":
 					cellStyle.setLocked( JavaCast( "boolean", settingValue ) );
 				break;
+				/* Implement when POI 3.16 available */
+				/* case "quoteprefixed":
+					cellStyle.setQuotePrefixed( JavaCast( "boolean", settingValue ) );
+				break; */
 				case "rightborder":
-					cellStyle.setBorderRight( cellStyle[ "BORDER_" & UCase( settingValue ) ] );
+					var borderStyle = cellStyle.getBorderRightEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
+					cellStyle.setBorderRight( borderStyle );
 				break;
 				case "rightbordercolor":
 					cellStyle.setRightBorderColor( getColor( workbook, settingValue ) );
@@ -2446,7 +2457,8 @@ component{
 					cellStyle.setWrapText( JavaCast( "boolean", settingValue ) );
 				break;
 				case "topborder":
-					cellStyle.setBorderTop(  cellStyle[ "BORDER_" & UCase( settingValue ) ] );
+					var borderStyle = cellStyle.getBorderTopEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
+					cellStyle.setBorderTop( borderStyle );
 				break;
 				case "topbordercolor":
 					cellStyle.setTopBorderColor( getColor( workbook, settingValue ) );
@@ -2457,7 +2469,8 @@ component{
 					cellStyle.setFont( font );
 				break;
 				case "verticalalignment":
-					cellStyle.setVerticalAlignment( cellStyle[ settingValue ] );
+					var alignment = cellStyle.getVerticalAlignmentEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
+					cellStyle.setVerticalAlignment( alignment );
 				break;
 			}
 		}
@@ -2482,7 +2495,7 @@ component{
 
 	private numeric function getColorIndex( required string colorName ){
 		var findColor = colorName.Trim().UCase();
-		var indexedColors = loadPoi( "org.apache.poi.ss.usermodel.indexedColors" );
+		var indexedColors = loadPoi( "org.apache.poi.ss.usermodel.IndexedColors" );
 		try{
 			var color = indexedColors.valueOf( JavaCast( "string", findColor ) );
 			return color.getIndex();
