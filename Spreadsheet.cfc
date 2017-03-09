@@ -739,9 +739,9 @@ component{
 		toggleColumnHidden( workbook, column, true );
 	}
 
-	public struct function info( required workbook ){
+	public struct function info( required workbookOrPath ){
 		/*
-		workbook properties returned in the struct are:
+		properties returned in the struct are:
 			* AUTHOR
 			* CATEGORY
 			* COMMENTS
@@ -757,8 +757,12 @@ component{
 			* SHEETS
 			* SHEETNAMES
 			* SPREADSHEETTYPE
-		 */
-		 //format specific metadata
+		*/
+		if( isSpreadsheetObject( arguments[ 1 ] ) )
+			var workbook = arguments[ 1 ];
+		else
+			var workbook = workbookFromFile( arguments[ 1 ] );
+		//format specific metadata
 		var info = isBinaryFormat( workbook )? binaryInfo( workbook ): xmlInfo( workbook );
 		//common properties
 		info.sheets = workbook.getNumberOfSheets();

@@ -1,3 +1,9 @@
+## 1.0.0 - 9 March 2017
+
+- Fix: \#102 Fillpattern formatting not working.
+- Fix: \#103 Replace deprecated `cellstyle` setters.
+- Enhancement: \#106 Allow a file path to be passed to the `info()` method instead of a workbook object
+
 ## 0.10.2 - 16 January 2017
 
 - Fix: \#100 Replace deprecated 'boldweight' methods and constants with `getBold()`/`setBold()`.
