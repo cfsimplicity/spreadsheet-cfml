@@ -5,15 +5,15 @@ component{
 		https://github.com/markmandel/JavaLoader/wiki/Switching-the-ThreadContextClassLoader
 	*/
 
-	function init( required javaloader,required string algorithm ){
-		variables.javaloader=javaloader;
-		variables.switchThreadContextClassLoader=javaloader.switchThreadContextClassLoader;
-		variables.algorithm=algorithm;
+	function init( required javaloader, required string algorithm ){
+		variables.javaloader = javaloader;
+		variables.switchThreadContextClassLoader = javaloader.switchThreadContextClassLoader;
+		variables.algorithm = algorithm;
 		return this;
 	}
 
 	function loadInfo(){
-		var mode=javaloader.create( "org.apache.poi.poifs.crypt.EncryptionMode" );
+		var mode = javaloader.create( "org.apache.poi.poifs.crypt.EncryptionMode" );
 		switch( algorithm ){
 			case "agile":
 				return javaloader.create( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.agile );
@@ -25,7 +25,7 @@ component{
 	}
 
 	function loadInfoWithSwitchedContextLoader(){
-		return switchThreadContextClassLoader( "loadInfo",javaLoader.getURLClassLoader() );
+		return switchThreadContextClassLoader( "loadInfo", javaLoader.getURLClassLoader() );
 	}
 
 }

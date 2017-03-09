@@ -5,10 +5,10 @@ component{
 		https://github.com/markmandel/JavaLoader/wiki/Switching-the-ThreadContextClassLoader
 	*/
 
-	function init( required javaloader,required poiFilesystem ){
-		variables.javaloader=javaloader;
-		variables.switchThreadContextClassLoader=javaloader.switchThreadContextClassLoader;
-		variables.poiFilesystem=poiFilesystem;
+	function init( required javaloader, required poiFilesystem ){
+		variables.javaloader = javaloader;
+		variables.switchThreadContextClassLoader = javaloader.switchThreadContextClassLoader;
+		variables.poiFilesystem = poiFilesystem;
 		return this;
 	}
 
@@ -17,7 +17,7 @@ component{
 	}
 
 	function loadInfoWithSwitchedContextLoader(){
-		return switchThreadContextClassLoader( "loadInfo",javaLoader.getURLClassLoader() );
+		return switchThreadContextClassLoader( "loadInfo", javaLoader.getURLClassLoader() );
 	}
 
 }
