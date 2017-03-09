@@ -42,10 +42,10 @@ The following example assumes the file containing the script is in the same dire
 ``` 
 ```
 <cfscript>
-spreadsheet=New spreadsheetLibrary.Spreadsheet();
-data=QueryNew( "First,Last","VarChar,VarChar",[ [ "Susi","Sorglos" ],[ "Frumpo","McNugget" ] ] );
-workbook=spreadsheet.new();
-spreadsheet.addRows( workbook,data );
+spreadsheet = New spreadsheetLibrary.Spreadsheet();
+data = QueryNew( "First,Last", "VarChar, VarChar", [ [ "Susi", "Sorglos" ], [ "Frumpo", "McNugget" ] ] );
+workbook = spreadsheet.new();
+spreadsheet.addRows( workbook, data );
 </cfscript>
 ```
 You will probably want to place the spreadsheet library files in a central location with an application mapping, and instantiate the component using its dot path (e.g. `New myLibrary.spreadsheet.Spreadsheet();`).
@@ -135,7 +135,7 @@ The `read()` method in this library allows you to read a spreadsheet file into a
 
 ```
 <cfscript>
-myQuery=spreadsheet.read( src=mypath,format="query" );
+myQuery = spreadsheet.read( src=mypath, format="query" );
 </cfscript>
 ```
 
@@ -152,16 +152,16 @@ The `read()` method also features the following additional options not available
 
 The following international date masks are used by default to read and write cell values formatted as dates:
 
-* DATE=`yyyy-mm-dd`
-* DATETIME=`yyyy-mm-dd HH:nn:ss`
-* TIME=`hh:mm:ss`
-* TIMESTAMP=`yyyy-mm-dd hh:mm:ss`
+* DATE = `yyyy-mm-dd`
+* DATETIME = `yyyy-mm-dd HH:nn:ss`
+* TIME = `hh:mm:ss`
+* TIMESTAMP = `yyyy-mm-dd hh:mm:ss`
 
 Each of these can be overridden by passing in a struct including the value(s) to be overridden when instantiating the Spreadsheet component. For example:
 
 ```
 <cfscript>
-spreadsheet=New spreadsheetLibrary.spreadsheet( dateFormats={ DATE="mm/dd/yyyy" } );
+spreadsheet = New spreadsheetLibrary.spreadsheet( dateFormats={ DATE: "mm/dd/yyyy" } );
 </cfscript>
 ```
 
@@ -171,7 +171,7 @@ The library requires and includes Mark Mandel's [JavaLoader](https://github.com/
 
 ```
 <cfscript>
-spreadsheet=New spreadsheetLibrary.spreadsheet( javaLoaderDotPath="myLibrary.javaloader.JavaLoader" );
+spreadsheet = New spreadsheetLibrary.spreadsheet( javaLoaderDotPath="myLibrary.javaloader.JavaLoader" );
 </cfscript>
 ```
 
