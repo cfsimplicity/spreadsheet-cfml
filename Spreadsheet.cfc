@@ -15,7 +15,7 @@ component{
 		if( arguments.KeyExists( "dateFormats" ) )
 			overrideDefaultDateFormats( arguments.dateFormats );
 		if( arguments.KeyExists( "javaLoaderDotPath" ) ) // Option to use the dot path of an existing javaloader installation to save duplication
-			variables.javaLoaderDotPath=arguments.javaLoaderDotPath;
+			variables.javaLoaderDotPath = arguments.javaLoaderDotPath;
 		return this;
 	}
 
@@ -30,7 +30,7 @@ component{
 	}
 
 	public void function flushPoiLoader(){
-		lock scope="server" timeout="10"{
+		lock scope="server" timeout="10" {
 			StructDelete( server, poiLoaderName );
 		};
 	}
@@ -735,6 +735,10 @@ component{
 		return result;
 	}
 
+	public void function hideColumn( required workbook, required numeric column ){
+		toggleColumnHidden( workbook, column, true );
+	}
+
 	public struct function info( required workbook ){
 		/*
 		workbook properties returned in the struct are:
@@ -760,17 +764,12 @@ component{
 		info.sheets = workbook.getNumberOfSheets();
 		var sheetnames = [];
 		if( IsNumeric( info.sheets ) ){
-			for( var i = 1; i LTE info.sheets; i++ ){
-				sheetnames.Append( workbook.getSheetName( JavaCast( "int",i-1 ) ) );
-			}
+			for( var i = 1; i LTE info.sheets; i++ )
+				sheetnames.Append( workbook.getSheetName( JavaCast( "int", ( i -1 ) ) ) );
 			info.sheetnames = sheetnames.ToList();
 		}
 		info.spreadSheetType = isXmlFormat( workbook )? "Excel (2007)": "Excel";
 		return info;
-	}
-
-	public void function hideColumn( required workbook, required numeric column ){
-		toggleColumnHidden( workbook, column, true );
 	}
 
 	public boolean function isBinaryFormat( required workbook ){
@@ -2464,7 +2463,7 @@ component{
 					cellStyle.setTopBorderColor( getColor( workbook, settingValue ) );
 				break;
 				case "underline":
-					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font = cloneFont( workbook, workbook.getFontAt( cellStyle.getFontIndex() ) );
 					font.setUnderline( JavaCast( "boolean", settingValue ) );
 					cellStyle.setFont( font );
 				break;
@@ -2477,7 +2476,7 @@ component{
 		return cellStyle;
 	}
 
-	private any function cloneFont( required workbook,required fontToClone ){
+	private any function cloneFont( required workbook, required fontToClone ){
 		var newFont = workbook.createFont();
 		/*  copy the existing cell's font settings to the new font  */
 		newFont.setBold( fontToClone.getBold() );
