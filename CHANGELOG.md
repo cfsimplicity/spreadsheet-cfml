@@ -1,4 +1,4 @@
-## 1.0.0 - 9 March 2017
+## 0.11.0 - 9 March 2017
 
 - Fix: \#102 Fillpattern formatting not working.
 - Fix: \#103 Replace deprecated `cellstyle` setters.
