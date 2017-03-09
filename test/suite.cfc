@@ -29,6 +29,4 @@ component extends="testbox.system.BaseSpec"{
 
 	}
 
-	//dump( expected );dump( actual );abort;
-
 }
