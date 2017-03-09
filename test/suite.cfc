@@ -1,6 +1,11 @@
 component extends="testbox.system.BaseSpec"{
 
-	function beforeAll(){}
+	function beforeAll(){
+		variables.s = New root.Spreadsheet();
+	  makePublic( s, "sheetToQuery" );
+	  variables.tempXlsPath = ExpandPath( "temp.xls" );
+	  variables.tempXlsxPath = ExpandPath( "temp.xlsx" );
+	}
 
 	function afterAll(){}
 
@@ -8,22 +13,19 @@ component extends="testbox.system.BaseSpec"{
 
 		describe( "spreadsheet test suite",function() {
      
-			beforeEach( function( currentSpec ) {
-			  variables.s=New root.Spreadsheet();
-			  makePublic( s,"sheetToQuery" );
-			  variables.tempXlsPath=ExpandPath( "temp.xls" );
-			});
+			/* beforeEach( function( currentSpec ) {}); */
 
 			afterEach(function( currentSpec ) {
 		    if( FileExists( tempXlsPath ) )
-					FileDelete( tempXlsPath );
+		    	FileDelete( tempXlsPath );
+		    if( FileExists( tempXlsxPath ) )
+		    	FileDelete( tempXlsxPath );
 			});
 
-			var specs=DirectoryList( ExpandPath( "specs" ),false,"name","*.cfm" );
+			var specs = DirectoryList( ExpandPath( "specs" ), false, "name", "*.cfm" );
 			// run every file in the tests folder
-			for( var file in specs ){
+			for( var file in specs )
 				include "specs/#file#";	
-			}
 
 		});
 

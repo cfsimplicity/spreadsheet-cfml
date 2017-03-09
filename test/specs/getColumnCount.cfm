@@ -10,7 +10,7 @@ describe( "getColumnCount",function(){
 	});
 
 	it( "Can get the maximum number of columns in the first sheet of an XLSX workbook",function() {
-		var workbook=s.new( xmlFormat=true );
+		var workbook=s.newXlsx();
 		s.addRow( workbook,"1a,1b" );
 		s.addRow( workbook,"2a,2b,2c" );
 		s.addRow( workbook,"3a" );

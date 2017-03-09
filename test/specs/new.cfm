@@ -7,7 +7,7 @@ describe( "new",function(){
 	});
 
 	it( "Returns an XSSF workbook if xmlFormat is true",function() {
-		var workbook = s.new( xmlFormat=true );
+		var workbook = s.newXlsx();
 		expect( workbook.getClass().name ).toBe( "org.apache.poi.xssf.usermodel.XSSFWorkbook" );
 	});
 

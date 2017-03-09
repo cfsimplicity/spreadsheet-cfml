@@ -1,6 +1,10 @@
 <cfscript>
 describe( "read",function(){
 
+	beforeEach( function(){
+		sleep( 5 );// allow time for file operations to complete
+	});
+
 	it( "Can read a traditional XLS file",function() {
 		path = ExpandPath( "/root/test/files/test.xls" );
 		workbook = s.read( src=path );
@@ -294,12 +298,11 @@ describe( "read",function(){
 
 	it( "Can write and read an encrypted OOXML file",function() {
 		data = QueryNew( "column1","VarChar",[ [ "a" ] ] );
-		workbook = s.new( xmlformat=true );
+		workbook = s.newXlsx();
 		s.addRows( workbook,data );
-		tempXlsPath=ExpandPath( "temp.xlsx" );;
-		s.write( workbook=workbook,filepath=tempXlsPath,overwrite=true,password="pass" );
+		s.write( workbook=workbook,filepath=tempXlsxPath,overwrite=true,password="pass" );
 		expected = data;
-		actual = s.read( src=tempXlsPath,format="query",password="pass" );
+		actual = s.read( src=tempXlsxPath,format="query",password="pass" );
 		expect( actual ).toBe( expected );
 	});
 
@@ -308,7 +311,6 @@ describe( "read",function(){
 		s.addColumn( workbook,"1,1" );
 		var theFormula="SUM(A1:A2)";
 		s.setCellFormula( workbook,theFormula,3,1 );
-		tempXlsPath=ExpandPath( "temp.xls" );
 		s.write( workbook=workbook,filepath=tempXlsPath,overwrite=true );
 		expected=QueryNew( "column1","numeric", [ [1],[1],[2] ] );
 		actual=s.read( src=tempXlsPath,format="query" );
@@ -323,7 +325,6 @@ describe( "read",function(){
 				s.addColumn( workbook,"1,1" );
 				var theFormula="SUS(A1:A2)";//invalid formula
 				s.setCellFormula( workbook,theFormula,3,1 );
-				tempXlsPath=ExpandPath( "temp.xls" );
 				s.write( workbook=workbook,filepath=tempXlsPath,overwrite=true );
 				s.read( src=tempXlsPath,format="query" );
 			}).toThrow( regex="Failed to run formula" );
@@ -370,11 +371,10 @@ describe( "read",function(){
 		it( "Throws an exception if the password for an encrypted file is incorrect",function() {
 			expect( function(){
 				data = QueryNew( "column1","VarChar",[ [ "a" ] ] );
-				workbook = s.new( xmlformat=true );
+				workbook = s.newXlsx();
 				s.addRows( workbook,data );
-				tempXlsPath=ExpandPath( "temp.xlsx" );;
-				s.write( workbook=workbook,filepath=tempXlsPath,overwrite=true,password="pass" );
-				s.read( src=tempXlsPath,format="query",password="parse" );
+				s.write( workbook=workbook,filepath=tempXlsxPath,overwrite=true,password="pass" );
+				s.read( src=tempXlsxPath,format="query",password="parse" );
 			}).toThrow( regex="Invalid password" );
 		});
 
