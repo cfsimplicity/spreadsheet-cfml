@@ -268,7 +268,7 @@ component{
 			}
 		}
 		else
-			var bytes=ToBinary( imageData );
+			var bytes = ToBinary( imageData );
 		var imageIndex = workbook.addPicture( bytes, JavaCast( "int", imageTypeIndex ) );
 		var clientAnchorClass = isXmlFormat( workbook )
 				? "org.apache.poi.xssf.usermodel.XSSFClientAnchor"
@@ -546,7 +546,7 @@ component{
 				continue;
 			}
 			for( var rowNumber = thisRange.startAt; rowNumber LTE thisRange.endAt; rowNumber++ )
-				deleteRow( workbook,rowNumber );
+				deleteRow( workbook, rowNumber );
 		}
 	}
 
@@ -595,9 +595,8 @@ component{
 				formatColumn( workbook, format, thisRange.startAt, style );
 				continue;
 			}
-			for( var columnNumber = thisRange.startAt; columnNumber LTE thisRange.endAt; columnNumber++ ){
+			for( var columnNumber = thisRange.startAt; columnNumber LTE thisRange.endAt; columnNumber++ )
 				formatColumn( workbook, format, columnNumber, style );
-			}
 		}
 	}
 
@@ -910,7 +909,7 @@ component{
 	}
 
 	public binary function readBinary( required workbook ){
-		var baos=CreateObject( "Java","org.apache.commons.io.output.ByteArrayOutputStream" ).init();
+		var baos = CreateObject( "Java","org.apache.commons.io.output.ByteArrayOutputStream" ).init();
 		workbook.write( baos );
 		baos.flush();
 		return baos.toByteArray();
@@ -1473,7 +1472,7 @@ component{
 
 	private void function deleteHiddenColumnsFromQuery( required sheet, required query result ){
 		var startIndex = ( sheet.totalColumnCount -1 );
-		for( var colIndex=startIndex; colIndex GTE 0; colIndex-- ){
+		for( var colIndex = startIndex; colIndex GTE 0; colIndex-- ){
 			if( !sheet.object.isColumnHidden( JavaCast( "integer", colIndex ) ) )
 				continue;
 			var columnNumber = ( colIndex +1 );
@@ -1497,7 +1496,7 @@ component{
 		/* NB: Not all spreadsheet programs support this type of encryption */
 		lock name="#filepath#" timeout=5 {
 			try{
-				var fs=loadPoi( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
+				var fs = loadPoi( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
 				/*
 					Need to ensure our poiLoader is maintained as the "contextLoader" so that when POI objects load other POI objects, they find them. Otherwise Lucee's loader would be used, which isn't aware of our POI library. JavaLoader supports this via a complicated "mixin" procedure: https://github.com/markmandel/JavaLoader/wiki/Switching-the-ThreadContextClassLoader
 				*/
@@ -1581,7 +1580,7 @@ component{
 	private void function doFillMergedCellsWithVisibleValue( required workbook, required sheet ){
 		if( !sheetHasMergedRegions( sheet ) )
 			return;
-		for( var regionIndex=0; regionIndex LT sheet.getNumMergedRegions(); regionIndex++ ){
+		for( var regionIndex = 0; regionIndex LT sheet.getNumMergedRegions(); regionIndex++ ){
 			var region = sheet.getMergedRegion( regionIndex );
 			var regionStartRowNumber = ( region.getFirstRow() +1 );
 			var regionEndRowNumber = ( region.getLastRow() +1 );
@@ -1679,7 +1678,7 @@ component{
 
 	private any function getDateUtil(){
 		if( IsNull( variables.dateUtil ) )
-			variables.dateUtil=loadPoi( "org.apache.poi.ss.usermodel.DateUtil" );
+			variables.dateUtil = loadPoi( "org.apache.poi.ss.usermodel.DateUtil" );
 		return variables.dateUtil;
 	}
 
@@ -1738,9 +1737,9 @@ component{
 	}
 
 	private numeric function getLastRowNum( required workbook ){
-		var lastRow=getActiveSheet( workbook ).getLastRowNum();
+		var lastRow = getActiveSheet( workbook ).getLastRowNum();
 		if( lastRow EQ 0 AND getActiveSheet( workbook ).getPhysicalNumberOfRows() EQ 0 )
-			return -1;//The sheet is empty. Return -1 instead of 0
+			return -1; //The sheet is empty. Return -1 instead of 0
 		return lastRow;
 	}
 
@@ -1750,7 +1749,6 @@ component{
 
 	private array function getQueryColumnFormats( required workbook, required query query ){
 		/* extract the query columns and data types  */
-		//var cell	  	= CreateObject( "Java","org.apache.poi.ss.usermodel.Cell" );
 		var formatter	= workbook.getCreationHelper().createDataFormat();
 		var metadata = GetMetaData( query );
 		/* assign default formats based on the data type of each column */
@@ -1914,7 +1912,7 @@ component{
 	  return values;
 	}
 
-	private string function queryToCsv( required query query,numeric headerRow,boolean includeHeaderRow ){
+	private string function queryToCsv( required query query, numeric headerRow, boolean includeHeaderRow ){
 		var result = CreateObject( "Java", "java.lang.StringBuilder" ).init();
 		var crlf = Chr( 13 ) & Chr( 10 );
 		var columns = query.ColumnArray();
@@ -1923,9 +1921,8 @@ component{
 			result.Append( generateCsvRow( columns ) );
 		for( var row in query ){
 			var rowValues = [];
-			for( column in columns ){
+			for( column in columns )
 				rowValues.Append( row[ column ] );
-			}
 			result.Append( crlf & generateCsvRow( rowValues ) );
 		}
 		return result.toString().Trim();
@@ -1963,7 +1960,7 @@ component{
 	}
 
 	private string function generateHtmlRow( required array values, boolean isHeader=false ){
-		var result=CreateObject( "Java", "java.lang.StringBuilder" ).init();
+		var result = CreateObject( "Java", "java.lang.StringBuilder" ).init();
 		result.Append( "<tr>" );
 		var columnTag = isHeader? "th": "td";
 		for( var value in values ){
@@ -2385,7 +2382,6 @@ component{
 					font.setColor( getColor( workbook, settingValue ) );
 					cellStyle.setFont( font );
 				break;
-				/*  TODO: this is returning the correct data format index from HSSFDataFormat but doesn't seem to have any effect on the cell. Could be that I'm testing with OpenOffice so I'll have to check things in MS Excel  */
 				case "dataformat":
 					cellStyle.setDataFormat( formatter.getFormat( JavaCast( "string", settingValue ) ) );
 				break;
@@ -2413,11 +2409,11 @@ component{
 					font.setFontHeightInPoints( JavaCast( "int", settingValue ) );
 					cellStyle.setFont( font );
 				break;
-				/*  TODO: I may just not understand what's supposed to be happening here, but this doesn't seem to do anything */
+				/*  TODO: Doesn't seem to do anything */
 				case "hidden":
 					cellStyle.setHidden( JavaCast( "boolean", settingValue ) );
 				break;
-				/*  TODO: I may just not understand what's supposed to be happening here, but this doesn't seem to do anything */
+				/*  TODO: Doesn't seem to do anything */
 				case "indent":
 					cellStyle.setIndention( JavaCast( "int", settingValue ) );
 				break;
@@ -2433,11 +2429,11 @@ component{
 				case "leftbordercolor":
 					cellStyle.setLeftBorderColor( getColor( workbook, settingValue ) );
 				break;
-				/*  TODO: I may just not understand what's supposed to be happening here, but this doesn't seem to do anything */
+				/*  TODO: Doesn't seem to do anything */
 				case "locked":
 					cellStyle.setLocked( JavaCast( "boolean", settingValue ) );
 				break;
-				/* Implement when POI 3.16 available */
+				/* TODO Implement when POI 3.16 available */
 				/* case "quoteprefixed":
 					cellStyle.setQuotePrefixed( JavaCast( "boolean", settingValue ) );
 				break; */
