@@ -915,7 +915,7 @@ component{
 		return baos.toByteArray();
 	}
 
-	public void function removeSheet( required workbook,required string sheetName ){
+	public void function removeSheet( required workbook, required string sheetName ){
 		validateSheetName( sheetName );
 		validateSheetExistsWithName( workbook, sheetName );
 		arguments.sheetNumber = ( workbook.getSheetIndex( sheetName ) +1 );
