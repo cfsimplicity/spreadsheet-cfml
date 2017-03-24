@@ -1,3 +1,7 @@
+## 0.11.1 - 24 March 2017
+
+- Update bundled JavaLoader to 1.2
+
 ## 0.11.0 - 9 March 2017
 
 - Fix: \#102 Fillpattern formatting not working.
