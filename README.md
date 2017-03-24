@@ -2,14 +2,14 @@
 
 Adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo extension, this is a standalone library for reading, creating and formatting spreadsheets in [Lucee Server](http://lucee.org/) which does not require installation into each web context.
 
-##Rationale
+## Rationale
 
 I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for two main reasons:
 
 1. It was designed for an older version of Railo (Lucee) and (at the time of writing) installation as an extension fails in the current version.
 2. It can be installed manually, but this is cumbersome and needs doing in each web context followed by a server restart.
 
-##Benefits over the official extension
+## Benefits over the official extension
 
 - No installation/restart required, either at the server or individual web context level.
 - Invoking the library doesn't create a workbook instance (a.k.a. *Spreadsheet Object*), meaning:
@@ -23,12 +23,12 @@ I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for
 - No dependency on Lucee within the included jar files.
 - Written entirely in CFML script.
 
-##Downsides
+## Downsides
 
 - Existing code needs adapting to invoke the library. Existing CFML spreadsheet functions and the `<cfspreadsheet>` tag won't work with it.
 - Populating a spreadsheet from CSV is not supported.
 
-##Usage
+## Usage
 
 Note that this is not a Lucee extension, so **does not need to be installed**. To use it, simply copy the files/folders to a location where `Spreadsheet.cfc` can be called by your application code.
 
@@ -54,7 +54,7 @@ You will probably want to place the spreadsheet library files in a central locat
 
 [Full function reference](https://github.com/cfsimplicity/lucee-spreadsheet/wiki)
 
-##Supported ColdFusion functions
+## Supported ColdFusion functions
 
 * [addColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addColumn)
 * [addFreezePane](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addFreezePane)
@@ -100,7 +100,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [shiftRows](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/shiftRows)
 * [write](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/write)
 
-###Extra functions not available in ColdFusion
+### Extra functions not available in ColdFusion
 
 * [clearCell](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCell)
 * [clearCellRange](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCellRange)
@@ -116,7 +116,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [setReadOnly](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setReadOnly)
 * [showColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/showColumn)
 
-###Additional Convenience methods
+### Additional Convenience methods
 
 * [binaryFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/binaryFromQuery)
 * [download](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/download)
@@ -127,7 +127,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [workbookFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/workbookFromQuery)
 * [writeFileFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/writeFileFromQuery)
 
-###Enhanced Read() method
+### Enhanced Read() method
 
 In Adobe ColdFusion, the `SpreadsheetRead()` script function is limited to just returning a spreadsheet object, whereas the `<cfspreadsheet action="read">` tag has a range of options for reading and returning data from a spreadsheet file. 
 
@@ -148,7 +148,7 @@ The `read()` method also features the following additional options not available
 
 [Full documentation of read()](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/read)
 
-###Date formats
+### Date formats
 
 The following international date masks are used by default to read and write cell values formatted as dates:
 
@@ -165,7 +165,7 @@ spreadsheet = New spreadsheetLibrary.spreadsheet( dateFormats={ DATE: "mm/dd/yyy
 </cfscript>
 ```
 
-###JavaLoader
+### JavaLoader
 
 The library requires and includes Mark Mandel's [JavaLoader](https://github.com/markmandel/JavaLoader), and will use the bundled version by default. If you already have JavaLoader available on your server and prefer to use that rather than duplicate the files, simply specify the dot path of the `JavaLoader.cfc` component as the `javaLoaderDotPath` init argument. For example:
 
@@ -175,7 +175,7 @@ spreadsheet = New spreadsheetLibrary.spreadsheet( javaLoaderDotPath="myLibrary.j
 </cfscript>
 ```
 
-##CommandBox Installation
+## CommandBox Installation
 
 You can also download this library through CommandBox.
 ```
@@ -189,18 +189,18 @@ spreadsheet = wirebox.getInstance("Spreadsheet@lucee-spreadsheet");
 spreadsheet = wirebox.getInstance("LuceeSpreadsheet");
 ```
 
-##Test Suite
+## Test Suite
 The automated tests require [TestBox 2.1](https://github.com/Ortus-Solutions/TestBox) or later. You will need to create an application mapping for `/testbox`
 
-##Credits
+## Credits
 
 The code is very largely based on the work of [TeamCfAdvance](https://github.com/teamcfadvance/), to whom credit and thanks are due. Ben Nadel's [POI Utility](https://github.com/bennadel/POIUtility.cfc) was also used as a basis for parts of the `read` functionality.
 
 [JavaLoader](https://github.com/markmandel/JavaLoader) is by Mark Mandel.
 
-##Legal
+## Legal
 
-###The MIT License (MIT)
+### The MIT License (MIT)
 
 Copyright (c) 2015-17 Julian Halliwell
 
