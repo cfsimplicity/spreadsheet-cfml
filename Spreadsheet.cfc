@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "0.11.1";
+	variables.version = "1.1.0";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -10,12 +10,18 @@ component{
 		,TIMESTAMP: "yyyy-mm-dd hh:mm:ss"
 	};
 	variables.exceptionType = "cfsimplicity.lucee.spreadsheet";
+	variables.isLucee5plus = server.KeyExists( "lucee" ) AND ( server.lucee.version.Left( 1 ) >= 5 );
+	variables.engineSupportsDynamicClassLoading = isLucee5plus;
 
 	function init( struct dateFormats, string javaLoaderDotPath ){
 		if( arguments.KeyExists( "dateFormats" ) )
 			overrideDefaultDateFormats( arguments.dateFormats );
 		if( arguments.KeyExists( "javaLoaderDotPath" ) ) // Option to use the dot path of an existing javaloader installation to save duplication
 			variables.javaLoaderDotPath = arguments.javaLoaderDotPath;
+		if( arguments.KeyExists( "requiresJavaLoader" ) )
+			variables.requiresJavaLoader = arguments.requiresJavaLoader;
+		else
+			variables.requiresJavaLoader = !engineSupportsDynamicClassLoading;
 		return this;
 	}
 
@@ -37,6 +43,10 @@ component{
 
 	public struct function getDateFormats(){
 		return dateFormats;
+	}
+
+	public boolean function getRequiresJavaLoader(){
+		return requiresJavaLoader;
 	}
 
 	/* MAIN PUBLIC API */
@@ -1835,23 +1845,36 @@ component{
 		return input.getClass().getName() IS "java.lang.String";
 	}
 
+	private array function getPoiJarPaths(){
+		var result = [];
+		var libPath = GetDirectoryFromPath( GetCurrentTemplatePath() ) & "lib/";
+		result.Append( libPath & "poi-3.15.jar" );
+		result.Append( libPath & "poi-ooxml-3.15.jar" );
+		result.Append( libPath & "poi-ooxml-schemas-3.15.jar" );
+		/* Note the above is a reduced set of the most commonly used schemas. Some xml operations require the FULL jar see http://poi.apache.org/faq.html#faq-N10025
+		//result.Append( libPath & "ooxml-schemas-1.3.jar" ); //Needs to be downloaded but it's 15MB
+		*/
+		result.Append( libPath & "xmlbeans-2.6.0.jar" );
+		result.Append( libPath & "commons-collections4-4.1.jar" );
+		return result;
+	}
+
 	private function loadPoi( required string javaclass ){
-		if( !server.KeyExists( poiLoaderName ) ){
-			var paths = [];
-			var libPath = GetDirectoryFromPath( GetCurrentTemplatePath() ) & "lib/";
-			paths.Append( libPath & "poi-3.15.jar" );
-			paths.Append( libPath & "poi-ooxml-3.15.jar" );
-			paths.Append( libPath & "poi-ooxml-schemas-3.15.jar" );
-			/* Note the above is a reduced set of the most commonly used schemas. Some xml operations require the FULL jar see http://poi.apache.org/faq.html#faq-N10025
-			//paths.Append( libPath & "ooxml-schemas-1.3.jar" ); //Needs to be downloaded but it's 15MB
-			*/
-			paths.Append( libPath & "xmlbeans-2.6.0.jar" );
-			paths.Append( libPath & "commons-collections4-4.1.jar" );
-			if( !server.KeyExists( poiLoaderName ) ){
-				server[ poiLoaderName ] = CreateObject( "component", javaLoaderDotPath ).init( loadPaths=paths, loadColdFusionClassPath=true, trustedSource=true );
-			}
-		}
-		return server[ poiLoaderName ].create( arguments.javaclass );
+		if( engineSupportsDynamicClassLoading )
+			return CreateObject( "java", javaclass, getPoiJarPaths() );
+		if( !requiresJavaLoader ){ //POI jars should be in the class path
+			try
+				return CreateObject( "java", javaclass );
+			catch( any exception )
+				loadPoiUsingJavaLoader( javaclass );
+		}	
+		return loadPoiUsingJavaLoader( javaclass );
+	}
+
+	private function loadPoiUsingJavaLoader( required string javaclass ){
+		if( !server.KeyExists( poiLoaderName ) )
+			server[ poiLoaderName ] = CreateObject( "component", javaLoaderDotPath ).init( loadPaths=getPoiJarPaths(), loadColdFusionClassPath=true, trustedSource=true );
+		return server[ poiLoaderName ].create( javaclass );
 	}
 
 	private void function moveSheet( required workbook, required string sheetName, required string moveToIndex ){
