@@ -1464,8 +1464,11 @@ component{
 			try{
 				var file = CreateObject( "java", "java.io.File" ).init( filepath );
 				var fs = loadPoi( "org.apache.poi.poifs.filesystem.NPOIFSFileSystem" ).init( file );
-				/* See encryptFile() for explanation of the following line */
-				var info = New decryption( server[ poiLoaderName ], fs ).loadInfoWithSwitchedContextLoader();
+				if( requiresJavaLoader )
+					/* See encryptFile() for explanation of the following line */
+					var info = New decryption( server[ poiLoaderName ], fs ).loadInfoWithSwitchedContextLoader();
+				else	
+					var info = loadPoi( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( fs );;
 				var decryptor = loadPoi( "org.apache.poi.poifs.crypt.Decryptor" ).getInstance( info );
 				if( decryptor.verifyPassword( password ) )
 					return loadPoi( "org.apache.poi.xssf.usermodel.XSSFWorkbook" ).init( decryptor.getDataStream( fs ) );
@@ -1507,10 +1510,22 @@ component{
 		lock name="#filepath#" timeout=5 {
 			try{
 				var fs = loadPoi( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
-				/*
-					Need to ensure our poiLoader is maintained as the "contextLoader" so that when POI objects load other POI objects, they find them. Otherwise Lucee's loader would be used, which isn't aware of our POI library. JavaLoader supports this via a complicated "mixin" procedure: https://github.com/markmandel/JavaLoader/wiki/Switching-the-ThreadContextClassLoader
-				*/
-				var info = New encryption( server[ poiLoaderName ], algorithm ).loadInfoWithSwitchedContextLoader();
+				if( requiresJavaLoader )
+					/*
+						Need to ensure our poiLoader is maintained as the "contextLoader" so that when POI objects load other POI objects, they find them. Otherwise Lucee's loader would be used, which isn't aware of our POI library. JavaLoader supports this via a complicated "mixin" procedure: https://github.com/markmandel/JavaLoader/wiki/Switching-the-ThreadContextClassLoader
+					*/
+					var info = New encryption( server[ poiLoaderName ], algorithm ).loadInfoWithSwitchedContextLoader();
+				else {
+					var mode = loadPoi( "org.apache.poi.poifs.crypt.EncryptionMode" );
+					switch( algorithm ){
+						case "agile":
+							var info = loadPoi( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.agile );
+						case "standard":
+							var info = loadPoi( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.standard );
+						case "binaryRC4":
+							var info = loadPoi( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.binaryRC4 );
+					}
+				}
 				var encryptor = info.getEncryptor();
 				encryptor.confirmPassword( JavaCast( "string", password ) );
 				var opcAccess = loadPoi( "org.apache.poi.openxml4j.opc.PackageAccess" );
