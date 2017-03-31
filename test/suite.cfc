@@ -1,7 +1,9 @@
 component extends="testbox.system.BaseSpec"{
 
+	//Allow universal access including outside tests
+	variables.s = New root.Spreadsheet();
+
 	function beforeAll(){
-		variables.s = New root.Spreadsheet();
 	  makePublic( s, "sheetToQuery" );
 	  variables.tempXlsPath = ExpandPath( "temp.xls" );
 	  variables.tempXlsxPath = ExpandPath( "temp.xlsx" );

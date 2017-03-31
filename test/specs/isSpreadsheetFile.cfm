@@ -20,7 +20,7 @@ describe( "isSpreadsheetFile",function(){
 		it( "Throws an exception if the file doesn't exist",function() {
 			expect( function(){
 				var path=ExpandPath( "/root/test/files/nonexistant.xls" );
-				s.isSpreadsheetFile( path )
+				s.isSpreadsheetFile( path );
 			}).toThrow( regex="Non-existent file" );
 		});
 	});

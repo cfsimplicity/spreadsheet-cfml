@@ -48,7 +48,7 @@ describe( "addColumn",function(){
 		s.addColumn( workbook,"2" );
 		s.addColumn( workbook=workbook,data=true,startColumn=2 );
 		s.addColumn( workbook=workbook,data=dateValue,startColumn=3 );
-		expected = QueryNew( "column1,column2,column3","Numeric,Boolean,Date",[ [ 2,true,dateValue ] ] );
+		expected = QueryNew( "column1,column2,column3","Integer,Bit,Date",[ [ 2,true,dateValue ] ] );
 		actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 		expect( IsNumeric( s.getCellValue( workbook,1,1 ) ) ).tobeTrue();

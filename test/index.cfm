@@ -1,5 +1,10 @@
 <cfscript>
 paths = [ "root.test.suite" ];
-testRunner = New testbox.system.TestBox( paths );
-echo( testRunner.run() );
+try{
+	testRunner = New testbox.system.TestBox( paths );
+	WriteOutput( testRunner.run() );
+}
+catch( any exception ){
+	WriteDump( exception );
+}
 </cfscript>

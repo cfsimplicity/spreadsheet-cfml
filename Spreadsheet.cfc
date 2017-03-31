@@ -11,7 +11,9 @@ component{
 	};
 	variables.exceptionType = "cfsimplicity.lucee.spreadsheet";
 	variables.isLucee5plus = server.KeyExists( "lucee" ) AND ( server.lucee.version.Left( 1 ) >= 5 );
+	variables.isACF = server.coldfusion.productname IS "ColdFusion Server";
 	variables.engineSupportsDynamicClassLoading = isLucee5plus;
+	variables.engineSupportsEncryption = !isACF;
 
 	function init( struct dateFormats, string javaLoaderDotPath ){
 		if( arguments.KeyExists( "dateFormats" ) )
@@ -49,6 +51,14 @@ component{
 		return requiresJavaLoader;
 	}
 
+	public boolean function getEngineSupportsDynamicClassLoading(){
+		return engineSupportsDynamicClassLoading;
+	}
+
+	public boolean function getEngineSupportsEncryption(){
+		return engineSupportsEncryption;
+	}
+
 	/* MAIN PUBLIC API */
 
 	/* Convenenience */
@@ -56,7 +66,7 @@ component{
 	public any function workbookFromQuery( required query data,boolean addHeaderRow=true,boldHeaderRow=true,xmlFormat=false ){
 		var workbook = new( xmlFormat=xmlFormat );
 		if( addHeaderRow ){
-			var columns = QueryColumnArray( data );
+			var columns = _QueryColumnArray( data );
 			addRow( workbook, columns.ToList() );
 			if( boldHeaderRow )
 				formatRow( workbook, { bold: true }, 1 );
@@ -248,10 +258,12 @@ component{
 		if( arguments.KeyExists( "filepath" ) ){
 			if( !FileExists( filepath ) )
 				throw( type=exceptionType, message="Non-existent file", detail="The specified file does not exist." );
-			try
+			try{
 				arguments.imageType = ListLast( FileGetMimeType( filepath ), "/" );
-			catch( any exception )
+			}
+			catch( any exception ){
 				throw( type=exceptionType, message="Could Not Determine Image Type", detail="An image type could not be determined from the filepath provided" );
+			}
 		}
 		else if( !arguments.KeyExists( "imageType" ) )
 			throw( type=exceptionType,message="Could Not Determine Image Type",detail="An image type could not be determined from the filepath or imagetype provided" );
@@ -425,7 +437,7 @@ component{
 			}
 		}
 		if( includeQueryColumnNames ){
-			var columnNames = QueryColumnArray( data );
+			var columnNames = _QueryColumnArray( data );
 			var delimiter = "|";
 			var columnNamesList = columnNames.ToList( delimiter );
 			addRow( workbook=workbook, data=columnNamesList, row=insertAtRowIndex+1, delimiter=delimiter );
@@ -696,10 +708,12 @@ component{
 					row: ( cell.getRowIndex() + 1 )
 					,column: ( cell.getColumnIndex() + 1 )
 				};
-				try
+				try{
 					formulaStruct.formula=cell.getCellFormula();
-				catch( any exception )
+				}
+				catch( any exception ){
 					formulaStruct.formula = "";
+				}
 				if( formulaStruct.formula.Len() )
 					formulas.Append( formulaStruct );
 			}
@@ -767,7 +781,7 @@ component{
 			* SHEETNAMES
 			* SPREADSHEETTYPE
 		*/
-		if( isSpreadsheetObject( arguments[ 1 ] ) )
+		if( this.isSpreadsheetObject( arguments[ 1 ] ) ) //use this scope to avoid clash with ACF built-in function
 			var workbook = arguments[ 1 ];
 		else
 			var workbook = workbookFromFile( arguments[ 1 ] );
@@ -792,10 +806,12 @@ component{
 	public boolean function isSpreadsheetFile( required string path ){
 		if( !FileExists( path ) )
 			throw( type=exceptionType, message="Non-existent file", detail="Cannot find the file #path#." );
-		try
+		try{
 			var workbook = workbookFromFile( path );
-		catch( cfsimplicity.lucee.spreadsheet.invalidFile exception )
+		}
+		catch( cfsimplicity.lucee.spreadsheet.invalidFile exception ){
 			return false;
+		}
 		return true;
 	}
 
@@ -876,6 +892,8 @@ component{
 		if( !FileExists( src ) )
 			throw( type=exceptionType, message="Non-existent file", detail="Cannot find the file #src#." );
 		var passwordProtected = ( arguments.KeyExists( "password") AND !password.Trim().IsEmpty() );
+		if( passwordProtected AND !engineSupportsEncryption )
+			throw( type=exceptionType, message="Reading password protected files is not supported for Adobe ColdFusion", detail="Reading password protected files currently only works in Lucee, not ColdFusion" );
 		var workbook = passwordProtected? decryptFile( src, password ): workbookFromFile( src );
 		if( arguments.KeyExists( "sheetName" ) )
 			setActiveSheet( workbook=workbook,sheetName=sheetName );
@@ -1268,6 +1286,8 @@ component{
 		if( !overwrite AND FileExists( filepath ) )
 			throw( type=exceptionType, message="File already exists", detail="The file path specified already exists. Use 'overwrite=true' if you wish to overwrite it." );
 		var passwordProtect = ( arguments.KeyExists( "password" ) AND !password.Trim().IsEmpty() );
+		if( passwordProtect AND !engineSupportsEncryption )
+			throw( type=exceptionType, message="Password protection is not supported for Adobe ColdFusion", detail="Password protection currently only works in Lucee, not ColdFusion" );
 		if( passwordProtect AND isBinaryFormat( workbook ) )
 			throw( type=exceptionType, message="Whole file password protection is not supported for binary workbooks", detail="Password protection only works with XML ('xlsx') workbooks." );
 		lock name="#filepath#" timeout=5{
@@ -1438,8 +1458,9 @@ component{
 		if( overwrite AND !IsNull( row ) )
 			getActiveSheet( workbook ).removeRow( row ); /* forcibly remove existing row and all cells  */
 		if( overwrite OR IsNull( getActiveSheet( workbook ).getRow( JavaCast( "int", rowNum ) ) ) ){
-			try
+			try{
 				row = getActiveSheet( workbook ).createRow( JavaCast( "int", rowNum ) );
+			}
 			catch( java.lang.IllegalArgumentException exception ){
 				if( exception.message.FindNoCase( "Invalid row number (65536)" ) )
 					throw( type=exceptionType, message="Too many rows", detail="Binary spreadsheets are limited to 65535 rows. Consider using an XML format spreadsheet instead." );
@@ -1474,8 +1495,9 @@ component{
 					return loadPoi( "org.apache.poi.xssf.usermodel.XSSFWorkbook" ).init( decryptor.getDataStream( fs ) );
 				throw( type=exceptionType,message="Invalid password",detail="The file cannot be read because the password is incorrect." );
 			}
-			catch( org.apache.poi.poifs.filesystem.NotOLE2FileException exception )
+			catch( org.apache.poi.poifs.filesystem.NotOLE2FileException exception ){
 				throw( type=exceptionType, message="Invalid spreadsheet file", detail="The file #filepath# does not appear to be a spreadsheet" );
+			}
 			finally{
 				if( local.KeyExists( "fs" ) )
 					fs.close();
@@ -1483,16 +1505,17 @@ component{
 		}
 	}
 
-	private void function deleteHiddenColumnsFromQuery( required sheet, required query result ){
+	private query function deleteHiddenColumnsFromQuery( required sheet, required query result ){
 		var startIndex = ( sheet.totalColumnCount -1 );
 		for( var colIndex = startIndex; colIndex GTE 0; colIndex-- ){
-			if( !sheet.object.isColumnHidden( JavaCast( "integer", colIndex ) ) )
+			if( !sheet.object.isColumnHidden( JavaCast( "int", colIndex ) ) )
 				continue;
 			var columnNumber = ( colIndex +1 );
-			QueryDeleteColumn( result,sheet.columnNames[ columnNumber ] );
+			result = _QueryDeleteColumn( result, sheet.columnNames[ columnNumber ] );
 			sheet.totalColumnCount--;
 			sheet.columnNames.deleteAt( columnNumber );
 		}
+		return result;
 	}
 
 	private void function deleteSheetAtIndex( required workbook, required numeric sheetIndex ){
@@ -1520,10 +1543,13 @@ component{
 					switch( algorithm ){
 						case "agile":
 							var info = loadPoi( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.agile );
+							break;
 						case "standard":
 							var info = loadPoi( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.standard );
+							break;
 						case "binaryRC4":
 							var info = loadPoi( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.binaryRC4 );
+							break;
 					}
 				}
 				var encryptor = info.getEncryptor();
@@ -1686,19 +1712,23 @@ component{
 		}
 		if( cellType EQ cell.CELL_TYPE_FORMULA ){
 			var formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
-			try
+			try{
 				return getFormatter().formatCellValue( cell, formulaEvaluator );
-			catch( any exception )
+			}
+			catch( any exception ){
 				throw( type=exceptionType, message="Failed to run formula", detail="There is a problem with the formula in sheet #cell.getSheet().getSheetName()# row #( cell.getRowIndex() +1 )# column #( cell.getColumnIndex() +1 )#");
+			}
 		}
 		if( cellType EQ cell.CELL_TYPE_BOOLEAN )
 			return cell.getBooleanCellValue();
 	 	if( cellType EQ cell.CELL_TYPE_BLANK )
 			return "";
-		try
+		try{
 			return cell.getStringCellValue();
-		catch( any exception )
+		}
+		catch( any exception ){
 			return "";
+		}
 	}
 
 	private any function getDateUtil(){
@@ -1778,15 +1808,16 @@ component{
 		var metadata = GetMetaData( query );
 		/* assign default formats based on the data type of each column */
 		for( var col in metadata ){
-			switch( col.typeName ){
+			var columnType = col.typeName?: "";// typename is missing in ACF if not specified in the query
+			switch( columnType ){
 				/* apply basic formatting to dates and times for increased readability */
 				case "DATE": case "TIMESTAMP":
 					col.cellDataType = "DATE";
-					col.defaultCellStyle = buildCellStyle( workbook, { dataFormat=variables.dateFormats[ col.typeName ] } );
+					col.defaultCellStyle = buildCellStyle( workbook, { dataFormat=variables.dateFormats[ columnType ] } );
 				break;
 				case "TIME":
 					col.cellDataType = "TIME";
-					col.defaultCellStyle = buildCellStyle( workbook, { dataFormat=variables.dateFormats[ col.typeName ] } );
+					col.defaultCellStyle = buildCellStyle( workbook, { dataFormat=variables.dateFormats[ columnType ] } );
 				break;
 				/* Note: Excel only supports "double" for numbers. Casting very large DECIMIAL/NUMERIC or BIGINT values to double may result in a loss of precision or conversion to NEGATIVE_INFINITY / POSITIVE_INFINITY. */
 				case "DECIMAL": case "BIGINT": case "NUMERIC": case "DOUBLE": case "FLOAT": case "INTEGER": case "REAL": case "SMALLINT": case "TINYINT":
@@ -1878,10 +1909,12 @@ component{
 		if( engineSupportsDynamicClassLoading )
 			return CreateObject( "java", javaclass, getPoiJarPaths() );
 		if( !requiresJavaLoader ){ //POI jars should be in the class path
-			try
+			try{
 				return CreateObject( "java", javaclass );
-			catch( any exception )
+			}
+			catch( any exception ){
 				loadPoiUsingJavaLoader( javaclass );
+			}
 		}	
 		return loadPoiUsingJavaLoader( javaclass );
 	}
@@ -1916,8 +1949,8 @@ component{
 		  currentValue = Trim( elements[ i ] );
 		  nextValue = i < maxElements ? elements[ i + 1 ] : "";
 		  var isComplete = false;
-		  var hasLeadingQuote = currentValue.hasPrefix( "'" );
-		  var hasTrailingQuote = currentValue.hasSuffix( "'" );
+		  var hasLeadingQuote = ( currentValue.Left( 1 ) IS "'" );
+		  var hasTrailingQuote = ( currentValue.Right( 1 ) IS "'" );
 		  var isFinalElement = ( i == maxElements );
 		  if( hasLeadingQuote )
 			  isEmbeddedValue = true;
@@ -1928,7 +1961,7 @@ component{
 			  * it is the final value OR
 			  * the next value is embedded in quotes
 		  */
-		  if( !isEmbeddedValue || isFinalElement || nextValue.hasPrefix( "'" ) )
+		  if( !isEmbeddedValue || isFinalElement || ( nextValue.Left( 1 ) IS "'" ) )
 			  isComplete = true;
 		  if( isEmbeddedValue || isComplete ){
 			  // if this a partial value, append the delimiter
@@ -1953,7 +1986,7 @@ component{
 	private string function queryToCsv( required query query, numeric headerRow, boolean includeHeaderRow ){
 		var result = CreateObject( "Java", "java.lang.StringBuilder" ).init();
 		var crlf = Chr( 13 ) & Chr( 10 );
-		var columns = query.ColumnArray();
+		var columns = _QueryColumnArray( query );
 		var hasHeaderRow = ( arguments.KeyExists( "headerRow" ) AND Val( headerRow ) );
 		if( hasHeaderRow )
 			result.Append( generateCsvRow( columns ) );
@@ -1979,7 +2012,7 @@ component{
 
 	private string function queryToHtml( required query query, numeric headerRow, boolean includeHeaderRow ){
 		var result = CreateObject( "Java", "java.lang.StringBuilder" ).init();
-		var columns=query.ColumnArray();
+		var columns = _QueryColumnArray( query );
 		var hasHeaderRow = ( arguments.KeyExists( "headerRow" ) AND Val( headerRow ) );
 		if( hasHeaderRow ){
 			result.Append( "<thead>" );
@@ -2125,11 +2158,14 @@ component{
 		}
 		//generate the query columns
 		if( arguments.KeyExists( "columnNames" ) AND arguments.columnNames.Len() ){
-			arguments.columnNames=arguments.columnNames.ListToArray();
+			arguments.columnNames = arguments.columnNames.ListToArray();
+			var specifiedColumnCount = columnNames.Len();
 			for( var i = 1; i LTE sheet.totalColumnCount; i++ ){
-				var columnName = columnNames[ i ]?: "column" & i;
+				// ACF11 elvis operator doesn't work here for some reason. Forced to use longer ternery syntax. IsNull/IsDefined doesn't work either.
+				var columnName = ( i LTE specifiedColumnCount )? columnNames[ i ]: "column" & i;
 				sheet.columnNames.Append( columnName );
 			}
+
 		}
 		else if( sheet.hasHeaderRow ){
 			var headerRowObject = sheet.object.GetRow( JavaCast( "int", sheet.headerRowIndex ) );
@@ -2147,18 +2183,19 @@ component{
 			for( var i=1; i LTE sheet.totalColumnCount; i++ )
 				sheet.columnNames.Append( "column" & i );
 		}
-		var result=QueryNew( sheet.columnNames,"", sheet.data );
+
+		var result = QueryNew( sheet.columnNames.ToList(), "", sheet.data );
 		if( !includeHiddenColumns ){
-			deleteHiddenColumnsFromQuery( sheet, result );
+			result = deleteHiddenColumnsFromQuery( sheet, result );
 			if( sheet.totalColumnCount EQ 0 )
-				return Query();// all columns were hidden: return a blank query.
+				return QueryNew( "" );// all columns were hidden: return a blank query.
 		}
 		return result;
 	}
 
 	private void function toggleColumnHidden( required workbook, required numeric columnNumber, required boolean state ){
 		var sheet = getActiveSheet( workbook );
-		sheet.setColumnHidden( JavaCast( "integer", columnNumber-1 ), JavaCast( "boolean", state ) );
+		sheet.setColumnHidden( JavaCast( "int", columnNumber-1 ), JavaCast( "boolean", state ) );
 	}
 
 	private void function validateSheetExistsWithName( required workbook,required string sheetName ){
@@ -2175,10 +2212,12 @@ component{
 
 	private void function validateSheetName( required string sheetName ){
 		var poiTool = loadPoi( "org.apache.poi.ss.util.WorkbookUtil" );
-		try
+		try{
 			poiTool.validateSheetName( JavaCast( "String",sheetName ) );
-		catch( "java.lang.IllegalArgumentException" exception )
+		}
+		catch( "java.lang.IllegalArgumentException" exception ){
 			throw( type=exceptionType, message="Invalid characters in sheet name", detail=exception.message );
+		}
 	}
 
 	private void function validateSheetNameOrNumberWasProvided(){
@@ -2198,13 +2237,18 @@ component{
 			}
 			return workbook;
 		}
-		catch( org.apache.poi.openxml4j.exceptions.InvalidFormatException exception )
+		catch( org.apache.poi.openxml4j.exceptions.InvalidFormatException exception ){
 			throw( type=invalidFileExceptionType, message="Invalid spreadsheet file", detail="The file #path# does not appear to be a spreadsheet" );
-		catch ( org.apache.poi.hssf.OldExcelFormatException exception )
+		}
+		catch( org.apache.poi.hssf.OldExcelFormatException exception ){
 			throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
+		}
 		catch( any exception ){
-			if( exception.message CONTAINS "Your InputStream was neither" ) //For ACF which doesn't return the correct exception type
+			//For ACF which doesn't return the correct exception types
+			if( exception.message CONTAINS "Your InputStream was neither" ) 
 				throw( type=invalidFileExceptionType, message="Invalid spreadsheet file", detail="The file #path# does not appear to be a spreadsheet" );
+			if( exception.message CONTAINS "spreadsheet seems to be Excel 5" ) 
+				throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
 			rethrow;
 		}
 		finally{
@@ -2564,6 +2608,46 @@ component{
 			,JavaCast( "int", rgb[ 3 ] )
 		);
 		return similarExistingColor.getIndex();
+	}
+
+	private array function _QueryColumnArray( required query q ){
+		try{
+			return QueryColumnArray( q ); //Lucee
+		}
+		catch( any exception ){
+			if( exception.message CONTAINS "undefined" )
+				return q.ColumnList.ListToArray(); //ACF
+			rethrow;
+		}
+	}
+
+	private query function _QueryDeleteColumn( required query q, required string columnToDelete ){
+		try{
+			QueryDeleteColumn( q, columnToDelete ); //Lucee
+			return q;
+		}
+		catch( any exception ){
+			if( !exception.message CONTAINS "undefined" )
+				rethrow;
+			//ACF
+			var columnMetaData = GetMetaData( q );
+			var columns = [];
+			var columnTypes = [];
+			for( var column in columnMetaData ){
+				if( column.name IS columnToDelete )
+					continue;
+				columns.Append( column.name );
+				columnTypes.Append( column.typeName?: "VarChar" );
+			}
+			data = [];
+			for( row in q ){
+				newRow = {};
+				for( column in columns )
+					newRow[ column ] = row[ column ];
+				data.Append( newRow );
+			}
+			return QueryNew( columns.ToList(), columnTypes.ToList(), data );
+		}
 	}
 
 }

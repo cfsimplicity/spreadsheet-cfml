@@ -108,7 +108,7 @@ describe( "read",function(){
 
 	it( "Writes and reads numeric, boolean, date and leading zero values correctly",function() {
 		var dateValue=CreateDate( 2015,04,12 );
-		var data=QueryNew( "column1,column2,column3,column4,column5","Numeric,Numeric,Boolean,Date,VarChar",[ [ 2,0,true,dateValue,"01" ] ] );
+		var data=QueryNew( "column1,column2,column3,column4,column5","Integer,Integer,Bit,Date,VarChar",[ [ 2,0,true,dateValue,"01" ] ] );
 		workbook=s.new();
 		s.addRows( workbook,data );
 		s.write( workbook,tempXlsPath,true );
@@ -292,19 +292,21 @@ describe( "read",function(){
 		s.hideColumn( workbook,2 );
 		s.write( workbook,tempXlsPath,true );
 		var actual	=	s.read( src=tempXlsPath,format="query",includeHiddenColumns=false );
-		expected=Query();
+		expected=QueryNew( "" );
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Can write and read an encrypted OOXML file",function() {
-		data = QueryNew( "column1","VarChar",[ [ "a" ] ] );
-		workbook = s.newXlsx();
-		s.addRows( workbook,data );
-		s.write( workbook=workbook,filepath=tempXlsxPath,overwrite=true,password="pass" );
-		expected = data;
-		actual = s.read( src=tempXlsxPath,format="query",password="pass" );
-		expect( actual ).toBe( expected );
-	});
+	if( variables.s.getEngineSupportsEncryption() ){
+		it( "Can write and read an encrypted OOXML file",function() {
+			data = QueryNew( "column1","VarChar",[ [ "a" ] ] );
+			workbook = s.newXlsx();
+			s.addRows( workbook,data );
+			s.write( workbook=workbook,filepath=tempXlsxPath,overwrite=true,password="pass" );
+			expected = data;
+			actual = s.read( src=tempXlsxPath,format="query",password="pass" );
+			expect( actual ).toBe( expected );
+		});
+	}
 
 	it( "Can read a spreadsheet containing a formula",function() {
 		workbook=s.new();
@@ -312,7 +314,7 @@ describe( "read",function(){
 		var theFormula="SUM(A1:A2)";
 		s.setCellFormula( workbook,theFormula,3,1 );
 		s.write( workbook=workbook,filepath=tempXlsPath,overwrite=true );
-		expected=QueryNew( "column1","numeric", [ [1],[1],[2] ] );
+		expected=QueryNew( "column1","Integer", [ [1],[1],[2] ] );
 		actual=s.read( src=tempXlsPath,format="query" );
 		expect( actual ).toBe( expected );
 	});
@@ -361,22 +363,26 @@ describe( "read",function(){
 			}).toThrow( regex="Invalid sheet|out of range" );
 		});
 
-		it( "Throws an exception if a password is supplied for a binary xls file",function() {
-			expect( function(){
-				var path = ExpandPath( "/root/test/files/test.xls" );
-				s.read( src=path,format="query",password="pass" );
-			}).toThrow( regex="Invalid file type" );
-		});
+		if( variables.s.getEngineSupportsEncryption() ){
 
-		it( "Throws an exception if the password for an encrypted file is incorrect",function() {
-			expect( function(){
-				data = QueryNew( "column1","VarChar",[ [ "a" ] ] );
-				workbook = s.newXlsx();
-				s.addRows( workbook,data );
-				s.write( workbook=workbook,filepath=tempXlsxPath,overwrite=true,password="pass" );
-				s.read( src=tempXlsxPath,format="query",password="parse" );
-			}).toThrow( regex="Invalid password" );
-		});
+			it( "Throws an exception if a password is supplied for a binary xls file",function() {
+				expect( function(){
+					var path = ExpandPath( "/root/test/files/test.xls" );
+					s.read( src=path,format="query",password="pass" );
+				}).toThrow( regex="Invalid file type" );
+			});
+		
+			it( "Throws an exception if the password for an encrypted file is incorrect",function() {
+				expect( function(){
+					data = QueryNew( "column1","VarChar",[ [ "a" ] ] );
+					workbook = s.newXlsx();
+					s.addRows( workbook,data );
+					s.write( workbook=workbook,filepath=tempXlsxPath,overwrite=true,password="pass" );
+					s.read( src=tempXlsxPath,format="query",password="parse" );
+				}).toThrow( regex="Invalid password" );
+			});
+			
+		}
 
 		it( "Throws a helpful exception if the source file is not a spreadsheet",function() {
 			expect( function(){
@@ -387,7 +393,7 @@ describe( "read",function(){
 
 		it( "Throws a helpful exception if the source file is in an old format not supported by POI",function() {
 			expect( function(){
-				var path=ExpandPath( "/root/test/files/oldformat.xls" );
+				var path = ExpandPath( "/root/test/files/oldformat.xls" );
 				s.read( src=path );
 			}).toThrow( regex="Invalid spreadsheet format" );
 		});

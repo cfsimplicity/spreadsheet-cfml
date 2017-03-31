@@ -4,7 +4,7 @@ describe( "renameSheet",function(){
 	it( "Renames the specified sheet",function() {
 		var workbook = s.new();
 		s.renameSheet( workbook,"test",1 );
-		makePublic( s,"sheetExists" )
+		makePublic( s,"sheetExists" );
 		expect( s.sheetExists( workbook,"test" ) ).toBeTrue();
 	});
 

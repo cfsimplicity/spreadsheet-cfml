@@ -33,7 +33,7 @@ describe( "addRows",function(){
 
 	it( "Adds numeric, boolean or date values correctly",function() {
 		var dateValue = CreateDate( 2015,04,12 );
-		var rowData = QueryNew( "column1,column2,column3","Numeric,Boolean,Date",[ [ 2,true,dateValue ] ] );
+		var rowData = QueryNew( "column1,column2,column3","Integer,Bit,Date",[ [ 2,true,dateValue ] ] );
 		s.addRows( workbook,rowData );
 		expected = rowData;
 		actual = s.sheetToQuery( workbook );
@@ -44,7 +44,7 @@ describe( "addRows",function(){
 	});
 
 	it( "Adds zeros as zeros, not booleans",function(){
-		var rowData=QueryNew( "column1","Numeric",[ [ 0 ] ] );
+		var rowData=QueryNew( "column1","Integer",[ [ 0 ] ] );
 		s.addRows( workbook,rowData );
 		expected=rowData;
 		actual=s.sheetToQuery( workbook );

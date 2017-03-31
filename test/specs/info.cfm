@@ -21,7 +21,8 @@ describe( "info", function(){
 			,sheets: 1
 			,spreadSheetType: "Excel"
 		};
-		variables.infoToBeReturned = infoToAdd.Append( additional );
+		variables.infoToBeReturned = Duplicate( infoToAdd );
+		StructAppend( infoToBeReturned, additional );
 	});
 
 	it( "Adds and can get back info from a binary xls", function() {

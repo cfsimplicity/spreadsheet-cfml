@@ -8,7 +8,8 @@ describe( "cellComment",function(){
 			author="cfsimplicity"
 			,comment="This is the comment in row 1 column 1"
 		};
-		expected = theComment.Append( { column=1,row=1 } );
+		expected = Duplicate( theComment );
+		expected.Append( { column=1, row=1 } );
 		s.setCellComment( workbook,theComment,1,1 );
 		actual = s.getCellComment( workbook,1,1 );
 		expect( actual ).toBe( expected );
