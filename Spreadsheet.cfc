@@ -15,7 +15,7 @@ component{
 	variables.engineSupportsDynamicClassLoading = isLucee5plus;
 	variables.engineSupportsEncryption = !isACF;
 
-	function init( struct dateFormats, string javaLoaderDotPath ){
+	function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader ){
 		if( arguments.KeyExists( "dateFormats" ) )
 			overrideDefaultDateFormats( arguments.dateFormats );
 		if( arguments.KeyExists( "javaLoaderDotPath" ) ) // Option to use the dot path of an existing javaloader installation to save duplication
