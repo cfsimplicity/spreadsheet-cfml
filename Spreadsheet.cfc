@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "1.1.0";
+	variables.version = "1.0.0";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -10,8 +10,8 @@ component{
 		,TIMESTAMP: "yyyy-mm-dd hh:mm:ss"
 	};
 	variables.exceptionType = "cfsimplicity.lucee.spreadsheet";
-	variables.isLucee5plus = server.KeyExists( "lucee" ) AND ( server.lucee.version.Left( 1 ) >= 5 );
-	variables.isACF = server.coldfusion.productname IS "ColdFusion Server";
+	variables.isLucee5plus = ( server.KeyExists( "lucee" ) AND ( server.lucee.version.Left( 1 ) >= 5 ) );
+	variables.isACF = ( server.coldfusion.productname IS "ColdFusion Server" );
 	variables.engineSupportsDynamicClassLoading = isLucee5plus;
 	variables.engineSupportsEncryption = !isACF;
 
@@ -47,16 +47,15 @@ component{
 		return dateFormats;
 	}
 
-	public boolean function getRequiresJavaLoader(){
-		return requiresJavaLoader;
-	}
-
-	public boolean function getEngineSupportsDynamicClassLoading(){
-		return engineSupportsDynamicClassLoading;
-	}
-
-	public boolean function getEngineSupportsEncryption(){
-		return engineSupportsEncryption;
+	public struct function getEnvironment(){
+		return {
+			dateFormats: dateFormats
+			,engineSupportsDynamicClassLoading: engineSupportsDynamicClassLoading
+			,engineSupportsEncryption: engineSupportsEncryption
+			,javaLoaderDotPath: javaLoaderDotPath
+			,poiLoaderName: poiLoaderName
+			,requiresJavaLoader: requiresJavaLoader
+		};
 	}
 
 	/* MAIN PUBLIC API */
@@ -2172,9 +2171,9 @@ component{
 			var rowData = getRowData( workbook, headerRowObject, sheet.columnRanges );
 			var i = 1;
 			for( var value in rowData ){
-				var columnName="column" & i;
+				var columnName = "column" & i;
 				if( isString( value ) AND value.Len() )
-					columnName=value;
+					columnName = value;
 				sheet.columnNames.Append( columnName );
 				i++;
 			}
@@ -2610,6 +2609,7 @@ component{
 		return similarExistingColor.getIndex();
 	}
 
+	/* ACF compatibility functions */
 	private array function _QueryColumnArray( required query q ){
 		try{
 			return QueryColumnArray( q ); //Lucee

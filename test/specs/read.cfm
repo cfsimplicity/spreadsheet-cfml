@@ -296,7 +296,7 @@ describe( "read",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	if( variables.s.getEngineSupportsEncryption() ){
+	if( variables.s.getEnvironment().engineSupportsEncryption ){
 		it( "Can write and read an encrypted OOXML file",function() {
 			data = QueryNew( "column1","VarChar",[ [ "a" ] ] );
 			workbook = s.newXlsx();
@@ -363,7 +363,7 @@ describe( "read",function(){
 			}).toThrow( regex="Invalid sheet|out of range" );
 		});
 
-		if( variables.s.getEngineSupportsEncryption() ){
+		if( variables.s.getEnvironment().engineSupportsEncryption ){
 
 			it( "Throws an exception if a password is supplied for a binary xls file",function() {
 				expect( function(){
