@@ -50,6 +50,7 @@ component{
 	public struct function getEnvironment(){
 		return {
 			dateFormats: dateFormats
+			,engine: server.coldfusion.productname & " " & ( isACF? server.coldfusion.productversion: ( server.lucee.version?: "?" ) )
 			,engineSupportsDynamicClassLoading: engineSupportsDynamicClassLoading
 			,engineSupportsEncryption: engineSupportsEncryption
 			,javaLoaderDotPath: javaLoaderDotPath
@@ -1905,14 +1906,15 @@ component{
 	}
 
 	private function loadPoi( required string javaclass ){
-		if( engineSupportsDynamicClassLoading )
-			return CreateObject( "java", javaclass, getPoiJarPaths() );
-		if( !requiresJavaLoader ){ //POI jars should be in the class path
+		if( !requiresJavaLoader ){
+			if( engineSupportsDynamicClassLoading )
+				return CreateObject( "java", javaclass, getPoiJarPaths() );
+			// Else *the correct* POI jars should be in the class path
 			try{
 				return CreateObject( "java", javaclass );
 			}
 			catch( any exception ){
-				loadPoiUsingJavaLoader( javaclass );
+				return loadPoiUsingJavaLoader( javaclass );
 			}
 		}	
 		return loadPoiUsingJavaLoader( javaclass );
