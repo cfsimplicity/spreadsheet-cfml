@@ -1,6 +1,10 @@
 <cfscript>
 describe( "write",function(){
 
+	beforeEach( function(){
+		sleep( 5 );// allow time for file operations to complete
+	});
+
 	it( "Writes a spreadsheet object correctly",function() {
 		data = QueryNew( "column1,column2","VarChar,VarChar",[ [ "a","b" ],[ "c","d" ] ] );
 		workbook = s.new();

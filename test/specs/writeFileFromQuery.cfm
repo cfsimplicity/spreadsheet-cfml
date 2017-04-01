@@ -2,6 +2,7 @@
 describe( "writeFileFromQuery",function(){
 
 	beforeEach( function(){
+		sleep( 5 );// allow time for file operations to complete
 		variables.query = QueryNew( "Header1,Header2","VarChar,VarChar",[ [ "a","b" ],[ "c","d" ] ] );
 	});
 
