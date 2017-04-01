@@ -2615,9 +2615,10 @@ component{
 			return QueryColumnArray( q ); //Lucee
 		}
 		catch( any exception ){
-			if( exception.message CONTAINS "undefined" )
-				return q.ColumnList.ListToArray(); //ACF
-			rethrow;
+			if( !exception.message CONTAINS "undefined" )
+				rethrow;
+			//ACF
+			return q.ColumnList.ListToArray(); 
 		}
 	}
 
