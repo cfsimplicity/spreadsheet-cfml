@@ -7,10 +7,11 @@ component extends="testbox.system.BaseSpec"{
 	  makePublic( s, "sheetToQuery" );
 	  variables.tempXlsPath = ExpandPath( "temp.xls" );
 	  variables.tempXlsxPath = ExpandPath( "temp.xlsx" );
-	  WriteDump( var=s.getEnvironment(), label="Environment and settings" );
 	}
 
-	function afterAll(){}
+	function afterAll(){
+		WriteDump( var=s.getEnvironment(), label="Environment and settings" );
+	}
 
 	function run( testResults,testBox ){
 

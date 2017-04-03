@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "1.0.0";
+	variables.version = "1.0.0-rc";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -13,6 +13,7 @@ component{
 	variables.isLucee5plus = ( server.KeyExists( "lucee" ) AND ( server.lucee.version.Left( 1 ) >= 5 ) );
 	variables.isACF = ( server.coldfusion.productname IS "ColdFusion Server" );
 	variables.engineSupportsDynamicClassLoading = isLucee5plus;
+	variables.poiClassesLastLoadedVia = "Nothing loaded yet";
 	variables.engineSupportsEncryption = !isACF;
 
 	function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader ){
@@ -54,6 +55,7 @@ component{
 			,engineSupportsDynamicClassLoading: engineSupportsDynamicClassLoading
 			,engineSupportsEncryption: engineSupportsEncryption
 			,javaLoaderDotPath: javaLoaderDotPath
+			,poiClassesLastLoadedVia: poiClassesLastLoadedVia
 			,poiLoaderName: poiLoaderName
 			,requiresJavaLoader: requiresJavaLoader
 		};
@@ -1907,16 +1909,21 @@ component{
 
 	private function loadPoi( required string javaclass ){
 		if( !requiresJavaLoader ){
-			if( engineSupportsDynamicClassLoading )
+			if( engineSupportsDynamicClassLoading ){
+				poiClassesLastLoadedVia = "Dynamic loading from the lib folder";
 				return CreateObject( "java", javaclass, getPoiJarPaths() );
-			// Else *the correct* POI jars should be in the class path
+			}
+			// Else *the correct* POI jars must be in the class path and any older versions *removed*
 			try{
+				poiClassesLastLoadedVia = "The java class path";
 				return CreateObject( "java", javaclass );
 			}
 			catch( any exception ){
+				poiClassesLastLoadedVia = "JavaLoader";
 				return loadPoiUsingJavaLoader( javaclass );
 			}
-		}	
+		}
+		poiClassesLastLoadedVia = "JavaLoader";
 		return loadPoiUsingJavaLoader( javaclass );
 	}
 
