@@ -1,24 +1,19 @@
 # Spreadsheet library for Lucee
 
-Adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo extension, this is a standalone library for reading, creating and formatting spreadsheets in [Lucee Server](http://lucee.org/) which does not require installation into each web context.
+Originally adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo extension, this is a standalone library for reading, creating and formatting spreadsheets in [Lucee Server](http://lucee.org/) which does not require installation as an extension.
 
 ## Rationale
 
-I was dissatisfied with the official Railo (now Lucee) spreadsheet extension for two main reasons:
+Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of the box. Extensions exist for both [Lucee 4.5](https://github.com/Leftbower/cfspreadsheet-lucee) and [Lucee 5](https://github.com/Leftbower/cfspreadsheet-lucee-5), but I decided to create a standalone library which doesn't depend on customisation of the engine.
 
-1. It was designed for an older version of Railo (Lucee) and (at the time of writing) installation as an extension fails in the current version.
-2. It can be installed manually, but this is cumbersome and needs doing in each web context followed by a server restart.
+## Library vs Extension benefits
 
-## Benefits over the official extension
-
-- No installation/restart required, either at the server or individual web context level.
+- No installation required, either at the server or individual web context level.
 - Invoking the library doesn't create a workbook instance (a.k.a. *Spreadsheet Object*), meaning:
  - a blank workbook isn't created unnecessarily when reading an existing spreadsheet
  - the library can be stored as a singleton in application scope
- - the functions work more like those in ACF: you pass in an existing workbook explicitly as the first argument.
 - `read()` method offers all the features of the `<cfspreadsheet action="read">` tag in script in addition to the basic options of `SpreadsheetRead()`.
 - Offers a number of additional functions and options (see below)
-- Uses a newer version of the java POI library (3.15).
 - Fixes various outstanding bugs/omissions.
 - No dependency on Lucee within the included jar files.
 - Written entirely in CFML script.
@@ -165,15 +160,19 @@ spreadsheet = New spreadsheetLibrary.spreadsheet( dateFormats={ DATE: "mm/dd/yyy
 </cfscript>
 ```
 
+### Adobe ColdFusion
+
+Although primarily intended for Lucee, the library can be run under ColdFusion 11 or higher. This may be useful where you want to your codebase to be cross-compatible between the two engines.
+
+Please note though that _reading or writing password-protected files only works with Lucee_.
+
 ### JavaLoader
 
-The library requires and includes Mark Mandel's [JavaLoader](https://github.com/markmandel/JavaLoader), and will use the bundled version by default. If you already have JavaLoader available on your server and prefer to use that rather than duplicate the files, simply specify the dot path of the `JavaLoader.cfc` component as the `javaLoaderDotPath` init argument. For example:
+If you are using Lucee 4.5 or Adobe ColdFusion, Mark Mandel's [JavaLoader](https://github.com/markmandel/JavaLoader) is required and the bundled version will be used by default.
 
-```
-<cfscript>
-spreadsheet = New spreadsheetLibrary.spreadsheet( javaLoaderDotPath="myLibrary.javaloader.JavaLoader" );
-</cfscript>
-```
+JavaLoader is not required if using Lucee 5 or later.
+
+For more details and options see: [Loading the POI java libraries](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/Loading-the-POI-java-libraries)
 
 ## CommandBox Installation
 

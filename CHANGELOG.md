@@ -1,3 +1,10 @@
+## 1.0.0 - ? April 2017
+
+- Enhancement: \#80 Provide option to use POI jars in the java class path instead of via JavaLoader
+- Enhancement: \#107 Remove the dependency on JavaLoader for Lucee 5 and load POI jars directly
+- Enhancement: \#108 Officially support ACF11+
+- Enhancement: Add `getEnvironment()` method to return current environment details/settings
+
 ## 0.11.1 - 24 March 2017
 
 - Update bundled JavaLoader to 1.2
