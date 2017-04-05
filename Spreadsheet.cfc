@@ -1894,17 +1894,8 @@ component{
 	}
 
 	private array function getPoiJarPaths(){
-		var result = [];
 		var libPath = GetDirectoryFromPath( GetCurrentTemplatePath() ) & "lib/";
-		result.Append( libPath & "poi-3.15.jar" );
-		result.Append( libPath & "poi-ooxml-3.15.jar" );
-		result.Append( libPath & "poi-ooxml-schemas-3.15.jar" );
-		/* Note the above is a reduced set of the most commonly used schemas. Some xml operations require the FULL jar see http://poi.apache.org/faq.html#faq-N10025
-		//result.Append( libPath & "ooxml-schemas-1.3.jar" ); //Needs to be downloaded but it's 15MB
-		*/
-		result.Append( libPath & "xmlbeans-2.6.0.jar" );
-		result.Append( libPath & "commons-collections4-4.1.jar" );
-		return result;
+		return DirectoryList( libPath );
 	}
 
 	private function loadPoi( required string javaclass ){
