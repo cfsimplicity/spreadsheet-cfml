@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "1.0.0-rc";
+	variables.version = "1.0.0";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
