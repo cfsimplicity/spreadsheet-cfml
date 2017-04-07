@@ -2640,7 +2640,7 @@ component{
 				columns.Append( column.name );
 				columnTypes.Append( column.typeName?: "VarChar" );
 			}
-			data = [];
+			var data = [];
 			for( row in q ){
 				newRow = {};
 				for( column in columns )
