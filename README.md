@@ -10,8 +10,8 @@ Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of 
 
 - No installation required, either at the server or individual web context level.
 - Invoking the library doesn't create a workbook instance (a.k.a. *Spreadsheet Object*), meaning:
- - a blank workbook isn't created unnecessarily when reading an existing spreadsheet
- - the library can be stored as a singleton in application scope
+  - a blank workbook isn't created unnecessarily when reading an existing spreadsheet
+  - the library can be stored as a singleton in application scope
 - `read()` method offers all the features of the `<cfspreadsheet action="read">` tag in script in addition to the basic options of `SpreadsheetRead()`.
 - Offers a number of additional functions and options (see below)
 - Fixes various outstanding bugs/omissions.
