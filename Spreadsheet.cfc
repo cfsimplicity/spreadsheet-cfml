@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "1.0.1";
+	variables.version = "1.1.0";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -65,27 +65,67 @@ component{
 
 	/* Convenenience */
 
-	public any function workbookFromQuery( required query data,boolean addHeaderRow=true,boldHeaderRow=true,xmlFormat=false ){
-		var workbook = new( xmlFormat=xmlFormat );
-		if( addHeaderRow ){
-			var columns = _QueryColumnArray( data );
-			addRow( workbook, columns.ToList() );
-			if( boldHeaderRow )
-				formatRow( workbook, { bold: true }, 1 );
-			addRows( workbook, data, 2, 1 );
-		}
-		else
-			addRows( workbook, data );
-		return workbook;
-	}
-
-	public binary function binaryFromQuery( required query data,boolean addHeaderRow=true,boldHeaderRow=true,xmlFormat=false ){
+	public binary function binaryFromQuery( required query data, boolean addHeaderRow=true, boldHeaderRow=true, xmlFormat=false ){
 		/* Pass in a query and get a spreadsheet binary file ready to stream to the browser */
 		var workbook = workbookFromQuery( argumentCollection=arguments );
 		return readBinary( workbook );
 	}
 
-	public void function download( required workbook,required string filename,string contentType ){
+	public function csvToQuery(
+		string csv
+		,string filepath
+		,boolean firstRowIsHeader=false
+		,boolean trim=true
+		,string delimiter
+	){
+		if( !arguments.KeyExists( "csv" ) AND !arguments.KeyExists( "filepath" ) )
+			throw( type=exceptionType, message="Missing required argument", detail="Please provide either a csv string (csv), or the path of a file containing one (filepath)." );
+		if( arguments.KeyExists( "csv" ) AND arguments.KeyExists( "filepath" ) )
+			throw( type=exceptionType, message="Mutually exclusive arguments: 'csv' and 'filepath'", detail="Only one of either 'filepath' or 'csv' arguments may be provided." );
+		if(	arguments.KeyExists( "filepath" ) ){
+			if( !FileExists( filepath ) )
+				throw( type=exceptionType, message="Non-existant file", detail="Cannot find a file at #filepath#" );
+			if( !isCsvOrTextFile( filepath ) )
+				throw( type=exceptionType, message="Invalid csv file", detail="#filepath# does not appear to be a text/csv file" );
+			arguments.csv = FileRead( filepath );
+		}
+		var format = loadPoi( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ];
+		format = format.withIgnoreSurroundingSpaces();//stop spaces between fields causing problems with embedded lines
+		if( trim )
+			csv = csv.Trim();
+		if( arguments.KeyExists( "delimiter" ) )
+			format = format.withDelimiter( JavaCast( "string", delimiter ) );
+		var parsed = loadPoi( "org.apache.commons.csv.CSVParser" ).parse( csv, format );
+		var records = parsed.getRecords();
+		var rows = [];
+		var maxColumnCount = 0;
+		for( var record in records ){
+			var row = [];
+			var columnNumber = 0;
+			var iterator = record.iterator();
+			while( iterator.hasNext() ){
+				columnNumber++;
+				maxColumnCount = Max( maxColumnCount, columnNumber );
+				row.Append( iterator.next() );
+			}
+			rows.Append( row );
+		}
+		var columnList = [];
+		if( firstRowIsHeader )
+			var headerRow = rows[ 1 ];
+		for( var i=1; i LTE maxColumnCount; i++ ){
+			if( firstRowIsHeader AND !IsNull( headerRow[ i ] ) AND headerRow[ i ].Len() ){
+				columnList.Append( JavaCast( "string", headerRow[ i ] ) );
+				continue;
+			}
+			columnList.Append( "column#i#" );
+		}
+		if( firstRowIsHeader )
+			rows.DeleteAt( 1 );
+		return _QueryNew( columnList.ToList(), "", rows );;
+	}
+
+	public void function download( required workbook, required string filename, string contentType ){
 		var safeFilename = filenameSafe( filename );
 		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$", "" );
 		var extension = isXmlFormat( workbook )? "xlsx": "xls";
@@ -138,6 +178,43 @@ component{
 		downloadBinaryVariable( binary, filename, contentType );
 	}
 
+	public any function workbookFromCsv(
+		string csv
+		,string filepath
+		,boolean firstRowIsHeader=false
+		,boolean boldHeaderRow=true
+		,boolean trim=true
+		,boolean xmlFormat=false
+		,string delimiter		
+	){
+		var conversionArgs = {
+			firstRowIsHeader: firstRowIsHeader
+			,trim: trim
+		};
+		if( arguments.KeyExists( "csv" ) )
+			conversionArgs.csv = csv;
+		if( arguments.KeyExists( "filepath" ) )
+			conversionArgs.filepath = filepath;
+		if( arguments.KeyExists( "delimiter" ) )
+			conversionArgs.delimiter = delimiter;
+		var data = csvToQuery( argumentCollection=conversionArgs );
+		return workbookFromQuery( data=data, addHeaderRow=firstRowIsHeader, boldHeaderRow=boldHeaderRow, xmlFormat=xmlFormat );
+	}
+
+	public any function workbookFromQuery( required query data, boolean addHeaderRow=true, boolean boldHeaderRow=true, boolean xmlFormat=false ){
+		var workbook = new( xmlFormat=xmlFormat );
+		if( addHeaderRow ){
+			var columns = _QueryColumnArray( data );
+			addRow( workbook, columns.ToList() );
+			if( boldHeaderRow )
+				formatRow( workbook, { bold: true }, 1 );
+			addRows( workbook, data, 2, 1 );
+		}
+		else
+			addRows( workbook, data );
+		return workbook;
+	}
+
 	public void function writeFileFromQuery(
 		required query data
 		,required string filepath
@@ -150,7 +227,7 @@ component{
 			arguments.xmlFormat = true;
 		var workbook = workbookFromQuery( data, addHeaderRow, boldHeaderRow, xmlFormat );
 		if( xmlFormat AND ( ListLast( filepath, "." ) IS "xls" ) )
-			arguments.filePath &= "x";// force to .xlsx
+			arguments.filepath &= "x";// force to .xlsx
 		write( workbook=workbook, filepath=filepath, overwrite=overwrite );
 	}
 
@@ -591,9 +668,8 @@ component{
 		){
 		var style = arguments.cellStyle?: buildCellStyle( workbook,format );
 		for( var rowNumber = startRow; rowNumber LTE endRow; rowNumber++ ){
-			for( var columnNumber = startColumn; columnNumber LTE endColumn; columnNumber++ ){
+			for( var columnNumber = startColumn; columnNumber LTE endColumn; columnNumber++ )
 				formatCell( workbook, format, rowNumber, columnNumber, style );
-			}
 		}
 	}
 
@@ -1885,6 +1961,11 @@ component{
 		return cellObject;
 	}
 
+	private boolean function isCsvOrTextFile( required string path ){
+		var contentType = FileGetMimeType( path ).ListLast( "/" );
+		return ListFindNoCase( "plain,csv", contentType );//Lucee=text/plain ACF=text/csv
+	}
+
 	private boolean function isDateObject( required input ){
 		return input.getClass().getName() IS "java.util.Date";
 	}
@@ -1916,6 +1997,13 @@ component{
 		}
 		poiClassesLastLoadedVia = "JavaLoader";
 		return loadPoiUsingJavaLoader( javaclass );
+	}
+
+	private void function handleInvalidSpreadsheetFile( required string path ){
+		var detail = "The file #path# does not appear to be a binary or xml spreadsheet.";
+		if( isCsvOrTextFile( path ) )
+			detail &= " It may be a CSV file, in which case use 'csvToQuery()' to read it";
+		throw( type="cfsimplicity.lucee.spreadsheet.invalidFile", message="Invalid spreadsheet file", detail=detail );
 	}
 
 	private function loadPoiUsingJavaLoader( required string javaclass ){
@@ -2128,7 +2216,7 @@ component{
 			,columnRanges: []
 			,totalColumnCount: 0
 		};
-		sheet.headerRowIndex=sheet.hasHeaderRow? ( headerRow -1 ): -1;
+		sheet.headerRowIndex = sheet.hasHeaderRow? ( headerRow -1 ): -1;
 		if( arguments.KeyExists( "columns" ) ){
 			sheet.columnRanges = extractRanges( arguments.columns );
 			sheet.totalColumnCount = columnCountFromRanges( sheet.columnRanges );
@@ -2183,7 +2271,7 @@ component{
 				sheet.columnNames.Append( "column" & i );
 		}
 
-		var result = QueryNew( sheet.columnNames.ToList(), "", sheet.data );
+		var result = _QueryNew( sheet.columnNames.ToList(), "", sheet.data );
 		if( !includeHiddenColumns ){
 			result = deleteHiddenColumnsFromQuery( sheet, result );
 			if( sheet.totalColumnCount EQ 0 )
@@ -2228,7 +2316,6 @@ component{
 
 	private any function workbookFromFile( required string path ){
 		// works with both xls and xlsx
-		var invalidFileExceptionType="cfsimplicity.lucee.spreadsheet.invalidFile";
 		try{
 			lock name="#path#" timeout=5 {
 				var file = CreateObject( "java", "java.io.FileInputStream" ).init( path );
@@ -2237,15 +2324,15 @@ component{
 			return workbook;
 		}
 		catch( org.apache.poi.openxml4j.exceptions.InvalidFormatException exception ){
-			throw( type=invalidFileExceptionType, message="Invalid spreadsheet file", detail="The file #path# does not appear to be a spreadsheet" );
+			handleInvalidSpreadsheetFile( path );
 		}
 		catch( org.apache.poi.hssf.OldExcelFormatException exception ){
 			throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
 		}
 		catch( any exception ){
 			//For ACF which doesn't return the correct exception types
-			if( exception.message CONTAINS "Your InputStream was neither" ) 
-				throw( type=invalidFileExceptionType, message="Invalid spreadsheet file", detail="The file #path# does not appear to be a spreadsheet" );
+			if( exception.message CONTAINS "Your InputStream was neither" )
+				handleInvalidSpreadsheetFile( path );
 			if( exception.message CONTAINS "spreadsheet seems to be Excel 5" ) 
 				throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
 			rethrow;
@@ -2642,13 +2729,32 @@ component{
 			}
 			var data = [];
 			for( row in q ){
-				newRow = {};
+				newRow = [];
 				for( column in columns )
-					newRow[ column ] = row[ column ];
+					newRow.Append( row[ column ] );
 				data.Append( newRow );
 			}
-			return QueryNew( columns.ToList(), columnTypes.ToList(), data );
 		}
+		return _QueryNew( columns.ToList(), columnTypes.ToList(), data );
+	}
+
+	private query function _QueryNew( required string columnNameList, required string columnTypeList, required array data ){
+		//ACF QueryNew() won't accept invalid variable names in the column name list, hence clunky workaround:
+		//NB: 'data' should not contain structs since they use the column name as key: always use array of row arrays instead
+		if( !isACF )
+			return QueryNew( columnNameList, columnTypeList, data );
+		var columnNames = columnNameList.ListToArray();
+		var totalColumns = columnNames.Len();
+		var tempColumnNames = [];
+		var tempData = [];
+		for( var i=1; i LTE totalColumns; i++ )
+			tempColumnNames[ i ] = "column#i#";
+		var q = QueryNew( tempColumnNames.ToList(), columnTypeList, data );
+		// restore the real names without ACF barfing
+		for( name in columnNames )
+			name = JavaCast( "string", name );
+		q.setColumnNames( columnNames );
+		return q;
 	}
 
 }

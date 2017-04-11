@@ -6,7 +6,9 @@ Originally adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo
 
 Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of the box. Extensions exist for both [Lucee 4.5](https://github.com/Leftbower/cfspreadsheet-lucee) and [Lucee 5](https://github.com/Leftbower/cfspreadsheet-lucee-5), but I decided to create a standalone library which doesn't depend on customisation of the engine.
 
-## Library vs Extension benefits
+## Library vs Extension
+
+### Benefits
 
 - No installation required, either at the server or individual web context level.
 - Invoking the library doesn't create a workbook instance (a.k.a. *Spreadsheet Object*), meaning:
@@ -18,10 +20,9 @@ Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of 
 - No dependency on Lucee within the included jar files.
 - Written entirely in CFML script.
 
-## Downsides
+### Downsides
 
 - Existing code needs adapting to invoke the library. Existing CFML spreadsheet functions and the `<cfspreadsheet>` tag won't work with it.
-- Populating a spreadsheet from CSV is not supported.
 
 ## Usage
 
@@ -114,11 +115,13 @@ You will probably want to place the spreadsheet library files in a central locat
 ### Additional Convenience methods
 
 * [binaryFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/binaryFromQuery)
+* [csvToQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/csvToQuery)
 * [download](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/download)
 * [downloadCsvFromFile](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/downloadCsvFromFile)
 * [downloadFileFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/downloadFileFromQuery)
 * [newXls](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/newXls)
 * [newXlsx](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/newXlsx)
+* [workbookFromCsv](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/workbookFromCsv)
 * [workbookFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/workbookFromQuery)
 * [writeFileFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/writeFileFromQuery)
 

@@ -1,3 +1,9 @@
+## 1.1.0 - 11 April 2017
+
+- Enhancement: \#110 Support populating a spreadsheet from CSV data:
+  - Add `workbookFromCsv()`
+  - Add public method `csvToQuery()` for convenience
+
 ## 1.0.0 - 7 April 2017
 
 - Enhancement: \#80 Provide option to use POI jars in the java class path instead of via JavaLoader
