@@ -72,21 +72,21 @@ describe( "addRow",function(){
 		}		
 	});
 
-	describe( "addRow exceptions",function(){
+	describe( "Throws an exception if", function(){
 
-		it( "Throws an exception if row is zero or less",function() {
+		it( "row is zero or less",function() {
 			expect( function(){
 				s.addRow( workbook=workbook,data=rowData,row=0 );
 			}).toThrow( regex="Invalid row" );
 		});
 
-		it( "Throws an exception if column is zero or less",function() {
+		it( "column is zero or less",function() {
 			expect( function(){
 				s.addRow( workbook=workbook,data=rowData,column=0 );
 			}).toThrow( regex="Invalid column" );
 		});
 
-		it( "Throws an exception if insert is false and no row specified",function() {
+		it( "insert is false and no row specified",function() {
 			expect( function(){
 				s.addRow( workbook=workbook,data=rowData,insert=false );
 			}).toThrow( regex="Missing row" );

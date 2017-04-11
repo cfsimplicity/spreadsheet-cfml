@@ -17,9 +17,9 @@ describe( "new",function(){
 		expect( s.getActiveSheetName( workbook ) ).toBe( "test" );
 	});
 
-	describe( "new exceptions",function(){
+	describe( "Throws an exception if",function(){
 
-		it( "Throws an exception if the sheet name contains invalid characters",function() {
+		it( "the sheet name contains invalid characters",function() {
 			expect( function(){
 				s.new( "[]?*\/:" );
 			}).toThrow( regex="Invalid characters" );

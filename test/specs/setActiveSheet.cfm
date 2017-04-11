@@ -19,15 +19,15 @@ describe( "setActiveSheet",function(){
 		expect( s.getActiveSheetName( workbook ) ).toBe( "test" );
 	});
 
-	describe( "setActiveSheet exceptions",function(){
+	describe( "Throws an exception if",function(){
 
-		it( "Throws an exception if the sheet name doesn't exist",function() {
+		it( "the sheet name doesn't exist",function() {
 			expect( function(){
 				s.setActiveSheet( workbook=workbook,sheetName="test" );
 			}).toThrow( regex="Invalid sheet" );
 		});
 
-		it( "Throws an exception if the sheet number doesn't exist",function() {
+		it( "the sheet number doesn't exist",function() {
 			expect( function(){
 				s.setActiveSheet( workbook=workbook,sheetNumber=20 );
 			}).toThrow( regex="Invalid sheet" );

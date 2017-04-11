@@ -8,9 +8,9 @@ describe( "formatColumn",function(){
 		s.formatColumn( workbook,format,1 );
 	});
 
-	describe( "formatColumn exceptions",function(){
+	describe( "Throws an exception if",function(){
 
-		it( "Throws an exception if the column is 0 or below",function(){
+		it( "the column is 0 or below",function(){
 			expect( function(){
 				workbook = s.new();
 				format = { italic="true" };

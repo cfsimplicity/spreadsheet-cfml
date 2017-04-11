@@ -15,9 +15,9 @@ describe( "write",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	describe( "write exceptions",function(){
+	describe( "Throws an exception if",function(){
 
-		it( "Throws an exception if the path exists and overwrite is false",function() {
+		it( "the path exists and overwrite is false",function() {
 			FileWrite( tempXlsPath,"test" );
 			workbook = s.new();
 			expect( function(){

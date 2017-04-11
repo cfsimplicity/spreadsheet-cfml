@@ -12,15 +12,15 @@ describe( "removeSheet",function(){
 	});
 
 
-	describe( "removeSheet exceptions",function(){
+	describe( "Throws an exception if",function(){
 
-		it( "Throws an exception if the sheet name contains invalid characters",function() {
+		it( "the sheet name contains invalid characters",function() {
 			expect( function(){
 				s.removeSheet( workbook,"[]?*\/:" );
 			}).toThrow( regex="Invalid characters" );
 		});
 
-		it( "Throws an exception if the sheet name doesn't exist",function() {
+		it( "the sheet name doesn't exist",function() {
 			expect( function(){
 				s.removeSheet( workbook,"test" );
 			}).toThrow( regex="Invalid sheet" );

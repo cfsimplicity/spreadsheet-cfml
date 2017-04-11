@@ -319,9 +319,9 @@ describe( "read",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	describe( "read exceptions",function(){
+	describe( "Throws an exception if",function(){
 
-		it( "Throws an exception if a formula can't be evaluated",function() {
+		it( "a formula can't be evaluated",function() {
 			expect( function(){
 				workbook=s.new();
 				s.addColumn( workbook,"1,1" );
@@ -332,32 +332,32 @@ describe( "read",function(){
 			}).toThrow( regex="Failed to run formula" );
 		});
 
-		it( "Throws an exception if the 'query' argument is passed",function() {
+		it( "the 'query' argument is passed",function() {
 			expect( function(){
 				s.read( src=tempXlsPath,query="q" );
 			}).toThrow( regex="Invalid argument" );
 		});
 
-		it( "Throws an exception if the format argument is invalid",function() {
+		it( "the format argument is invalid",function() {
 			expect( function(){
 				s.read( src=tempXlsPath,format="wrong" );
 			}).toThrow( regex="Invalid format" );
 		});
 
-		it( "Throws an exception if the file doesn't exist",function() {
+		it( "the file doesn't exist",function() {
 			expect( function(){
 				var path=ExpandPath( "/root/test/files/nonexistant.xls" );
 				s.read( src=path );
 			}).toThrow( regex="Non-existent file" );
 		});
 
-		it( "Throws an exception if the sheet name doesn't exist",function() {
+		it( "the sheet name doesn't exist",function() {
 			expect( function(){
 				s.read( src=path,format="query",sheetName="nonexistant" );
 			}).toThrow( regex="Invalid sheet" );
 		});
 
-		it( "Throws an exception if the sheet number doesn't exist",function() {
+		it( "the sheet number doesn't exist",function() {
 			expect( function(){
 				s.read( src=path,format="query",sheetNumber=20 );
 			}).toThrow( regex="Invalid sheet|out of range" );
@@ -365,14 +365,14 @@ describe( "read",function(){
 
 		if( variables.s.getEnvironment().engineSupportsEncryption ){
 
-			it( "Throws an exception if a password is supplied for a binary xls file",function() {
+			it( "a password is supplied for a binary xls file",function() {
 				expect( function(){
 					var path = ExpandPath( "/root/test/files/test.xls" );
 					s.read( src=path,format="query",password="pass" );
 				}).toThrow( regex="Invalid file type" );
 			});
 		
-			it( "Throws an exception if the password for an encrypted file is incorrect",function() {
+			it( "the password for an encrypted file is incorrect",function() {
 				expect( function(){
 					data = QueryNew( "column1","VarChar",[ [ "a" ] ] );
 					workbook = s.newXlsx();
@@ -384,21 +384,21 @@ describe( "read",function(){
 			
 		}
 
-		it( "Throws an exception if the source file is not a spreadsheet",function() {
+		it( "the source file is not a spreadsheet",function() {
 			expect( function(){
 				var path = ExpandPath( "/root/test/files/notaspreadsheet.txt" );
 				s.read( src=path );
 			}).toThrow( regex="Invalid spreadsheet file" );
 		});
 
-		it( "Throws an exception and suggests using 'csvToQuery' if the source file appears to contain CSV",function() {
+		it( "the source file appears to contain CSV, and suggests using 'csvToQuery'",function() {
 			expect( function(){
 				var path = ExpandPath( "/root/test/files/csv.xls" );
 				s.read( src=path );
 			}).toThrow( regex="may be a CSV file" );
 		});
 
-		it( "Throws an exception if the source file is in an old format not supported by POI",function() {
+		it( "the source file is in an old format not supported by POI",function() {
 			expect( function(){
 				var path = ExpandPath( "/root/test/files/oldformat.xls" );
 				s.read( src=path );

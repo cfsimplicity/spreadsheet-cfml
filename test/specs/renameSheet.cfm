@@ -9,9 +9,9 @@ describe( "renameSheet",function(){
 	});
 
 
-	describe( "renameSheet exceptions",function(){
+	describe( "Throws an exception if",function(){
 
-		it( "Throws an exception if the new sheet name already exists",function() {
+		it( "the new sheet name already exists",function() {
 			expect( function(){
 				var workbook = s.new();
 				s.createSheet( workbook,"test" );

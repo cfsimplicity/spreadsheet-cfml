@@ -12,9 +12,9 @@ describe( "removeSheetNumber",function(){
 	});
 
 
-	describe( "removeSheetNumber exceptions",function(){
+	describe( "Throws an exception if",function(){
 
-		it( "Throws an exception if the sheet number doesn't exist",function() {
+		it( "the sheet number doesn't exist",function() {
 			expect( function(){
 				s.removeSheetNumber( workbook,20 );
 			}).toThrow( regex="Invalid sheet" );

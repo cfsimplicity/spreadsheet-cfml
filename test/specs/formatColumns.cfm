@@ -8,9 +8,9 @@ describe( "formatColumns",function(){
 		s.formatColumns( workbook,format,"1-2" );
 	});
 
-	describe( "formatColumns exceptions",function(){
+	describe( "Throws an exception if ",function(){
 
-		it( "Throws an exception if the range is invalid",function() {
+		it( "the range is invalid",function() {
 			expect( function(){
 				workbook = s.new();
 				format = { font="Courier" };

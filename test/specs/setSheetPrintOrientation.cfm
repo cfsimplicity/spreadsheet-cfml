@@ -6,18 +6,6 @@ describe( "setSheetPrintOrientation",function(){
 		variables.xlsx = s.newXlsx();
 	});
 
-	it( "throws an exception if the mode is invalid",function() {
-		expect( function(){
-			s.setSheetPrintOrientation( xls, "blah" );
-		}).toThrow( regex="Invalid mode" );
-	});
-
-	it( "throws an exception if the both sheet name and number are specified",function() {
-		expect( function(){
-			s.setSheetPrintOrientation( xls, "landscape", "test", 1 );
-		}).toThrow( regex="Invalid arguments" );
-	});
-
 	it( "by default sets the active sheet to the specified orientation",function() {
 		makePublic( s, "getActiveSheet" );
 		var sheet = s.getActiveSheet( xls );
@@ -69,6 +57,22 @@ describe( "setSheetPrintOrientation",function(){
 		//positional
 		s.setSheetPrintOrientation( xlsx, "portrait", "", 2 );
 		expect( sheet.getPrintSetup().getLandscape() ).toBeFalse();
+	});
+
+	describe( "Throws an exception if",function(){
+
+		it( "the mode is invalid",function() {
+			expect( function(){
+				s.setSheetPrintOrientation( xls, "blah" );
+			}).toThrow( regex="Invalid mode" );
+		});
+
+		it( "the both sheet name and number are specified",function() {
+			expect( function(){
+				s.setSheetPrintOrientation( xls, "landscape", "test", 1 );
+			}).toThrow( regex="Invalid arguments" );
+		});
+
 	});
 
 });	

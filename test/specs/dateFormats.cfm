@@ -22,11 +22,16 @@ describe( "dateFormats customisability",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Throws an exception if a passed format key is invalid",function() {
-		expect( function(){
-			s=New root.Spreadsheet( dateFormats={ DAT="mm/dd/yyyy" } );
-		}).toThrow( regex="Invalid date format key" );
-	});
+	describe( "Throws an exception if",function(){
+
+		it( "a passed format key is invalid",function() {
+			expect( function(){
+				s=New root.Spreadsheet( dateFormats={ DAT="mm/dd/yyyy" } );
+			}).toThrow( regex="Invalid date format key" );
+		});
+
+	});	
+
 
 });	
 </cfscript>

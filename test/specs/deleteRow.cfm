@@ -14,9 +14,9 @@ describe( "deleteRow",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	describe( "deleteRow exceptions",function(){
+	describe( "Throws an exception if",function(){
 
-		it( "Throws an exception if row is zero or less",function() {
+		it( "row is zero or less",function() {
 			expect( function(){
 				s.deleteRow( workbook=workbook,row=0 );
 			}).toThrow( regex="Invalid row" );

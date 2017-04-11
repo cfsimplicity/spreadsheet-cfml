@@ -22,15 +22,15 @@ describe( "createSheet",function(){
 		expect( workbook.getNumberOfSheets() ).toBe( 2 );
 	});
 
-	describe( "createSheet exceptions",function(){
+	describe( "Throws an exception if",function(){
 
-		it( "Throws an exception if the sheet name contains invalid characters",function() {
+		it( "the sheet name contains invalid characters",function() {
 			expect( function(){
 				s.createSheet( workbook,"[]?*\/:" );
 			}).toThrow( regex="Invalid characters" );
 		});
 
-		it( "Throws an exception if a sheet exists with the specified name and overwrite is false",function() {
+		it( "a sheet exists with the specified name and overwrite is false",function() {
 			expect( function(){
 				s.createSheet( workbook,"test" );
 				s.createSheet( workbook,"test" );

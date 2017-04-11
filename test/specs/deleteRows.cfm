@@ -14,9 +14,9 @@ describe( "deleteRows",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	describe( "deleteRow exceptions",function(){
+	describe( "Throws an exception if",function(){
 
-		it( "Throws an exception if the range is invalid",function() {
+		it( "the range is invalid",function() {
 			expect( function(){
 				workbook = s.new();
 				s.deleteRows( workbook,"a-b" );

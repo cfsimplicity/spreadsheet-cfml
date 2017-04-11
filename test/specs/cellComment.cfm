@@ -15,9 +15,9 @@ describe( "cellComment",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	describe( "cellComment exceptions",function(){
+	describe( "Throws an exception if",function(){
 
-		it( "Throws an exception if column specified but not row, or vice versa",function() {
+		it( "column specified but not row, or vice versa",function() {
 			expect( function(){
 				s.getCellComment( workbook=workbook,row=1 );
 				s.getCellComment( workbook=workbook,column=1 );

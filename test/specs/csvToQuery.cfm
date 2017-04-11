@@ -121,7 +121,6 @@ Frumpo,12345
 		expect( actual ).toBe( expected ); 
 	});
 
-	/* exceptions */
 	describe( "throws an exception if", function(){
 
 		it( "neither 'csv' nor 'filepath' are passed", function() {

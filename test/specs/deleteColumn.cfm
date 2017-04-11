@@ -14,9 +14,9 @@ describe( "deleteColumn",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	describe( "deleteColumn exceptions",function(){
+	describe( "Throws an exception if" ,function(){
 
-		it( "Throws an exception if column is zero or less",function() {
+		it( "column is zero or less",function() {
 			expect( function(){
 				s.deleteColumn( workbook=workbook,column=0 );
 			}).toThrow( regex="Invalid column" );

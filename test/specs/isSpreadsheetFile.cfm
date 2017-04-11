@@ -16,13 +16,15 @@ describe( "isSpreadsheetFile",function(){
 		expect( s.isSpreadsheetFile( path ) ).toBeTrue();
 	});
 
-	describe( "isSpreadsheetFile exceptions",function(){
-		it( "Throws an exception if the file doesn't exist",function() {
+	describe( "Throws an exception if",function(){
+
+		it( "the file doesn't exist",function() {
 			expect( function(){
 				var path=ExpandPath( "/root/test/files/nonexistant.xls" );
 				s.isSpreadsheetFile( path );
 			}).toThrow( regex="Non-existent file" );
 		});
+		
 	});
 
 });	

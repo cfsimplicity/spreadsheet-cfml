@@ -13,9 +13,9 @@ describe( "setActiveSheetNumber",function(){
 	});
 
 
-	describe( "setActiveSheetNumber exceptions",function(){
+	describe( "Throws an exception if",function(){
 
-		it( "Throws an exception if the sheet number doesn't exist",function() {
+		it( "the sheet number doesn't exist",function() {
 			expect( function(){
 				s.setActiveSheetNumber( workbook,20 );
 			}).toThrow( regex="Invalid sheet" );
