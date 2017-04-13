@@ -185,7 +185,7 @@ component{
 		,boolean boldHeaderRow=true
 		,boolean trim=true
 		,boolean xmlFormat=false
-		,string delimiter		
+		,string delimiter
 	){
 		var conversionArgs = {
 			firstRowIsHeader: firstRowIsHeader
@@ -1197,10 +1197,10 @@ component{
 		cell.setCellFormula( JavaCast( "string", formula ) );
 	}
 
-	public void function setCellValue( required workbook,required value,required numeric row,required numeric column ){
+	public void function setCellValue( required workbook,required value,required numeric row,required numeric column, string type="" ){
 		//Automatically create the cell if it does not exist, instead of throwing an error
 		var cell = initializeCell( workbook, row, column );
-		setCellValueAsType( workbook, cell, value );
+		setCellValueAsType( workbook, cell, value, type );
 	}
 
 	public void function setCellRangeValue(
@@ -1566,7 +1566,7 @@ component{
 				if( requiresJavaLoader )
 					/* See encryptFile() for explanation of the following line */
 					var info = New decryption( server[ poiLoaderName ], fs ).loadInfoWithSwitchedContextLoader();
-				else	
+				else
 					var info = loadPoi( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( fs );;
 				var decryptor = loadPoi( "org.apache.poi.poifs.crypt.Decryptor" ).getInstance( info );
 				if( decryptor.verifyPassword( password ) )
@@ -2139,14 +2139,14 @@ component{
 	  return true;
 	}
 
-	private void function setCellValueAsType( required workbook, required cell, required value ){
-		if( IsNumeric( value ) AND !REFind( "^0[\d]+", value ) ){ /*  skip numeric strings with leading zeroes. treat those as text  */
+	private void function setCellValueAsType( required workbook, required cell, required value, string type="" ){
+		if( ( IsNumeric( value ) AND !REFind( "^0[\d]+", value ) AND !len( type ) ) || type=="numeric" ){ /*  skip numeric strings with leading zeroes. treat those as text  */
 			/*  NUMERIC  */
 			cell.setCellType( cell.CELL_TYPE_NUMERIC );
 			cell.setCellValue( JavaCast( "double", Val( value ) ) );
 			return;
 		}
-		if( IsDate( value ) ){
+		if( ( IsDate( value ) AND !len( type ) ) || type=="date"  ){
 			/*  DATE  */
 			var cellFormat = getDateTimeValueFormat( value );
 			var formatter = workbook.getCreationHelper().createDataFormat();
@@ -2159,11 +2159,11 @@ component{
 				value = TimeFormat( value, "HH:MM:SS" );
 			 	cell.setCellValue( dateUtil.convertTime( value ) );
 			}
-			else 
+			else
 				cell.setCellValue( ParseDateTime( value ) );
 			return;
 		}
-		if( IsBoolean( value ) ){
+		if( ( IsBoolean( value ) AND !len( type ) ) || type=="boolean" ){
 			/* BOOLEAN */
 			cell.setCellType( cell.CELL_TYPE_BOOLEAN );
 			cell.setCellValue( JavaCast( "boolean", value ) );
@@ -2333,7 +2333,7 @@ component{
 			//For ACF which doesn't return the correct exception types
 			if( exception.message CONTAINS "Your InputStream was neither" )
 				handleInvalidSpreadsheetFile( path );
-			if( exception.message CONTAINS "spreadsheet seems to be Excel 5" ) 
+			if( exception.message CONTAINS "spreadsheet seems to be Excel 5" )
 				throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
 			rethrow;
 		}
@@ -2705,7 +2705,7 @@ component{
 			if( !exception.message CONTAINS "undefined" )
 				rethrow;
 			//ACF
-			return q.ColumnList.ListToArray(); 
+			return q.ColumnList.ListToArray();
 		}
 	}
 
