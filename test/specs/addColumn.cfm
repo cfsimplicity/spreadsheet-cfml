@@ -44,26 +44,26 @@ describe( "addColumn",function(){
 	});
 
 	it( "Adds numeric, boolean or date values correctly",function() {
-		var dateValue = CreateDate( 2015,04,12 );
-		s.addColumn( workbook,"2" );
-		s.addColumn( workbook=workbook,data=true,startColumn=2 );
-		s.addColumn( workbook=workbook,data=dateValue,startColumn=3 );
-		expected = QueryNew( "column1,column2,column3","Integer,Bit,Date",[ [ 2,true,dateValue ] ] );
+		var dateValue = CreateDate( 2015, 04, 12 );
+		s.addColumn( workbook, "2" );
+		s.addColumn( workbook=workbook, data=true, startColumn=2 );
+		s.addColumn( workbook=workbook, data=dateValue, startColumn=3 );
+		expected = QueryNew( "column1,column2,column3", "Integer,Bit,Date", [ [ 2, true, dateValue ] ] );
 		actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
-		expect( IsNumeric( s.getCellValue( workbook,1,1 ) ) ).tobeTrue();
-		expect( IsBoolean( s.getCellValue( workbook,1,2 ) ) ).tobeTrue();
-		expect( IsDate( s.getCellValue( workbook,1,3 ) ) ).tobeTrue();
+		expect( s.getCellType( workbook, 1 , 1 ) ).toBe( "numeric" );
+		expect( s.getCellType( workbook, 1 , 2 ) ).toBe( "string" );
+		expect( s.getCellType( workbook, 1 , 3 ) ).toBe( "numeric" );
 	});
 
 	it( "Adds zeros as zeros, not booleans",function(){
-		s.addColumn( workbook,0 );
-		expect( s.getCellValue( workbook, 1, 1 ) ).tobe( 0 );
+		s.addColumn( workbook, 0 );
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
 	});
 
 	it( "Adds strings with leading zeros as strings not numbers",function(){
-		s.addColumn( workbook,"01" );
-		expect( IsNumeric( s.getCellValue( workbook, 1, 1 ) ) ).tobeFalse();
+		s.addColumn( workbook, "01" );
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
 	});
 
 });	

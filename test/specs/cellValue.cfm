@@ -57,5 +57,15 @@ describe( "cellValue",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	xdescribe( "Throws an exception if",function(){
+
+		it( "the data type is invalid",function() {
+			expect( function(){
+				/* TODO */
+			}).toThrow( regex="Invalid data type" );
+		});
+
+	});	
+
 });	
 </cfscript>

@@ -1,3 +1,10 @@
+## 1.2.0 - ? April 2017
+
+- Enhancements:
+	- Add `getCellType()`
+- Fixes:
+	- Don't auto-detect any incoming values as boolean: allow them to default to strings or numbers, unless a source query column type has set them as bit/boolean
+
 ## 1.1.0 - 11 April 2017
 
 - Enhancement: \#110 Support populating a spreadsheet from CSV data:

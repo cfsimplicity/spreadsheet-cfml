@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "1.1.0";
+	variables.version = "1.2.0";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -277,7 +277,7 @@ component{
 					if( !IsNull( oldCell ) ){
 						cell=createCell( row,i );
 						cell.setCellStyle( oldCell.getCellStyle() );
-						var cellValue = getCellValueAsType( workbook,oldCell );
+						var cellValue = getCellValueAsType( workbook, oldCell );
 						setCellValueAsType( workbook, oldCell, cellValue );
 						cell.setCellComment( oldCell.getCellComment() );
 					}
@@ -437,8 +437,8 @@ component{
 		var rowValues = parseRowData( data, delimiter, handleEmbeddedCommas );
 		var cellIndex = column-1;
 		for( var cellValue in rowValues ){
-			var cell = createCell( theRow,cellIndex );
-			setCellValueAsType( workbook, cell, cellValue.Trim() );
+			var cell = createCell( theRow, cellIndex );
+			setCellValueAsType( workbook, cell, cellValue );
 			if( autoSizeColumns )
 				autoSizeColumn( workbook, column );
 			cellIndex++;
@@ -464,45 +464,33 @@ component{
 		for( var dataRow in data ){
 			var newRow=createRow( workbook, currentRowIndex, false );
 			var cellIndex = ( column -1 );
-			/* Note: To properly apply date/number formatting:
- 				- cell type must be CELL_TYPE_NUMERIC
- 				- cell value must be applied as a java.util.Date or java.lang.Double (NOT as a string)
- 				- cell style must have a dataFormat (datetime values only)
-   		*/
    		/* populate all columns in the row */
    		for( var queryColumn in queryColumns ){
    			var cell = createCell( newRow, cellIndex, false );
 				var value = dataRow[ queryColumn.name ];
 				var forceDefaultStyle = false;
 				queryColumn.index = cellIndex;
-				/* Cast the values to the correct type, so data formatting is properly applied  */
-				if( queryColumn.cellDataType IS "DOUBLE" AND IsNumeric( value ) )
-					cell.setCellValue( JavaCast( "double", Val( value ) ) );
-				else if( queryColumn.cellDataType IS "TIME" AND IsDate( value ) ){
-					value = TimeFormat( ParseDateTime( value ), "HH:MM:SS");
-					cell.setCellValue( dateUtil.convertTime( value ) );
-					forceDefaultStyle = true;
-				}
-				else if( queryColumn.cellDataType EQ "DATE" AND IsDate( value ) ){
-					/* If the cell is NOT already formatted for dates, apply the default format brand new cells have a styleIndex == 0  */
-					var styleIndex = cell.getCellStyle().getDataFormat();
-					var styleFormat = cell.getCellStyle().getDataFormatString();
-					if( styleIndex EQ 0 OR NOT dateUtil.isADateFormat( styleIndex, styleFormat ) )
+				/* Cast the values to the correct type  */
+				switch( queryColumn.cellDataType ){
+					case "DOUBLE":
+						setCellValueAsType( workbook, cell, value, "numeric" );
+						break;
+					case "DATE":
 						forceDefaultStyle = true;
-					cell.setCellValue( ParseDateTime( value ) );
+						setCellValueAsType( workbook, cell, value, "date" );
+						break;
+					case "TIME":
+						setCellValueAsType( workbook, cell, value, "date" );
+						break;
+					case "BOOLEAN":
+						setCellValueAsType( workbook, cell, value, "boolean" );
+						break;
+					default:
+						if( IsSimpleValue( value ) AND !Len( value ) ) //NB don't use member function: won't work if numeric
+							setCellValueAsType( workbook, cell, value, "blank" );
+						else
+							setCellValueAsType( workbook, cell, value, "string" );
 				}
-				else if( queryColumn.cellDataType EQ "BOOLEAN" AND IsBoolean( value ) )
-					cell.setCellValue( JavaCast( "boolean", value ) );
-				else if( IsSimpleValue( value ) AND !Len( value ) ) //NB don't use member function: won't work if numeric
-					cell.setCellType( cell.CELL_TYPE_BLANK );
-				else
-					cell.setCellValue( JavaCast( "string", value ) );
-				/* Replace the existing styles with custom formatting  */
-				if( queryColumn.KeyExists( "customCellStyle" ) )
-					cell.setCellStyle( queryColumn.customCellStyle );
-					/* Replace the existing styles with default formatting (for readability). The reason we cannot just update the cell's style is because they are shared. So modifying it may impact more than just this one cell. */
-				else if( queryColumn.KeyExists( "defaultCellStyle" ) AND forceDefaultStyle )
-					cell.setCellStyle( queryColumn.defaultCellStyle );
 				cellIndex++;
    		}
    		currentRowIndex++;
@@ -797,6 +785,16 @@ component{
 			}
 		}
 		return formulas;
+	}
+
+	public string function getCellType( required workbook, required numeric row, required numeric column ){
+		if( !cellExists( workbook, row, column ) )
+			return "";
+		var rowIndex = ( row-1 );
+		var columnIndex = ( column-1 );
+		var rowObject = getActiveSheet( workbook ).getRow( JavaCast( "int", rowIndex ) );
+		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
+		return cell.getCellTypeEnum().toString();
 	}
 
 	public any function getCellValue( required workbook, required numeric row, required numeric column ){
@@ -1191,16 +1189,22 @@ component{
 		cell.setCellComment( commentObject );
 	}
 
-	public void function setCellFormula( required workbook,required string formula,required numeric row,required numeric column ){
+	public void function setCellFormula( required workbook, required string formula, required numeric row, required numeric column ){
 		//Automatically create the cell if it does not exist, instead of throwing an error
 		var cell = initializeCell( workbook, row, column );
 		cell.setCellFormula( JavaCast( "string", formula ) );
 	}
 
-	public void function setCellValue( required workbook,required value,required numeric row,required numeric column, string type="" ){
+	public void function setCellValue( required workbook, required value, required numeric row, required numeric column, string type ){
 		//Automatically create the cell if it does not exist, instead of throwing an error
-		var cell = initializeCell( workbook, row, column );
-		setCellValueAsType( workbook, cell, value, type );
+		var args = {
+			workbook: workbook
+			,cell: initializeCell( workbook, row, column )
+			,value: value
+		};
+		if( arguments.KeyExists( "type" ) )
+			args.type = type;
+		setCellValueAsType( argumentCollection=args );
 	}
 
 	public void function setCellRangeValue(
@@ -1316,7 +1320,7 @@ component{
 					var tempCell = row.getCell( JavaCast( "int", i ) );
 					var cell = createCell( row, i+offset );
 					if( !IsNull( tempCell ) ){
-						setCellValueAsType( workbook, cell,getCellValueAsType( workbook, tempCell ) );
+						setCellValueAsType( workbook, cell, getCellValueAsType( workbook, tempCell ) );
 						cell.setCellStyle( tempCell.getCellStyle() );
 					}
 				}
@@ -1469,7 +1473,7 @@ component{
 		if( ( rowIndex EQ sheet.headerRowIndex ) AND !sheet.includeHeaderRow )
 			return;
 		var rowData = [];
-		var row = sheet.object.GetRow( JavaCast( "int",rowIndex ) );
+		var row = sheet.object.GetRow( JavaCast( "int", rowIndex ) );
 		if( IsNull( row ) ){
 			if( sheet.includeBlankRows )
 				sheet.data.Append( rowData );
@@ -1767,7 +1771,7 @@ component{
 		return variables.cellUtil;
 	}
 
-	private any function getCellValueAsType( required workbook,required cell ){
+	private any function getCellValueAsType( required workbook, required cell ){
 		/* When getting the value of a cell, it is important to know what type of cell value we are dealing with. If you try to grab the wrong value type, an error might be thrown. For that reason, we must check to see what type of cell we are working with. These are the cell types and they are constants of the cell object itself:
 
 		20170116: In POI 4.0 getCellType() will no longer return an integer, but a CellType enum instead. Shouldn't affect things as we are only using the constants, not the integer literals.
@@ -1784,8 +1788,12 @@ component{
 		if( cellType EQ cell.CELL_TYPE_NUMERIC ){
 			/* Get numeric cell data. This could be a standard number, could also be a date value. */
 			var dateUtil = getDateUtil();
-			if( dateUtil.isCellDateFormatted( cell ) )
-				return cell.getDateCellValue();
+			if( dateUtil.isCellDateFormatted( cell ) ){
+				var cellValue = cell.getDateCellValue();
+				if( DateCompare( "1899-12-31", cellValue, "d" ) EQ 0 ) // TIME
+					return getFormatter().formatCellValue( cell );//return as a time formatted string to avoid default epoch date 1899-12-31
+				return cellValue;
+			}
 			return cell.getNumericCellValue();
 		}
 		if( cellType EQ cell.CELL_TYPE_FORMULA ){
@@ -1888,14 +1896,11 @@ component{
 		for( var col in metadata ){
 			var columnType = col.typeName?: "";// typename is missing in ACF if not specified in the query
 			switch( columnType ){
-				/* apply basic formatting to dates and times for increased readability */
 				case "DATE": case "TIMESTAMP":
 					col.cellDataType = "DATE";
-					col.defaultCellStyle = buildCellStyle( workbook, { dataFormat=variables.dateFormats[ columnType ] } );
 				break;
 				case "TIME":
 					col.cellDataType = "TIME";
-					col.defaultCellStyle = buildCellStyle( workbook, { dataFormat=variables.dateFormats[ columnType ] } );
 				break;
 				/* Note: Excel only supports "double" for numbers. Casting very large DECIMIAL/NUMERIC or BIGINT values to double may result in a loss of precision or conversion to NEGATIVE_INFINITY / POSITIVE_INFINITY. */
 				case "DECIMAL": case "BIGINT": case "NUMERIC": case "DOUBLE": case "FLOAT": case "INTEGER": case "REAL": case "SMALLINT": case "TINYINT":
@@ -2139,45 +2144,58 @@ component{
 	  return true;
 	}
 
-	private void function setCellValueAsType( required workbook, required cell, required value, string type="" ){
-		if( ( IsNumeric( value ) AND !REFind( "^0[\d]+", value ) AND !len( type ) ) || type=="numeric" ){ /*  skip numeric strings with leading zeroes. treat those as text  */
-			/*  NUMERIC  */
-			cell.setCellType( cell.CELL_TYPE_NUMERIC );
-			cell.setCellValue( JavaCast( "double", Val( value ) ) );
-			return;
+	private void function setCellValueAsType( required workbook, required cell, required value, string type ){
+		if( !arguments.KeyExists( "type" ) ) //autodetect type
+			arguments.type = detectValueDataType( value );
+		else if( !ListFindNoCase( "string,numeric,date,boolean,blank", type ) )
+			throw( type=exceptionType, message="Invalid data type: '#type#'", detail="The data type must be one of 'string', 'numeric', 'date' 'boolean'." );
+		//writedump( type );
+		switch( type ){
+			case "numeric":
+				cell.setCellType( cell.CELL_TYPE_NUMERIC );
+				cell.setCellValue( JavaCast( "double", Val( value ) ) );
+				return;
+			case "date":
+				/* Note: To properly apply date/number formatting:
+ 				- cell type must be CELL_TYPE_NUMERIC
+ 				- cell value must be applied as a java.util.Date or java.lang.Double (NOT as a string)
+ 				- cell style must have a dataFormat (datetime values only)
+   		*/
+				var cellFormat = getDateTimeValueFormat( value );
+				var formatter = workbook.getCreationHelper().createDataFormat();
+				//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
+				getCellUtil().setCellStyleProperty( cell, getCellUtil().DATA_FORMAT, formatter.getFormat( JavaCast( "string", cellFormat ) ) );
+				cell.setCellType( cell.CELL_TYPE_NUMERIC );
+				/*  Excel's uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling - */
+				if( cellFormat EQ variables.dateFormats.TIME ){
+					var dateUtil = getDateUtil();
+					value = TimeFormat( value, "HH:MM:SS" );
+				 	cell.setCellValue( dateUtil.convertTime( value ) );
+				}
+				else
+					cell.setCellValue( ParseDateTime( value ) );
+				return;
+			case "boolean":
+				cell.setCellType( cell.CELL_TYPE_BOOLEAN );
+				cell.setCellValue( JavaCast( "boolean", value ) );
+				return;
+			case "blank":
+				cell.setCellType( cell.CELL_TYPE_BLANK ); //no need to set the value: it will be blank
+				return;
 		}
-		if( ( IsDate( value ) AND !len( type ) ) || type=="date"  ){
-			/*  DATE  */
-			var cellFormat = getDateTimeValueFormat( value );
-			var formatter = workbook.getCreationHelper().createDataFormat();
-			//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
-			getCellUtil().setCellStyleProperty( cell, getCellUtil().DATA_FORMAT, formatter.getFormat( JavaCast( "string", cellFormat ) ) );
-			cell.setCellType( cell.CELL_TYPE_NUMERIC );
-			/*  Excel's uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling - */
-			if( cellFormat EQ variables.dateFormats.TIME ){
-				var dateUtil = getDateUtil();
-				value = TimeFormat( value, "HH:MM:SS" );
-			 	cell.setCellValue( dateUtil.convertTime( value ) );
-			}
-			else
-				cell.setCellValue( ParseDateTime( value ) );
-			return;
-		}
-		if( ( IsBoolean( value ) AND !len( type ) ) || type=="boolean" ){
-			/* BOOLEAN */
-			cell.setCellType( cell.CELL_TYPE_BOOLEAN );
-			cell.setCellValue( JavaCast( "boolean", value ) );
-			return;
-		}
-		if( !value.Trim().Len() ){
-			/* EMPTY */
-			cell.setCellType( cell.CELL_TYPE_BLANK );
-			cell.setCellValue( "" );
-			return;
-		}
-		/* STRING */
+		// string
 		cell.setCellType( cell.CELL_TYPE_STRING );
 		cell.setCellValue( JavaCast( "string", value ) );
+	}
+
+	private string function detectValueDataType( required value ){
+		if( IsDate( value ) )
+			return "date";
+		if( IsNumeric( value ) AND !REFind( "^0[\d]+", value ) ) /* skip numeric strings with leading zeroes. treat those as text */
+			return "numeric";
+		if( !Len( Trim( value ) ) )
+			return "blank";
+		return "string";
 	}
 
 	private boolean function sheetExists( required workbook, string sheetName, numeric sheetNumber ){
@@ -2194,7 +2212,7 @@ component{
 		return ( sheet.getNumMergedRegions() GT 0 );
 	}
 
-	private query function sheetToQuery(
+	public query function sheetToQuery(
 		required workbook
 		,string sheetName
 		,numeric sheetNumber=1
@@ -2252,7 +2270,6 @@ component{
 				var columnName = ( i LTE specifiedColumnCount )? columnNames[ i ]: "column" & i;
 				sheet.columnNames.Append( columnName );
 			}
-
 		}
 		else if( sheet.hasHeaderRow ){
 			var headerRowObject = sheet.object.GetRow( JavaCast( "int", sheet.headerRowIndex ) );
@@ -2270,7 +2287,6 @@ component{
 			for( var i=1; i LTE sheet.totalColumnCount; i++ )
 				sheet.columnNames.Append( "column" & i );
 		}
-
 		var result = _QueryNew( sheet.columnNames.ToList(), "", sheet.data );
 		if( !includeHiddenColumns ){
 			result = deleteHiddenColumnsFromQuery( sheet, result );

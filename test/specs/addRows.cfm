@@ -31,16 +31,45 @@ describe( "addRows",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Adds numeric, boolean or date values correctly",function() {
-		var dateValue = CreateDate( 2015,04,12 );
-		var rowData = QueryNew( "column1,column2,column3","Integer,Bit,Date",[ [ 2,true,dateValue ] ] );
-		s.addRows( workbook,rowData );
+	it( "Adds numeric values correctly",function() {
+		var rowData = QueryNew( "column1,column2,column3", "Integer,BigInt,Double", [ [ 1, 1, 1.1 ] ] );
+		s.addRows( workbook, rowData );
 		expected = rowData;
 		actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
-		expect( IsNumeric( s.getCellValue( workbook,1,1 ) ) ).tobeTrue();
-		expect( IsBoolean( s.getCellValue( workbook,1,2 ) ) ).tobeTrue();
-		expect( IsDate( s.getCellValue( workbook,1,3 ) ) ).tobeTrue();
+		expect( IsNumeric( s.getCellValue( workbook, 1, 1 ) ) ).tobeTrue();
+		expect( IsNumeric( s.getCellValue( workbook, 1, 2 ) ) ).tobeTrue();
+		expect( IsNumeric( s.getCellValue( workbook, 1, 3 ) ) ).tobeTrue();
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
+		expect( s.getCellType( workbook, 1, 2 ) ).toBe( "numeric" );
+		expect( s.getCellType( workbook, 1, 3 ) ).toBe( "numeric" );
+	});
+
+	it( "Adds boolean values correctly",function() {
+		var rowData = QueryNew( "column1", "Bit", [ [ true ] ] );
+		s.addRows( workbook, rowData );
+		expected = rowData;
+		actual = s.sheetToQuery( workbook );
+		expect( actual ).toBe( expected );
+		expect( IsBoolean( s.getCellValue( workbook, 1, 1 ) ) ).toBeTrue();
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "boolean" );
+	});
+
+	it( "Adds date/time values correctly",function() {
+		var dateValue = CreateDate( 2015, 04, 12 );
+		var timeValue = CreateTime( 1, 0, 0 );
+		var dateTimeValue = createDateTime( 2015, 04, 12, 1, 0, 0 );
+		var rowData = QueryNew( "column1,column2,column3", "Date,Time,Timestamp",[ [ dateValue, timeValue, dateTimeValue ] ] );
+		s.addRows( workbook, rowData );
+		expected = rowData;
+		actual = s.sheetToQuery( workbook );
+		expect( actual ).toBe( expected );
+		expect( IsDate( s.getCellValue( workbook, 1, 1 ) ) ).toBeTrue();
+		expect( IsDate( s.getCellValue( workbook, 1, 2 ) ) ).toBeTrue();
+		expect( IsDate( s.getCellValue( workbook, 1, 3 ) ) ).toBeTrue();
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
+		expect( s.getCellType( workbook, 1, 2 ) ).toBe( "numeric" );
+		expect( s.getCellType( workbook, 1, 3 ) ).toBe( "numeric" );
 	});
 
 	it( "Adds zeros as zeros, not booleans",function(){
