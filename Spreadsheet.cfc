@@ -438,7 +438,7 @@ component{
 		var cellIndex = column-1;
 		for( var cellValue in rowValues ){
 			var cell = createCell( theRow, cellIndex );
-			setCellValueAsType( workbook, cell, cellValue );
+			setCellValueAsType( workbook, cell, Trim( cellValue ) );
 			if( autoSizeColumns )
 				autoSizeColumn( workbook, column );
 			cellIndex++;
@@ -1262,7 +1262,7 @@ component{
 		required workbook
 		,required string columnRange
 	){
-		columnRange=columnRange.Trim();
+		columnRange = columnRange.Trim();
 		if( !IsValid( "regex",columnRange,"[A-Za-z]:[A-Za-z]" ) )
 			throw( type=exceptionType, message="Invalid columnRange argument", detail="The 'columnRange' argument should be in the form 'A:B'" );
 		var cellRangeAddress = loadPoi( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String", columnRange ) );
