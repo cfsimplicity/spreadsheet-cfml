@@ -1604,7 +1604,7 @@ component{
 		// Numeric must precede date test
 		if( IsNumeric( value ) AND !REFind( "^0[\d]+", value ) ) /* skip numeric strings with leading zeroes. treat those as text */
 			return "numeric";
-		if( IsDate( value ) )
+		if( _isDate( value ) )
 			return "date";
 		if( !Len( Trim( value ) ) )
 			return "blank";
@@ -2707,6 +2707,17 @@ component{
 			,JavaCast( "int", rgb[ 3 ] )
 		);
 		return similarExistingColor.getIndex();
+	}
+
+	/* Override troublesome engine BIFs */
+
+	private boolean function _isDate( required value ){
+		if( !IsDate( value ) )
+			return false;
+		// Lucee will treat 01-23112 as a date!
+		if( REFind( "\d\d[[:punct:]]\d{5,}", value ) ) // NB: member function doesn't work on dates in Lucee
+			return false;
+		return true;
 	}
 
 	/* ACF compatibility functions */
