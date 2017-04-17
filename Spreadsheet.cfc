@@ -1602,7 +1602,10 @@ component{
 
 	private string function detectValueDataType( required value ){
 		// Numeric must precede date test
-		if( IsNumeric( value ) AND !REFind( "^0[\d]+", value ) ) /* skip numeric strings with leading zeroes. treat those as text */
+		// Golden default rule: treat numbers with leading zeros as STRINGS: not numbers (lucee) or dates (ACF);
+		if( REFind( "^0[\d]+", value ) )
+			return "string";
+		if( IsNumeric( value ) )
 			return "numeric";
 		if( _isDate( value ) )
 			return "date";
