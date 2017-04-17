@@ -275,7 +275,7 @@ component{
 				for( var i = lastCellNum; i EQ cellNum; i-- ){
 					oldCell = row.getCell( JavaCast( "int", i-1 ) );
 					if( !IsNull( oldCell ) ){
-						cell=createCell( row,i );
+						cell = createCell( row, i );
 						cell.setCellStyle( oldCell.getCellStyle() );
 						var cellValue = getCellValueAsType( workbook, oldCell );
 						setCellValueAsType( workbook, oldCell, cellValue );
@@ -468,7 +468,6 @@ component{
    		for( var queryColumn in queryColumns ){
    			var cell = createCell( newRow, cellIndex, false );
 				var value = dataRow[ queryColumn.name ];
-				var forceDefaultStyle = false;
 				queryColumn.index = cellIndex;
 				/* Cast the values to the correct type  */
 				switch( queryColumn.cellDataType ){
@@ -476,9 +475,6 @@ component{
 						setCellValueAsType( workbook, cell, value, "numeric" );
 						break;
 					case "DATE":
-						forceDefaultStyle = true;
-						setCellValueAsType( workbook, cell, value, "date" );
-						break;
 					case "TIME":
 						setCellValueAsType( workbook, cell, value, "date" );
 						break;
