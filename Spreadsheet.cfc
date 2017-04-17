@@ -1600,6 +1600,17 @@ component{
 		workbook.removeSheetAt( JavaCast( "int", sheetIndex ) );
 	}
 
+	private string function detectValueDataType( required value ){
+		// Numeric must precede date test
+		if( IsNumeric( value ) AND !REFind( "^0[\d]+", value ) ) /* skip numeric strings with leading zeroes. treat those as text */
+			return "numeric";
+		if( IsDate( value ) )
+			return "date";
+		if( !Len( Trim( value ) ) )
+			return "blank";
+		return "string";
+	}
+
 	private void function downloadBinaryVariable( required binaryVariable, required string filename, required contentType ){
 		cfheader( name="Content-Disposition", value='attachment; filename="#filename#"' );
 		cfcontent( type=contentType, variable="#binaryVariable#", reset="true" );
@@ -2184,16 +2195,6 @@ component{
 		cell.setCellValue( JavaCast( "string", value ) );
 	}
 
-	private string function detectValueDataType( required value ){
-		if( IsDate( value ) )
-			return "date";
-		if( IsNumeric( value ) AND !REFind( "^0[\d]+", value ) ) /* skip numeric strings with leading zeroes. treat those as text */
-			return "numeric";
-		if( !Len( Trim( value ) ) )
-			return "blank";
-		return "string";
-	}
-
 	private boolean function sheetExists( required workbook, string sheetName, numeric sheetNumber ){
 		validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
 		if( arguments.KeyExists( "sheetName" ) )
@@ -2208,7 +2209,7 @@ component{
 		return ( sheet.getNumMergedRegions() GT 0 );
 	}
 
-	public query function sheetToQuery(
+	private query function sheetToQuery(
 		required workbook
 		,string sheetName
 		,numeric sheetNumber=1
