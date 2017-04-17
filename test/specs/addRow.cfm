@@ -45,15 +45,34 @@ describe( "addRow",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Adds numeric, boolean or date values correctly",function() {
+	it( "Adds numeric values correctly",function() {
+		var rowData = "1,1.1";
+		s.addRow( workbook, rowData );
+		expect( s.getCellValue( workbook, 1, 1 ) ).toBe( 1 );
+		expect( s.getCellValue( workbook, 1, 2 ) ).toBe( 1.1 );
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
+		expect( s.getCellType( workbook, 1, 2 ) ).toBe( "numeric" );
+	});
+
+	it( "Adds boolean values as strings",function() {
+		var rowData = true;
+		s.addRow( workbook, rowData );
+		expect( s.getCellValue( workbook, 1, 1 ) ).toBe( true );
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
+	});
+
+	it( "Adds date/time values correctly",function() {
 		var dateValue = CreateDate( 2015, 04, 12 );
-		s.addRow( workbook, "2,true,#dateValue#" );
-		expected = QueryNew( "column1,column2,column3", "Integer,Bit,Date", [ [ 2, true, dateValue ] ] );
-		actual = s.sheetToQuery( workbook );
-		expect( actual ).toBe( expected );
-		expect( s.getCellType( workbook, 1 , 1 ) ).toBe( "numeric" );
-		expect( s.getCellType( workbook, 1 , 2 ) ).toBe( "string" );
-		expect( s.getCellType( workbook, 1 , 3 ) ).toBe( "numeric" );
+		var timeValue = CreateTime( 1, 0, 0 );
+		var dateTimeValue = CreateDateTime( 2015, 04, 12, 1, 0, 0 );
+		var rowData = "#dateValue#,#timeValue#,#dateTimeValue#";
+		s.addRow( workbook, rowData );
+		expect( s.getCellValue( workbook, 1, 1 ) ).toBe( dateValue );
+		expect( s.getCellValue( workbook, 1, 2 ) ).toBe( timeValue );
+		expect( s.getCellValue( workbook, 1, 3 ) ).toBe( dateTimeValue );
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
+		expect( s.getCellType( workbook, 1, 2 ) ).toBe( "numeric" );
+		expect( s.getCellType( workbook, 1, 3 ) ).toBe( "numeric" );
 	});
 
 	it( "Adds zeros as zeros, not booleans",function(){

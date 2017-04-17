@@ -8,46 +8,45 @@ describe( "cellValue",function(){
 	it( "Gets the value from the specified cell",function() {
 		data =  QueryNew( "column1,column2","VarChar,VarChar",[ [ "a","b" ],[ "c","d" ] ] );
 		s.addRows( workbook,data );
-		expect( s.getCellValue( workbook,2,2 ) ).toBe( "d" );
+		expect( s.getCellValue( workbook, 2, 2 ) ).toBe( "d" );
 	});
 
 	it( "Sets the specified cell to the specified string value",function() {
-		value="test";
-		s.setCellValue( workbook,value,1,1 );
-		expected = value;
-		actual = s.getCellValue( workbook,1,1 );
-		expect( actual ).toBe( expected );
+		value = "test";
+		s.setCellValue( workbook, value, 1, 1 );
+		actual = s.getCellValue( workbook, 1, 1 );
+		expect( actual ).toBe( value );
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
 	});
 
 	it( "Sets the specified cell to the specified numeric value",function() {
-		value=1;
-		s.setCellValue( workbook,value,1,1 );
-		expected = value;
-		actual = s.getCellValue( workbook,1,1 );
-		expect( actual ).toBe( expected );
-		expect( IsNumeric( actual ) ).toBeTrue();
-	});
-
-	it( "Sets the specified cell to the specified boolean value",function() {
-		value=true;
-		s.setCellValue( workbook,value,1,1 );
-		expected = value;
-		actual = s.getCellValue( workbook,1,1 );
-		expect( actual ).toBe( expected );
-		expect( IsBoolean( actual ) ).toBeTrue();
+		value = 1;
+		s.setCellValue( workbook, value, 1, 1 );
+		actual = s.getCellValue( workbook, 1, 1 );
+		expect( actual ).toBe( value );
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
 	});
 
 	it( "Sets the specified cell to the specified date value",function() {
-		value=CreateDate( 2015,04,12 );
-		s.setCellValue( workbook,value,1,1 );
-		expected = DateFormat( value,"yyyy-mm-dd" );
-		actual = s.getCellValue( workbook,1,1 );
+		value = CreateDate( 2015, 04, 12 );
+		s.setCellValue( workbook, value, 1, 1 );
+		expected = DateFormat( value, "yyyy-mm-dd" );
+		actual = s.getCellValue( workbook, 1, 1 );
 		expect( actual ).toBe( expected );
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
+	});
+
+	it( "Sets the specified cell to the specified boolean value with a data type of string by default",function() {
+		var value = true;
+		s.setCellValue( workbook, value, 1, 1 );
+		actual = s.getCellValue( workbook, 1, 1 );
+		expect( actual ).toBe( value );
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
 	});
 
 	it( "Sets the specified range of cells to the specified value",function() {
 		value="a";
-		s.setCellRangeValue( workbook,value,1,2,1,2 );
+		s.setCellRangeValue( workbook, value, 1, 2, 1, 2 );
 		expected = querySim(
 			"column1,column2
 			a|a
@@ -63,7 +62,7 @@ describe( "cellValue",function(){
 		expected = "0162220494";
 		actual = s.getCellValue( workbook, 1, 1 );
 		expect( actual ).toBe( expected );
-		expect( s.getCellType( workbook, 1 , 1 ) ).toBe( "string" );
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
 	});
 
 	it( "handles non-date values correctly that Lucee incorrectly treats as dates", function(){
@@ -72,7 +71,7 @@ describe( "cellValue",function(){
 		expected = "01-23112";
 		actual = s.getCellValue( workbook, 1, 1 );
 		expect( actual ).toBe( expected );
-		expect( s.getCellType( workbook, 1 , 1 ) ).toBe( "string" );
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
 	});
 
 	xdescribe( "Throws an exception if",function(){

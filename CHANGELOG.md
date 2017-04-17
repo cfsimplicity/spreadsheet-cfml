@@ -4,7 +4,7 @@
 	- Add `getCellType()`
 - Fixes:
 	- \#115: Don't auto-detect any incoming values as boolean: allow them to default to strings or numbers, unless a source query column type has set them as bit/boolean
-	- \#116: In Lucee prevent certain definitely non-date values being detected as dates
+	- \#116: Prevent certain definitely non-date values being detected as dates
 - Rewrite cell data type handling
 
 ## 1.1.0 - 11 April 2017
