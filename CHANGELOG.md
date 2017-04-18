@@ -1,11 +1,13 @@
-## 1.2.0 - ? April 2017
+## 1.2.0 - 18 April 2017
 
 - Enhancements:
+	- Rewrite cell data type handling
+	- \#112 Allow data type to be specified when using `setCellValue()`
 	- Add `getCellType()`
 - Fixes:
-	- \#115: Don't auto-detect any incoming values as boolean: allow them to default to strings or numbers, unless a source query column type has set them as bit/boolean
+	- \#115: Don't auto-detect any incoming values as boolean: allow them to default to strings or numbers, unless a source query column type or data type parameter has set them as bit/boolean
 	- \#116: Prevent certain definitely non-date values being detected as dates
-- Rewrite cell data type handling
+	- \#117: Allow `csvToQuery()` to be called with positional arguments
 
 ## 1.1.0 - 11 April 2017
 
