@@ -197,7 +197,7 @@ The automated tests require [TestBox 2.1](https://github.com/Ortus-Solutions/Tes
 
 ## Credits
 
-The code is very largely based on the work of [TeamCfAdvance](https://github.com/teamcfadvance/), to whom credit and thanks are due. Ben Nadel's [POI Utility](https://github.com/bennadel/POIUtility.cfc) was also used as a basis for parts of the `read` functionality.
+The code was originally adapted from the work of [TeamCfAdvance](https://github.com/teamcfadvance/). Ben Nadel's [POI Utility](https://github.com/bennadel/POIUtility.cfc) was also used as a basis for parts of the `read` functionality.
 
 [JavaLoader](https://github.com/markmandel/JavaLoader) is by Mark Mandel.
 
