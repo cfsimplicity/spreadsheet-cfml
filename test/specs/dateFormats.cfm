@@ -22,7 +22,7 @@ describe( "dateFormats customisability",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	describe( "Throws an exception if",function(){
+	describe( "dateFormats: throws an exception if",function(){
 
 		it( "a passed format key is invalid",function() {
 			expect( function(){

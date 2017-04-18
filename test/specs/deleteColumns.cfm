@@ -19,7 +19,7 @@ describe( "deleteColumns",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	describe( "Throws an exception if",function(){
+	describe( "deleteColumns throws an exception if",function(){
 
 		it( "the range is invalid",function() {
 			expect( function(){

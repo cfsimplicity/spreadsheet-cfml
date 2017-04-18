@@ -13,7 +13,7 @@ describe( "setActiveSheetNumber",function(){
 	});
 
 
-	describe( "Throws an exception if",function(){
+	describe( "setActiveSheetNumber throws an exception if",function(){
 
 		it( "the sheet number doesn't exist",function() {
 			expect( function(){

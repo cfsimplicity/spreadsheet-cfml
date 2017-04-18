@@ -41,7 +41,7 @@ describe( "getColumnCount",function(){
 		expect( s.getColumnCount( workbook,"test" ) ).toBe( 3 );
 	});
 
-	describe( "Throws an exception if",function(){
+	describe( "getColumnCount throws an exception if",function(){
 
 		it( "the sheet name or number doesn't exist",function() {
 			expect( function(){

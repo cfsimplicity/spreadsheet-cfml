@@ -8,7 +8,7 @@ describe( "formatColumns",function(){
 		s.formatColumns( workbook,format,"1-2" );
 	});
 
-	describe( "Throws an exception if ",function(){
+	describe( "formatColumns throws an exception if ",function(){
 
 		it( "the range is invalid",function() {
 			expect( function(){

@@ -319,7 +319,7 @@ describe( "read",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	describe( "Throws an exception if",function(){
+	describe( "read throws an exception if",function(){
 
 		it( "a formula can't be evaluated",function() {
 			expect( function(){

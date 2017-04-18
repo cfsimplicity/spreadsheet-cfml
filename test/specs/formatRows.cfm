@@ -1,7 +1,7 @@
 <cfscript>
 describe( "formatRows",function(){
 
-	describe( "Throws an exception if",function(){
+	describe( "formatRows throws an exception if",function(){
 
 		it( "the range is invalid",function() {
 			expect( function(){

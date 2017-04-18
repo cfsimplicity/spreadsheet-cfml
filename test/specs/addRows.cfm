@@ -103,7 +103,7 @@ describe( "addRows",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	describe( "Throws an exception if",function(){
+	describe( "addRows throws an exception if",function(){
 
 		/* Skip this test by default: can take a long time */
 		xit( "adding more than 65536 rows to a binary spreadsheet",function() {

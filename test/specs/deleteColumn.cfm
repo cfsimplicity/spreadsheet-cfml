@@ -14,7 +14,7 @@ describe( "deleteColumn",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	describe( "Throws an exception if" ,function(){
+	describe( "deleteColumn throws an exception if" ,function(){
 
 		it( "column is zero or less",function() {
 			expect( function(){

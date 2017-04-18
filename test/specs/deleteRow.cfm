@@ -14,7 +14,7 @@ describe( "deleteRow",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	describe( "Throws an exception if",function(){
+	describe( "deleteRow throws an exception if",function(){
 
 		it( "row is zero or less",function() {
 			expect( function(){

@@ -9,7 +9,7 @@ describe( "renameSheet",function(){
 	});
 
 
-	describe( "Throws an exception if",function(){
+	describe( "renameSheet throws an exception if",function(){
 
 		it( "the new sheet name already exists",function() {
 			expect( function(){

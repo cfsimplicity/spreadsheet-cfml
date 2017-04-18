@@ -8,7 +8,7 @@ describe( "formatColumn",function(){
 		s.formatColumn( workbook,format,1 );
 	});
 
-	describe( "Throws an exception if",function(){
+	describe( "formatColumn throws an exception if",function(){
 
 		it( "the column is 0 or below",function(){
 			expect( function(){

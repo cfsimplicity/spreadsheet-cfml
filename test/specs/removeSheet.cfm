@@ -12,7 +12,7 @@ describe( "removeSheet",function(){
 	});
 
 
-	describe( "Throws an exception if",function(){
+	describe( "removeSheet throws an exception if",function(){
 
 		it( "the sheet name contains invalid characters",function() {
 			expect( function(){

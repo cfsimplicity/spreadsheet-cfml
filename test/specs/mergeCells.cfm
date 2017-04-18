@@ -26,7 +26,7 @@ describe( "mergeCells",function(){
 		expect( s.getCellValue( workbook,2,2 ) ).toBe( "" );
 	});
 
-	describe( "Throws an exception if",function(){
+	describe( "mergeCells throws an exception if",function(){
 
 		beforeEach( function(){
 			variables.workbook = s.new();

@@ -59,7 +59,7 @@ describe( "setSheetPrintOrientation",function(){
 		expect( sheet.getPrintSetup().getLandscape() ).toBeFalse();
 	});
 
-	describe( "Throws an exception if",function(){
+	describe( "setSheetPrintOrientation throws an exception if",function(){
 
 		it( "the mode is invalid",function() {
 			expect( function(){

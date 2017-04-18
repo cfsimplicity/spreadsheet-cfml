@@ -16,7 +16,7 @@ describe( "isSpreadsheetFile",function(){
 		expect( s.isSpreadsheetFile( path ) ).toBeTrue();
 	});
 
-	describe( "Throws an exception if",function(){
+	describe( "isSpreadsheetFile throws an exception if",function(){
 
 		it( "the file doesn't exist",function() {
 			expect( function(){

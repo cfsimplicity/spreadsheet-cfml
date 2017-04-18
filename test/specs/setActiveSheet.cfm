@@ -19,7 +19,7 @@ describe( "setActiveSheet",function(){
 		expect( s.getActiveSheetName( workbook ) ).toBe( "test" );
 	});
 
-	describe( "Throws an exception if",function(){
+	describe( "setActiveSheet throws an exception if",function(){
 
 		it( "the sheet name doesn't exist",function() {
 			expect( function(){

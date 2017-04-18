@@ -22,7 +22,7 @@ describe( "createSheet",function(){
 		expect( workbook.getNumberOfSheets() ).toBe( 2 );
 	});
 
-	describe( "Throws an exception if",function(){
+	describe( "createSheet throws an exception if",function(){
 
 		it( "the sheet name contains invalid characters",function() {
 			expect( function(){

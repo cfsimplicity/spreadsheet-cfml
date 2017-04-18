@@ -129,7 +129,7 @@ Frumpo,12345
 		expect( actual ).toBe( expected ); 
 	});
 
-	describe( "throws an exception if", function(){
+	describe( "csvToQuery throws an exception if", function(){
 
 		it( "neither 'csv' nor 'filepath' are passed", function() {
 			expect( function(){

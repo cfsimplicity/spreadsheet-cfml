@@ -91,7 +91,7 @@ describe( "addRow",function(){
 		}		
 	});
 
-	describe( "Throws an exception if", function(){
+	describe( "addRow throws an exception if", function(){
 
 		it( "row is zero or less",function() {
 			expect( function(){

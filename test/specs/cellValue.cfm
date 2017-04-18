@@ -74,15 +74,15 @@ describe( "cellValue",function(){
 		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
 	});
 
-	xdescribe( "Throws an exception if",function(){
+	/* describe( "setCellValue throws an exception if",function(){
 
 		it( "the data type is invalid",function() {
 			expect( function(){
-				/* TODO */
+				s.setCellValue( workbook, "test", 1, 1, "blah" );
 			}).toThrow( regex="Invalid data type" );
 		});
 
-	});	
+	}); */
 
 });	
 </cfscript>
