@@ -72,17 +72,19 @@ component{
 	}
 
 	public function csvToQuery(
-		string csv
-		,string filepath
+		string csv=""
+		,string filepath=""
 		,boolean firstRowIsHeader=false
 		,boolean trim=true
 		,string delimiter
 	){
-		if( !arguments.KeyExists( "csv" ) AND !arguments.KeyExists( "filepath" ) )
+		var csvIsString = csv.Len();
+		var csvIsFile = filepath.Len();
+		if( !csvIsString AND !csvIsFile )
 			throw( type=exceptionType, message="Missing required argument", detail="Please provide either a csv string (csv), or the path of a file containing one (filepath)." );
-		if( arguments.KeyExists( "csv" ) AND arguments.KeyExists( "filepath" ) )
+		if( csvIsString AND csvIsFile )
 			throw( type=exceptionType, message="Mutually exclusive arguments: 'csv' and 'filepath'", detail="Only one of either 'filepath' or 'csv' arguments may be provided." );
-		if(	arguments.KeyExists( "filepath" ) ){
+		if(	csvIsFile ){
 			if( !FileExists( filepath ) )
 				throw( type=exceptionType, message="Non-existant file", detail="Cannot find a file at #filepath#" );
 			if( !isCsvOrTextFile( filepath ) )

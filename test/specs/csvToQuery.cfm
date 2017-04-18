@@ -17,8 +17,12 @@ describe( "csvToQuery",function(){
 
 	it( "can read the csv from a file", function() {
 		var path = ExpandPath( "/root/test/files/test.csv" );
+		//named args
 		var actual = s.csvToQuery( filepath=path );
-		expect( actual ).toBe( basicExpectedQuery ); 	
+		expect( actual ).toBe( basicExpectedQuery );
+		//positional args
+		var actual = s.csvToQuery( "", path );
+		expect( actual ).toBe( basicExpectedQuery ); 
 	});
 
 	it( "can read the csv from a text file with an .xls extension", function() {
@@ -33,7 +37,11 @@ describe( "csvToQuery",function(){
 "Frumpo McNugget"|12345
 		');
 		};
+		//named args
 		var actual = s.csvToQuery( csv=csv, delimiter="|" );
+		expect( actual ).toBe( basicExpectedQuery );
+		//positional
+		var actual = s.csvToQuery( csv, "", false, true, "|" );
 		expect( actual ).toBe( basicExpectedQuery ); 
 	});
 
@@ -116,7 +124,7 @@ Frumpo,12345
 		};
 		//ACF won't allow spaces in column names when creating queries programmatically. Use Java method to override:
 		var expected = QueryNew( "column1,column2", "", [ [ "Frumpo", "12345" ] ] );
-		expected.setColumnNames( [ "Name","Phone Number" ] );
+		expected.setColumnNames( [ "Name", "Phone Number" ] );
 		var actual = s.csvToQuery( csv=csv, firstRowIsHeader=true );
 		expect( actual ).toBe( expected ); 
 	});
@@ -131,7 +139,10 @@ Frumpo,12345
 
 		it( "both 'csv' and 'filepath' are passed", function() {
 			expect( function(){
-				s.csvToQuery( csv="", filepath="" );
+				s.csvToQuery( csv="x", filepath="x" );
+			}).toThrow( regex="Mutually exclusive arguments" );
+			expect( function(){
+				s.csvToQuery( "x", "x" );
 			}).toThrow( regex="Mutually exclusive arguments" );
 		});
 

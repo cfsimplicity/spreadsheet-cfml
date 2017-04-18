@@ -15,6 +15,10 @@ column1,column2
 		workbook = s.workbookFromCsv( csv=csv, firstRowIsHeader=true );
 		actual = s.sheetToQuery( workbook=workbook, headerRow=1 );
 		expect( actual ).toBe( basicExpectedQuery );
+		// positional args
+		workbook = s.workbookFromCsv( csv, "", true );
+		actual = s.sheetToQuery( workbook=workbook, headerRow=1 );
+		expect( actual ).toBe( basicExpectedQuery );
 	});
 
 });	
