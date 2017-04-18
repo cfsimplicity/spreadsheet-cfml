@@ -2160,19 +2160,18 @@ component{
 		if( !arguments.KeyExists( "type" ) ) //autodetect type
 			arguments.type = detectValueDataType( value );
 		else if( !ListFindNoCase( "string,numeric,date,boolean,blank", type ) )
-			throw( type=exceptionType, message="Invalid data type: '#type#'", detail="The data type must be one of 'string', 'numeric', 'date' 'boolean'." );
-		//writedump( type );
+			throw( type=exceptionType, message="Invalid data type: '#type#'", detail="The data type must be one of 'string', 'numeric', 'date' 'boolean' or 'blank'." );
+		/* Note: To properly apply date/number formatting:
+			- cell type must be CELL_TYPE_NUMERIC
+			- cell value must be applied as a java.util.Date or java.lang.Double (NOT as a string)
+			- cell style must have a dataFormat (datetime values only)
+ 		*/
 		switch( type ){
 			case "numeric":
 				cell.setCellType( cell.CELL_TYPE_NUMERIC );
 				cell.setCellValue( JavaCast( "double", Val( value ) ) );
 				return;
 			case "date":
-				/* Note: To properly apply date/number formatting:
- 				- cell type must be CELL_TYPE_NUMERIC
- 				- cell value must be applied as a java.util.Date or java.lang.Double (NOT as a string)
- 				- cell style must have a dataFormat (datetime values only)
-   		*/
 				var cellFormat = getDateTimeValueFormat( value );
 				var formatter = workbook.getCreationHelper().createDataFormat();
 				//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
