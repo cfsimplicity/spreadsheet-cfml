@@ -1,3 +1,7 @@
+## 1.3.0 - 20 April 2017
+
+- \#118 Upgrade POI to 3.16
+
 ## 1.2.0 - 18 April 2017
 
 - Enhancements:
