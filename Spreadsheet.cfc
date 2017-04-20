@@ -959,7 +959,7 @@ component{
 	){
 		if( arguments.KeyExists( "query" ) )
 			throw( type=exceptionType, message="Invalid argument 'query'.", detail="Just use format='query' to return a query object" );
-		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query,html,csv",format ) )
+		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query,html,csv", format ) )
 			throw( type=exceptionType, message="Invalid format", detail="Supported formats are: 'query', 'html' and 'csv'" );
 		if( arguments.KeyExists( "sheetName" ) AND arguments.KeyExists( "sheetNumber" ) )
 			throw( type=exceptionType, message="Cannot provide both sheetNumber and sheetName arguments", detail="Only one of either 'sheetNumber' or 'sheetName' arguments may be provided." );
@@ -970,7 +970,7 @@ component{
 			throw( type=exceptionType, message="Reading password protected files is not supported for Adobe ColdFusion", detail="Reading password protected files currently only works in Lucee, not ColdFusion" );
 		var workbook = passwordProtected? decryptFile( src, password ): workbookFromFile( src );
 		if( arguments.KeyExists( "sheetName" ) )
-			setActiveSheet( workbook=workbook,sheetName=sheetName );
+			setActiveSheet( workbook=workbook, sheetName=sheetName );
 		if( !arguments.keyExists( "format" ) )
 			return workbook;
 		var args = {
@@ -1011,7 +1011,7 @@ component{
 	}
 
 	public binary function readBinary( required workbook ){
-		var baos = CreateObject( "Java","org.apache.commons.io.output.ByteArrayOutputStream" ).init();
+		var baos = CreateObject( "Java", "org.apache.commons.io.output.ByteArrayOutputStream" ).init();
 		workbook.write( baos );
 		baos.flush();
 		return baos.toByteArray();
