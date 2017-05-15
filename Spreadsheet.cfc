@@ -872,6 +872,10 @@ component{
 		toggleColumnHidden( workbook, column, true );
 	}
 
+	public void function hideRow( required workbook, required numeric row ){
+		toggleRowHidden( workbook, row, true );
+	}
+
 	public struct function info( required workbookOrPath ){
 		/*
 		properties returned in the struct are:
@@ -913,9 +917,13 @@ component{
 		return workbook.getClass().getCanonicalName() IS "org.apache.poi.hssf.usermodel.HSSFWorkbook";
 	}
 
-	public boolean function isColumnHidden( required workbook, required numeric columnNumber ){
-		var sheet = getActiveSheet( workbook );
-		return sheet.isColumnHidden( columnNumber - 1 );
+	public boolean function isColumnHidden( required workbook, required numeric column ){
+		return getActiveSheet( workbook ).isColumnHidden( column - 1 );
+	}
+
+	public boolean function isRowHidden( required workbook, required numeric row ){
+		var rowIndex = ( row - 1 );
+		return getActiveSheet( workbook ).getRow( JavaCast( "int", rowIndex ) ).getZeroHeight();
 	}
 
 	public boolean function isSpreadsheetFile( required string path ){
@@ -1261,7 +1269,7 @@ component{
 		}
 	}
 
-	public void function setColumnWidth( required workbook,required numeric column,required numeric width ){
+	public void function setColumnWidth( required workbook, required numeric column, required numeric width ){
 		var columnIndex = ( column -1 );
 		getActiveSheet( workbook ).setColumnWidth( JavaCast( "int", columnIndex ), JavaCast( "int", ( width * 256 ) ) );
 	}
@@ -1395,6 +1403,10 @@ component{
 
 	public void function showColumn( required workbook, required numeric column ){
 		toggleColumnHidden( workbook, column, false );
+	}
+
+	public void function showRow( required workbook, required numeric row ){
+		toggleRowHidden( workbook, row, false );
 	}
 
 	public void function write( required workbook, required string filepath, boolean overwrite=false, string password, string algorithm="agile" ){
@@ -2371,8 +2383,12 @@ component{
 	}
 
 	private void function toggleColumnHidden( required workbook, required numeric columnNumber, required boolean state ){
-		var sheet = getActiveSheet( workbook );
-		sheet.setColumnHidden( JavaCast( "int", columnNumber-1 ), JavaCast( "boolean", state ) );
+		getActiveSheet( workbook ).setColumnHidden( JavaCast( "int", columnNumber-1 ), JavaCast( "boolean", state ) );
+	}
+
+	private void function toggleRowHidden( required workbook, required numeric row, required boolean state ){
+		var rowIndex = ( row -1 );
+		getActiveSheet( workbook ).getRow( JavaCast( "int", rowIndex ) ).setZeroHeight( JavaCast( "boolean", state ) );
 	}
 
 	private void function validateSheetExistsWithName( required workbook,required string sheetName ){
