@@ -235,14 +235,63 @@ describe( "formatCell", function(){
 		expect( cellFormat.verticalalignment ).toBe( "CENTER" );
 	});
 
-	it( "can set underline", function(){
-		var format = { underline: true };
-		s.formatCell( xls, format, 1, 1 );
+	it( "can set underline as boolean", function(){
+		s.formatCell( xls, { underline: true }, 1, 1 );
 		var cellFormat = s.getCellFormat( xls, 1, 1 );
 		expect( cellFormat.underline ).toBeTrue();
-		s.formatCell( xlsx, format, 1, 1 );
+		s.formatCell( xlsx, { underline: true }, 1, 1 );
 		var cellFormat = s.getCellFormat( xlsx, 1, 1 );
 		expect( cellFormat.underline ).toBeTrue();
+		//check turning off
+		s.formatCell( xls, { underline: false }, 1, 1 );
+		var cellFormat = s.getCellFormat( xls, 1, 1 );
+		expect( cellFormat.underline ).toBeFalse();
+		s.formatCell( xlsx, { underline: false }, 1, 1 );
+		var cellFormat = s.getCellFormat( xlsx, 1, 1 );
+		expect( cellFormat.underline ).toBeFalse();
+	});
+
+	it( "can set underline as 'single' or 'none'", function(){
+		s.formatCell( xls, { underline: "single" }, 1, 1 );
+		var cellFormat = s.getCellFormat( xls, 1, 1 );
+		expect( cellFormat.underline ).toBeTrue();
+		s.formatCell( xlsx, { underline: "single" }, 1, 1 );
+		var cellFormat = s.getCellFormat( xlsx, 1, 1 );
+		expect( cellFormat.underline ).toBeTrue();
+		//check turning off
+		s.formatCell( xls, { underline: "none" }, 1, 1 );
+		var cellFormat = s.getCellFormat( xls, 1, 1 );
+		expect( cellFormat.underline ).toBeFalse();
+		s.formatCell( xlsx, { underline: "none" }, 1, 1 );
+		var cellFormat = s.getCellFormat( xlsx, 1, 1 );
+		expect( cellFormat.underline ).toBeFalse();
+	});
+
+	it( "can set underline as 'double'", function(){
+		s.formatCell( xls, { underline: "double" }, 1, 1 );
+		var cellFormat = s.getCellFormat( xls, 1, 1 );
+		expect( cellFormat.underline ).toBe( 2 );
+		s.formatCell( xlsx, { underline: "double" }, 1, 1 );
+		var cellFormat = s.getCellFormat( xlsx, 1, 1 );
+		expect( cellFormat.underline ).toBe( 2 );
+	});
+
+	it( "can set underline as 'single accounting'", function(){
+		s.formatCell( xls, { underline: "single accounting" }, 1, 1 );
+		var cellFormat = s.getCellFormat( xls, 1, 1 );
+		expect( cellFormat.underline ).toBe( 33 );
+		s.formatCell( xlsx, { underline: "single accounting" }, 1, 1 );
+		var cellFormat = s.getCellFormat( xlsx, 1, 1 );
+		expect( cellFormat.underline ).toBe( 33 );
+	});
+
+	it( "can set underline as 'double accounting'", function(){
+		s.formatCell( xls, { underline: "double accounting" }, 1, 1 );
+		var cellFormat = s.getCellFormat( xls, 1, 1 );
+		expect( cellFormat.underline ).toBe( 34 );
+		s.formatCell( xlsx, { underline: "double accounting" }, 1, 1 );
+		var cellFormat = s.getCellFormat( xlsx, 1, 1 );
+		expect( cellFormat.underline ).toBe( 34 );
 	});
 
 	it( "can set a non preset RGB triplet color on an XLSX workbook cell", function(){

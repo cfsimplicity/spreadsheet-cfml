@@ -2589,34 +2589,6 @@ component{
 		var formatter = workbook.getCreationHelper().createDataFormat();
 		var font = 0;
 		var formatIndex = 0;
-		/*
-			Valid keys of the format struct are:
-			* alignment
-			* bold
-			* bottomborder
-			* bottombordercolor
-			* color
-			* dataformat
-			* fgcolor
-			* fillpattern
-			* font
-			* fontsize
-			* hidden
-			* indent
-			* italic
-			* leftborder
-			* leftbordercolor
-			* locked
-			* rightborder
-			* rightbordercolor
-			* rotation
-			* strikeout
-			* textwrap
-			* topborder
-			* topbordercolor
-			* underline
-			* verticalalignment  (added in CF9.0.1)
-		 */
 		for( var setting in format ){
 			var settingValue = format[ setting ];
 			switch( setting ){
@@ -2721,8 +2693,25 @@ component{
 					cellStyle.setTopBorderColor( getColor( workbook, settingValue ) );
 				break;
 				case "underline":
+					var underlineType = 0;
+					switch( settingValue ){
+						case "none": underlineType = 0;
+							break;
+						case "single": underlineType = 1;
+							break;
+						case "double": underlineType = 2;
+							break;
+						case "single accounting": underlineType = 33;
+							break;
+						case "double accounting": underlineType = 34;
+							break;
+						default:
+							if( !IsBoolean( settingValue ) )
+								return; //unrecognised - do nothing
+							underlineType = settingValue? 1: 0;
+					}
 					font = cloneFont( workbook, workbook.getFontAt( cellStyle.getFontIndex() ) );
-					font.setUnderline( JavaCast( "byte", settingValue? 1: 0 ) );
+					font.setUnderline( JavaCast( "byte", underlineType ) );
 					cellStyle.setFont( font );
 				break;
 				case "verticalalignment":
