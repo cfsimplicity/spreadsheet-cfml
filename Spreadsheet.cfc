@@ -1394,7 +1394,7 @@ component{
 	}
 
 	public void function showColumn( required workbook, required numeric column ){
-		toggleColumnHidden( workbook, column,false );
+		toggleColumnHidden( workbook, column, false );
 	}
 
 	public void function write( required workbook, required string filepath, boolean overwrite=false, string password, string algorithm="agile" ){
