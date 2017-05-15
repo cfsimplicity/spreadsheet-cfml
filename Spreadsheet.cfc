@@ -384,12 +384,12 @@ component{
 			theAnchor.setCol2( JavaCast( "int", ListLast( anchor ) -1 ) );
 		} else if( numberOfAnchorElements EQ 8 ){
 			theAnchor.setDx1( JavaCast( "int", ListFirst( anchor ) ) );
-			theAnchor.setDy1( JavaCast( "int", ListGetAt( anchor,2 ) ) );
-			theAnchor.setDx2( JavaCast( "int", ListGetAt( anchor,3 ) ) );
-			theAnchor.setDy2( JavaCast( "int", ListGetAt( anchor,4 ) ) );
-			theAnchor.setRow1( JavaCast( "int", ListGetAt( anchor,5 ) -1 ) );
-			theAnchor.setCol1( JavaCast( "int", ListGetAt( anchor,6 ) -1 ) );
-			theAnchor.setRow2( JavaCast( "int", ListGetAt( anchor,7 ) -1 ) );
+			theAnchor.setDy1( JavaCast( "int", ListGetAt( anchor, 2 ) ) );
+			theAnchor.setDx2( JavaCast( "int", ListGetAt( anchor, 3 ) ) );
+			theAnchor.setDy2( JavaCast( "int", ListGetAt( anchor, 4 ) ) );
+			theAnchor.setRow1( JavaCast( "int", ListGetAt( anchor, 5 ) -1 ) );
+			theAnchor.setCol1( JavaCast( "int", ListGetAt( anchor, 6 ) -1 ) );
+			theAnchor.setRow2( JavaCast( "int", ListGetAt( anchor, 7 ) -1 ) );
 			theAnchor.setCol2( JavaCast( "int", ListLast( anchor ) -1 ) );
 		}
 		/* TODO: need to look into createDrawingPatriarch() vs. getDrawingPatriarch() since create will kill any existing images. getDrawingPatriarch() throws  a null pointer exception when an attempt is made to add a second image to the spreadsheet  */
@@ -2722,7 +2722,7 @@ component{
 							break;
 						default:
 							if( !IsBoolean( settingValue ) )
-								return; //unrecognised - do nothing
+								return cellStyle; //invalid - do nothing
 							underlineType = settingValue? 1: 0;
 					}
 					font = cloneFont( workbook, workbook.getFontAt( cellStyle.getFontIndex() ) );
