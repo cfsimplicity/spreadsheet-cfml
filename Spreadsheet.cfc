@@ -775,6 +775,7 @@ component{
 			,italic: cellFont.getItalic()
 			,leftborder: cellStyle.getBorderLeftEnum().toString()
 			,leftbordercolor: getRgbTripletForStyleColorFormat( workbook, cellStyle, "leftbordercolor" )
+			,quoteprefixed: cellStyle.getQuotePrefixed()
 			,rightborder: cellStyle.getBorderRightEnum().toString()
 			,rightbordercolor: getRgbTripletForStyleColorFormat( workbook, cellStyle, "rightbordercolor" )
 			,rotation: cellStyle.getRotation()
@@ -2691,10 +2692,9 @@ component{
 				case "locked":
 					cellStyle.setLocked( JavaCast( "boolean", settingValue ) );
 				break;
-				/* TODO Implement when POI 3.16 available */
-				/* case "quoteprefixed":
+				case "quoteprefixed":
 					cellStyle.setQuotePrefixed( JavaCast( "boolean", settingValue ) );
-				break; */
+				break;
 				case "rightborder":
 					var borderStyle = cellStyle.getBorderRightEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
 					cellStyle.setBorderRight( borderStyle );

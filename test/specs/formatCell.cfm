@@ -138,6 +138,23 @@ describe( "formatCell", function(){
 		expect( cellFormat.leftbordercolor ).toBe( "255,0,0" );
 	});
 
+	it( "can set quoteprefixed", function(){
+		var formulaLikeString = "SUM(A2:A3)";
+		var format = { quoteprefixed: true };
+		var xls = s.new();
+		s.addColumn( xls, "#formulaLikeString#,1,1" );
+		s.formatCell( xls, format, 1, 1 );
+		var cellFormat = s.getCellFormat( xls, 1, 1 );
+		expect( cellFormat.quoteprefixed ).toBeTrue();
+		expect( s.getCellValue( xls, 1, 1 ) ).toBe( formulaLikeString );
+		var xlsx = s.newXlsx();
+		s.addColumn( xlsx, "#formulaLikeString#,1,1" );
+		s.formatCell( xlsx, format, 1, 1 );
+		var cellFormat = s.getCellFormat( xlsx, 1, 1 );
+		expect( cellFormat.quoteprefixed ).toBeTrue();
+		expect( s.getCellValue( xlsx, 1, 1 ) ).toBe( formulaLikeString );
+	});
+
 	it( "can set the rightborder", function(){
 		var format = { rightborder: "THICK" };
 		s.formatCell( xls, format, 1, 1 );
