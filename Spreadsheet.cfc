@@ -913,6 +913,11 @@ component{
 		return workbook.getClass().getCanonicalName() IS "org.apache.poi.hssf.usermodel.HSSFWorkbook";
 	}
 
+	public boolean function isColumnHidden( required workbook, required numeric columnNumber ){
+		var sheet = getActiveSheet( workbook );
+		return sheet.isColumnHidden( columnNumber - 1 );
+	}
+
 	public boolean function isSpreadsheetFile( required string path ){
 		if( !FileExists( path ) )
 			throw( type=exceptionType, message="Non-existent file", detail="Cannot find the file #path#." );
