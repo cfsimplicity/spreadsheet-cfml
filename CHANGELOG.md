@@ -1,3 +1,14 @@
+## 1.4.0 - 15 May 2017
+
+- Enhancements
+	- \#119 Add `getCellFormat()` and formatting tests
+	- \#104 Add `quoteprefixed` to cell formatting options
+	- \#121 Support "double", "single accounting" and "double accounting" underline formats
+	- \#122 Add `hideRow()`, `showRow()` and `isRowHidden()`
+	- Add `isColumnHidden()` and tests for `hideColumn()` and `showColumn()`
+- Fixes
+	- \#120 Setting underline format on ACF fails
+
 ## 1.3.0 - 20 April 2017
 
 - \#118 Upgrade POI to 3.16

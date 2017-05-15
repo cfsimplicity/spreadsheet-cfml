@@ -11,13 +11,13 @@ Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of 
 ### Benefits
 
 - No installation required, either at the server or individual web context level.
-- Invoking the library doesn't create a workbook instance (a.k.a. *Spreadsheet Object*), meaning:
-  - a blank workbook isn't created unnecessarily when reading an existing spreadsheet
-  - the library can be stored as a singleton in application scope
 - `read()` method offers all the features of the `<cfspreadsheet action="read">` tag in script in addition to the basic options of `SpreadsheetRead()`.
 - Offers a number of additional functions and options (see below)
 - Fixes various outstanding bugs/omissions.
 - No dependency on Lucee within the included jar files.
+- Invoking the library doesn't create a workbook instance (a.k.a. *Spreadsheet Object*), meaning:
+  - a blank workbook isn't created unnecessarily when reading an existing spreadsheet
+  - the library can be stored as a singleton in application scope
 - Written entirely in CFML script.
 
 ### Downsides
@@ -100,9 +100,13 @@ You will probably want to place the spreadsheet library files in a central locat
 
 * [clearCell](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCell)
 * [clearCellRange](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCellRange)
+* [getCellFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellFormat)
 * [getCellType](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellType)
 * [hideColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/hideColumn)
+* [hideRow](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/hideRow)
 * [isBinaryFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isBinaryFormat)
+* [isColumnHidden](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isColumnHidden)
+* [isRowHidden](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isRowHidden)
 * [isXmlFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isXmlFormat)
 * [renameSheet](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/renameSheet)
 * [removeSheetNumber](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/removeSheetNumber)
@@ -112,6 +116,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [setSheetPrintOrientation](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setSheetPrintOrientation)
 * [setReadOnly](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setReadOnly)
 * [showColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/showColumn)
+* [showRow](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/showRow)
 
 ### Additional Convenience methods
 
