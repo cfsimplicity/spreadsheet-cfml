@@ -2722,7 +2722,7 @@ component{
 				break;
 				case "underline":
 					font = cloneFont( workbook, workbook.getFontAt( cellStyle.getFontIndex() ) );
-					font.setUnderline( JavaCast( "boolean", settingValue ) );
+					font.setUnderline( JavaCast( "byte", settingValue? 1: 0 ) );
 					cellStyle.setFont( font );
 				break;
 				case "verticalalignment":
