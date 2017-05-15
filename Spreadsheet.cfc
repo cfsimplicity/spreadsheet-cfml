@@ -247,7 +247,7 @@ component{
 		var row = 0;
 		var cell = 0;
 		var oldCell = 0;
-		var rowNum = ( arguments.KeyExists( "startRow" ) AND startRow )? startRow-1: 0;
+		var rowNum = ( arguments.KeyExists( "startRow" ) AND startRow )? startRow -1: 0;
 		var cellNum = 0;
 		var lastCellNum = 0;
 		var cellValue = 0;
@@ -275,7 +275,7 @@ component{
 				/*  need to get the last populated column number in the row, figure out which cells are impacted, and shift the impacted cells to the right to make room for the new data */
 				lastCellNum = row.getLastCellNum();
 				for( var i = lastCellNum; i EQ cellNum; i-- ){
-					oldCell = row.getCell( JavaCast( "int", i-1 ) );
+					oldCell = row.getCell( JavaCast( "int", i -1 ) );
 					if( !IsNull( oldCell ) ){
 						cell = createCell( row, i );
 						cell.setCellStyle( oldCell.getCellStyle() );
@@ -378,19 +378,19 @@ component{
 				: "org.apache.poi.hssf.usermodel.HSSFClientAnchor";
 		var theAnchor = loadPoi( clientAnchorClass ).init();
 		if( numberOfAnchorElements EQ 4 ){
-			theAnchor.setRow1( JavaCast( "int", ListFirst( anchor )-1 ) );
-			theAnchor.setCol1( JavaCast( "int", ListGetAt( anchor, 2 )-1 ) );
-			theAnchor.setRow2( JavaCast( "int", ListGetAt( anchor, 3 )-1 ) );
-			theAnchor.setCol2( JavaCast( "int", ListLast( anchor )-1 ) );
+			theAnchor.setRow1( JavaCast( "int", ListFirst( anchor ) -1 ) );
+			theAnchor.setCol1( JavaCast( "int", ListGetAt( anchor, 2 ) -1 ) );
+			theAnchor.setRow2( JavaCast( "int", ListGetAt( anchor, 3 ) -1 ) );
+			theAnchor.setCol2( JavaCast( "int", ListLast( anchor ) -1 ) );
 		} else if( numberOfAnchorElements EQ 8 ){
 			theAnchor.setDx1( JavaCast( "int", ListFirst( anchor ) ) );
 			theAnchor.setDy1( JavaCast( "int", ListGetAt( anchor,2 ) ) );
 			theAnchor.setDx2( JavaCast( "int", ListGetAt( anchor,3 ) ) );
 			theAnchor.setDy2( JavaCast( "int", ListGetAt( anchor,4 ) ) );
-			theAnchor.setRow1( JavaCast( "int", ListGetAt( anchor,5 )-1 ) );
-			theAnchor.setCol1( JavaCast( "int", ListGetAt( anchor,6 )-1 ) );
-			theAnchor.setRow2( JavaCast( "int", ListGetAt( anchor,7 )-1 ) );
-			theAnchor.setCol2( JavaCast( "int", ListLast( anchor )-1 ) );
+			theAnchor.setRow1( JavaCast( "int", ListGetAt( anchor,5 ) -1 ) );
+			theAnchor.setCol1( JavaCast( "int", ListGetAt( anchor,6 ) -1 ) );
+			theAnchor.setRow2( JavaCast( "int", ListGetAt( anchor,7 ) -1 ) );
+			theAnchor.setCol2( JavaCast( "int", ListLast( anchor ) -1 ) );
 		}
 		/* TODO: need to look into createDrawingPatriarch() vs. getDrawingPatriarch() since create will kill any existing images. getDrawingPatriarch() throws  a null pointer exception when an attempt is made to add a second image to the spreadsheet  */
 		var drawingPatriarch = getActiveSheet( workbook ).createDrawingPatriarch();
@@ -435,9 +435,9 @@ component{
 			else
 				deleteRow( workbook, row );//otherwise, clear the entire row
 		}
-		var theRow = arguments.KeyExists( "row" )? createRow( workbook,arguments.row-1 ): createRow( workbook );
+		var theRow = arguments.KeyExists( "row" )? createRow( workbook, arguments.row -1 ): createRow( workbook );
 		var rowValues = parseRowData( data, delimiter, handleEmbeddedCommas );
-		var cellIndex = column-1;
+		var cellIndex = column -1;
 		for( var cellValue in rowValues ){
 			var cell = createCell( theRow, cellIndex );
 			setCellValueAsType( workbook, cell, Trim( cellValue ) );
@@ -457,7 +457,7 @@ component{
 		,boolean includeQueryColumnNames=false
 	){
 		var lastRow = getNextEmptyRow( workbook );
-		var insertAtRowIndex = arguments.keyExists( "row" )? row-1: getNextEmptyRow( workbook );
+		var insertAtRowIndex = arguments.keyExists( "row" )? row -1: getNextEmptyRow( workbook );
 		if( arguments.KeyExists( "row" ) AND ( row LTE lastRow ) AND insert )
 			shiftRows( workbook,row, lastRow, data.recordCount );
 		var currentRowIndex = insertAtRowIndex;
@@ -505,7 +505,7 @@ component{
 			var columnNames = _QueryColumnArray( data );
 			var delimiter = "|";
 			var columnNamesList = columnNames.ToList( delimiter );
-			addRow( workbook=workbook, data=columnNamesList, row=insertAtRowIndex+1, delimiter=delimiter );
+			addRow( workbook=workbook, data=columnNamesList, row=insertAtRowIndex +1, delimiter=delimiter );
 		}
 	}
 
@@ -532,7 +532,7 @@ component{
 		if( column LTE 0 )
 			throw( type=exceptionType, message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
 		/* Adjusts the width of the specified column to fit the contents. For performance reasons, this should normally be called only once per column. */
-		var columnIndex = column-1;
+		var columnIndex = (column -1 );
 		getActiveSheet( workbook ).autoSizeColumn( columnIndex, useMergedCells );
 	}
 
@@ -618,7 +618,7 @@ component{
 		/* Deletes the data from a row. Does not physically delete the row. */
 		if( row LTE 0 )
 			throw( type=exceptionType, message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
-		var rowToDelete = row-1;
+		var rowToDelete = ( row -1 );
 		if( rowToDelete GTE getFirstRowNum( workbook ) AND rowToDelete LTE getLastRowNum( workbook ) ) //If this is a valid row, remove it
 			getActiveSheet( workbook ).removeRow( getActiveSheet( workbook ).getRow( JavaCast( "int", rowToDelete ) ) );
 	}
@@ -687,7 +687,7 @@ component{
 	}
 
 	public void function formatRow( required workbook, required struct format, required numeric row, any cellStyle ){
-		var rowIndex = row-1;
+		var rowIndex = ( row -1 );
 		var theRow = getActiveSheet( workbook ).getRow( rowIndex );
 		if( IsNull( theRow ) )
 			return;
@@ -824,8 +824,8 @@ component{
 	public string function getCellType( required workbook, required numeric row, required numeric column ){
 		if( !cellExists( workbook, row, column ) )
 			return "";
-		var rowIndex = ( row-1 );
-		var columnIndex = ( column-1 );
+		var rowIndex = ( row -1 );
+		var columnIndex = ( column -1 );
 		var rowObject = getActiveSheet( workbook ).getRow( JavaCast( "int", rowIndex ) );
 		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
 		return cell.getCellTypeEnum().toString();
@@ -834,8 +834,8 @@ component{
 	public any function getCellValue( required workbook, required numeric row, required numeric column ){
 		if( !cellExists( workbook, row, column ) )
 			return "";
-		var rowIndex = ( row-1 );
-		var columnIndex = ( column-1 );
+		var rowIndex = ( row -1 );
+		var columnIndex = ( column -1 );
 		var rowObject = getActiveSheet( workbook ).getRow( JavaCast( "int", rowIndex ) );
 		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
 		var formatter = getFormatter();
@@ -1063,14 +1063,14 @@ component{
 
 	public void function removeSheetNumber( required workbook, required numeric sheetNumber ){
 		validateSheetNumber( workbook, sheetNumber );
-		var sheetIndex = sheetNumber-1;
+		var sheetIndex = ( sheetNumber -1 );
 		deleteSheetAtIndex( workbook, sheetIndex );
 	}
 
 	public void function renameSheet( required workbook, required string sheetName, required numeric sheetNumber ){
 		validateSheetName( sheetName );
 		validateSheetNumber( workbook, sheetNumber );
-		var sheetIndex = sheetNumber-1;
+		var sheetIndex = ( sheetNumber -1 );
 		var foundAt = workbook.getSheetIndex( JavaCast( "string", sheetName ) );
 		if( ( foundAt GT 0 ) AND ( foundAt NEQ sheetIndex ) )
 			throw( type=exceptionType, message="Invalid Sheet Name [#sheetName#]", detail="The workbook already contains a sheet named [#sheetName#]. Sheet names must be unique" );
@@ -1257,7 +1257,7 @@ component{
 	}
 
 	public void function setColumnWidth( required workbook,required numeric column,required numeric width ){
-		var columnIndex = ( column-1 );
+		var columnIndex = ( column -1 );
 		getActiveSheet( workbook ).setColumnWidth( JavaCast( "int", columnIndex ), JavaCast( "int", ( width * 256 ) ) );
 	}
 
@@ -1296,10 +1296,7 @@ component{
 		workbook.writeProtectWorkbook( JavaCast( "string", password ), JavaCast( "string", "user" ) );
 	}
 
-	public void function setRepeatingColumns(
-		required workbook
-		,required string columnRange
-	){
+	public void function setRepeatingColumns( required workbook, required string columnRange ){
 		columnRange = columnRange.Trim();
 		if( !IsValid( "regex",columnRange,"[A-Za-z]:[A-Za-z]" ) )
 			throw( type=exceptionType, message="Invalid columnRange argument", detail="The 'columnRange' argument should be in the form 'A:B'" );
@@ -1307,10 +1304,7 @@ component{
 		getActiveSheet( workbook ).setRepeatingColumns( cellRangeAddress );
 	}
 
-	public void function setRepeatingRows(
-		required workbook
-		,required string rowRange
-	){
+	public void function setRepeatingRows( required workbook, required string rowRange ){
 		rowRange = rowRange.Trim();
 		if( !IsValid( "regex",rowRange,"\d+:\d+" ) )
 			throw( type=exceptionType, message="Invalid rowRange argument", detail="The 'rowRange' argument should be in the form 'n:n', e.g. '1:5'" );
@@ -1318,7 +1312,7 @@ component{
 		getActiveSheet( workbook ).setRepeatingRows( cellRangeAddress );
 	}
 
-	public void function setRowHeight( required workbook,required numeric row,required numeric height ){
+	public void function setRowHeight( required workbook, required numeric row, required numeric height ){
 		var rowIndex = ( row -1 );
 		getActiveSheet( workbook ).getRow( JavaCast( "int", rowIndex ) ).setHeightInPoints( JavaCast( "int", height ) );
 	}
@@ -1345,8 +1339,8 @@ component{
 		if( arguments.KeyExists( "end" ) AND ( end LTE 0 OR end LT start ) )
 			throw( type=exceptionType, message="Invalid end value", detail="The end value must be greater than or equal to the start value" );
 		var rowIterator = getActiveSheet( workbook ).rowIterator();
-		var startIndex = start-1;
-		var endIndex = arguments.KeyExists( "end" )? end-1: startIndex;
+		var startIndex = ( start -1 );
+		var endIndex = arguments.KeyExists( "end" )? ( end -1 ): startIndex;
 		while( rowIterator.hasNext() ){
 			var row = rowIterator.next();
 			if( offset GT 0 ){
@@ -1386,7 +1380,7 @@ component{
 			deleteColumn( workbook, ( i +1 ) );
 	}
 
-	public void function shiftRows( required workbook,required numeric start,numeric end=start,numeric offset=1 ){
+	public void function shiftRows( required workbook, required numeric start, numeric end=start, numeric offset=1 ){
 		getActiveSheet( workbook ).shiftRows(
 			JavaCast( "int", ( arguments.start - 1 ) )
 			,JavaCast( "int", ( arguments.end - 1 ) )
@@ -2152,7 +2146,7 @@ component{
 			  var startAt = finalValue.indexOf( "'" );
 			  var endAt = finalValue.lastIndexOf( "'" );
 			  if( isEmbeddedValue AND startAt GTE 0 AND endAt GT startAt )
-				  finalValue = finalValue.substring( ( startAt +1 ),endAt );
+				  finalValue = finalValue.substring( ( startAt +1 ), endAt );
 			  values.add( finalValue );
 			  buffer.setLength( 0 );
 			  isEmbeddedValue = false;
@@ -2557,7 +2551,7 @@ component{
 			color
 			italic
 			strikethrough
-			underline
+			single underline
 		*/
 		switch( styleType ){
 			case "bold":
