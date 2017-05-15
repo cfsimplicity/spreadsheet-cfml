@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "1.3.0";
+	variables.version = "1.4.0";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -750,6 +750,41 @@ component{
 			}
 		}
 		return comments;
+	}
+
+	public struct function getCellFormat( required workbook, required numeric row, required numeric column ){
+		if( !cellExists( workbook, row, column ) )
+			throw( type=exceptionType, message="Invalid cell", detail="There doesn't appear to be a cell at row #row#, column #column#" );
+		var cellStyle = getCellAt( workbook, row, column ).getCellStyle();
+		var cellFont = workbook.getFontAt( cellStyle.getFontIndex() );
+		if( isXmlFormat( workbook ) )
+			var rgb = convertSignedRGBToPositiveTriplet( cellFont.getXSSFColor().getRGB() );
+		else
+			var rgb = IsNull( cellFont.getHSSFColor( workbook ) )? []: cellFont.getHSSFColor( workbook ).getTriplet();
+		return {
+			alignment: cellStyle.getAlignmentEnum().toString()
+			,bold: cellFont.getBold()
+			,bottomborder: cellStyle.getBorderBottomEnum().toString()
+			,bottombordercolor: getRgbTripletForStyleColorFormat( workbook, cellStyle, "bottombordercolor" )
+			,color: ArrayToList( rgb )
+			,dataformat: cellStyle.getDataFormatString()
+			,fgcolor: getRgbTripletForStyleColorFormat( workbook, cellStyle, "fgcolor" )
+			,fillpattern: cellStyle.getFillPatternEnum().toString()
+			,font: cellFont.getFontName()
+			,fontsize: cellFont.getFontHeightInPoints()
+			,italic: cellFont.getItalic()
+			,leftborder: cellStyle.getBorderLeftEnum().toString()
+			,leftbordercolor: getRgbTripletForStyleColorFormat( workbook, cellStyle, "leftbordercolor" )
+			,rightborder: cellStyle.getBorderRightEnum().toString()
+			,rightbordercolor: getRgbTripletForStyleColorFormat( workbook, cellStyle, "rightbordercolor" )
+			,rotation: cellStyle.getRotation()
+			,strikeout: cellFont.getStrikeout()
+			,textwrap: cellStyle.getWrapText()
+			,topborder: cellStyle.getBorderTopEnum().toString()
+			,topbordercolor: getRgbTripletForStyleColorFormat( workbook, cellStyle, "topbordercolor" )
+			,underline: cellFont.getUnderline()
+			,verticalalignment: cellStyle.getVerticalAlignmentEnum().toString()
+		};
 	}
 
 	public any function getCellFormula( required workbook, numeric row, numeric column ){
@@ -1522,6 +1557,15 @@ component{
 		return result;
 	}
 
+	private array function convertSignedRGBToPositiveTriplet( required any signedRGB ){
+		// When signed, values of 128+ are negative: convert then to positive values
+		var result = [];
+		for( var i=1; i LTE 3; i++ ){
+			result.Append( ( signedRGB[ i ] < 0 )? ( signedRGB[ i ] + 256 ): signedRGB[ i ] );
+		}
+		return result;
+	}
+
 	private any function createCell( required row, numeric cellNum=arguments.row.getLastCellNum(), overwrite=true ){
 		/* get existing cell (if any)  */
 		var cell = row.getCell( JavaCast( "int", cellNum ) );
@@ -1926,6 +1970,35 @@ component{
 			}
 		}
 		return metadata;
+	}
+
+	private string function getRgbTripletForStyleColorFormat( required workbook, required cellStyle, required string format ){
+		var rgbTriplet = [];
+		var isXlsx = isXmlFormat( workbook );
+		var colorObject = "";
+		if( !isXlsx )
+			var palette = workbook.getCustomPalette();
+		switch( format ){
+			case "bottombordercolor":
+				colorObject = isXlsx? cellStyle.getBottomBorderXSSFColor(): palette.getColor( cellStyle.getBottomBorderColor() );
+				break;
+			case "fgcolor":
+				colorObject = isXlsx? cellStyle.getFillForegroundXSSFColor(): palette.getColor( cellStyle.getFillForegroundColor() );
+				break;
+			case "leftbordercolor":
+				colorObject = isXlsx? cellStyle.getLeftBorderXSSFColor(): palette.getColor( cellStyle.getLeftBorderColor() );
+				break;
+			case "rightbordercolor":
+				colorObject = isXlsx? cellStyle.getRightBorderXSSFColor(): palette.getColor( cellStyle.getRightBorderColor() );
+				break;
+			case "topbordercolor":
+				colorObject = isXlsx? cellStyle.getTopBorderXSSFColor(): palette.getColor( cellStyle.getTopBorderColor() );
+				break;
+		}
+		if( IsNull( colorObject ) OR IsSimpleValue( colorObject) ) // HSSF will return an empty string rather than a null if the color doesn't exist
+			return "";
+		rgbTriplet = isXlsx? convertSignedRGBToPositiveTriplet( colorObject.getRGB() ): colorObject.getTriplet();
+		return ArrayToList( rgbTriplet );
 	}
 
 	private array function getRowData( required workbook, required row, array columnRanges=[], boolean includeRichTextFormatting=false ){
@@ -2551,7 +2624,7 @@ component{
 					cellStyle.setAlignment( alignment );
 				break;
 				case "bold":
-					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font = cloneFont( workbook, workbook.getFontAt( cellStyle.getFontIndex() ) );
 					font.setBold( JavaCast( "boolean", settingValue ) );
 					cellStyle.setFont( font );
 				break;
@@ -2633,7 +2706,7 @@ component{
 					cellStyle.setRotation( JavaCast( "int", settingValue ) );
 				break;
 				case "strikeout":
-					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font = cloneFont( workbook, workbook.getFontAt( cellStyle.getFontIndex() ) );
 					font.setStrikeout( JavaCast( "boolean", settingValue ) );
 					cellStyle.setFont( font );
 				break;
