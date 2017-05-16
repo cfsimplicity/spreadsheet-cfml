@@ -869,13 +869,14 @@ component{
 	}
 
 	private string function getUnderlineFormatAsString( required cellFont ){
-		switch( cellFont.getUnderline() ){
-			case 0: return "none";
-			case 1: return "single";
-			case 2: return "double";
-			case 33: return "single accounting";
-			case 34: return "double accounting";
-		}
+		var lookup = {};
+		lookup[ 0 ] = "none";
+		lookup[ 1 ] = "single";
+		lookup[ 2 ] = "double";
+		lookup[ 33 ] = "single accounting";
+		lookup[ 34 ] = "double accounting";
+		if( lookup.KeyExists( cellFont.getUnderline() ) )
+			return lookup[ cellFont.getUnderline() ];
 		return "unknown";
 	}
 
