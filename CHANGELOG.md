@@ -1,3 +1,10 @@
+## 1.4.1 - 16 May 2017
+
+- Fixes
+	- \#124 Handle "indent" format values greater than 15 in xls
+	- \#123 Underline value returned by `getCellFormat()` should be a descriptive string
+	- Fix unreturned cellStyle when invalid underline format used.
+
 ## 1.4.0 - 15 May 2017
 
 - Enhancements
