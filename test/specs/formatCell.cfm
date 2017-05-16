@@ -78,6 +78,18 @@ describe( "formatCell", function(){
 		expect( cellFormat.fgcolor ).toBe( "0,128,0" );
 	});
 
+	it( "will ensure a fillpattern is specified when setting the fgcolor", function(){
+		var format = { fgcolor: "GREEN" };
+		s.formatCell( xls, format, 1, 1 );
+		var cellFormat = s.getCellFormat( xls, 1, 1 );
+		expect( cellFormat.fgcolor ).toBe( "0,128,0" );
+		expect( cellFormat.fillpattern ).toBe( "SOLID_FOREGROUND" );
+		s.formatCell( xlsx, format, 1, 1 );
+		var cellFormat = s.getCellFormat( xlsx, 1, 1 );
+		expect( cellFormat.fgcolor ).toBe( "0,128,0" );
+		expect( cellFormat.fillpattern ).toBe( "SOLID_FOREGROUND" );
+	});
+
 	it( "can set the fillpattern", function(){
 		var format = { fillpattern: "BRICKS" };
 		s.formatCell( xls, format, 1, 1 );
