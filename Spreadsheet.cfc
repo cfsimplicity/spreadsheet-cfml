@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "1.4.0";
+	variables.version = "1.4.1";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -772,6 +772,7 @@ component{
 			,fillpattern: cellStyle.getFillPatternEnum().toString()
 			,font: cellFont.getFontName()
 			,fontsize: cellFont.getFontHeightInPoints()
+			,indent: cellStyle.getIndention()
 			,italic: cellFont.getItalic()
 			,leftborder: cellStyle.getBorderLeftEnum().toString()
 			,leftbordercolor: getRgbTripletForStyleColorFormat( workbook, cellStyle, "leftbordercolor" )
@@ -2671,9 +2672,10 @@ component{
 				case "hidden":
 					cellStyle.setHidden( JavaCast( "boolean", settingValue ) );
 				break;
-				/*  TODO: Doesn't seem to do anything */
 				case "indent":
-					cellStyle.setIndention( JavaCast( "int", settingValue ) );
+					// Only seems to work on MS Excel. XLS limit is 15.
+					var indentValue = isXmlFormat( workbook )? settingValue: Min( 15, settingValue );
+					cellStyle.setIndention( JavaCast( "int", indentValue ) );
 				break;
 				case "italic":
 					font = cloneFont( workbook,workbook.getFontAt( cellStyle.getFontIndex ( ) ) );
