@@ -238,60 +238,60 @@ describe( "formatCell", function(){
 	it( "can set underline as boolean", function(){
 		s.formatCell( xls, { underline: true }, 1, 1 );
 		var cellFormat = s.getCellFormat( xls, 1, 1 );
-		expect( cellFormat.underline ).toBeTrue();
+		expect( cellFormat.underline ).toBe( "single" );
 		s.formatCell( xlsx, { underline: true }, 1, 1 );
 		var cellFormat = s.getCellFormat( xlsx, 1, 1 );
-		expect( cellFormat.underline ).toBeTrue();
+		expect( cellFormat.underline ).toBe( "single" );
 		//check turning off
 		s.formatCell( xls, { underline: false }, 1, 1 );
 		var cellFormat = s.getCellFormat( xls, 1, 1 );
-		expect( cellFormat.underline ).toBeFalse();
+		expect( cellFormat.underline ).toBe( "none" );
 		s.formatCell( xlsx, { underline: false }, 1, 1 );
 		var cellFormat = s.getCellFormat( xlsx, 1, 1 );
-		expect( cellFormat.underline ).toBeFalse();
+		expect( cellFormat.underline ).toBe( "none" );
 	});
 
 	it( "can set underline as 'single' or 'none'", function(){
 		s.formatCell( xls, { underline: "single" }, 1, 1 );
 		var cellFormat = s.getCellFormat( xls, 1, 1 );
-		expect( cellFormat.underline ).toBeTrue();
+		expect( cellFormat.underline ).toBe( "single" );
 		s.formatCell( xlsx, { underline: "single" }, 1, 1 );
 		var cellFormat = s.getCellFormat( xlsx, 1, 1 );
-		expect( cellFormat.underline ).toBeTrue();
+		expect( cellFormat.underline ).toBe( "single" );
 		//check turning off
 		s.formatCell( xls, { underline: "none" }, 1, 1 );
 		var cellFormat = s.getCellFormat( xls, 1, 1 );
-		expect( cellFormat.underline ).toBeFalse();
+		expect( cellFormat.underline ).toBe( "none" );
 		s.formatCell( xlsx, { underline: "none" }, 1, 1 );
 		var cellFormat = s.getCellFormat( xlsx, 1, 1 );
-		expect( cellFormat.underline ).toBeFalse();
+		expect( cellFormat.underline ).toBe( "none" );
 	});
 
 	it( "can set underline as 'double'", function(){
 		s.formatCell( xls, { underline: "double" }, 1, 1 );
 		var cellFormat = s.getCellFormat( xls, 1, 1 );
-		expect( cellFormat.underline ).toBe( 2 );
+		expect( cellFormat.underline ).toBe( "double" );
 		s.formatCell( xlsx, { underline: "double" }, 1, 1 );
 		var cellFormat = s.getCellFormat( xlsx, 1, 1 );
-		expect( cellFormat.underline ).toBe( 2 );
+		expect( cellFormat.underline ).toBe( "double" );
 	});
 
 	it( "can set underline as 'single accounting'", function(){
 		s.formatCell( xls, { underline: "single accounting" }, 1, 1 );
 		var cellFormat = s.getCellFormat( xls, 1, 1 );
-		expect( cellFormat.underline ).toBe( 33 );
+		expect( cellFormat.underline ).toBe( "single accounting" );
 		s.formatCell( xlsx, { underline: "single accounting" }, 1, 1 );
 		var cellFormat = s.getCellFormat( xlsx, 1, 1 );
-		expect( cellFormat.underline ).toBe( 33 );
+		expect( cellFormat.underline ).toBe( "single accounting" );
 	});
 
 	it( "can set underline as 'double accounting'", function(){
 		s.formatCell( xls, { underline: "double accounting" }, 1, 1 );
 		var cellFormat = s.getCellFormat( xls, 1, 1 );
-		expect( cellFormat.underline ).toBe( 34 );
+		expect( cellFormat.underline ).toBe( "double accounting" );
 		s.formatCell( xlsx, { underline: "double accounting" }, 1, 1 );
 		var cellFormat = s.getCellFormat( xlsx, 1, 1 );
-		expect( cellFormat.underline ).toBe( 34 );
+		expect( cellFormat.underline ).toBe( "double accounting" );
 	});
 
 	it( "can set a non preset RGB triplet color on an XLSX workbook cell", function(){

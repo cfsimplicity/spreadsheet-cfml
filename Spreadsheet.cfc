@@ -783,7 +783,7 @@ component{
 			,textwrap: cellStyle.getWrapText()
 			,topborder: cellStyle.getBorderTopEnum().toString()
 			,topbordercolor: getRgbTripletForStyleColorFormat( workbook, cellStyle, "topbordercolor" )
-			,underline: cellFont.getUnderline()
+			,underline: getUnderlineFormatAsString( cellFont )
 			,verticalalignment: cellStyle.getVerticalAlignmentEnum().toString()
 		};
 	}
@@ -866,6 +866,17 @@ component{
 			result = Max( result, row.getLastCellNum() );
 		}
 		return result;
+	}
+
+	private string function getUnderlineFormatAsString( required cellFont ){
+		switch( cellFont.getUnderline() ){
+			case 0: return "none";
+			case 1: return "single";
+			case 2: return "double";
+			case 33: return "single accounting";
+			case 34: return "double accounting";
+		}
+		return "unknown";
 	}
 
 	public void function hideColumn( required workbook, required numeric column ){
