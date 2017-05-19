@@ -2,7 +2,7 @@
 describe( "rich text formatting",function(){
 
 	beforeEach( function(){
-		path = ExpandPath( "/root/test/files/formatting.xls" );
+		path = getTestFilePath( "formatting.xls" );
 		actual = s.read( src=path,format="query",includeRichTextFormatting="true" );
 	});
 

@@ -2,7 +2,7 @@
 describe( "formatColumn",function(){
 
 	it( "can format a column containing more than 4009 rows",function(){
-		var path=ExpandPath( "/root/test/files/4010-rows.xls" );
+		var path=getTestFilePath( "4010-rows.xls" );
 		var workbook=s.read( src=path );
 		var format={ italic="true" };
 		s.formatColumn( workbook,format,1 );

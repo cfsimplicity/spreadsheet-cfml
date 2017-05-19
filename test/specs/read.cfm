@@ -6,19 +6,19 @@ describe( "read",function(){
 	});
 
 	it( "Can read a traditional XLS file",function() {
-		path = ExpandPath( "/root/test/files/test.xls" );
+		path = getTestFilePath( "test.xls" );
 		workbook = s.read( src=path );
 		expect( s.isBinaryFormat( workbook ) ).toBeTrue();
 	});
 
 	it( "Can read an OOXML file",function() {
-		path = ExpandPath( "/root/test/files/test.xlsx" );
+		path = getTestFilePath( "test.xlsx" );
 		workbook = s.read( src=path );
 		expect( s.isXmlFormat( workbook ) ).toBeTrue();
 	});
 
 	it( "Can read a traditional XLS file into a query",function() {
-		path = ExpandPath( "/root/test/files/test.xls" );
+		path = getTestFilePath( "test.xls" );
 		expected = querySim(
 			"column1,column2
 			a|b
@@ -30,7 +30,7 @@ describe( "read",function(){
 	});
 
 	it( "Can read an OOXML file into a query",function() {
-		path = ExpandPath( "/root/test/files/test.xlsx" );
+		path = getTestFilePath( "test.xlsx" );
 		expected = querySim(
 			"column1,column2
 			a|e
@@ -41,7 +41,7 @@ describe( "read",function(){
 	});
 
 	it( "Reads from the specified sheet name",function(){
-		path = ExpandPath( "/root/test/files/test.xls" );// has 2 sheets
+		path = getTestFilePath( "test.xls" );// has 2 sheets
 		expected = querySim(
 			"column1,column2
 			x|y");
@@ -50,7 +50,7 @@ describe( "read",function(){
 	});
 
 	it( "Reads from the specified sheet number",function(){
-		path = ExpandPath( "/root/test/files/test.xls" );// has 2 sheets
+		path = getTestFilePath( "test.xls" );// has 2 sheets
 		expected = querySim(
 			"column1,column2
 			x|y");
@@ -59,7 +59,7 @@ describe( "read",function(){
 	});
 
 	it( "Uses header row for column names if specified",function() {
-		path = ExpandPath( "/root/test/files/test.xls" );
+		path = getTestFilePath( "test.xls" );
 		expected = querySim(
 			"a,b
 			1|#ParseDateTime( '2015-04-01 00:00:00' )#
@@ -69,7 +69,7 @@ describe( "read",function(){
 	});
 
 	it( "Includes the specified header row in query if includeHeader is true",function() {
-		path = ExpandPath( "/root/test/files/test.xls" );
+		path = getTestFilePath( "test.xls" );
 		expected = querySim(
 			"a,b
 			a|b
@@ -100,7 +100,7 @@ describe( "read",function(){
 	});
 
 	it( "Can handle null/empty cells",function() {
-		path = ExpandPath( "/root/test/files/nullCell.xls" );
+		path = getTestFilePath( "nullCell.xls" );
 		actual = s.read( src=path ,format="query",headerRow=1 );
 		expected=QueryNew( "column1,column2","VarChar,VarChar",[ [ "","a" ] ] );
 		expect( actual ).toBe( expected );
@@ -212,7 +212,7 @@ describe( "read",function(){
 	});
 
 	it( "Allows column names to be specified as a list when reading a sheet into a query",function() {
-		path = ExpandPath( "/root/test/files/test.xls" );
+		path = getTestFilePath( "test.xls" );
 		// only one column name specified. The other will be the default
 		actual = s.read( src=path,format="query",columnNames="One" );
 		expected = QuerySim( "One,column2
@@ -230,7 +230,7 @@ describe( "read",function(){
 	});
 
 	it( "ColumnNames list overrides headerRow: none of the header row values will be used",function() {
-		path = ExpandPath( "/root/test/files/test.xls" );
+		path = getTestFilePath( "test.xls" );
 		actual = s.read( src=path,format="query",columnNames="One,Two",headerRow=1 );
 		expected = QuerySim( "One,Two
 			1|#ParseDateTime( '2015-04-01 00:00:00' )#
@@ -239,7 +239,7 @@ describe( "read",function(){
 	});
 
 	it( "Can return HTML table rows from an Excel file",function() {
-		path = ExpandPath( "/root/test/files/test.xls" );
+		path = getTestFilePath( "test.xls" );
 		actual = s.read( src=path,format="html" );
 		expected="<tbody><tr><td>a</td><td>b</td></tr><tr><td>1</td><td>2015-04-01 00:00:00</td></tr><tr><td>2015-04-01 01:01:01</td><td>2</td></tr></tbody>";
 		expect( actual ).toBe( expected );
@@ -252,7 +252,7 @@ describe( "read",function(){
 	});
 
 	it( "Can return a CSV string from an Excel file",function() {
-		path = ExpandPath( "/root/test/files/test.xls" );
+		path = getTestFilePath( "test.xls" );
 		var crlf=Chr( 13 ) & Chr( 10 );
 		expected='"a","b"#crlf#"1","2015-04-01 00:00:00"#crlf#"2015-04-01 01:01:01","2"';
 		actual = s.read( src=path,format="csv" );
@@ -346,7 +346,7 @@ describe( "read",function(){
 
 		it( "the file doesn't exist",function() {
 			expect( function(){
-				var path=ExpandPath( "/root/test/files/nonexistant.xls" );
+				var path=getTestFilePath( "nonexistant.xls" );
 				s.read( src=path );
 			}).toThrow( regex="Non-existent file" );
 		});
@@ -367,7 +367,7 @@ describe( "read",function(){
 
 			it( "a password is supplied for a binary xls file",function() {
 				expect( function(){
-					var path = ExpandPath( "/root/test/files/test.xls" );
+					var path = getTestFilePath( "test.xls" );
 					s.read( src=path,format="query",password="pass" );
 				}).toThrow( regex="Invalid file type" );
 			});
@@ -386,21 +386,21 @@ describe( "read",function(){
 
 		it( "the source file is not a spreadsheet",function() {
 			expect( function(){
-				var path = ExpandPath( "/root/test/files/notaspreadsheet.txt" );
+				var path = getTestFilePath( "notaspreadsheet.txt" );
 				s.read( src=path );
 			}).toThrow( regex="Invalid spreadsheet file" );
 		});
 
 		it( "the source file appears to contain CSV, and suggests using 'csvToQuery'",function() {
 			expect( function(){
-				var path = ExpandPath( "/root/test/files/csv.xls" );
+				var path = getTestFilePath( "csv.xls" );
 				s.read( src=path );
 			}).toThrow( regex="may be a CSV file" );
 		});
 
 		it( "the source file is in an old format not supported by POI",function() {
 			expect( function(){
-				var path = ExpandPath( "/root/test/files/oldformat.xls" );
+				var path = getTestFilePath( "oldformat.xls" );
 				s.read( src=path );
 			}).toThrow( regex="Invalid spreadsheet format" );
 		});

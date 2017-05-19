@@ -14,11 +14,10 @@ describe( "writeFileFromQuery",function(){
 	});
 
 	it( "Writes an OOXML file if extension is .xlsx",function() {
-		path = ExpandPath( "/root/test/test.xlsx" );
+		path = tempXlsxPath;
 		s.writeFileFromQuery( query,path,true );
 		workbook	=	s.read( path );
 		expect( workbook.getClass().name ).toBe( "org.apache.poi.xssf.usermodel.XSSFWorkbook" );
-		FileDelete( path );
 	});
 
 	it( "Writes an OOXML file if extension is .xls but xmlFormat is true",function() {

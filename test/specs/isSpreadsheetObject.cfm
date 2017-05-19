@@ -7,13 +7,13 @@ describe( "isSpreadsheetObject",function(){
 	});
 
 	it( "reports true for a binary spreadsheet object",function() {
-		var path=ExpandPath( "/root/test/files/test.xls" );
+		var path=getTestFilePath( "test.xls" );
 		var objectToTest=s.read( path );
 		expect( s.isSpreadsheetObject( objectToTest ) ).toBeTrue();
 	});
 
 	it( "reports true for an xml spreadsheet object",function() {
-		var path=ExpandPath( "/root/test/files/test.xlsx" );
+		var path=getTestFilePath( "test.xlsx" );
 		var objectToTest=s.read( path );
 		expect( s.isSpreadsheetObject( objectToTest ) ).toBeTrue();
 	});

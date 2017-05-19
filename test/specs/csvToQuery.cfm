@@ -16,7 +16,7 @@ describe( "csvToQuery",function(){
 	});
 
 	it( "can read the csv from a file", function() {
-		var path = ExpandPath( "/root/test/files/test.csv" );
+		var path = getTestFilePath( "test.csv" );
 		//named args
 		var actual = s.csvToQuery( filepath=path );
 		expect( actual ).toBe( basicExpectedQuery );
@@ -26,7 +26,7 @@ describe( "csvToQuery",function(){
 	});
 
 	it( "can read the csv from a text file with an .xls extension", function() {
-		var path = ExpandPath( "/root/test/files/csv.xls" );
+		var path = getTestFilePath( "csv.xls" );
 		var actual = s.csvToQuery( filepath=path );
 		expect( actual ).toBe( basicExpectedQuery ); 	
 	});
@@ -153,7 +153,7 @@ Frumpo,12345
 		});
 
 		it( "a non text/csv file is passed", function() {
-			var path = ExpandPath( "/root/test/files/test.xls" );
+			var path = getTestFilePath( "test.xls" );
 			expect( function(){
 				s.csvToQuery( filepath=path );
 			}).toThrow( regex="Invalid csv file" );
