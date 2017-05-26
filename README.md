@@ -30,11 +30,11 @@ Note that this is not a Lucee extension, so **does not need to be installed**. T
 
 The following example assumes the file containing the script is in the same directory as the folder containing the spreadsheet library files, i.e.:
 ```
-/root/
- /spreadsheetLibrary/
-  Spreadsheet.cfc
-  etc.
- script.cfm
+- root/
+ - spreadsheetLibrary/
+    - Spreadsheet.cfc
+    - etc.
+ - script.cfm
 ``` 
 ```
 <cfscript>
