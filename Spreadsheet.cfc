@@ -306,7 +306,7 @@ component{
 			arguments.leftmostColumn = freezeColumn;
 		/* createFreezePane() operates on the logical row/column numbers as opposed to physical, so no need for n-1 stuff here */
 		if( !arguments.KeyExists( "leftmostColumn" ) ){
-			getActiveSheet( workbook ).createFreezePane( JavaCast( "int", freezeColumn ),JavaCast( "int", freezeRow ) );
+			getActiveSheet( workbook ).createFreezePane( JavaCast( "int", freezeColumn ), JavaCast( "int", freezeRow ) );
 			return;
 		}
 		// POI lets you specify an active pane if you use createSplitPane() here
@@ -347,7 +347,7 @@ component{
 			}
 		}
 		else if( !arguments.KeyExists( "imageType" ) )
-			throw( type=exceptionType,message="Could Not Determine Image Type",detail="An image type could not be determined from the filepath or imagetype provided" );
+			throw( type=exceptionType, message="Could Not Determine Image Type", detail="An image type could not be determined from the filepath or imagetype provided" );
 		arguments.imageType	=	imageType.UCase();
 		switch( imageType ){
 			case "DIB": case "EMF": case "JPEG": case "PICT": case "PNG": case "WMF":
@@ -1326,7 +1326,7 @@ component{
 		columnRange = columnRange.Trim();
 		if( !IsValid( "regex",columnRange,"[A-Za-z]:[A-Za-z]" ) )
 			throw( type=exceptionType, message="Invalid columnRange argument", detail="The 'columnRange' argument should be in the form 'A:B'" );
-		var cellRangeAddress = loadPoi( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String", columnRange ) );
+		var cellRangeAddress = getCellRangeAddressFromReference( columnRange );
 		getActiveSheet( workbook ).setRepeatingColumns( cellRangeAddress );
 	}
 
@@ -1334,7 +1334,7 @@ component{
 		rowRange = rowRange.Trim();
 		if( !IsValid( "regex",rowRange,"\d+:\d+" ) )
 			throw( type=exceptionType, message="Invalid rowRange argument", detail="The 'rowRange' argument should be in the form 'n:n', e.g. '1:5'" );
-		var cellRangeAddress=loadPoi( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String", rowRange ) );
+		var cellRangeAddress = getCellRangeAddressFromReference( rowRange );
 		getActiveSheet( workbook ).setRepeatingRows( cellRangeAddress );
 	}
 
@@ -1844,6 +1844,11 @@ component{
 		var rowIndex = ( rowNumber -1 );
 		var columnIndex = ( columnNumber -1 );
 		return getActiveSheet( workbook ).getRow( JavaCast( "int", rowIndex ) ).getCell( JavaCast( "int", columnIndex ) );
+	}
+
+	private any function getCellRangeAddressFromReference( required string rangeReference ){
+		/* rangeReference = usually a standard area ref (e.g. "B1:D8"). May be a single cell ref (e.g. "B5") in which case the result is a 1 x 1 cell range. May also be a whole row range (e.g. "3:5"), or a whole column range (e.g. "C:F") */
+		return loadPoi( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String", rangeReference ) );
 	}
 
 	private any function getCellUtil(){
