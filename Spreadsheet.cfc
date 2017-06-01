@@ -237,7 +237,7 @@ component{
 
 	public void function addAutofilter( required workbook, required string cellRange ){
 		arguments.cellRange = cellRange.Trim();
-		if( !cellRange.Len() )
+		if( cellRange.IsEmpty() )
 			throw( type=exceptionType, message="Empty cellRange argument", detail="You must provide a cell range reference in the form 'A1:Z1'" );
 		getActiveSheet( workbook ).setAutoFilter( getCellRangeAddressFromReference( cellRange ) );
 	}
