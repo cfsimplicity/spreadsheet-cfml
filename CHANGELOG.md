@@ -1,3 +1,8 @@
+## 1.5.0 - 1 June 2017
+
+- Enhancements
+	- \#125 Add `addAutofilter()`
+
 ## 1.4.1 - 16 May 2017
 
 - Fixes

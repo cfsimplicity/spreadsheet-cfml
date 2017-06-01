@@ -52,6 +52,7 @@ You will probably want to place the spreadsheet library files in a central locat
 
 ## Supported ColdFusion functions
 
+* [addAutofilter](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addAutofilter)
 * [addColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addColumn)
 * [addFreezePane](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addFreezePane)
 * [addImage](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addImage)

@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "1.4.1";
+	variables.version = "1.5.1";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -234,6 +234,13 @@ component{
 	}
 
 	/* End convenience methods */
+
+	public void function addAutofilter( required workbook, required string cellRange ){
+		arguments.cellRange = cellRange.Trim();
+		if( !cellRange.Len() )
+			throw( type=exceptionType, message="Empty cellRange argument", detail="You must provide a cell range reference in the form 'A1:Z1'" );
+		getActiveSheet( workbook ).setAutoFilter( getCellRangeAddressFromReference( cellRange ) );
+	}
 
 	public void function addColumn(
 		required workbook
