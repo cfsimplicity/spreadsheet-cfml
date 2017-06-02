@@ -1358,7 +1358,7 @@ component{
 
 	public void function setRepeatingColumns( required workbook, required string columnRange ){
 		columnRange = columnRange.Trim();
-		if( !IsValid( "regex",columnRange,"[A-Za-z]:[A-Za-z]" ) )
+		if( !IsValid( "regex", columnRange,"[A-Za-z]:[A-Za-z]" ) )
 			throw( type=exceptionType, message="Invalid columnRange argument", detail="The 'columnRange' argument should be in the form 'A:B'" );
 		var cellRangeAddress = getCellRangeAddressFromReference( columnRange );
 		getActiveSheet( workbook ).setRepeatingColumns( cellRangeAddress );
@@ -1366,7 +1366,7 @@ component{
 
 	public void function setRepeatingRows( required workbook, required string rowRange ){
 		rowRange = rowRange.Trim();
-		if( !IsValid( "regex",rowRange,"\d+:\d+" ) )
+		if( !IsValid( "regex", rowRange,"\d+:\d+" ) )
 			throw( type=exceptionType, message="Invalid rowRange argument", detail="The 'rowRange' argument should be in the form 'n:n', e.g. '1:5'" );
 		var cellRangeAddress = getCellRangeAddressFromReference( rowRange );
 		getActiveSheet( workbook ).setRepeatingRows( cellRangeAddress );
