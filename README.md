@@ -57,6 +57,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [addFreezePane](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addFreezePane)
 * [addImage](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addImage)
 * [addInfo](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addInfo)
+* [addPageBreaks](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addPageBreaks)
 * [addRow](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addRow)
 * [addRows](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addRows)
 * [addSplitPane](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addSplitPane)

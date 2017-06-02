@@ -410,12 +410,27 @@ component{
 		*/
 	}
 
-	public void function addInfo( required workbook,required struct info ){
+	public void function addInfo( required workbook, required struct info ){
 		/* Valid struct keys are author, category, lastauthor, comments, keywords, manager, company, subject, title */
 		if( isBinaryFormat( workbook ) )
 			addInfoBinary( workbook,info );
 		else
 			addInfoXml( workbook,info );
+	}
+
+	public void function addPageBreaks( required workbook, string rowBreaks="", string columnBreaks="" ){
+		arguments.rowBreaks = Trim( rowBreaks ); //Dont' use member function in case value is in fact numeric
+		arguments.columnBreaks = Trim( columnBreaks );
+		if( rowBreaks.IsEmpty() AND columnBreaks.IsEmpty() )
+			throw( type=exceptionType, message="Missing argument", detail="You must specify the rows and/or columns at which page breaks should be added." );
+		arguments.rowBreaks = rowBreaks.ListToArray();
+		arguments.columnBreaks = columnBreaks.ListToArray();
+		var sheet = getActiveSheet( workbook );
+		sheet.setAutoBreaks( false ); // Not sure if this is necessary: https://stackoverflow.com/a/14900320/204620
+		for( var rowNumber in rowBreaks )
+			sheet.setRowBreak( JavaCast( "int", rowNumber -1 ) );
+		for( var columnNumber in columnBreaks )
+			sheet.setcolumnBreak( JavaCast( "int", columnNumber -1 ) );
 	}
 
 	public void function addRow(
