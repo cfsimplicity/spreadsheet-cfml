@@ -29,13 +29,13 @@ Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of 
 Note that this is not a Lucee extension, so **does not need to be installed**. To use it, simply copy the files/folders to a location where `Spreadsheet.cfc` can be called by your application code.
 
 The following example assumes the file containing the script is in the same directory as the folder containing the spreadsheet library files, i.e.:
-```
+
 - root/
  - spreadsheetLibrary/
     - Spreadsheet.cfc
     - etc.
  - script.cfm
-``` 
+ 
 ```
 <cfscript>
 spreadsheet = New spreadsheetLibrary.Spreadsheet();
