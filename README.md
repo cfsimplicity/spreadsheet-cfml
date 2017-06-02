@@ -100,6 +100,7 @@ You will probably want to place the spreadsheet library files in a central locat
 
 ### Extra functions not available in ColdFusion
 
+* [addPrintGridlines](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addPrintGridlines)
 * [clearCell](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCell)
 * [clearCellRange](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCellRange)
 * [getCellFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellFormat)
@@ -110,6 +111,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [isColumnHidden](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isColumnHidden)
 * [isRowHidden](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isRowHidden)
 * [isXmlFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isXmlFormat)
+* [removePrintGridlines](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/removePrintGridlines)
 * [renameSheet](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/renameSheet)
 * [removeSheetNumber](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/removeSheetNumber)
 * [setRepeatingColumns](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setRepeatingColumns)

@@ -3,6 +3,7 @@
 - Enhancements
 	- \#125 Add `addAutofilter()`
 	- \#126 Add `addPageBreaks()`
+	- \#127 Add `addPrintGridlines()` and `removePrintGuidelines()`
 
 ## 1.4.1 - 16 May 2017
 

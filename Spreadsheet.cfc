@@ -433,6 +433,10 @@ component{
 			sheet.setcolumnBreak( JavaCast( "int", columnNumber -1 ) );
 	}
 
+	public void function addPrintGridlines( required workbook ){
+		getActiveSheet( workbook ).setPrintGridlines( JavaCast( "boolean", true ) );
+	}
+
 	public void function addRow(
 		required workbook
 		,required string data /* Delimited list of data */
@@ -1099,6 +1103,10 @@ component{
 		workbook.write( baos );
 		baos.flush();
 		return baos.toByteArray();
+	}
+
+	public void function removePrintGridlines( required workbook ){
+		getActiveSheet( workbook ).setPrintGridlines( JavaCast( "boolean", false ) );
 	}
 
 	public void function removeSheet( required workbook, required string sheetName ){
