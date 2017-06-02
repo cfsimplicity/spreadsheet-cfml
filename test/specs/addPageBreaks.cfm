@@ -18,7 +18,7 @@ describe( "addPageBreaks",function(){
 		expect( xlsSheet.getRowBreaks() ).toBe( [ 1, 2 ] );
 		expect( xlsxSheet.getRowBreaks() ).toBe( [ 1, 2 ] );
 		expect( xlsSheet.getColumnBreaks() ).toBe( [ 0, 1 ] );
-		expect( xlsSheet.getColumnBreaks() ).toBe( [ 0, 1 ] );
+		expect( xlsxSheet.getColumnBreaks() ).toBe( [ 0, 1 ] );
 	});
 
 	it( "Doesn't error when passing valid arguments with extra trailing/leading space",function() {
