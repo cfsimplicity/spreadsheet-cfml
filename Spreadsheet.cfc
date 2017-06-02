@@ -258,10 +258,11 @@ component{
 		var cellNum = 0;
 		var lastCellNum = 0;
 		var cellValue = 0;
+		var sheet = getActiveSheet( workbook );
 		if( arguments.KeyExists( "startColumn" ) )
 			cellNum = ( startColumn -1 );
 		else {
-			row = getActiveSheet( workbook ).getRow( rowNum );
+			row = sheet.getRow( rowNum );
 			/* if this row exists, find the next empty cell number. note: getLastCellNum() returns the cell index PLUS ONE or -1 if not found */
 			if( !IsNull( row ) AND row.getLastCellNum() GT 0 )
 				cellNum = row.getLastCellNum();
@@ -272,10 +273,10 @@ component{
 		var columnData = ListToArray( data, delimiter );
 		for( var cellValue in columnData ){
 			/* if rowNum is greater than the last row of the sheet, need to create a new row  */
-			if( rowNum GT getActiveSheet( workbook ).getLastRowNum() OR IsNull( getActiveSheet( workbook ).getRow( rowNum ) ) )
+			if( rowNum GT sheet.getLastRowNum() OR IsNull( sheet.getRow( rowNum ) ) )
 				row = createRow( workbook, rowNum );
 			else
-				row = getActiveSheet( workbook ).getRow( rowNum );
+				row = sheet.getRow( rowNum );
 			/* POI doesn't have any 'shift column' functionality akin to shiftRows() so inserts get interesting */
 			/* ** Note: row.getLastCellNum() returns the cell index PLUS ONE or -1 if not found */
 			if( insert AND ( cellNum LT row.getLastCellNum() ) ){
@@ -307,17 +308,18 @@ component{
 		,numeric leftmostColumn //left column visible in right pane
 		,numeric topRow //top row visible in bottom pane
 	){
+		var sheet = getActiveSheet( workbook );
 		if( arguments.KeyExists( "leftmostColumn" ) AND !arguments.KeyExists( "topRow" ) )
 			arguments.topRow = freezeRow;
 		if( arguments.KeyExists( "topRow" ) AND !arguments.KeyExists( "leftmostColumn" ) )
 			arguments.leftmostColumn = freezeColumn;
 		/* createFreezePane() operates on the logical row/column numbers as opposed to physical, so no need for n-1 stuff here */
 		if( !arguments.KeyExists( "leftmostColumn" ) ){
-			getActiveSheet( workbook ).createFreezePane( JavaCast( "int", freezeColumn ), JavaCast( "int", freezeRow ) );
+			sheet.createFreezePane( JavaCast( "int", freezeColumn ), JavaCast( "int", freezeRow ) );
 			return;
 		}
 		// POI lets you specify an active pane if you use createSplitPane() here
-		getActiveSheet( workbook ).createFreezePane(
+		sheet.createFreezePane(
 			JavaCast( "int", freezeColumn )
 			,JavaCast( "int", freezeRow )
 			,JavaCast( "int", leftmostColumn )
@@ -428,9 +430,9 @@ component{
 		var sheet = getActiveSheet( workbook );
 		sheet.setAutoBreaks( false ); // Not sure if this is necessary: https://stackoverflow.com/a/14900320/204620
 		for( var rowNumber in rowBreaks )
-			sheet.setRowBreak( JavaCast( "int", rowNumber -1 ) );
+			sheet.setRowBreak( JavaCast( "int", ( rowNumber -1 ) ) );
 		for( var columnNumber in columnBreaks )
-			sheet.setcolumnBreak( JavaCast( "int", columnNumber -1 ) );
+			sheet.setcolumnBreak( JavaCast( "int", ( columnNumber -1 ) ) );
 	}
 
 	public void function addPrintGridlines( required workbook ){
@@ -543,9 +545,9 @@ component{
 		,required numeric topRow
 		,string activePane="UPPER_LEFT" //Valid values are LOWER_LEFT, LOWER_RIGHT, UPPER_LEFT, and UPPER_RIGHT
 	){
-		var activeSheet = getActiveSheet( workbook );
+		var sheet = getActiveSheet( workbook );
 		arguments.activePane = activeSheet[ "PANE_#activePane#" ];
-		activeSheet.createSplitPane(
+		sheet.createSplitPane(
 			JavaCast( "int", xSplitPosition )
 			,JavaCast( "int", ySplitPosition )
 			,JavaCast( "int", leftmostColumn )
@@ -1323,12 +1325,13 @@ component{
 		,string centerFooter=""
 		,string rightFooter=""
 	){
+		var footer = getActiveSheet( workbook ).getFooter();
 		if( !centerFooter.isEmpty() )
-			getActiveSheet( workbook ).getFooter().setCenter( JavaCast( "string", centerFooter ) );
+			footer.setCenter( JavaCast( "string", centerFooter ) );
 		if( !leftFooter.isEmpty() )
-			getActiveSheet( workbook ).getFooter().setleft( JavaCast( "string", leftFooter ) );
+			footer.setleft( JavaCast( "string", leftFooter ) );
 		if( !rightFooter.isEmpty() )
-			getActiveSheet( workbook ).getFooter().setright( JavaCast( "string", rightFooter ) );
+			footer.setright( JavaCast( "string", rightFooter ) );
 	}
 
 	public void function setHeader(
@@ -1337,12 +1340,13 @@ component{
 		,string centerHeader=""
 		,string rightHeader=""
 	){
+		var header = getActiveSheet( workbook ).getHeader();
 		if( !centerHeader.isEmpty() )
-			getActiveSheet( workbook ).getHeader().setCenter( JavaCast( "string", centerHeader ) );
+			header.setCenter( JavaCast( "string", centerHeader ) );
 		if( !leftHeader.isEmpty() )
-			getActiveSheet( workbook ).getHeader().setleft( JavaCast( "string", leftHeader ) );
+			header.setleft( JavaCast( "string", leftHeader ) );
 		if( !rightHeader.isEmpty() )
-			getActiveSheet( workbook ).getHeader().setright( JavaCast( "string", rightHeader ) );
+			header.setright( JavaCast( "string", rightHeader ) );
 	}
 
 	public void function setReadOnly( required workbook, required string password ){
@@ -1633,12 +1637,13 @@ component{
 
 	private any function createRow( required workbook, numeric rowNum=getNextEmptyRow( workbook ), boolean overwrite=true ){
 		/* get existing row (if any)  */
-		var row = getActiveSheet( workbook ).getRow( JavaCast( "int", rowNum ) );
+		var sheet = getActiveSheet( workbook );
+		var row = sheet.getRow( JavaCast( "int", rowNum ) );
 		if( overwrite AND !IsNull( row ) )
-			getActiveSheet( workbook ).removeRow( row ); /* forcibly remove existing row and all cells  */
-		if( overwrite OR IsNull( getActiveSheet( workbook ).getRow( JavaCast( "int", rowNum ) ) ) ){
+			sheet.removeRow( row ); /* forcibly remove existing row and all cells  */
+		if( overwrite OR IsNull( sheet.getRow( JavaCast( "int", rowNum ) ) ) ){
 			try{
-				row = getActiveSheet( workbook ).createRow( JavaCast( "int", rowNum ) );
+				row = sheet.createRow( JavaCast( "int", rowNum ) );
 			}
 			catch( java.lang.IllegalArgumentException exception ){
 				if( exception.message.FindNoCase( "Invalid row number (65536)" ) )
@@ -1965,8 +1970,9 @@ component{
 	}
 
 	private numeric function getFirstRowNum( required workbook ){
-		var firstRow = getActiveSheet( workbook ).getFirstRowNum();
-		if( firstRow EQ 0 AND getActiveSheet( workbook ).getPhysicalNumberOfRows() EQ 0 )
+		var sheet = getActiveSheet( workbook );
+		var firstRow = sheet.getFirstRowNum();
+		if( firstRow EQ 0 AND sheet.getPhysicalNumberOfRows() EQ 0 )
 			return -1;
 		return firstRow;
 	}
@@ -1994,8 +2000,9 @@ component{
 	}
 
 	private numeric function getLastRowNum( required workbook ){
-		var lastRow = getActiveSheet( workbook ).getLastRowNum();
-		if( lastRow EQ 0 AND getActiveSheet( workbook ).getPhysicalNumberOfRows() EQ 0 )
+		var sheet = getActiveSheet( workbook );
+		var lastRow = sheet.getLastRowNum();
+		if( lastRow EQ 0 AND sheet.getPhysicalNumberOfRows() EQ 0 )
 			return -1; //The sheet is empty. Return -1 instead of 0
 		return lastRow;
 	}
