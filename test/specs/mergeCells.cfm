@@ -2,7 +2,7 @@
 describe( "mergeCells",function(){
 
 	beforeEach( function(){
-		variables.data = querySim(
+		var data = querySim(
 			"column1,column2
 			a|b
 			c|d");

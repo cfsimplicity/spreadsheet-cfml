@@ -2,7 +2,7 @@
 describe( "addAutoFilter",function(){
 
 	beforeEach( function(){
-		variables.data = QueryNew( "Header1,Header2","VarChar,VarChar",[ [ "a","b" ],[ "c","d" ] ] );
+		var data = QueryNew( "Header1,Header2","VarChar,VarChar",[ [ "a","b" ],[ "c","d" ] ] );
 		variables.xls = s.workbookFromQuery( data );
 		variables.xlsx = s.workbookFromQuery( data=data, xmlformat=true );
 	});
