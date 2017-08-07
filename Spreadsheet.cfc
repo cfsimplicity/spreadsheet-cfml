@@ -150,7 +150,7 @@ component{
 		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$","" );
 		var extension = xmlFormat? "xlsx": "xls";
 		arguments.filename = filenameWithoutExtension & "." & extension;
-		var binary = binaryFromQuery( data,addHeaderRow,boldHeaderRow,xmlFormat );
+		var binary = binaryFromQuery( data, addHeaderRow, boldHeaderRow, xmlFormat );
 		if( !arguments.KeyExists( "contentType" ) )
 			arguments.contentType = xmlFormat? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/msexcel";
 		downloadBinaryVariable( binary, filename, contentType );
@@ -492,7 +492,7 @@ component{
 		var queryColumns = getQueryColumnFormats( workbook, data );
 		var dateUtil = getDateUtil();
 		for( var dataRow in data ){
-			var newRow=createRow( workbook, currentRowIndex, false );
+			var newRow = createRow( workbook, currentRowIndex, false );
 			var cellIndex = ( column -1 );
    		/* populate all columns in the row */
    		for( var queryColumn in queryColumns ){
