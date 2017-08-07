@@ -80,6 +80,15 @@ describe( "addRows",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Handles blank date values correctly", function(){
+		var rowData = QueryNew( "column1,column2,column3,column4", "Date,Time,Timestamp,Integer",[ [ "", "", "", "" ] ] );
+		s.addRows( workbook, rowData );
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "blank" );
+		expect( s.getCellType( workbook, 1, 2 ) ).toBe( "blank" );
+		expect( s.getCellType( workbook, 1, 3 ) ).toBe( "blank" );
+		expect( s.getCellType( workbook, 1, 4 ) ).toBe( "numeric" );
+	});
+
 	it( "Adds strings with leading zeros as strings not numbers",function(){
 		var rowData=QueryNew( "column1","VarChar",[ [ "01" ] ] );
 		s.addRows( workbook,rowData );

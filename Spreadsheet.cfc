@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "1.5.0";
+	variables.version = "1.5.1";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -2312,6 +2312,11 @@ component{
 				cell.setCellValue( JavaCast( "double", Val( value ) ) );
 				return;
 			case "date":
+				//handle empty strings which can't be tread as dates
+				if( !Len( Trim( value ) ) ){
+					cell.setCellType( cell.CELL_TYPE_BLANK ); //no need to set the value: it will be blank
+					return;
+				}
 				var cellFormat = getDateTimeValueFormat( value );
 				var formatter = workbook.getCreationHelper().createDataFormat();
 				//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit

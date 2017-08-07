@@ -1,3 +1,8 @@
+## 1.5.1 - 7 August 2017
+
+- Fixes
+	- \#128 Adding date query cells with blank values causes error
+
 ## 1.5.0 - 2 June 2017
 
 - Enhancements
