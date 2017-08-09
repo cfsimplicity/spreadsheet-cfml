@@ -91,13 +91,13 @@ component{
 				throw( type=exceptionType, message="Invalid csv file", detail="#filepath# does not appear to be a text/csv file" );
 			arguments.csv = FileRead( filepath );
 		}
-		var format = loadPoi( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ];
+		var format = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ];
 		format = format.withIgnoreSurroundingSpaces();//stop spaces between fields causing problems with embedded lines
 		if( trim )
 			csv = csv.Trim();
 		if( arguments.KeyExists( "delimiter" ) )
 			format = format.withDelimiter( JavaCast( "string", delimiter ) );
-		var parsed = loadPoi( "org.apache.commons.csv.CSVParser" ).parse( csv, format );
+		var parsed = loadClass( "org.apache.commons.csv.CSVParser" ).parse( csv, format );
 		var records = parsed.getRecords();
 		var rows = [];
 		var maxColumnCount = 0;
@@ -370,9 +370,9 @@ component{
 		}
 		if( arguments.KeyExists( "filepath" ) ){
 			try{
-				var inputStream=CreateObject( "java","java.io.FileInputStream" ).init( JavaCast("string",filepath ) );
-				var ioUtils=loadPoi( "org.apache.poi.util.IOUtils" );
-				var bytes=ioUtils.toByteArray( inputStream );
+				var inputStream = CreateObject( "java", "java.io.FileInputStream" ).init( JavaCast( "string", filepath ) );
+				var ioUtils = loadClass( "org.apache.poi.util.IOUtils" );
+				var bytes = ioUtils.toByteArray( inputStream );
 			}
 			finally{
 				if( local.KeyExists( "inputStream" ) )
@@ -385,13 +385,14 @@ component{
 		var clientAnchorClass = isXmlFormat( workbook )
 				? "org.apache.poi.xssf.usermodel.XSSFClientAnchor"
 				: "org.apache.poi.hssf.usermodel.HSSFClientAnchor";
-		var theAnchor = loadPoi( clientAnchorClass ).init();
+		var theAnchor = loadClass( clientAnchorClass ).init();
 		if( numberOfAnchorElements EQ 4 ){
 			theAnchor.setRow1( JavaCast( "int", ListFirst( anchor ) -1 ) );
 			theAnchor.setCol1( JavaCast( "int", ListGetAt( anchor, 2 ) -1 ) );
 			theAnchor.setRow2( JavaCast( "int", ListGetAt( anchor, 3 ) -1 ) );
 			theAnchor.setCol2( JavaCast( "int", ListLast( anchor ) -1 ) );
-		} else if( numberOfAnchorElements EQ 8 ){
+		}
+		else if( numberOfAnchorElements EQ 8 ){
 			theAnchor.setDx1( JavaCast( "int", ListFirst( anchor ) ) );
 			theAnchor.setDy1( JavaCast( "int", ListGetAt( anchor, 2 ) ) );
 			theAnchor.setDx2( JavaCast( "int", ListGetAt( anchor, 3 ) ) );
@@ -999,7 +1000,7 @@ component{
 			throw( type=exceptionType, message="Invalid startRow or endRow", detail="Row values must be greater than 0 and the startRow cannot be greater than the endRow." );
 		if( startColumn LT 1 OR startColumn GT endColumn )
 			throw( type=exceptionType, message="Invalid startColumn or endColumn", detail="Column values must be greater than 0 and the startColumn cannot be greater than the endColumn." );
-		var cellRangeAddress = loadPoi( "org.apache.poi.ss.util.CellRangeAddress" ).init(
+		var cellRangeAddress = loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).init(
 			JavaCast( "int", ( startRow - 1 ) )
 			,JavaCast( "int", ( endRow - 1 ) )
 			,JavaCast( "int", ( startColumn - 1 ) )
@@ -1175,10 +1176,10 @@ component{
 			* visible
 		 */
 		var drawingPatriarch = getActiveSheet( workbook ).createDrawingPatriarch();
-		var commentString = loadPoi( "org.apache.poi.hssf.usermodel.HSSFRichTextString" ).init( JavaCast( "string", comment.comment ) );
+		var commentString = loadClass( "org.apache.poi.hssf.usermodel.HSSFRichTextString" ).init( JavaCast( "string", comment.comment ) );
 		var javaColorRGB = 0;
 		if( comment.KeyExists( "anchor" ) )
-			var clientAnchor = loadPoi( "org.apache.poi.hssf.usermodel.HSSFClientAnchor" ).init(
+			var clientAnchor = loadClass( "org.apache.poi.hssf.usermodel.HSSFClientAnchor" ).init(
 				JavaCast( "int", 0 )
 				,JavaCast( "int", 0 )
 				,JavaCast( "int", 0 )
@@ -1189,7 +1190,7 @@ component{
 				,JavaCast( "int", ListGetAt( comment.anchor, 4 ) )
 			);
 		else
-			var clientAnchor = loadPoi( "org.apache.poi.hssf.usermodel.HSSFClientAnchor" ).init(
+			var clientAnchor = loadClass( "org.apache.poi.hssf.usermodel.HSSFClientAnchor" ).init(
 				JavaCast( "int", 0 )
 				,JavaCast( "int", 0 )
 				,JavaCast( "int", 0 )
@@ -1658,7 +1659,7 @@ component{
 	private any function createWorkBook( required string sheetName, boolean useXmlFormat=false ){
 		validateSheetName( sheetName );
 		var className = useXmlFormat? "org.apache.poi.xssf.usermodel.XSSFWorkbook": "org.apache.poi.hssf.usermodel.HSSFWorkbook";
-		return loadPoi( className ).init();
+		return loadClass( className ).init();
 	}
 
 	private any function decryptFile( required string filepath, required string password ){
@@ -1668,16 +1669,16 @@ component{
 		lock name="#filepath#" timeout=5 {
 			try{
 				var file = CreateObject( "java", "java.io.File" ).init( filepath );
-				var fs = loadPoi( "org.apache.poi.poifs.filesystem.NPOIFSFileSystem" ).init( file );
+				var fs = loadClass( "org.apache.poi.poifs.filesystem.NPOIFSFileSystem" ).init( file );
 				if( requiresJavaLoader )
 					/* See encryptFile() for explanation of the following line */
 					var info = New decryption( server[ poiLoaderName ], fs ).loadInfoWithSwitchedContextLoader();
 				else
-					var info = loadPoi( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( fs );;
-				var decryptor = loadPoi( "org.apache.poi.poifs.crypt.Decryptor" ).getInstance( info );
+					var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( fs );;
+				var decryptor = loadClass( "org.apache.poi.poifs.crypt.Decryptor" ).getInstance( info );
 				if( decryptor.verifyPassword( password ) )
-					return loadPoi( "org.apache.poi.xssf.usermodel.XSSFWorkbook" ).init( decryptor.getDataStream( fs ) );
-				throw( type=exceptionType,message="Invalid password",detail="The file cannot be read because the password is incorrect." );
+					return loadClass( "org.apache.poi.xssf.usermodel.XSSFWorkbook" ).init( decryptor.getDataStream( fs ) );
+				throw( type=exceptionType, message="Invalid password", detail="The file cannot be read because the password is incorrect." );
 			}
 			catch( org.apache.poi.poifs.filesystem.NotOLE2FileException exception ){
 				throw( type=exceptionType, message="Invalid spreadsheet file", detail="The file #filepath# does not appear to be a spreadsheet" );
@@ -1730,32 +1731,32 @@ component{
 		/* NB: Not all spreadsheet programs support this type of encryption */
 		lock name="#filepath#" timeout=5 {
 			try{
-				var fs = loadPoi( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
+				var fs = loadClass( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
 				if( requiresJavaLoader )
 					/*
 						Need to ensure our poiLoader is maintained as the "contextLoader" so that when POI objects load other POI objects, they find them. Otherwise Lucee's loader would be used, which isn't aware of our POI library. JavaLoader supports this via a complicated "mixin" procedure: https://github.com/markmandel/JavaLoader/wiki/Switching-the-ThreadContextClassLoader
 					*/
 					var info = New encryption( server[ poiLoaderName ], algorithm ).loadInfoWithSwitchedContextLoader();
 				else {
-					var mode = loadPoi( "org.apache.poi.poifs.crypt.EncryptionMode" );
+					var mode = loadClass( "org.apache.poi.poifs.crypt.EncryptionMode" );
 					switch( algorithm ){
 						case "agile":
-							var info = loadPoi( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.agile );
+							var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.agile );
 							break;
 						case "standard":
-							var info = loadPoi( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.standard );
+							var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.standard );
 							break;
 						case "binaryRC4":
-							var info = loadPoi( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.binaryRC4 );
+							var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.binaryRC4 );
 							break;
 					}
 				}
 				var encryptor = info.getEncryptor();
 				encryptor.confirmPassword( JavaCast( "string", password ) );
-				var opcAccess = loadPoi( "org.apache.poi.openxml4j.opc.PackageAccess" );
+				var opcAccess = loadClass( "org.apache.poi.openxml4j.opc.PackageAccess" );
 				try{
 					var file = CreateObject( "java", "java.io.File" ).init( filepath );
-					var opc = loadPoi( "org.apache.poi.openxml4j.opc.OPCPackage" ).open( file, opcAccess.READ_WRITE );
+					var opc = loadClass( "org.apache.poi.openxml4j.opc.OPCPackage" ).open( file, opcAccess.READ_WRITE );
 					var encryptedStream = encryptor.getDataStream( fs );
 					opc.save( encryptedStream );
 				}
@@ -1862,7 +1863,7 @@ component{
 	}
 
 	private numeric function getAWTFontStyle( required any poiFont ){
-		var font = loadPOI( "java.awt.Font" );
+		var font = loadClass( "java.awt.Font" );
 		var isBold = poiFont.getBold();
 		if( isBold && arguments.poiFont.getItalic() )
 	  	return BitOr( font.BOLD, font.ITALIC );
@@ -1883,12 +1884,12 @@ component{
 
 	private any function getCellRangeAddressFromReference( required string rangeReference ){
 		/* rangeReference = usually a standard area ref (e.g. "B1:D8"). May be a single cell ref (e.g. "B5") in which case the result is a 1 x 1 cell range. May also be a whole row range (e.g. "3:5"), or a whole column range (e.g. "C:F") */
-		return loadPoi( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String", rangeReference ) );
+		return loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String", rangeReference ) );
 	}
 
 	private any function getCellUtil(){
 		if( IsNull( variables.cellUtil ) )
-			variables.cellUtil = loadPoi( "org.apache.poi.ss.util.CellUtil" );
+			variables.cellUtil = loadClass( "org.apache.poi.ss.util.CellUtil" );
 		return variables.cellUtil;
 	}
 
@@ -1940,7 +1941,7 @@ component{
 
 	private any function getDateUtil(){
 		if( IsNull( variables.dateUtil ) )
-			variables.dateUtil = loadPoi( "org.apache.poi.ss.usermodel.DateUtil" );
+			variables.dateUtil = loadClass( "org.apache.poi.ss.usermodel.DateUtil" );
 		return variables.dateUtil;
 	}
 
@@ -1960,7 +1961,7 @@ component{
 		/* this is a compromise between hard coding a default value and the more complex method of using an AttributedString and TextLayout */
 		var defaultFont = workbook.getFontAt( 0 );
 		var style = getAWTFontStyle( defaultFont );
-		var font = loadPOI( "java.awt.Font" );
+		var font = loadClass( "java.awt.Font" );
 		var javaFont = font.init( defaultFont.getFontName(), style, defaultFont.getFontHeightInPoints() );
 		// this works
 		var transform = CreateObject( "java", "java.awt.geom.AffineTransform" );
@@ -1980,8 +1981,13 @@ component{
 	private any function getFormatter(){
 		/* Returns cell formatting utility object ie org.apache.poi.ss.usermodel.DataFormatter */
 		if( IsNull( variables.dataFormatter ) )
-			variables.dataFormatter = loadPOI( "org.apache.poi.ss.usermodel.DataFormatter" ).init();
+			variables.dataFormatter = loadClass( "org.apache.poi.ss.usermodel.DataFormatter" ).init();
 		return dataFormatter;
+	}
+
+	private array function getJarPaths(){
+		var libPath = GetDirectoryFromPath( GetCurrentTemplatePath() ) & "lib/";
+		return DirectoryList( libPath );
 	}
 
 	private struct function getJavaColorRGB( required string colorName ){
@@ -2110,6 +2116,13 @@ component{
 		return workbook.getSheetIndex( JavaCast( "string", sheetName ) );
 	}
 
+	private void function handleInvalidSpreadsheetFile( required string path ){
+		var detail = "The file #path# does not appear to be a binary or xml spreadsheet.";
+		if( isCsvOrTextFile( path ) )
+			detail &= " It may be a CSV file, in which case use 'csvToQuery()' to read it";
+		throw( type="cfsimplicity.lucee.spreadsheet.invalidFile", message="Invalid spreadsheet file", detail=detail );
+	}
+
 	private any function initializeCell( required workbook, required numeric rowNumber, required numeric columnNumber ){
 		var rowIndex = JavaCast( "int", ( rowNumber -1 ) );
 		var columnIndex = JavaCast( "int", ( columnNumber -1 ) );
@@ -2131,16 +2144,11 @@ component{
 		return input.getClass().getName() IS "java.lang.String";
 	}
 
-	private array function getPoiJarPaths(){
-		var libPath = GetDirectoryFromPath( GetCurrentTemplatePath() ) & "lib/";
-		return DirectoryList( libPath );
-	}
-
-	private function loadPoi( required string javaclass ){
+	private function loadClass( required string javaclass ){
 		if( !requiresJavaLoader ){
 			if( engineSupportsDynamicClassLoading ){
 				poiClassesLastLoadedVia = "Dynamic loading from the lib folder";
-				return CreateObject( "java", javaclass, getPoiJarPaths() );
+				return CreateObject( "java", javaclass, getJarPaths() );
 			}
 			// Else *the correct* POI jars must be in the class path and any older versions *removed*
 			try{
@@ -2149,23 +2157,16 @@ component{
 			}
 			catch( any exception ){
 				poiClassesLastLoadedVia = "JavaLoader";
-				return loadPoiUsingJavaLoader( javaclass );
+				return loadClassUsingJavaLoader( javaclass );
 			}
 		}
 		poiClassesLastLoadedVia = "JavaLoader";
-		return loadPoiUsingJavaLoader( javaclass );
+		return loadClassUsingJavaLoader( javaclass );
 	}
 
-	private void function handleInvalidSpreadsheetFile( required string path ){
-		var detail = "The file #path# does not appear to be a binary or xml spreadsheet.";
-		if( isCsvOrTextFile( path ) )
-			detail &= " It may be a CSV file, in which case use 'csvToQuery()' to read it";
-		throw( type="cfsimplicity.lucee.spreadsheet.invalidFile", message="Invalid spreadsheet file", detail=detail );
-	}
-
-	private function loadPoiUsingJavaLoader( required string javaclass ){
+	private function loadClassUsingJavaLoader( required string javaclass ){
 		if( !server.KeyExists( poiLoaderName ) )
-			server[ poiLoaderName ] = CreateObject( "component", javaLoaderDotPath ).init( loadPaths=getPoiJarPaths(), loadColdFusionClassPath=true, trustedSource=true );
+			server[ poiLoaderName ] = CreateObject( "component", javaLoaderDotPath ).init( loadPaths=getJarPaths(), loadColdFusionClassPath=true, trustedSource=true );
 		return server[ poiLoaderName ].create( javaclass );
 	}
 
@@ -2312,7 +2313,7 @@ component{
 				cell.setCellValue( JavaCast( "double", Val( value ) ) );
 				return;
 			case "date":
-				//handle empty strings which can't be tread as dates
+				//handle empty strings which can't be treated as dates
 				if( !Len( Trim( value ) ) ){
 					cell.setCellType( cell.CELL_TYPE_BLANK ); //no need to set the value: it will be blank
 					return;
@@ -2464,7 +2465,7 @@ component{
 	}
 
 	private void function validateSheetName( required string sheetName ){
-		var poiTool = loadPoi( "org.apache.poi.ss.util.WorkbookUtil" );
+		var poiTool = loadClass( "org.apache.poi.ss.util.WorkbookUtil" );
 		try{
 			poiTool.validateSheetName( JavaCast( "String",sheetName ) );
 		}
@@ -2485,7 +2486,7 @@ component{
 		try{
 			lock name="#path#" timeout=5 {
 				var file = CreateObject( "java", "java.io.FileInputStream" ).init( path );
-				var workbook = loadPoi( "org.apache.poi.ss.usermodel.WorkbookFactory" ).create( file );
+				var workbook = loadClass( "org.apache.poi.ss.usermodel.WorkbookFactory" ).create( file );
 			}
 			return workbook;
 		}
@@ -2817,7 +2818,7 @@ component{
 
 	private numeric function getColorIndex( required string colorName ){
 		var findColor = colorName.Trim().UCase();
-		var indexedColors = loadPoi( "org.apache.poi.ss.usermodel.IndexedColors" );
+		var indexedColors = loadClass( "org.apache.poi.ss.usermodel.IndexedColors" );
 		try{
 			var color = indexedColors.valueOf( JavaCast( "string", findColor ) );
 			return color.getIndex();
@@ -2840,7 +2841,7 @@ component{
 				,JavaCast( "int", rgb[ 2 ] )
 				,JavaCast( "int", rgb[ 3 ] )
 			);
-			return loadPoi( "org.apache.poi.xssf.usermodel.XSSFColor" ).init( javaColor );
+			return loadClass( "org.apache.poi.xssf.usermodel.XSSFColor" ).init( javaColor );
 		}
 		var palette = workbook.getCustomPalette();
 		var similarExistingColor = palette.findSimilarColor(
