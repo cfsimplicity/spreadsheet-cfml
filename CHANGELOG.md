@@ -1,3 +1,8 @@
+## 1.6.0 - 5 September 2017
+
+- Enhancements:
+	- \#129: Add `getRowCount()`
+
 ## 1.5.1 - 7 August 2017
 
 - Fixes
