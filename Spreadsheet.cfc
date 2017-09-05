@@ -907,18 +907,6 @@ component{
 		return lastRowIndex +1;
 	}
 
-	private string function getUnderlineFormatAsString( required cellFont ){
-		var lookup = {};
-		lookup[ 0 ] = "none";
-		lookup[ 1 ] = "single";
-		lookup[ 2 ] = "double";
-		lookup[ 33 ] = "single accounting";
-		lookup[ 34 ] = "double accounting";
-		if( lookup.KeyExists( cellFont.getUnderline() ) )
-			return lookup[ cellFont.getUnderline() ];
-		return "unknown";
-	}
-
 	public void function hideColumn( required workbook, required numeric column ){
 		toggleColumnHidden( workbook, column, true );
 	}
@@ -2122,6 +2110,18 @@ component{
 	private numeric function getSheetIndexFromName( required workbook, required string sheetName ){
 		//returns -1 if non-existent
 		return workbook.getSheetIndex( JavaCast( "string", sheetName ) );
+	}
+
+	private string function getUnderlineFormatAsString( required cellFont ){
+		var lookup = {};
+		lookup[ 0 ] = "none";
+		lookup[ 1 ] = "single";
+		lookup[ 2 ] = "double";
+		lookup[ 33 ] = "single accounting";
+		lookup[ 34 ] = "double accounting";
+		if( lookup.KeyExists( cellFont.getUnderline() ) )
+			return lookup[ cellFont.getUnderline() ];
+		return "unknown";
 	}
 
 	private void function handleInvalidSpreadsheetFile( required string path ){
