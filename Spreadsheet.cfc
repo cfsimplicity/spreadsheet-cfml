@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "1.5.1";
+	variables.version = "1.6.0-develop";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -878,15 +878,10 @@ component{
 
 	public numeric function getColumnCount( required workbook, sheetNameOrNumber ){
 		if( arguments.KeyExists( "sheetNameOrNumber" ) ){
-			if( IsValid( "integer", sheetNameOrNumber ) AND IsNumeric( sheetNameOrNumber ) ){
-				var sheetNumber = sheetNameOrNumber;
-				validateSheetNumber( workbook, sheetNumber );
-			} else {
-				var sheetName = sheetNameOrNumber;
-				validateSheetExistsWithName( workbook, sheetName );
-				var sheetNumber = workbook.getSheetIndex( JavaCast( "string", sheetName ) ) + 1;
-			}
-			setActiveSheetNumber( workbook, sheetNumber );
+			if( IsValid( "integer", sheetNameOrNumber ) AND IsNumeric( sheetNameOrNumber ) )
+				setActiveSheetNumber( workbook, sheetNameOrNumber );
+			else
+				setActiveSheet( workbook, sheetNameOrNumber );
 		}
 		var sheet = getActiveSheet( workbook );
 		var rowIterator = sheet.rowIterator();
@@ -896,6 +891,20 @@ component{
 			result = Max( result, row.getLastCellNum() );
 		}
 		return result;
+	}
+
+	public numeric function getRowCount( required workbook, sheetNameOrNumber ){
+		if( arguments.KeyExists( "sheetNameOrNumber" ) ){
+			if( IsValid( "integer", sheetNameOrNumber ) AND IsNumeric( sheetNameOrNumber ) )
+				setActiveSheetNumber( workbook, sheetNameOrNumber );
+			else
+				setActiveSheet( workbook, sheetNameOrNumber );
+		}
+		var sheet = getActiveSheet( workbook );
+		var lastRowIndex = getLastRowNum( workbook, sheet );
+		if( lastRowIndex == -1 )// empty
+			return 0;
+		return lastRowIndex +1;
 	}
 
 	private string function getUnderlineFormatAsString( required cellFont ){
@@ -1147,7 +1156,7 @@ component{
 	}
 
 	public void function setActiveSheetNumber( required workbook, numeric sheetNumber ){
-		setActiveSheet( argumentCollection=arguments );
+		setActiveSheet( workbook=workbook, sheetNumber=sheetNumber );
 	}
 
 	public void function setCellComment(
@@ -2005,8 +2014,7 @@ component{
 		return colorRGB;
 	}
 
-	private numeric function getLastRowNum( required workbook ){
-		var sheet = getActiveSheet( workbook );
+	private numeric function getLastRowNum( required workbook, sheet=getActiveSheet( workbook ) ){
 		var lastRow = sheet.getLastRowNum();
 		if( lastRow EQ 0 AND sheet.getPhysicalNumberOfRows() EQ 0 )
 			return -1; //The sheet is empty. Return -1 instead of 0
