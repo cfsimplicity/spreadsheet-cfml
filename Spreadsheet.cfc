@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "1.6.0";
+	variables.version = "1.6.1-develop";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -2174,7 +2174,7 @@ component{
 
 	private function loadClassUsingJavaLoader( required string javaclass ){
 		if( !server.KeyExists( poiLoaderName ) )
-			server[ poiLoaderName ] = CreateObject( "component", javaLoaderDotPath ).init( loadPaths=getJarPaths(), loadColdFusionClassPath=true, trustedSource=true );
+			server[ poiLoaderName ] = CreateObject( "component", javaLoaderDotPath ).init( loadPaths=getJarPaths(), loadColdFusionClassPath=false, trustedSource=true );
 		return server[ poiLoaderName ].create( javaclass );
 	}
 
