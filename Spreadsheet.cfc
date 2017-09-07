@@ -2174,7 +2174,7 @@ component{
 
 	private function loadClassUsingJavaLoader( required string javaclass ){
 		if( !server.KeyExists( poiLoaderName ) )
-			server[ poiLoaderName ] = CreateObject( "component", javaLoaderDotPath ).init( loadPaths=getJarPaths(), loadColdFusionClassPath=true, trustedSource=true );
+			server[ poiLoaderName ] = CreateObject( "component", javaLoaderDotPath ).init( loadPaths=getJarPaths(), loadColdFusionClassPath=isACF, trustedSource=true );
 		return server[ poiLoaderName ].create( javaclass );
 	}
 
