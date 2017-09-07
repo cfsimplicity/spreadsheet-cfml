@@ -1,3 +1,8 @@
+## 1.6.1 - 7 September 2017
+
+- Fixes
+	-\#130: JavaLoader should not need `loadColdFusionClassPath` setting (add commons-codec jar to lib)
+
 ## 1.6.0 - 5 September 2017
 
 - Enhancements:
