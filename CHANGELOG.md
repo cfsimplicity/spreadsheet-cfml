@@ -1,12 +1,16 @@
+## 1.7.0 - 28 September 2017
+
+- \#134 Upgrade POI to 3.17
+
 ## 1.6.1 - 7 September 2017
 
 - Fixes
-	-\#130: JavaLoader should not need `loadColdFusionClassPath` setting (add commons-codec jar to lib)
+	-\#130 JavaLoader should not need `loadColdFusionClassPath` setting (add commons-codec jar to lib)
 
 ## 1.6.0 - 5 September 2017
 
 - Enhancements:
-	- \#129: Add `getRowCount()`
+	- \#129 Add `getRowCount()`
 
 ## 1.5.1 - 7 August 2017
 
