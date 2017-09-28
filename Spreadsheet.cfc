@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "1.6.1";
+	variables.version = "1.7.0";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -1181,9 +1181,9 @@ component{
 				,JavaCast( "int", 0 )
 				,JavaCast( "int", 0 )
 				,JavaCast( "int", 0 )
-				,JavaCast( "int", ListGetAt( comment.anchor, 1 ) )
+				,JavaCast( "short", ListGetAt( comment.anchor, 1 ) )
 				,JavaCast( "int", ListGetAt( comment.anchor, 2 ) )
-				,JavaCast( "int", ListGetAt( comment.anchor, 3 ) )
+				,JavaCast( "short", ListGetAt( comment.anchor, 3 ) )
 				,JavaCast( "int", ListGetAt( comment.anchor, 4 ) )
 			);
 		else
@@ -1192,9 +1192,9 @@ component{
 				,JavaCast( "int", 0 )
 				,JavaCast( "int", 0 )
 				,JavaCast( "int", 0 )
-				,JavaCast( "int", column )
+				,JavaCast( "short", column )
 				,JavaCast( "int", row )
-				,JavaCast( "int", ( column +2 ) )
+				,JavaCast( "short", ( column +2 ) )
 				,JavaCast( "int", ( row +2 ) )
 			);
 		var commentObject = drawingPatriarch.createComment( clientAnchor );
@@ -2480,6 +2480,10 @@ component{
 		catch( "java.lang.IllegalArgumentException" exception ){
 			throw( type=exceptionType, message="Invalid characters in sheet name", detail=exception.message );
 		}
+		catch( "java.lang.reflect.InvocationTargetException" exception ){
+			//ACF
+			throw( type=exceptionType, message="Invalid characters in sheet name", detail=exception.cause.message );
+		}
 	}
 
 	private void function validateSheetNameOrNumberWasProvided(){
@@ -2506,9 +2510,9 @@ component{
 		}
 		catch( any exception ){
 			//For ACF which doesn't return the correct exception types
-			if( exception.message CONTAINS "Your InputStream was neither" )
+			if( exception.cause.message CONTAINS "Your InputStream was neither" )
 				handleInvalidSpreadsheetFile( path );
-			if( exception.message CONTAINS "spreadsheet seems to be Excel 5" )
+			if( exception.cause.message CONTAINS "spreadsheet seems to be Excel 5" )
 				throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
 			rethrow;
 		}
