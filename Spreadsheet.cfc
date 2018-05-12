@@ -2482,7 +2482,7 @@ component{
 		}
 		catch( "java.lang.reflect.InvocationTargetException" exception ){
 			//ACF
-			throw( type=exceptionType, message="Invalid characters in sheet name", detail=exception.cause.message );
+			throw( type=exceptionType, message="Invalid characters in sheet name", detail=exception.message );
 		}
 	}
 
@@ -2510,9 +2510,9 @@ component{
 		}
 		catch( any exception ){
 			//For ACF which doesn't return the correct exception types
-			if( exception.cause.message CONTAINS "Your InputStream was neither" )
+			if( exception.message CONTAINS "Your InputStream was neither" )
 				handleInvalidSpreadsheetFile( path );
-			if( exception.cause.message CONTAINS "spreadsheet seems to be Excel 5" )
+			if( exception.message CONTAINS "spreadsheet seems to be Excel 5" )
 				throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
 			rethrow;
 		}
