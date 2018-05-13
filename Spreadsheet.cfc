@@ -124,7 +124,7 @@ component{
 		}
 		if( firstRowIsHeader )
 			rows.DeleteAt( 1 );
-		return _QueryNew( columnList.ToList(), "", rows );;
+		return _QueryNew( columnList, "", rows );;
 	}
 
 	public void function download( required workbook, required string filename, string contentType ){
@@ -2442,7 +2442,7 @@ component{
 			for( var i=1; i LTE sheet.totalColumnCount; i++ )
 				sheet.columnNames.Append( "column" & i );
 		}
-		var result = _QueryNew( sheet.columnNames.ToList(), "", sheet.data );
+		var result = _QueryNew( sheet.columnNames, "", sheet.data );
 		if( !includeHiddenColumns ){
 			result = deleteHiddenColumnsFromQuery( sheet, result );
 			if( sheet.totalColumnCount EQ 0 )
@@ -2914,15 +2914,15 @@ component{
 				data.Append( newRow );
 			}
 		}
-		return _QueryNew( columns.ToList(), columnTypes.ToList(), data );
+		return _QueryNew( columns, columnTypes.ToList(), data );
 	}
 
-	private query function _QueryNew( required string columnNameList, required string columnTypeList, required array data ){
+	private query function _QueryNew( required array columnNameList, required string columnTypeList, required array data ){
 		//ACF QueryNew() won't accept invalid variable names in the column name list, hence clunky workaround:
 		//NB: 'data' should not contain structs since they use the column name as key: always use array of row arrays instead
 		if( !isACF )
 			return QueryNew( columnNameList, columnTypeList, data );
-		var columnNames = columnNameList.ListToArray();
+		var columnNames = columnNameList;
 		var totalColumns = columnNames.Len();
 		var tempColumnNames = [];
 		var tempData = [];
