@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "1.7.0-develop";
+	variables.version = "1.7.1";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -2403,7 +2403,7 @@ component{
 			doFillMergedCellsWithVisibleValue( workbook,sheet.object );
 		sheet.data=[];
 		if( arguments.KeyExists( "rows" ) ){
-			var allRanges=extractRanges( arguments.rows );
+			var allRanges = extractRanges( arguments.rows );
 			for( var thisRange in allRanges ){
 				for( var rowNumber = thisRange.startAt; rowNumber LTE thisRange.endAt; rowNumber++ ){
 					var rowIndex = ( rowNumber -1 );
@@ -2412,7 +2412,7 @@ component{
 			}
 		}
 		else {
-			var lastRowIndex=sheet.object.GetLastRowNum();// zero based
+			var lastRowIndex = sheet.object.GetLastRowNum();// zero based
 			for( var rowIndex = 0; rowIndex LTE lastRowIndex; rowIndex++ )
 				addRowToSheetData( workbook, sheet, rowIndex, includeRichTextFormatting );
 		}
@@ -2917,21 +2917,17 @@ component{
 		return _QueryNew( columns, columnTypes.ToList(), data );
 	}
 
-	private query function _QueryNew( required array columnNameList, required string columnTypeList, required array data ){
-		//ACF QueryNew() won't accept invalid variable names in the column name list, hence clunky workaround:
+	private query function _QueryNew( required array columnNames, required string columnTypeList, required array data ){
+		//ACF QueryNew() won't accept invalid variable names in the column name list (e.g. which names including commas), hence clunky workaround:
 		//NB: 'data' should not contain structs since they use the column name as key: always use array of row arrays instead
 		if( !isACF )
-			return QueryNew( columnNameList, columnTypeList, data );
-		var columnNames = columnNameList;
+			return QueryNew( columnNames, columnTypeList, data );
 		var totalColumns = columnNames.Len();
 		var tempColumnNames = [];
-		var tempData = [];
 		for( var i=1; i LTE totalColumns; i++ )
 			tempColumnNames[ i ] = "column#i#";
 		var q = QueryNew( tempColumnNames.ToList(), columnTypeList, data );
-		// restore the real names without ACF barfing
-		for( name in columnNames )
-			name = JavaCast( "string", name );
+		// restore the real names without ACF barfing on them
 		q.setColumnNames( columnNames );
 		return q;
 	}

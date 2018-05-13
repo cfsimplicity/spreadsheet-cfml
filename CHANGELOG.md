@@ -1,3 +1,7 @@
+## 1.7.1 - 13 May 2018
+
+- \#138 Reading a spreadsheet with column header names containing commas into a query results in too many columns
+
 ## 1.7.0 - 28 September 2017
 
 - \#134 Upgrade POI to 3.17
