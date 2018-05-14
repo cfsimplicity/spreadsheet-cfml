@@ -80,13 +80,14 @@ describe( "addRows",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Handles blank date values correctly", function(){
-		var rowData = QueryNew( "column1,column2,column3,column4", "Date,Time,Timestamp,Integer",[ [ "", "", "", "" ] ] );
+	it( "Handles blank date and boolean values correctly", function(){
+		var rowData = QueryNew( "column1,column2,column3,column4,column5", "Date,Time,Timestamp,Bit,Integer",[ [ "", "", "", "", "" ] ] );
 		s.addRows( workbook, rowData );
 		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "blank" );
 		expect( s.getCellType( workbook, 1, 2 ) ).toBe( "blank" );
 		expect( s.getCellType( workbook, 1, 3 ) ).toBe( "blank" );
-		expect( s.getCellType( workbook, 1, 4 ) ).toBe( "numeric" );
+		expect( s.getCellType( workbook, 1, 4 ) ).toBe( "blank" );
+		expect( s.getCellType( workbook, 1, 5 ) ).toBe( "numeric" );
 	});
 
 	it( "Adds strings with leading zeros as strings not numbers",function(){
