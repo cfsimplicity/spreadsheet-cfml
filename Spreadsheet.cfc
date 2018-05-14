@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "1.7.1-develop";
+	variables.version = "1.7.2";
 	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -203,7 +203,12 @@ component{
 		return workbookFromQuery( data=data, addHeaderRow=firstRowIsHeader, boldHeaderRow=boldHeaderRow, xmlFormat=xmlFormat );
 	}
 
-	public any function workbookFromQuery( required query data, boolean addHeaderRow=true, boolean boldHeaderRow=true, boolean xmlFormat=false ){
+	public any function workbookFromQuery(
+		required query data
+		,boolean addHeaderRow=true
+		,boolean boldHeaderRow=true
+		,boolean xmlFormat=false
+	){
 		var workbook = new( xmlFormat=xmlFormat );
 		if( addHeaderRow ){
 			var columns = _QueryColumnArray( data );
@@ -2341,6 +2346,11 @@ component{
 					cell.setCellValue( ParseDateTime( value ) );
 				return;
 			case "boolean":
+				//handle empty strings/nulls which can't be treated as booleans
+				if( !Len( Trim( value ) ) ){
+					cell.setCellType( cell.CELL_TYPE_BLANK ); //no need to set the value: it will be blank
+					return;
+				}
 				cell.setCellType( cell.CELL_TYPE_BOOLEAN );
 				cell.setCellValue( JavaCast( "boolean", value ) );
 				return;
