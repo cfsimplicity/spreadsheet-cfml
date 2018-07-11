@@ -495,7 +495,7 @@ component{
 		if( arguments.KeyExists( "row" ) AND ( row LTE lastRow ) AND insert )
 			shiftRows( workbook,row, lastRow, data.recordCount );
 		var currentRowIndex = insertAtRowIndex;
-		var queryColumns = getQueryColumnFormats( workbook, data );
+		var queryColumns = getQueryColumnFormats( data );
 		var dateUtil = getDateUtil();
 		for( var dataRow in data ){
 			var newRow = createRow( workbook, currentRowIndex, false );
@@ -2018,9 +2018,8 @@ component{
 		return ( getLastRowNum( workbook ) +1 );
 	}
 
-	private array function getQueryColumnFormats( required workbook, required query query ){
+	private array function getQueryColumnFormats( required query query ){
 		/* extract the query columns and data types  */
-		var formatter	= workbook.getCreationHelper().createDataFormat();
 		var metadata = GetMetaData( query );
 		/* assign default formats based on the data type of each column */
 		for( var col in metadata ){
