@@ -2482,6 +2482,9 @@ component{
 	}
 
 	private void function validateSheetName( required string sheetName ){
+		var characterCount = len( arguments.sheetName );
+		if( characterCount GT 31 )
+			throw( type=exceptionType, message="Invalid sheet name", detail="The sheetname contains too many characters [#characterCount#]. The maximum is 31." );
 		var poiTool = loadClass( "org.apache.poi.ss.util.WorkbookUtil" );
 		try{
 			poiTool.validateSheetName( javaCast( "String",sheetName ) );
