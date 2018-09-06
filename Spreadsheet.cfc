@@ -2860,12 +2860,12 @@ component{
 			return getColorIndex( colorValue );
 		var rgb = listToArray( colorValue );
 		if( isXmlFormat( workbook ) ){
-			var javaColor = createObject( "Java", "java.awt.Color" ).init(
+			var rgbBytes = [
 				javaCast( "int", rgb[ 1 ] )
 				,javaCast( "int", rgb[ 2 ] )
 				,javaCast( "int", rgb[ 3 ] )
-			);
-			return loadClass( "org.apache.poi.xssf.usermodel.XSSFColor" ).init( javaColor );
+			];
+			return loadClass( "org.apache.poi.xssf.usermodel.XSSFColor" ).init( javaCast( "byte[]", rgbBytes ), nullValue() );
 		}
 		var palette = workbook.getCustomPalette();
 		var similarExistingColor = palette.findSimilarColor(
