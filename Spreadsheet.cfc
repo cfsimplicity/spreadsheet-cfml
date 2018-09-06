@@ -582,7 +582,7 @@ component{
 		if( isNull( cell ) )
 			return;
 		cell.setCellStyle( defaultStyle );
-		cell.setCellType( cell.CELL_TYPE_BLANK );
+		cell.setCellType( cell.CellType.BLANK );
 	}
 
 	public void function clearCellRange(
@@ -827,7 +827,7 @@ component{
 		if( arguments.keyExists( "row" ) AND arguments.keyExists( "column" ) ){
 			if( cellExists( workbook, row, column ) ){
 				var cell = getCellAt( workbook, row,column );
-				if( cell.getCellType() IS cell.CELL_TYPE_FORMULA )
+				if( cell.getCellType().getCode() == cell.CellType.FORMULA.getCode() )
 					return cell.getCellFormula();
 				return "";
 			}
@@ -874,7 +874,7 @@ component{
 		var rowObject = getActiveSheet( workbook ).getRow( javaCast( "int", rowIndex ) );
 		var cell = rowObject.getCell( javaCast( "int", columnIndex ) );
 		var formatter = getFormatter();
-		if( cell.getCellType() EQ cell.CELL_TYPE_FORMULA ){
+		if( cell.getCellType().getCode() == cell.CellType.FORMULA.getCode() ){
 			var formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
 			return formatter.formatCellValue( cell, formulaEvaluator );
 		}
@@ -1909,7 +1909,7 @@ component{
 
 		var cellType = cell.getCellType();
 		/* Get the value of the cell based on the data type. The thing to worry about here is cell forumlas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values. */
-		if( cellType EQ cell.CELL_TYPE_NUMERIC ){
+		if( cellType.getCode() == cell.CellType.NUMERIC.getCode() ){
 			/* Get numeric cell data. This could be a standard number, could also be a date value. */
 			var dateUtil = getDateUtil();
 			if( dateUtil.isCellDateFormatted( cell ) ){
@@ -1920,7 +1920,7 @@ component{
 			}
 			return cell.getNumericCellValue();
 		}
-		if( cellType EQ cell.CELL_TYPE_FORMULA ){
+		if( cellType.getCode() == cell.CellType.FORMULA.getCode() ){
 			var formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
 			try{
 				return getFormatter().formatCellValue( cell, formulaEvaluator );
@@ -1929,9 +1929,9 @@ component{
 				throw( type=exceptionType, message="Failed to run formula", detail="There is a problem with the formula in sheet #cell.getSheet().getSheetName()# row #( cell.getRowIndex() +1 )# column #( cell.getColumnIndex() +1 )#");
 			}
 		}
-		if( cellType EQ cell.CELL_TYPE_BOOLEAN )
+		if( cellType.getCode() EQ cell.CellType.BOOLEAN.getCode() )
 			return cell.getBooleanCellValue();
-	 	if( cellType EQ cell.CELL_TYPE_BLANK )
+	 	if( cellType.getCode() EQ cell.CellType.BLANK.getCode() )
 			return "";
 		try{
 			return cell.getStringCellValue();
@@ -2092,7 +2092,7 @@ component{
 					continue;
 				}
 				var cellValue = getCellValueAsType( workbook, cell );
-				if( includeRichTextFormatting AND ( cell.getCellType() EQ cell.CELL_TYPE_STRING ) )
+				if( includeRichTextFormatting AND ( cell.getCellType().getCode() EQ cell.CellType.STRING.getCode() ) )
 					cellValue = richStringCellValueToHtml( workbook, cell,cellValue );
 				result.append( cellValue );
 			}
@@ -2303,7 +2303,7 @@ component{
 	private boolean function rowIsEmpty( required row ){
 		for( var i = row.getFirstCellNum(); i LT row.getLastCellNum(); i++ ){
 	    var cell = row.getCell( i );
-	    if( !isNull( cell ) && ( cell.getCellType() != cell.CELL_TYPE_BLANK ) )
+	    if( !isNull( cell ) && ( cell.getCellType().getCode() != cell.CellType.BLANK.getCode() ) )
 	      return false;
 	  }
 	  return true;
@@ -2321,20 +2321,20 @@ component{
  		*/
 		switch( type ){
 			case "numeric":
-				cell.setCellType( cell.CELL_TYPE_NUMERIC );
+				cell.setCellType( cell.CellType.NUMERIC );
 				cell.setCellValue( javaCast( "double", Val( value ) ) );
 				return;
 			case "date":
 				//handle empty strings which can't be treated as dates
 				if( !len( trim( value ) ) ){
-					cell.setCellType( cell.CELL_TYPE_BLANK ); //no need to set the value: it will be blank
+					cell.setCellType( cell.CellType.BLANK ); //no need to set the value: it will be blank
 					return;
 				}
 				var cellFormat = getDateTimeValueFormat( value );
 				var formatter = workbook.getCreationHelper().createDataFormat();
 				//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
 				getCellUtil().setCellStyleProperty( cell, getCellUtil().DATA_FORMAT, formatter.getFormat( javaCast( "string", cellFormat ) ) );
-				cell.setCellType( cell.CELL_TYPE_NUMERIC );
+				cell.setCellType( cell.CellType.NUMERIC );
 				/*  Excel's uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling - */
 				if( cellFormat EQ variables.dateFormats.TIME ){
 					var dateUtil = getDateUtil();
@@ -2347,18 +2347,18 @@ component{
 			case "boolean":
 				//handle empty strings/nulls which can't be treated as booleans
 				if( !len( trim( value ) ) ){
-					cell.setCellType( cell.CELL_TYPE_BLANK ); //no need to set the value: it will be blank
+					cell.setCellType( cell.CellType.BLANK ); //no need to set the value: it will be blank
 					return;
 				}
-				cell.setCellType( cell.CELL_TYPE_BOOLEAN );
+				cell.setCellType( cell.CellType.BOOLEAN );
 				cell.setCellValue( javaCast( "boolean", value ) );
 				return;
 			case "blank":
-				cell.setCellType( cell.CELL_TYPE_BLANK ); //no need to set the value: it will be blank
+				cell.setCellType( cell.CellType.BLANK ); //no need to set the value: it will be blank
 				return;
 		}
-		// string
-		cell.setCellType( cell.CELL_TYPE_STRING );
+		// string cellStyle.getAlignmentEnum()[ javaCast( "string", uCase( settingValue ) ) ];
+		cell.setCellType( cell.CellType.STRING );
 		cell.setCellValue( javaCast( "string", value ) );
 	}
 
