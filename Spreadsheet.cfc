@@ -2537,7 +2537,7 @@ component{
 	private struct function xmlInfo( required workbook ){
 		var documentProperties = workbook.getProperties().getExtendedProperties().getUnderlyingProperties();
 		var coreProperties = workbook.getProperties().getCoreProperties();
-		return {
+		var result = {
 			author: coreProperties.getCreator()?:""
 			,category: coreProperties.getCategory()?:""
 			,comments: coreProperties.getDescription()?:""
@@ -2545,12 +2545,15 @@ component{
 			,lastEdited: coreProperties.getModified()?:""
 			,subject: coreProperties.getSubject()?:""
 			,title: coreProperties.getTitle()?:""
-			,lastAuthor: coreProperties.getUnderlyingProperties().getLastModifiedByProperty().getValue()?:""
 			,keywords: coreProperties.getKeywords()?:""
 			,lastSaved: ""// not available in xml
 			,manager: documentProperties.getManager()?:""
 			,company: documentProperties.getCompany()?:""
 		};
+		// lastAuthor is a java.util.Option object with different behaviour
+		if( coreProperties.getUnderlyingProperties().getLastModifiedByProperty().isPresent() )
+			result.lastAuthor = coreProperties.getUnderlyingProperties().getLastModifiedByProperty().get();
+		return result;
 	}
 
 	/* Formatting */
