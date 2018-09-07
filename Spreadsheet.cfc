@@ -16,7 +16,7 @@ component{
 	variables.poiClassesLastLoadedVia = "Nothing loaded yet";
 	variables.engineSupportsEncryption = !isACF;
 
-	function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader ){
+	function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader=true ){
 		if( arguments.keyExists( "dateFormats" ) )
 			overrideDefaultDateFormats( arguments.dateFormats );
 		if( arguments.keyExists( "javaLoaderDotPath" ) ) // Option to use the dot path of an existing javaloader installation to save duplication
