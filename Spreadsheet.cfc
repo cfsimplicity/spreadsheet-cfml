@@ -827,7 +827,7 @@ component{
 		if( arguments.keyExists( "row" ) AND arguments.keyExists( "column" ) ){
 			if( cellExists( workbook, row, column ) ){
 				var cell = getCellAt( workbook, row,column );
-				if( cell.getCellType().getCode() == cell.CellType.FORMULA.getCode() )
+				if( cellIsOfType( cell, "FORMULA" ) )
 					return cell.getCellFormula();
 				return "";
 			}
@@ -874,7 +874,7 @@ component{
 		var rowObject = getActiveSheet( workbook ).getRow( javaCast( "int", rowIndex ) );
 		var cell = rowObject.getCell( javaCast( "int", columnIndex ) );
 		var formatter = getFormatter();
-		if( cell.getCellType().getCode() == cell.CellType.FORMULA.getCode() ){
+		if( cellIsOfType( cell, "FORMULA" ) ){
 			var formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
 			return formatter.formatCellValue( cell, formulaEvaluator );
 		}
@@ -1610,6 +1610,11 @@ component{
 		return !isNull( checkRow ) AND !isNull( checkRow.getCell( javaCast( "int", columnIndex ) ) );
 	}
 
+	private boolean function cellIsOfType( required cell, required string type ){
+		var cellType = cell.getCellType();
+		return objectEquals( cellType, cellType[ arguments.type ] );
+	}
+
 	private numeric function columnCountFromRanges( required array ranges ){
 		var result = 0;
 		for( var thisRange in ranges ){
@@ -1896,20 +1901,8 @@ component{
 	}
 
 	private any function getCellValueAsType( required workbook, required cell ){
-		/* When getting the value of a cell, it is important to know what type of cell value we are dealing with. If you try to grab the wrong value type, an error might be thrown. For that reason, we must check to see what type of cell we are working with. These are the cell types and they are constants of the cell object itself:
-
-		20170116: In POI 4.0 getCellType() will no longer return an integer, but a CellType enum instead. Shouldn't affect things as we are only using the constants, not the integer literals.
-
-			0 - CELL_TYPE_NUMERIC
-			1 - CELL_TYPE_STRING
-			2 - CELL_TYPE_FORMULA
-			3 - CELL_TYPE_BLANK
-			4 - CELL_TYPE_BOOLEAN
-			5 - CELL_TYPE_ERROR */
-
-		var cellType = cell.getCellType();
 		/* Get the value of the cell based on the data type. The thing to worry about here is cell forumlas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values. */
-		if( cellType.getCode() == cell.CellType.NUMERIC.getCode() ){
+		if( cellIsOfType( cell, "NUMERIC" ) ){
 			/* Get numeric cell data. This could be a standard number, could also be a date value. */
 			var dateUtil = getDateUtil();
 			if( dateUtil.isCellDateFormatted( cell ) ){
@@ -1920,7 +1913,7 @@ component{
 			}
 			return cell.getNumericCellValue();
 		}
-		if( cellType.getCode() == cell.CellType.FORMULA.getCode() ){
+		if( cellIsOfType( cell, "FORMULA" ) ){
 			var formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
 			try{
 				return getFormatter().formatCellValue( cell, formulaEvaluator );
@@ -1929,9 +1922,9 @@ component{
 				throw( type=exceptionType, message="Failed to run formula", detail="There is a problem with the formula in sheet #cell.getSheet().getSheetName()# row #( cell.getRowIndex() +1 )# column #( cell.getColumnIndex() +1 )#");
 			}
 		}
-		if( cellType.getCode() EQ cell.CellType.BOOLEAN.getCode() )
+		if( cellIsOfType( cell, "BOOLEAN" ) )
 			return cell.getBooleanCellValue();
-	 	if( cellType.getCode() EQ cell.CellType.BLANK.getCode() )
+	 	if( cellIsOfType( cell, "BLANK" ) )
 			return "";
 		try{
 			return cell.getStringCellValue();
@@ -2092,7 +2085,7 @@ component{
 					continue;
 				}
 				var cellValue = getCellValueAsType( workbook, cell );
-				if( includeRichTextFormatting AND ( cell.getCellType().getCode() EQ cell.CellType.STRING.getCode() ) )
+				if( includeRichTextFormatting AND cellIsOfType( cell, "STRING" ) )
 					cellValue = richStringCellValueToHtml( workbook, cell,cellValue );
 				result.append( cellValue );
 			}
@@ -2303,7 +2296,7 @@ component{
 	private boolean function rowIsEmpty( required row ){
 		for( var i = row.getFirstCellNum(); i LT row.getLastCellNum(); i++ ){
 	    var cell = row.getCell( i );
-	    if( !isNull( cell ) && ( cell.getCellType().getCode() != cell.CellType.BLANK.getCode() ) )
+	    if( !isNull( cell ) && !cellIsOfType( cell, "BLANK" ) )
 	      return false;
 	  }
 	  return true;
