@@ -124,7 +124,7 @@ component{
 		}
 		if( firstRowIsHeader )
 			rows.deleteAt( 1 );
-		return _queryNew( columnList, "", rows );;
+		return _queryNew( columnList, "", rows );
 	}
 
 	public void function download( required workbook, required string filename, string contentType ){
@@ -1681,7 +1681,7 @@ component{
 					/* See encryptFile() for explanation of the following line */
 					var info = New decryption( server[ poiLoaderName ], fs ).loadInfoWithSwitchedContextLoader();
 				else
-					var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( fs );;
+					var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( fs );
 				var decryptor = loadClass( "org.apache.poi.poifs.crypt.Decryptor" ).getInstance( info );
 				if( decryptor.verifyPassword( password ) )
 					return loadClass( "org.apache.poi.xssf.usermodel.XSSFWorkbook" ).init( decryptor.getDataStream( fs ) );
@@ -2282,7 +2282,7 @@ component{
 
 	private string function generateHtmlRow( required array values, boolean isHeader=false ){
 		var result = createObject( "Java", "java.lang.StringBuilder" ).init();
-		result.Append( "<tr>" );
+		result.append( "<tr>" );
 		var columnTag = isHeader? "th": "td";
 		for( var value in values ){
 			if( isDateObject( value ) )
