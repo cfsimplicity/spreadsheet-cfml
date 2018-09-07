@@ -1671,7 +1671,7 @@ component{
 		lock name="#filepath#" timeout=5 {
 			try{
 				var file = createObject( "java", "java.io.File" ).init( filepath );
-				var fs = loadClass( "org.apache.poi.poifs.filesystem.NPOIFSFileSystem" ).init( file );
+				var fs = loadClass( "org.apache.poi.poifs.filesystem.POIFSFileSystem" ).init( file );
 				if( requiresJavaLoader )
 					/* See encryptFile() for explanation of the following line */
 					var info = New decryption( server[ poiLoaderName ], fs ).loadInfoWithSwitchedContextLoader();
