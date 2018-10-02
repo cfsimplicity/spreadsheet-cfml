@@ -1736,44 +1736,41 @@ component{
 	private void function encryptFile( required string filepath, required string password, required string algorithm ){
 		/* See http://poi.apache.org/encryption.html */
 		/* NB: Not all spreadsheet programs support this type of encryption */
+		// set up the encryptor with the chosen algo
 		lock name="#filepath#" timeout=5 {
+			var mode = loadClass( "org.apache.poi.poifs.crypt.EncryptionMode" );
+			switch( algorithm ){
+				case "agile":
+					var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.agile );
+					break;
+				case "standard":
+					var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.standard );
+					break;
+				case "binaryRC4":
+					var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.binaryRC4 );
+					break;
+			}
+			var encryptor = info.getEncryptor();
+			encryptor.confirmPassword( javaCast( "string", password ) );
 			try{
-				var fs = loadClass( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
-				if( requiresJavaLoader )
-					/*
-						Need to ensure our poiLoader is maintained as the "contextLoader" so that when POI objects load other POI objects, they find them. Otherwise Lucee's loader would be used, which isn't aware of our POI library. JavaLoader supports this via a complicated "mixin" procedure: https://github.com/markmandel/JavaLoader/wiki/Switching-the-ThreadContextClassLoader
-					*/
-					var info = New encryption( server[ poiLoaderName ], algorithm ).loadInfoWithSwitchedContextLoader();
-				else {
-					var mode = loadClass( "org.apache.poi.poifs.crypt.EncryptionMode" );
-					switch( algorithm ){
-						case "agile":
-							var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.agile );
-							break;
-						case "standard":
-							var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.standard );
-							break;
-						case "binaryRC4":
-							var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.binaryRC4 );
-							break;
-					}
-				}
-				var encryptor = info.getEncryptor();
-				encryptor.confirmPassword( javaCast( "string", password ) );
-				var opcAccess = loadClass( "org.apache.poi.openxml4j.opc.PackageAccess" );
+				// set up a POI filesystem object
+				var poifs = loadClass( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
 				try{
-					var file = createObject( "java", "java.io.File" ).init( filepath );
-					var opc = loadClass( "org.apache.poi.openxml4j.opc.OPCPackage" ).open( file, opcAccess.READ_WRITE );
-					var encryptedStream = encryptor.getDataStream( fs );
-					opc.save( encryptedStream );
+					// set up an encrypted stream withini the POI filesystem
+					var encryptedStream = encryptor.getDataStream( poifs );
+					// read in the unencrypted wb file and write it to the encrypted stream
+					var workbook = workbookFromFile( filepath );
+					workbook.write( encryptedStream );
 				}
 				finally{
-					if( local.keyExists( "opc" ) )
-						opc.close();
+					// make sure encrypted stream in closed
+					if( local.keyExists( "encryptedStream" ) )
+						encryptedStream.close();
 				}
 				try{
+					// write the encrypted POI filesystem to file, replacing the unencypted version
 					var outputStream = createObject( "java", "java.io.FileOutputStream" ).init( filepath );
-					fs.writeFilesystem( outputStream );
+					poifs.writeFilesystem( outputStream );
 					outputStream.flush();
 				}
 				finally{
@@ -1783,8 +1780,8 @@ component{
 				}
 			}
 			finally{
-				if( local.keyExists( "fs" ) )
-					fs.close();
+				if( local.keyExists( "poifs" ) )
+					poifs.close();
 			}
 		}
 	}
