@@ -182,9 +182,7 @@ Please note though that _reading or writing password-protected files only works 
 
 ### JavaLoader
 
-If you are using Lucee 4.5 or Adobe ColdFusion, Mark Mandel's [JavaLoader](https://github.com/markmandel/JavaLoader) is required and the bundled version will be used by default.
-
-JavaLoader is not required if using Lucee 5 or later.
+A bundled version of Mark Mandel's [JavaLoader](https://github.com/markmandel/JavaLoader) will be used by default to load the POI and other required java libraries.
 
 For more details and options see: [Loading the POI java libraries](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/Loading-the-POI-java-libraries)
 

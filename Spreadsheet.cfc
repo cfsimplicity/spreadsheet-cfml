@@ -10,9 +10,7 @@ component{
 		,TIMESTAMP: "yyyy-mm-dd hh:mm:ss"
 	};
 	variables.exceptionType = "cfsimplicity.lucee.spreadsheet";
-	variables.isLucee5plus = ( server.keyExists( "lucee" ) AND ( server.lucee.version.left( 1 ) >= 5 ) );
 	variables.isACF = ( server.coldfusion.productname IS "ColdFusion Server" );
-	variables.engineSupportsDynamicClassLoading = isLucee5plus;
 	variables.poiClassesLastLoadedVia = "Nothing loaded yet";
 	variables.engineSupportsEncryption = !isACF;
 
@@ -21,10 +19,7 @@ component{
 			overrideDefaultDateFormats( arguments.dateFormats );
 		if( arguments.keyExists( "javaLoaderDotPath" ) ) // Option to use the dot path of an existing javaloader installation to save duplication
 			variables.javaLoaderDotPath = arguments.javaLoaderDotPath;
-		if( arguments.keyExists( "requiresJavaLoader" ) )
-			variables.requiresJavaLoader = arguments.requiresJavaLoader;
-		else
-			variables.requiresJavaLoader = !engineSupportsDynamicClassLoading;
+		variables.requiresJavaLoader = arguments.requiresJavaLoader;
 		return this;
 	}
 
@@ -52,7 +47,6 @@ component{
 		return {
 			dateFormats: dateFormats
 			,engine: server.coldfusion.productname & " " & ( isACF? server.coldfusion.productversion: ( server.lucee.version?: "?" ) )
-			,engineSupportsDynamicClassLoading: engineSupportsDynamicClassLoading
 			,engineSupportsEncryption: engineSupportsEncryption
 			,javaLoaderDotPath: javaLoaderDotPath
 			,poiClassesLastLoadedVia: poiClassesLastLoadedVia
@@ -2148,11 +2142,7 @@ component{
 
 	private function loadClass( required string javaclass ){
 		if( !requiresJavaLoader ){
-			if( engineSupportsDynamicClassLoading ){
-				poiClassesLastLoadedVia = "Dynamic loading from the lib folder";
-				return createObject( "java", javaclass, getJarPaths() );
-			}
-			// Else *the correct* POI jars must be in the class path and any older versions *removed*
+			// If not using JL, *the correct* POI jars must be in the class path and any older versions *removed*
 			try{
 				poiClassesLastLoadedVia = "The java class path";
 				return createObject( "java", javaclass );
