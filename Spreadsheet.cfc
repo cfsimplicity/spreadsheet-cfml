@@ -1678,8 +1678,7 @@ component{
 				var file = createObject( "java", "java.io.File" ).init( filepath );
 				var fs = loadClass( "org.apache.poi.poifs.filesystem.POIFSFileSystem" ).init( file );
 				if( requiresJavaLoader )
-					/* See encryptFile() for explanation of the following line */
-					var info = New decryption( server[ poiLoaderName ], fs ).loadInfoWithSwitchedContextLoader();
+					var info = new decryption( server[ poiLoaderName ], fs ).loadInfoWithSwitchedContextLoader();
 				else
 					var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( fs );
 				var decryptor = loadClass( "org.apache.poi.poifs.crypt.Decryptor" ).getInstance( info );
