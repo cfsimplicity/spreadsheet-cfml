@@ -1461,14 +1461,12 @@ component{
 			throw( type=exceptionType, message="Password protection is not supported for Adobe ColdFusion", detail="Password protection currently only works in Lucee, not ColdFusion" );
 		if( passwordProtect AND isBinaryFormat( workbook ) )
 			throw( type=exceptionType, message="Whole file password protection is not supported for binary workbooks", detail="Password protection only works with XML ('xlsx') workbooks." );
-		lock name="#filepath#" timeout=5{
-			var outputStream = createObject( "java", "java.io.FileOutputStream" ).init( filepath );
-		}
 		try{
 			lock name="#filepath#" timeout=5{
+				var outputStream = createObject( "java", "java.io.FileOutputStream" ).init( filepath );
 				workbook.write( outputStream );
+				outputStream.flush();
 			}
-			outputStream.flush();
 		}
 		finally{
 			// always close the stream. otherwise file may be left in a locked state if an unexpected error occurs
