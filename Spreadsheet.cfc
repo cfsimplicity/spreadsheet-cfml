@@ -55,6 +55,14 @@ component{
 		};
 	}
 
+	// Diagnostic tool: check physical path of a specific class
+	public void function dumpPathToClass( required string className ){
+		var result = {};
+		var classLoader = loadClass( className ).getClass().getClassLoader();
+		var path = classLoader.getResource( className.replace( ".", "/", "all" ) & ".class" ).getPath();
+		writeDump( path );
+	}
+
 	/* MAIN PUBLIC API */
 
 	/* Convenenience */
