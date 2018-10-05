@@ -1677,10 +1677,7 @@ component{
 			try{
 				var file = createObject( "java", "java.io.File" ).init( filepath );
 				var fs = loadClass( "org.apache.poi.poifs.filesystem.POIFSFileSystem" ).init( file );
-				if( requiresJavaLoader )
-					var info = new decryption( server[ poiLoaderName ], fs ).loadInfoWithSwitchedContextLoader();
-				else
-					var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( fs );
+				var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( fs );
 				var decryptor = loadClass( "org.apache.poi.poifs.crypt.Decryptor" ).getInstance( info );
 				if( decryptor.verifyPassword( password ) )
 					return loadClass( "org.apache.poi.xssf.usermodel.XSSFWorkbook" ).init( decryptor.getDataStream( fs ) );
