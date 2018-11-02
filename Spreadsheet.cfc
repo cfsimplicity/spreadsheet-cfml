@@ -2214,7 +2214,7 @@ component{
 			  var endAt = finalValue.lastIndexOf( "'" );
 			  if( isEmbeddedValue AND startAt GTE 0 AND endAt GT startAt )
 				  finalValue = finalValue.substring( ( startAt +1 ), endAt );
-			  values.add( finalValue );//TODO append? what is .add?
+			  values.Append( finalValue );
 			  buffer.setLength( 0 );
 			  isEmbeddedValue = false;
 		  }
