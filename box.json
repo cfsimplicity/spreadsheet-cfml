@@ -2,27 +2,30 @@
     "name" : "LuceeSpreadsheet",
     "slug" : "lucee-spreadsheet",
     "version" : "1.7.2",
+    "shortDescription" : "Spreadsheet Library for Lucee",
     "author" : "Julian Halliwell",
     "location" : "https://github.com/cfsimplicity/lucee-spreadsheet",
-    "Homepage" : "https://github.com/cfsimplicity/lucee-spreadsheet",
-    "Documentation" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/master/README.md",
-    "Repository" : { 
+    "homepage" : "https://github.com/cfsimplicity/lucee-spreadsheet",
+    "projectURL" : "https://github.com/cfsimplicity/lucee-spreadsheet",
+    "documentation" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/master/README.md",
+    "changelog" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/master/CHANGELOG.md",
+    "bugs" : "https://github.com/cfsimplicity/lucee-spreadsheet/issues",
+    "repository" : { 
         "type" : "git", "URL" : "https://github.com/cfsimplicity/lucee-spreadsheet"
     },
-    "Bugs" : "https://github.com/cfsimplicity/lucee-spreadsheet/issues",
-    "shortDescription" : "Spreadsheet Library for Lucee",
-    "changelog" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/master/CHANGELOG.md",
-    "type" : "modules",
-    "keywords" : [ "cfspreadsheet", "lucee", "module", "spreadsheet" ],
-    "private" : "false",
     "engines" : [
         { "type" : "lucee", "version" : ">=4.5.x" },
         { "type" : "adobe", "version" : ">=11.0.0" }
     ],
     "defaultEngine" : "lucee",
-    "ProjectURL" : "https://github.com/cfsimplicity/lucee-spreadsheet",
-    "License" : [
+    "license" : [
         { "type" : "MIT", "URL" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/master/LICENSE" }
     ],
+    "devDependencies" : {
+        "testbox" : ">=2.1.x"
+    },
+    "type" : "modules",
+    "keywords" : [ "cfspreadsheet", "lucee", "module", "spreadsheet" ],
+    "private" : "false",
     "ignore" : [ "test" ]
 }
