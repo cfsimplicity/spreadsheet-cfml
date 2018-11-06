@@ -93,7 +93,7 @@ describe( "cellValue", function(){
 		});
 
 		it( "allows forcing values to be added as dates", function(){
-			value = 1990;
+			value = "01.1990";
 			s.setCellValue( workbook, value, 1, 1, "date" );
 			actual = s.getCellValue( workbook, 1, 1 );
 			expect( DateFormat( actual, "yyyy-mm-dd" ) ).toBe( "1990-01-01" );
