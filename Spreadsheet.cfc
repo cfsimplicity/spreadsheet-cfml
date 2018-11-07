@@ -2900,31 +2900,21 @@ component{
 
 	private query function _QueryDeleteColumn( required query q, required string columnToDelete ){
 		try{
-			QueryDeleteColumn( q, columnToDelete ); //Lucee
+			QueryDeleteColumn( q, columnToDelete ); //Lucee/ACF2018+
 			return q;
 		}
 		catch( any exception ){
 			if( !exception.message CONTAINS "undefined" )
 				rethrow;
-			//ACF
-			var columnMetaData = GetMetaData( q );
-			var columns = [];
-			var columnTypes = [];
-			for( var column in columnMetaData ){
-				if( column.name IS columnToDelete )
-					continue;
-				columns.Append( column.name );
-				columnTypes.Append( column.typeName?: "VarChar" );
-			}
-			var data = [];
-			for( row in q ){
-				newRow = [];
-				for( column in columns )
-					newRow.Append( row[ column ] );
-				data.Append( newRow );
-			}
+			//ACF11/2016 doesn't support QueryDeleteColumn()
+			var columnPosition = ListFindNoCase( q.columnList, arguments.columnToDelete );
+			if( !columnPosition )
+				return q;
+			var columnsToKeep = ListDeleteAt( q.columnList, columnPosition );
+			if( !columnsToKeep.Len() )
+				return QueryNew( "" );
+			return QueryExecute( "SELECT #columnsToKeep# FROM q", {}, { dbType = "query" } );
 		}
-		return _QueryNew( columns, columnTypes.ToList(), data );
 	}
 
 	private query function _QueryNew( required array columnNames, required string columnTypeList, required array data ){
