@@ -1,3 +1,9 @@
+## 1.7.3 - 7 November 2018
+
+- Fixes
+ - \#153 Handling of hidden columns fails in ACF2016
+ - \#152 Testbox should be specified as a CommandBox installation dev dependency
+
 ## 1.7.2 - 14 May 2018
 
 - Fixes
