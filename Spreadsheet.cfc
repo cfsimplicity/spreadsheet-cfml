@@ -2412,8 +2412,8 @@ component{
 			arguments.columnNames = arguments.columnNames.ListToArray();
 			var specifiedColumnCount = columnNames.Len();
 			for( var i = 1; i LTE sheet.totalColumnCount; i++ ){
-				// IsNull/IsDefined doesn't work.
-				var columnName = columnNames[ i ]?: "column" & i;
+				// ACF11 elvis operator doesn't work here for some reason. Forced to use longer ternery syntax. IsNull/IsDefined doesn't work either.
+				var columnName = ( i LTE specifiedColumnCount )? columnNames[ i ]: "column" & i;
 				sheet.columnNames.Append( columnName );
 			}
 		}
