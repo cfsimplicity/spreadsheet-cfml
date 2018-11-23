@@ -2412,8 +2412,8 @@ component{
 			arguments.columnNames = arguments.columnNames.ListToArray();
 			var specifiedColumnCount = columnNames.Len();
 			for( var i = 1; i LTE sheet.totalColumnCount; i++ ){
-				// ACF11 elvis operator doesn't work here for some reason. Forced to use longer ternery syntax. IsNull/IsDefined doesn't work either.
-				var columnName = ( i LTE specifiedColumnCount )? columnNames[ i ]: "column" & i;
+				// IsNull/IsDefined doesn't work.
+				var columnName = columnNames[ i ]?: "column" & i;
 				sheet.columnNames.Append( columnName );
 			}
 		}
@@ -2850,7 +2850,25 @@ component{
 				,JavaCast( "int", rgb[ 2 ] )
 				,JavaCast( "int", rgb[ 3 ] )
 			];
-			return loadClass( "org.apache.poi.xssf.usermodel.XSSFColor" ).init( JavaCast( "byte[]", rgbBytes ), nullValue() );
+			try{
+				return loadClass( "org.apache.poi.xssf.usermodel.XSSFColor" ).init( JavaCast( "byte[]", rgbBytes ), JavaCast( "null", 0 ) );
+			}
+			//ACF doesn't handle signed java byte values the same way as Lucee: see https://www.bennadel.com/blog/2689-creating-signed-java-byte-values-using-coldfusion-numbers.htm
+			catch( any exception ){
+				if( !exception.message CONTAINS "cannot fit inside a byte" )
+					rethrow;
+				//ACF2016+ Bitwise operators can't handle >32-bit args: https://stackoverflow.com/questions/43176313/cffunction-cfargument-pass-unsigned-int32
+				var javaLangInteger = CreateObject( "java", "java.lang.Integer" );
+				var negativeMask = InputBaseN( ( "11111111" & "11111111" & "11111111" & "00000000" ), 2 );
+				negativeMask = javaLangInteger.parseUnsignedInt( negativeMask );
+				rgbBytes = [];
+				for( var value in rgb ){
+					if( BitMaskRead( value, 7, 1 ) )//value greater than 127
+						value = BitOr( negativeMask, value );
+					rgbBytes.Append( JavaCast( "byte", value ) );
+				}
+				return loadClass( "org.apache.poi.xssf.usermodel.XSSFColor" ).init( JavaCast( "byte[]", rgbBytes ), JavaCast( "null", 0 ) );
+			}
 		}
 		var palette = workbook.getCustomPalette();
 		var similarExistingColor = palette.findSimilarColor(
@@ -2893,7 +2911,7 @@ component{
 		catch( any exception ){
 			if( !exception.message CONTAINS "undefined" )
 				rethrow;
-			//ACF11/2016 doesn't support QueryDeleteColumn()
+			//ACF2016 doesn't support QueryDeleteColumn()
 			var columnPosition = ListFindNoCase( q.columnList, arguments.columnToDelete );
 			if( !columnPosition )
 				return q;
