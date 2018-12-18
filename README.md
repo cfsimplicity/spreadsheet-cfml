@@ -4,7 +4,7 @@ Originally adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo
 
 ## Rationale
 
-Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of the box. Extensions exist for both [Lucee 4.5](https://github.com/Leftbower/cfspreadsheet-lucee) and [Lucee 5](https://github.com/Leftbower/cfspreadsheet-lucee-5), but I decided to create a standalone library which doesn't depend on customisation of the engine.
+Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of the box. An extension exists for [Lucee](https://github.com/Leftbower/cfspreadsheet-lucee-5), but I decided to create a standalone library which doesn't depend on customisation of the engine.
 
 ## Library vs Extension
 
@@ -23,6 +23,14 @@ Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of 
 ### Downsides
 
 - Existing code needs adapting to invoke the library. Existing CFML spreadsheet functions and the `<cfspreadsheet>` tag won't work with it.
+
+## Minimum Requirements for version 2.x
+
+- Java 8 or higher
+- Lucee 5.x or higher
+- Adobe ColdFusion 2016 or higher (ACF is also supported but see below for limitations)
+
+If you are running Java 6 and 7, Lucee 4.5 or ACF11, please use [version 1.x.](https://github.com/cfsimplicity/lucee-spreadsheet/tags)
 
 ## Usage
 
@@ -176,7 +184,7 @@ spreadsheet = New spreadsheetLibrary.spreadsheet( dateFormats={ DATE: "mm/dd/yyy
 
 ### Adobe ColdFusion
 
-Although primarily intended for Lucee, the library can be run under ColdFusion 11 or higher. This may be useful where you want to your codebase to be cross-compatible between the two engines.
+Although primarily intended for Lucee, the library can be run under ColdFusion 2016 or higher. This may be useful where you want to your codebase to be cross-compatible between the two engines.
 
 Please note though that _reading or writing password-protected files only works with Lucee_.
 
