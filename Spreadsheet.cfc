@@ -1,7 +1,7 @@
 component{
 
 	variables.version = "2.0.0-develop";
-	variables.poiLoaderName = "_poiLoader-" & Hash( GetCurrentTemplatePath() );
+	variables.javaLoaderName = "spreadsheetLibraryClassLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
 		DATE: "yyyy-mm-dd"
@@ -11,7 +11,7 @@ component{
 	};
 	variables.exceptionType = "cfsimplicity.lucee.spreadsheet";
 	variables.isACF = ( server.coldfusion.productname IS "ColdFusion Server" );
-	variables.poiClassesLastLoadedVia = "Nothing loaded yet";
+	variables.javaClassesLastLoadedVia = "Nothing loaded yet";
 	variables.engineSupportsEncryption = !isACF;
 
 	function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader=true ){
@@ -35,7 +35,7 @@ component{
 
 	public void function flushPoiLoader(){
 		lock scope="server" timeout="10" {
-			StructDelete( server, poiLoaderName );
+			StructDelete( server, javaLoaderName );
 		};
 	}
 
@@ -49,8 +49,8 @@ component{
 			,engine: server.coldfusion.productname & " " & ( isACF? server.coldfusion.productversion: ( server.lucee.version?: "?" ) )
 			,engineSupportsEncryption: engineSupportsEncryption
 			,javaLoaderDotPath: javaLoaderDotPath
-			,poiClassesLastLoadedVia: poiClassesLastLoadedVia
-			,poiLoaderName: poiLoaderName
+			,javaClassesLastLoadedVia: javaClassesLastLoadedVia
+			,javaLoaderName: javaLoaderName
 			,requiresJavaLoader: requiresJavaLoader
 		};
 	}
@@ -2193,22 +2193,22 @@ component{
 		if( !requiresJavaLoader ){
 			// If not using JL, *the correct* POI jars must be in the class path and any older versions *removed*
 			try{
-				poiClassesLastLoadedVia = "The java class path";
+				javaClassesLastLoadedVia = "The java class path";
 				return CreateObject( "java", arguments.javaclass );
 			}
 			catch( any exception ){
-				poiClassesLastLoadedVia = "JavaLoader";
+				javaClassesLastLoadedVia = "JavaLoader";
 				return loadClassUsingJavaLoader( arguments.javaclass );
 			}
 		}
-		poiClassesLastLoadedVia = "JavaLoader";
+		javaClassesLastLoadedVia = "JavaLoader";
 		return loadClassUsingJavaLoader( arguments.javaclass );
 	}
 
 	private function loadClassUsingJavaLoader( required string javaclass ){
-		if( !server.KeyExists( poiLoaderName ) )
-			server[ poiLoaderName ] = CreateObject( "component", javaLoaderDotPath ).init( loadPaths=getJarPaths(), loadColdFusionClassPath=false, trustedSource=true );
-		return server[ poiLoaderName ].create( arguments.javaclass );
+		if( !server.KeyExists( javaLoaderName ) )
+			server[ javaLoaderName ] = CreateObject( "component", javaLoaderDotPath ).init( loadPaths=getJarPaths(), loadColdFusionClassPath=false, trustedSource=true );
+		return server[ javaLoaderName ].create( arguments.javaclass );
 	}
 
 	private void function moveSheet( required workbook, required string sheetName, required string moveToIndex ){
