@@ -14,6 +14,10 @@ component{
 	variables.javaClassesLastLoadedVia = "Nothing loaded yet";
 	variables.engineSupportsEncryption = !isACF;
 
+	variables.HSSFWorkbookClassName = "org.apache.poi.hssf.usermodel.HSSFWorkbook";
+	variables.XSSFWorkbookClassName = "org.apache.poi.xssf.usermodel.XSSFWorkbook";
+	variables.SXSSFWorkbookClassName = "org.apache.poi.xssf.streaming.SXSSFWorkbook";
+
 	function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader=true ){
 		if( arguments.KeyExists( "dateFormats" ) )
 			overrideDefaultDateFormats( arguments.dateFormats );
@@ -67,10 +71,19 @@ component{
 
 	/* Convenenience */
 
-	public binary function binaryFromQuery( required query data, boolean addHeaderRow=true, boldHeaderRow=true, xmlFormat=false ){
+	public binary function binaryFromQuery(
+		required query data
+		,boolean addHeaderRow=true
+		,boolean boldHeaderRow=true
+		,boolean xmlFormat=false
+		,boolean streamingXml=false
+		,numeric streamingWindowSize=100
+	){
 		/* Pass in a query and get a spreadsheet binary file ready to stream to the browser */
 		var workbook = workbookFromQuery( argumentCollection=arguments );
-		return readBinary( workbook );
+		var binary = readBinary( workbook );
+		cleanUpStreamingXml( workbook );
+		return binary;
 	}
 
 	public function csvToQuery(
@@ -135,6 +148,7 @@ component{
 		var extension = isXmlFormat( arguments.workbook )? "xlsx": "xls";
 		arguments.filename = filenameWithoutExtension & "." & extension;
 		var binary = readBinary( arguments.workbook );
+		cleanUpStreamingXml( arguments.workbook );
 		if( !arguments.KeyExists( "contentType" ) )
 			arguments.contentType = isXmlFormat( arguments.workbook )? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/msexcel";
 		downloadBinaryVariable( binary, arguments.filename, arguments.contentType );
@@ -147,12 +161,14 @@ component{
 		,boolean boldHeaderRow=true
 		,boolean xmlFormat=false
 		,string contentType
+		,boolean streamingXml=false
+		,numeric streamingWindowSize=100
 	){
 		var safeFilename = filenameSafe( arguments.filename );
 		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$","" );
-		var extension = arguments.xmlFormat? "xlsx": "xls";
+		var extension = ( arguments.xmlFormat || arguments.streamingXml )? "xlsx": "xls";
 		arguments.filename = filenameWithoutExtension & "." & extension;
-		var binary = binaryFromQuery( arguments.data, arguments.addHeaderRow, arguments.boldHeaderRow, arguments.xmlFormat );
+		var binary = binaryFromQuery( arguments.data, arguments.addHeaderRow, arguments.boldHeaderRow, arguments.xmlFormat, arguments.streamingXml, arguments.streamingWindowSize );
 		if( !arguments.KeyExists( "contentType" ) )
 			arguments.contentType = arguments.xmlFormat? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/msexcel";
 		downloadBinaryVariable( binary, arguments.filename, arguments.contentType );
@@ -215,8 +231,10 @@ component{
 		,boolean addHeaderRow=true
 		,boolean boldHeaderRow=true
 		,boolean xmlFormat=false
+		,boolean streamingXml=false
+		,numeric streamingWindowSize=100
 	){
-		var workbook = new( xmlFormat=arguments.xmlFormat );
+		var workbook = new( xmlFormat=arguments.xmlFormat, streamingXml=arguments.streamingXml, streamingWindowSize=arguments.streamingWindowSize );
 		if( arguments.addHeaderRow ){
 			var columns = _queryColumnArray( arguments.data );
 			addRow( workbook, columns.ToList() );
@@ -236,10 +254,19 @@ component{
 		,boolean addHeaderRow=true
 		,boldHeaderRow=true
 		,xmlFormat=false
+		,boolean streamingXml=false
+		,numeric streamingWindowSize=100
 	){
 		if( !arguments.xmlFormat AND ( ListLast( arguments.filepath, "." ) IS "xlsx" ) )
 			arguments.xmlFormat = true;
-		var workbook = workbookFromQuery( arguments.data, arguments.addHeaderRow, arguments.boldHeaderRow, arguments.xmlFormat );
+		var workbook = workbookFromQuery(
+			data=arguments.data
+			,addHeaderRow=arguments.addHeaderRow
+			,boldHeaderRow=arguments.boldHeaderRow
+			,xmlFormat=arguments.xmlFormat
+			,streamingXml=arguments.streamingXml
+			,streamingWindowSize=arguments.streamingWindowSize
+		);
 		if( xmlFormat AND ( ListLast( arguments.filepath, "." ) IS "xls" ) )
 			arguments.filepath &= "x";// force to .xlsx
 		write( workbook=workbook, filepath=arguments.filepath, overwrite=arguments.overwrite );
@@ -575,6 +602,11 @@ component{
 		/* Adjusts the width of the specified column to fit the contents. For performance reasons, this should normally be called only once per column. */
 		var columnIndex = ( arguments.column -1 );
 		getActiveSheet( arguments.workbook ).autoSizeColumn( columnIndex, useMergedCells );
+	}
+
+	public void function cleanUpStreamingXml( required workbook ){
+		if( isStreamingXmlFormat( arguments.workbook ) )
+			arguments.workbook.dispose(); // SXSSF uses temporary files which MUST be cleaned up, see http://poi.apache.org/components/spreadsheet/how-to.html#sxssf
 	}
 
 	public void function clearCell( required workbook, required numeric row, required numeric column ){
@@ -991,7 +1023,7 @@ component{
 	}
 
 	public boolean function isBinaryFormat( required workbook ){
-		return arguments.workbook.getClass().getCanonicalName() IS "org.apache.poi.hssf.usermodel.HSSFWorkbook";
+		return arguments.workbook.getClass().getCanonicalName() IS variables.HSSFWorkbookClassName;
 	}
 
 	public boolean function isColumnHidden( required workbook, required numeric column ){
@@ -1020,7 +1052,12 @@ component{
 	}
 
 	public boolean function isXmlFormat( required workbook ){
-		return arguments.workbook.getClass().getCanonicalName() IS "org.apache.poi.xssf.usermodel.XSSFWorkbook";
+		//CF2016 doesn't support [].Find( needle );
+		return ArrayFind( [ variables.XSSFWorkbookClassName, variables.SXSSFWorkbookClassName ], arguments.workbook.getClass().getCanonicalName() );
+	}
+
+	public boolean function isStreamingXmlFormat( required workbook ){
+		return arguments.workbook.getClass().getCanonicalName() IS variables.SXSSFWorkbookClassName;
 	}
 
 	public void function mergeCells(
@@ -1052,9 +1089,22 @@ component{
 		setCellValue( arguments.workbook, visibleValue, arguments.startRow, arguments.startColumn );
 	}
 
-	public any function new( string sheetName="Sheet1", boolean xmlformat=false ){
-		var workbook = createWorkBook( sheetName, arguments.xmlFormat );
-		createSheet( workbook, arguments.sheetName, arguments.xmlformat );
+	public any function new(
+		string sheetName="Sheet1"
+		,boolean xmlFormat=false
+		,boolean streamingXml=false
+		,numeric streamingWindowSize
+	){
+		if(
+				arguments.streamingXml
+				&& arguments.KeyExists( "streamingWindowSize" )
+				&& ( !IsValid( "integer", arguments.streamingWindowSize ) || arguments.streamingWindowSize < 1 )
+			)
+			Throw( type=exceptionType, message="Invalid 'streamingWindowSize' argument", detail="'streamingWindowSize' must be an integer value greater than 1" );
+		if( arguments.streamingXml && !arguments.xmlFormat )
+			arguments.xmlFormat = true;
+		var workbook = createWorkBook( argumentCollection=arguments );
+		createSheet( workbook, arguments.sheetName, arguments.xmlFormat );
 		setActiveSheet( workbook, arguments.sheetName );
 		return workbook;
 	}
@@ -1065,6 +1115,10 @@ component{
 
 	public any function newXlsx( string sheetName="Sheet1" ){
 		return new( sheetName=arguments.sheetName, xmlFormat=true );
+	}
+
+	public any function newStreamingXlsx( string sheetName="Sheet1", numeric streamingWindowSize=100 ){
+		return new( sheetName=arguments.sheetName, xmlFormat=true, streamingXml=true, streamingWindowSize=arguments.streamingWindowSize );
 	}
 
 	public any function read(
@@ -1522,6 +1576,7 @@ component{
 			// always close the stream. otherwise file may be left in a locked state if an unexpected error occurs
 			if( local.KeyExists( "outputStream" ) )
 				outputStream.close();
+			cleanUpStreamingXml( arguments.workbook );
 		}
 		if( passwordProtect )
 			encryptFile( arguments.filepath, arguments.password, arguments.algorithm );
@@ -1710,10 +1765,18 @@ component{
 		return row;
 	}
 
-	private any function createWorkBook( required string sheetName, boolean useXmlFormat=false ){
+	private any function createWorkBook(
+		required string sheetName
+		,boolean xmlFormat=false
+		,boolean streamingXml=false
+		,numeric streamingWindowSize=100
+	){
 		validateSheetName( arguments.sheetName );
-		var className = arguments.useXmlFormat? "org.apache.poi.xssf.usermodel.XSSFWorkbook": "org.apache.poi.hssf.usermodel.HSSFWorkbook";
-		return loadClass( className ).init();
+		if( !arguments.xmlFormat )
+			return loadClass( variables.HSSFWorkbookClassName ).init();
+		if( arguments.streamingXml )
+			return loadClass( variables.SXSSFWorkbookClassName ).init( JavaCast( "int", streamingWindowSize ) );
+		return loadClass( variables.XSSFWorkbookClassName ).init();
 	}
 
 	private any function decryptFile( required string filepath, required string password ){
@@ -1727,7 +1790,7 @@ component{
 				var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( fs );
 				var decryptor = loadClass( "org.apache.poi.poifs.crypt.Decryptor" ).getInstance( info );
 				if( decryptor.verifyPassword( arguments.password ) )
-					return loadClass( "org.apache.poi.xssf.usermodel.XSSFWorkbook" ).init( decryptor.getDataStream( fs ) );
+					return loadClass( variables.XSSFWorkbookClassName ).init( decryptor.getDataStream( fs ) );
 				Throw( type=exceptionType, message="Invalid password", detail="The file cannot be read because the password is incorrect." );
 			}
 			catch( org.apache.poi.poifs.filesystem.NotOLE2FileException exception ){

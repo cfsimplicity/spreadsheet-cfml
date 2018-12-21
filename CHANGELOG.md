@@ -6,7 +6,8 @@
  - \#148 Remove the `engineSupportsDynamicClassLoading` variable completely, since it is meaningless
  - Remove ACF11 support: ACF2016 is the minimum supported version
 
- - Enhancements
+- Enhancements
+	- \#155 Add support for the SXSSF streaming XML format for writing large files
   - \#136 Upgrade Apache Commons CSV to version 1.5
   - Improve `write()` outputstream locking.
   - Add `dumpPathToClass()` diagnostic tool

@@ -109,6 +109,7 @@ You will probably want to place the spreadsheet library files in a central locat
 ### Extra functions not available in ColdFusion
 
 * [addPrintGridlines](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addPrintGridlines)
+* [cleanUpStreamingXml](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/cleanUpStreamingXml)
 * [clearCell](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCell)
 * [clearCellRange](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCellRange)
 * [getCellFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellFormat)
@@ -119,6 +120,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [isBinaryFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isBinaryFormat)
 * [isColumnHidden](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isColumnHidden)
 * [isRowHidden](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isRowHidden)
+* [isStreamingXmlFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isStreamingXmlFormat)
 * [isXmlFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isXmlFormat)
 * [removePrintGridlines](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/removePrintGridlines)
 * [renameSheet](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/renameSheet)
@@ -138,6 +140,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [download](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/download)
 * [downloadCsvFromFile](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/downloadCsvFromFile)
 * [downloadFileFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/downloadFileFromQuery)
+* [newStreamingXlsx](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/newStreamingXlsx)
 * [newXls](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/newXls)
 * [newXlsx](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/newXlsx)
 * [workbookFromCsv](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/workbookFromCsv)
