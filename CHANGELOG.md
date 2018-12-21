@@ -4,7 +4,7 @@
 	- \#142 Upgrade POI to 4.0.1 which requires Java 8+
 	- By default, Lucee 5 now uses JavaLoader instead of `CreateObject`
 	- \#148 Remove the `engineSupportsDynamicClassLoading` variable completely, since it is meaningless
-	- Remove ACF11 support: ACF2016 is the minimum supported version
+	- Remove Lucee 4.5 and ACF11 support: Lucee 5 and ACF2016 are the minimum supported versions
 
 - Enhancements
 	- \#155 Add support for the SXSSF streaming XML format for writing large files
