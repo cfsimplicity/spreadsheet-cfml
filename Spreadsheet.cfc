@@ -61,7 +61,6 @@ component{
 
 	// Diagnostic tool: check physical path of a specific class
 	public void function dumpPathToClass( required string className ){
-		var result = {};
 		var classLoader = loadClass( arguments.className ).getClass().getClassLoader();
 		var path = classLoader.getResource( arguments.className.Replace( ".", "/", "all" ) & ".class" ).getPath();
 		WriteDump( path );
@@ -1095,12 +1094,6 @@ component{
 		,boolean streamingXml=false
 		,numeric streamingWindowSize
 	){
-		if(
-				arguments.streamingXml
-				&& arguments.KeyExists( "streamingWindowSize" )
-				&& ( !IsValid( "integer", arguments.streamingWindowSize ) || arguments.streamingWindowSize < 1 )
-			)
-			Throw( type=exceptionType, message="Invalid 'streamingWindowSize' argument", detail="'streamingWindowSize' must be an integer value greater than 1" );
 		if( arguments.streamingXml && !arguments.xmlFormat )
 			arguments.xmlFormat = true;
 		var workbook = createWorkBook( argumentCollection=arguments );
@@ -1774,8 +1767,11 @@ component{
 		validateSheetName( arguments.sheetName );
 		if( !arguments.xmlFormat )
 			return loadClass( variables.HSSFWorkbookClassName ).init();
-		if( arguments.streamingXml )
+		if( arguments.streamingXml ){
+			if( ( !IsValid( "integer", arguments.streamingWindowSize ) || arguments.streamingWindowSize < 1 ) )
+			Throw( type=exceptionType, message="Invalid 'streamingWindowSize' argument", detail="'streamingWindowSize' must be an integer value greater than 1" );
 			return loadClass( variables.SXSSFWorkbookClassName ).init( JavaCast( "int", streamingWindowSize ) );
+		}
 		return loadClass( variables.XSSFWorkbookClassName ).init();
 	}
 

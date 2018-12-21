@@ -1,10 +1,10 @@
 ## 2.0.0 - ?
 
 - Breaking changes
- - \#142 Upgrade POI to 4.0.1 which requires Java 8+
- - By default, Lucee 5 now uses JavaLoader instead of `CreateObject`
- - \#148 Remove the `engineSupportsDynamicClassLoading` variable completely, since it is meaningless
- - Remove ACF11 support: ACF2016 is the minimum supported version
+	- \#142 Upgrade POI to 4.0.1 which requires Java 8+
+	- By default, Lucee 5 now uses JavaLoader instead of `CreateObject`
+	- \#148 Remove the `engineSupportsDynamicClassLoading` variable completely, since it is meaningless
+	- Remove ACF11 support: ACF2016 is the minimum supported version
 
 - Enhancements
 	- \#155 Add support for the SXSSF streaming XML format for writing large files
@@ -14,17 +14,17 @@
   - Separate encryption/decryption components no longer needed with POI 4
 
 - Fixes
- - Various fixes to support POI 4.x
- - \#150 Rewrite xlsx encryption to ensure the encrypted stream is closed
- - Use array `append()` BIF instead of java `add()`
- - Fix failing `setCellValue()` test on ACF2016+
- - \#154 Using RGB triplet as a colour format with XLSX not working in ACF
+	- Various fixes to support POI 4.x
+	- \#150 Rewrite xlsx encryption to ensure the encrypted stream is closed
+	- Use array `append()` BIF instead of java `add()`
+	- Fix failing `setCellValue()` test on ACF2016+
+	- \#154 Using RGB triplet as a colour format with XLSX not working in ACF
 
 ## 1.7.3 - 7 November 2018
 
 - Fixes
- - \#153 Handling of hidden columns fails in ACF2016
- - \#152 Testbox should be specified as a CommandBox installation dev dependency
+	- \#153 Handling of hidden columns fails in ACF2016
+	- \#152 Testbox should be specified as a CommandBox installation dev dependency
 
 ## 1.7.2 - 14 May 2018
 
