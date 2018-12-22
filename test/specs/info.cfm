@@ -44,6 +44,18 @@ describe( "info", function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Handles missing lastAuthor value in an xlsx", function(){
+		infoToAdd.delete( "lastAuthor" );
+		infoToBeReturned.delete( "lastAuthor" );
+		workbook = s.newXlsx();
+		s.addInfo( workbook, infoToAdd );
+		infoToBeReturned.spreadSheetType = "Excel (2007)";
+		expected = infoToBeReturned;
+		actual = s.info( workbook );
+		actual.creationDate = DateFormat( actual.creationDate, "yyyymmdd" ); // Doesn't return this value so mock
+		expect( actual ).toBe( expected );
+	});
+
 	it( "Can accept a file path instead of a workbook", function(){
 		workbook = s.new();
 		s.addInfo( workbook, infoToAdd );

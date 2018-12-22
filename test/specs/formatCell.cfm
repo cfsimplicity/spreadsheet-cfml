@@ -286,7 +286,8 @@ describe( "formatCell", function(){
 	});
 
 	it( "can set a non preset RGB triplet color on an XLSX workbook cell", function(){
-		var triplet = "181,133,212";
+		// include numbers either side of 127 which might throw ACF
+		var triplet = "64,255,128";
 		var format = { color: triplet, bottombordercolor: triplet };
 		var cellFormat = setAndGetFormat( xlsx, format );
 		expect( cellFormat.color ).toBe( triplet ); //font color

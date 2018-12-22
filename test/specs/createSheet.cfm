@@ -24,6 +24,13 @@ describe( "createSheet",function(){
 
 	describe( "createSheet throws an exception if",function(){
 
+		it( "the sheet name contains more than 31 characters",function() {
+			expect( function(){
+				var filename = repeatString( "a", 32 );
+				s.createSheet( workbook, filename );
+			}).toThrow( regex="too many" );
+		});
+
 		it( "the sheet name contains invalid characters",function() {
 			expect( function(){
 				s.createSheet( workbook,"[]?*\/:" );

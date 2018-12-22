@@ -3,12 +3,17 @@ describe( "new",function(){
 
 	it( "Returns an HSSF workbook by default",function() {
 		var workbook = s.new();
-		expect( workbook.getClass().name ).toBe( "org.apache.poi.hssf.usermodel.HSSFWorkbook" );
+		expect( s.isBinaryFormat( workbook ) ).toBeTrue();
 	});
 
 	it( "Returns an XSSF workbook if xmlFormat is true",function() {
-		var workbook = s.newXlsx();
-		expect( workbook.getClass().name ).toBe( "org.apache.poi.xssf.usermodel.XSSFWorkbook" );
+		var workbook = s.new( xmlFormat=true );
+		expect( s.isXmlFormat( workbook ) ).toBeTrue();
+	});
+
+	it( "Returns a streaming XSSF workbook if streamingXml is true",function() {
+		var workbook = s.new( streamingXml=true );
+		expect( s.isStreamingXmlFormat( workbook ) ).toBeTrue();
 	});
 
 	it( "Creates a workbook with the specified sheet name",function() {
@@ -17,12 +22,21 @@ describe( "new",function(){
 		expect( s.getActiveSheetName( workbook ) ).toBe( "test" );
 	});
 
-	describe( "new hrows an exception if",function(){
+	describe( "new throws an exception if",function(){
 
 		it( "the sheet name contains invalid characters",function() {
 			expect( function(){
 				s.new( "[]?*\/:" );
 			}).toThrow( regex="Invalid characters" );
+		});
+
+		it( "streaming XML is specified with an invalid streamingWindowSize",function() {
+			expect( function(){
+				s.new( xmlFormat=true, streamingXml=true, streamingWindowSize=1.2 );
+			}).toThrow( regex="Invalid 'streamingWindowSize' argument" );
+			expect( function(){
+				s.new( xmlFormat=true, streamingXml=true, streamingWindowSize=-1 );
+			}).toThrow( regex="Invalid 'streamingWindowSize' argument" );
 		});
 
 	});

@@ -4,7 +4,7 @@ Originally adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo
 
 ## Rationale
 
-Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of the box. Extensions exist for both [Lucee 4.5](https://github.com/Leftbower/cfspreadsheet-lucee) and [Lucee 5](https://github.com/Leftbower/cfspreadsheet-lucee-5), but I decided to create a standalone library which doesn't depend on customisation of the engine.
+Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of the box. An extension exists for [Lucee](https://github.com/Leftbower/cfspreadsheet-lucee-5), but I decided to create a standalone library which doesn't depend on customisation of the engine.
 
 ## Library vs Extension
 
@@ -23,6 +23,14 @@ Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of 
 ### Downsides
 
 - Existing code needs adapting to invoke the library. Existing CFML spreadsheet functions and the `<cfspreadsheet>` tag won't work with it.
+
+## Minimum Requirements for version 2.x
+
+- Java 8 or higher
+- Lucee 5.x or higher
+- Adobe ColdFusion 2016 or higher (ACF is also supported but see below for limitations)
+
+If you are running Java 6 and 7, Lucee 4.5 or ACF11, please use [version 1.x.](https://github.com/cfsimplicity/lucee-spreadsheet/tags)
 
 ## Usage
 
@@ -101,6 +109,7 @@ You will probably want to place the spreadsheet library files in a central locat
 ### Extra functions not available in ColdFusion
 
 * [addPrintGridlines](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addPrintGridlines)
+* [cleanUpStreamingXml](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/cleanUpStreamingXml)
 * [clearCell](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCell)
 * [clearCellRange](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCellRange)
 * [getCellFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellFormat)
@@ -111,6 +120,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [isBinaryFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isBinaryFormat)
 * [isColumnHidden](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isColumnHidden)
 * [isRowHidden](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isRowHidden)
+* [isStreamingXmlFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isStreamingXmlFormat)
 * [isXmlFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isXmlFormat)
 * [removePrintGridlines](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/removePrintGridlines)
 * [renameSheet](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/renameSheet)
@@ -130,6 +140,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [download](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/download)
 * [downloadCsvFromFile](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/downloadCsvFromFile)
 * [downloadFileFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/downloadFileFromQuery)
+* [newStreamingXlsx](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/newStreamingXlsx)
 * [newXls](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/newXls)
 * [newXlsx](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/newXlsx)
 * [workbookFromCsv](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/workbookFromCsv)
@@ -176,15 +187,13 @@ spreadsheet = New spreadsheetLibrary.spreadsheet( dateFormats={ DATE: "mm/dd/yyy
 
 ### Adobe ColdFusion
 
-Although primarily intended for Lucee, the library can be run under ColdFusion 11 or higher. This may be useful where you want to your codebase to be cross-compatible between the two engines.
+Although primarily intended for Lucee, the library can be run under ColdFusion 2016 or higher. This may be useful where you want to your codebase to be cross-compatible between the two engines.
 
 Please note though that _reading or writing password-protected files only works with Lucee_.
 
 ### JavaLoader
 
-If you are using Lucee 4.5 or Adobe ColdFusion, Mark Mandel's [JavaLoader](https://github.com/markmandel/JavaLoader) is required and the bundled version will be used by default.
-
-JavaLoader is not required if using Lucee 5 or later.
+A bundled version of Mark Mandel's [JavaLoader](https://github.com/markmandel/JavaLoader) will be used by default to load the POI and other required java libraries.
 
 For more details and options see: [Loading the POI java libraries](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/Loading-the-POI-java-libraries)
 
