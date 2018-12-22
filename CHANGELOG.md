@@ -1,3 +1,7 @@
+## 2.0.1 - 22 December 2018
+
+- \#156 Bug in `setActiveSheet()`.
+
 ## 2.0.0 - 22 December 2018
 
 - Breaking changes

@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "2.0.0-develop";
+	variables.version = "2.0.1";
 	variables.javaLoaderName = "spreadsheetLibraryClassLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -1222,7 +1222,7 @@ component{
 		validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
 		if( arguments.KeyExists( "sheetName" ) ){
 			validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
-			sheetNumber = ( arguments.workbook.getSheetIndex( JavaCast( "string", arguments.sheetName ) ) + 1 );
+			arguments.sheetNumber = ( arguments.workbook.getSheetIndex( JavaCast( "string", arguments.sheetName ) ) + 1 );
 		}
 		validateSheetNumber( arguments.workbook, arguments.sheetNumber );
 		arguments.workbook.setActiveSheet( JavaCast( "int", ( arguments.sheetNumber - 1 ) ) );
