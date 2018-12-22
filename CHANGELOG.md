@@ -1,4 +1,4 @@
-## 2.0.0 - ?
+## 2.0.0 - 22 December 2018
 
 - Breaking changes
 	- \#142 Upgrade POI to 4.0.1 which requires Java 8+
