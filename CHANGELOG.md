@@ -1,3 +1,7 @@
+## 2.0.2 - 6 January 2019
+
+- \#157 `addRows()` doesn't apply column offset to header row when using `includeQueryColumnNames`
+
 ## 2.0.1 - 22 December 2018
 
 - \#156 Bug in `setActiveSheet()`.

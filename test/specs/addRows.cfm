@@ -106,10 +106,25 @@ describe( "addRows",function(){
 	});
 
 	it( "Can include the query column names starting at a specific row",function(){
-		s.addRow( workbook,"x,y" );
+		s.addRow( workbook, "x,y" );
 		s.addRows( workbook=workbook, data=rowData, row=2, includeQueryColumnNames=true );
-		expected=QueryNew( "column1,column2","VarChar,VarChar",[ [ "x","y" ],[ "column1","column2" ],[ "a","b" ],[ "c","d" ] ] );
-		actual=s.sheetToQuery( workbook );
+		expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "x", "y" ], [ "column1", "column2" ], [ "a", "b" ], [ "c", "d" ] ] );
+		actual = s.sheetToQuery( workbook );
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Can include the query column names starting at a specific column",function(){
+		s.addRows( workbook=workbook, data=rowData, column=2, includeQueryColumnNames=true );
+		expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "", "column1", "column2" ], [ "", "a", "b" ], [ "", "c", "d" ] ] );
+		actual = s.sheetToQuery( workbook );
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Can include the query column names starting at a specific row and column",function(){
+		s.addRow( workbook, "x,y" );
+		s.addRows( workbook=workbook, data=rowData, row=2, column=2, includeQueryColumnNames=true );
+		expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "x", "y", "" ],[ "", "column1","column2" ], [ "", "a", "b" ], [ "", "c","d" ] ] );
+		actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 	});
 

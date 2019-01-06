@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "2.0.1-develop";
+	variables.version = "2.0.2";
 	variables.javaLoaderName = "spreadsheetLibraryClassLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -572,7 +572,7 @@ component{
 			var columnNames = _queryColumnArray( arguments.data );
 			var delimiter = "|";
 			var columnNamesList = columnNames.ToList( delimiter );
-			addRow( workbook=arguments.workbook, data=columnNamesList, row=insertAtRowIndex +1, delimiter=delimiter );
+			addRow( workbook=arguments.workbook, data=columnNamesList, row=insertAtRowIndex +1, column=arguments.column, delimiter=delimiter );
 		}
 	}
 
