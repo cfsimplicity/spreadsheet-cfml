@@ -18,6 +18,7 @@ Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of 
 - Invoking the library doesn't create a workbook instance (a.k.a. *Spreadsheet Object*), meaning:
   - a blank workbook isn't created unnecessarily when reading an existing spreadsheet
   - the library can be stored as a singleton in application scope
+- Also works with Adobe ColdFusion (see below)
 - Written entirely in CFML script.
 
 ### Downsides
@@ -28,7 +29,7 @@ Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of 
 
 - Java 8 or higher
 - Lucee 5.x or higher
-- Adobe ColdFusion 2016 or higher (ACF is also supported but see below for limitations)
+- Adobe ColdFusion 2016 or higher (See below for limitations of ACF support)
 
 If you are running Java 6 and 7, Lucee 4.5 or ACF11, please use [version 1.x.](https://github.com/cfsimplicity/lucee-spreadsheet/tags)
 
@@ -224,7 +225,7 @@ The code was originally adapted from the work of [TeamCfAdvance](https://github.
 
 ### The MIT License (MIT)
 
-Copyright (c) 2015-18 Julian Halliwell
+Copyright (c) 2015-2019 Julian Halliwell
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
