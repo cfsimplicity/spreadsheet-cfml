@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "2.0.2";
+	variables.version = "2.0.2-develop";
 	variables.javaLoaderName = "spreadsheetLibraryClassLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -480,7 +480,7 @@ component{
 
 	public void function addRow(
 		required workbook
-		,required string data /* Delimited list of data */
+		,required data /* Delimited list of data, OR array */
 		,numeric row
 		,numeric column=1
 		,boolean insert=true
@@ -503,7 +503,8 @@ component{
 				deleteRow( arguments.workbook, arguments.row );//otherwise, clear the entire row
 		}
 		var theRow = arguments.KeyExists( "row" )? createRow( arguments.workbook, arguments.row -1 ): createRow( arguments.workbook );
-		var rowValues = parseRowData( arguments.data, arguments.delimiter, arguments.handleEmbeddedCommas );
+		var dataIsArray = IsArray( arguments.data );
+		var rowValues = dataIsArray? arguments.data: parseRowData( arguments.data, arguments.delimiter, arguments.handleEmbeddedCommas );
 		var cellIndex = arguments.column -1;
 		for( var cellValue in rowValues ){
 			var cell = createCell( theRow, cellIndex );
@@ -516,63 +517,90 @@ component{
 
 	public void function addRows(
 		required workbook
-		,required query data
+		,required data // query or array
 		,numeric row
 		,numeric column=1
 		,boolean insert=true
 		,boolean autoSizeColumns=false
 		,boolean includeQueryColumnNames=false
 	){
+		var dataIsQuery = IsQuery( arguments.data );
+		var dataIsArray = IsArray( arguments.data );
+		if( !dataIsQuery && !dataIsArray )
+			Throw( type=exceptionType, message="Invalid data argument", detail="The data passed in must be either a query or an array of row arrays." );
+		var totalRows = dataIsQuery? arguments.data.recordCount: arguments.data.Len();
+		if( dataIsArray && totalRows == 0 )
+			return;
+		// array data must be an array of arrays, not structs
+		if( dataIsArray && !IsArray( arguments.data[ 1 ] ) )
+			Throw( type=exceptionType, message="Invalid data argument", detail="Data passed as an array must be an array of arrays, one per row" );
 		var lastRow = getNextEmptyRow( arguments.workbook );
 		var insertAtRowIndex = arguments.KeyExists( "row" )? arguments.row -1: getNextEmptyRow( arguments.workbook );
 		if( arguments.KeyExists( "row" ) AND ( arguments.row LTE lastRow ) AND arguments.insert )
-			shiftRows( arguments.workbook, arguments.row, lastRow, arguments.data.recordCount );
+			shiftRows( arguments.workbook, arguments.row, lastRow, totalRows );
 		var currentRowIndex = insertAtRowIndex;
-		var queryColumns = getQueryColumnFormats( arguments.data );
 		var dateUtil = getDateUtil();
-		for( var dataRow in arguments.data ){
-			var newRow = createRow( arguments.workbook, currentRowIndex, false );
-			var cellIndex = ( arguments.column -1 );
-   		/* populate all columns in the row */
-   		for( var queryColumn in queryColumns ){
-   			var cell = createCell( newRow, cellIndex, false );
-				var value = dataRow[ queryColumn.name ];
-				queryColumn.index = cellIndex;
-				/* Cast the values to the correct type  */
-				switch( queryColumn.cellDataType ){
-					case "DOUBLE":
-						setCellValueAsType( arguments.workbook, cell, value, "numeric" );
-						break;
-					case "DATE":
-					case "TIME":
-						setCellValueAsType( arguments.workbook, cell, value, "date" );
-						break;
-					case "BOOLEAN":
-						setCellValueAsType( arguments.workbook, cell, value, "boolean" );
-						break;
-					default:
-						if( IsSimpleValue( value ) AND !Len( value ) ) //NB don't use member function: won't work if numeric
-							setCellValueAsType( arguments.workbook, cell, value, "blank" );
-						else
-							setCellValueAsType( arguments.workbook, cell, value, "string" );
+		if( dataIsQuery ){
+			var queryColumns = getQueryColumnFormats( arguments.data );
+			for( var dataRow in arguments.data ){
+				var newRow = createRow( arguments.workbook, currentRowIndex, false );
+				var cellIndex = ( arguments.column -1 );
+	   		/* populate all columns in the row */
+	   		for( var queryColumn in queryColumns ){
+	   			var cell = createCell( newRow, cellIndex, false );
+					var value = dataRow[ queryColumn.name ];
+					queryColumn.index = cellIndex;
+					/* Cast the values to the correct type  */
+					switch( queryColumn.cellDataType ){
+						case "DOUBLE":
+							setCellValueAsType( arguments.workbook, cell, value, "numeric" );
+							break;
+						case "DATE":
+						case "TIME":
+							setCellValueAsType( arguments.workbook, cell, value, "date" );
+							break;
+						case "BOOLEAN":
+							setCellValueAsType( arguments.workbook, cell, value, "boolean" );
+							break;
+						default:
+							if( IsSimpleValue( value ) AND !Len( value ) ) //NB don't use member function: won't work if numeric
+								setCellValueAsType( arguments.workbook, cell, value, "blank" );
+							else
+								setCellValueAsType( arguments.workbook, cell, value, "string" );
+					}
+					cellIndex++;
+	   		}
+	   		currentRowIndex++;
+			}
+			if( arguments.autoSizeColumns ){
+				var numberOfColumns = queryColumns.Len();
+				var thisColumn = arguments.column;
+				for( var i = thisColumn; i LTE numberOfColumns; i++ ){
+					autoSizeColumn( arguments.workbook, thisColumn );
+					thisColumn++;
 				}
-				cellIndex++;
-   		}
-   		currentRowIndex++;
-		}
-		if( arguments.autoSizeColumns ){
-			var numberOfColumns = queryColumns.Len();
-			var thisColumn = arguments.column;
-			for( var i = thisColumn; i LTE numberOfColumns; i++ ){
-				autoSizeColumn( arguments.workbook, thisColumn );
-				thisColumn++;
+			}
+			if( arguments.includeQueryColumnNames ){
+				var columnNames = _queryColumnArray( arguments.data );
+				var delimiter = "|";
+				var columnNamesList = columnNames.ToList( delimiter );
+				addRow( workbook=arguments.workbook, data=columnNamesList, row=insertAtRowIndex +1, column=arguments.column, delimiter=delimiter );
 			}
 		}
-		if( arguments.includeQueryColumnNames ){
-			var columnNames = _queryColumnArray( arguments.data );
-			var delimiter = "|";
-			var columnNamesList = columnNames.ToList( delimiter );
-			addRow( workbook=arguments.workbook, data=columnNamesList, row=insertAtRowIndex +1, column=arguments.column, delimiter=delimiter );
+		else { //data is an array
+			for( var dataRow in arguments.data ){
+				var newRow = createRow( arguments.workbook, currentRowIndex, false );
+				var cellIndex = ( arguments.column -1 );
+	   		/* populate all columns in the row */
+	   		for( var cellValue in dataRow ){
+					var cell = createCell( newRow, cellIndex );
+					setCellValueAsType( arguments.workbook, cell, Trim( cellValue ) );
+					if( arguments.autoSizeColumns )
+						autoSizeColumn( arguments.workbook, arguments.column );
+					cellIndex++;
+				}
+				currentRowIndex++;
+	   	}
 		}
 	}
 
@@ -1819,6 +1847,7 @@ component{
 	private string function detectValueDataType( required value ){
 		// Numeric must precede date test
 		// Golden default rule: treat numbers with leading zeros as STRINGS: not numbers (lucee) or dates (ACF);
+		// Do not detect booleans: leave as strings
 		if( REFind( "^0[\d]+", arguments.value ) )
 			return "string";
 		if( IsNumeric( arguments.value ) )
