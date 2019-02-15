@@ -1,3 +1,7 @@
+## 2.1.0 - 15 January 2019
+
+- \#159 Support array data argument for `addRow()` and `addRows()`
+
 ## 2.0.2 - 6 January 2019
 
 - \#157 `addRows()` doesn't apply column offset to header row when using `includeQueryColumnNames`
