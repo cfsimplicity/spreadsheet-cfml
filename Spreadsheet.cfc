@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "2.1.0";
+	variables.version = "2.1.0-develop";
 	variables.javaLoaderName = "spreadsheetLibraryClassLoader-" & Hash( GetCurrentTemplatePath() );
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
