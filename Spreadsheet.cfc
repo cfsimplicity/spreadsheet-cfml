@@ -628,7 +628,7 @@ component{
 			Throw( type=exceptionType, message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
 		/* Adjusts the width of the specified column to fit the contents. For performance reasons, this should normally be called only once per column. */
 		var columnIndex = ( arguments.column -1 );
-		getActiveSheet( arguments.workbook ).autoSizeColumn( columnIndex, useMergedCells );
+		getActiveSheet( arguments.workbook ).autoSizeColumn( arguments.columnIndex, arguments.useMergedCells );
 	}
 
 	public void function cleanUpStreamingXml( required workbook ){
