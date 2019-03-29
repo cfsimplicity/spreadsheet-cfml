@@ -178,8 +178,13 @@ describe( "addRows",function(){
 	});
 
 	it( "Can include the query column names",function(){
-		s.addRows( workbook=workbook, data=data, includeQueryColumnNames=true );
 		expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "column1", "column2" ], [ "a","b" ], [ "c", "d" ] ] );
+		s.addRows( workbook=workbook, data=data, includeQueryColumnNames=true );
+		actual = s.sheetToQuery( workbook );
+		expect( actual ).toBe( expected );
+		//test xlsx
+		var workbook = s.newXlsx();
+		s.addRows( workbook=workbook, data=data, includeQueryColumnNames=true );
 		actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 	});
