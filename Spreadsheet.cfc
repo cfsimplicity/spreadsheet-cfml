@@ -542,14 +542,19 @@ component{
 		var dateUtil = getDateUtil();
 		if( dataIsQuery ){
 			var queryColumns = getQueryColumnFormats( arguments.data );
+			var cellIndex = ( arguments.column -1 );
+			if( arguments.includeQueryColumnNames ){
+				var columnNames = _queryColumnArray( arguments.data );
+				addRow( workbook=arguments.workbook, data=columnNames, row=currentRowIndex +1, column=arguments.column );
+				currentRowIndex++;
+			}
 			for( var dataRow in arguments.data ){
 				var newRow = createRow( arguments.workbook, currentRowIndex, false );
-				var cellIndex = ( arguments.column -1 );
+				cellIndex = ( arguments.column -1 );//reset for this row
 	   		/* populate all columns in the row */
 	   		for( var queryColumn in queryColumns ){
 	   			var cell = createCell( newRow, cellIndex, false );
 					var value = dataRow[ queryColumn.name ];
-					queryColumn.index = cellIndex;
 					/* Cast the values to the correct type  */
 					switch( queryColumn.cellDataType ){
 						case "DOUBLE":
@@ -579,10 +584,6 @@ component{
 					autoSizeColumn( arguments.workbook, thisColumn );
 					thisColumn++;
 				}
-			}
-			if( arguments.includeQueryColumnNames ){
-				var columnNames = _queryColumnArray( arguments.data );
-				addRow( workbook=arguments.workbook, data=columnNames, row=insertAtRowIndex +1, column=arguments.column );
 			}
 		}
 		else { //data is an array
@@ -2139,7 +2140,7 @@ component{
 
 	private array function getQueryColumnFormats( required query query ){
 		/* extract the query columns and data types  */
-		var metadata = getMetaData( arguments.query );
+		var metadata = GetMetaData( arguments.query );
 		/* assign default formats based on the data type of each column */
 		for( var col in metadata ){
 			var columnType = col.typeName?: "";// typename is missing in ACF if not specified in the query
