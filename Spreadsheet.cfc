@@ -236,7 +236,7 @@ component{
 		var workbook = new( xmlFormat=arguments.xmlFormat, streamingXml=arguments.streamingXml, streamingWindowSize=arguments.streamingWindowSize );
 		if( arguments.addHeaderRow ){
 			var columns = _queryColumnArray( arguments.data );
-			addRow( workbook, columns.ToList() );
+			addRow( workbook, columns );
 			if( arguments.boldHeaderRow )
 				formatRow( workbook, { bold: true }, 1 );
 			addRows( workbook, arguments.data, 2, 1 );
@@ -582,9 +582,7 @@ component{
 			}
 			if( arguments.includeQueryColumnNames ){
 				var columnNames = _queryColumnArray( arguments.data );
-				var delimiter = "|";
-				var columnNamesList = columnNames.ToList( delimiter );
-				addRow( workbook=arguments.workbook, data=columnNamesList, row=insertAtRowIndex +1, column=arguments.column, delimiter=delimiter );
+				addRow( workbook=arguments.workbook, data=columnNames, row=insertAtRowIndex +1, column=arguments.column );
 			}
 		}
 		else { //data is an array
