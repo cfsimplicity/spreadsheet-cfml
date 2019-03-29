@@ -1,3 +1,7 @@
+## 2.1.1 - 29 March 2019
+
+- \#160 `includeQueryColumnNames` in `addRows()` produces invalid xlsx
+
 ## 2.1.0 - 15 January 2019
 
 - \#159 Support array data argument for `addRow()` and `addRows()`
