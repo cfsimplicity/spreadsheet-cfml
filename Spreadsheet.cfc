@@ -56,6 +56,7 @@ component{
 			,javaClassesLastLoadedVia: javaClassesLastLoadedVia
 			,javaLoaderName: javaLoaderName
 			,requiresJavaLoader: requiresJavaLoader
+			,version: version
 		};
 	}
 
