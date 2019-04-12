@@ -1,3 +1,9 @@
+## 2.2.0 - 12 April 2019
+
+ - \#163 Upgrade POI to 4.1.0
+ - \#162 Support decryption of encrypted binary (XLS) spreadsheets. Add support for decryption in ACF.
+ - DEPRECATED: `engineSupportsEncryption` environment key. Use `engineSupportsWriteEncryption`
+
 ## 2.1.1 - 29 March 2019
 
 - \#160 `includeQueryColumnNames` in `addRows()` produces invalid xlsx

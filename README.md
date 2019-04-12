@@ -165,7 +165,7 @@ The `read()` method also features the following additional options not available
 * `fillMergedCellsWithVisibleValue`
 * `includeHiddenColumns`
 * `includeRichTextFormatting`
-* `password` to open encrypted XML (only) spreadsheets
+* `password` to open encrypted spreadsheets
 
 [Full documentation of read()](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/read)
 
@@ -190,7 +190,7 @@ spreadsheet = New spreadsheetLibrary.spreadsheet( dateFormats={ DATE: "mm/dd/yyy
 
 Although primarily intended for Lucee, the library can be run under ColdFusion 2016 or higher. This may be useful where you want to your codebase to be cross-compatible between the two engines.
 
-Please note though that _reading or writing password-protected files only works with Lucee_.
+Please note though that _writing password-protected files only works with Lucee_.
 
 ### JavaLoader
 

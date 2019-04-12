@@ -1,7 +1,7 @@
 {
     "name" : "LuceeSpreadsheet",
     "slug" : "lucee-spreadsheet",
-    "version" : "2.1.1-develop",
+    "version" : "2.2.0",
     "shortDescription" : "Spreadsheet Library for Lucee",
     "author" : "Julian Halliwell",
     "location" : "https://github.com/cfsimplicity/lucee-spreadsheet",
