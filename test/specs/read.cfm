@@ -306,17 +306,20 @@ describe( "read",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	if( variables.s.getEnvironment().engineSupportsEncryption ){
-		it( "Can write and read an encrypted OOXML file",function() {
-			data = QueryNew( "column1","VarChar",[ [ "a" ] ] );
-			workbook = s.newXlsx();
-			s.addRows( workbook,data );
-			s.write( workbook=workbook,filepath=tempXlsxPath,overwrite=true,password="pass" );
-			expected = data;
-			actual = s.read( src=tempXlsxPath,format="query",password="pass" );
-			expect( actual ).toBe( expected );
-		});
-	}
+	it( "Can read an encrypted XLSX file",function() {
+		var path = getTestFilePath( "passworded.xlsx" );
+		expected = QueryNew( "column1", "VarChar", [ [ "secret" ] ] );
+		actual = s.read( src=path, format="query", password="pass" );
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Can read an encrypted binary file",function() {
+		var path = getTestFilePath( "passworded.xls" );
+		expected = QueryNew( "column1", "VarChar", [ [ "secret" ] ] );
+		actual = s.read( src=path, format="query", password="pass" );
+		expect( actual ).toBe( expected );
+	});
+	
 
 	it( "Can read a spreadsheet containing a formula",function() {
 		workbook=s.new();
@@ -373,26 +376,19 @@ describe( "read",function(){
 			}).toThrow( regex="Invalid sheet|out of range" );
 		});
 
-		if( variables.s.getEnvironment().engineSupportsEncryption ){
+		it( "the password for an encrypted XML file is incorrect",function() {
+			expect( function(){
+				var tempXlsxPath = getTestFilePath( "passworded.xlsx" );
+				s.read( src=tempXlsxPath,format="query",password="parse" );
+			}).toThrow( regex="(Invalid password|Password incorrect|password is invalid)" );
+		});
 
-			it( "a password is supplied for a binary xls file",function() {
-				expect( function(){
-					var path = getTestFilePath( "test.xls" );
-					s.read( src=path,format="query",password="pass" );
-				}).toThrow( regex="Invalid file type" );
-			});
-		
-			it( "the password for an encrypted file is incorrect",function() {
-				expect( function(){
-					data = QueryNew( "column1","VarChar",[ [ "a" ] ] );
-					workbook = s.newXlsx();
-					s.addRows( workbook,data );
-					s.write( workbook=workbook,filepath=tempXlsxPath,overwrite=true,password="pass" );
-					s.read( src=tempXlsxPath,format="query",password="parse" );
-				}).toThrow( regex="Invalid password" );
-			});
-			
-		}
+		it( "the password for an encrypted binary file is incorrect",function() {
+			expect( function(){
+				var xlsPath = getTestFilePath( "passworded.xls" );
+				s.read( src=xlsPath, format="query", password="parse" );
+			}).toThrow( regex="(Invalid password|Password incorrect|password is invalid)" );
+		});
 
 		it( "the source file is not a spreadsheet",function() {
 			expect( function(){

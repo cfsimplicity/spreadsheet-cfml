@@ -12,7 +12,7 @@ component{
 	variables.exceptionType = "cfsimplicity.lucee.spreadsheet";
 	variables.isACF = ( server.coldfusion.productname IS "ColdFusion Server" );
 	variables.javaClassesLastLoadedVia = "Nothing loaded yet";
-	variables.engineSupportsEncryption = !isACF;
+	variables.engineSupportsWriteEncryption = !isACF;
 
 	variables.HSSFWorkbookClassName = "org.apache.poi.hssf.usermodel.HSSFWorkbook";
 	variables.XSSFWorkbookClassName = "org.apache.poi.xssf.usermodel.XSSFWorkbook";
@@ -51,7 +51,7 @@ component{
 		return {
 			dateFormats: dateFormats
 			,engine: server.coldfusion.productname & " " & ( isACF? server.coldfusion.productversion: ( server.lucee.version?: "?" ) )
-			,engineSupportsEncryption: engineSupportsEncryption
+			,engineSupportsWriteEncryption: engineSupportsWriteEncryption
 			,javaLoaderDotPath: javaLoaderDotPath
 			,javaClassesLastLoadedVia: javaClassesLastLoadedVia
 			,javaLoaderName: javaLoaderName
@@ -1167,9 +1167,9 @@ component{
 		if( !FileExists( arguments.src ) )
 			Throw( type=exceptionType, message="Non-existent file", detail="Cannot find the file #arguments.src#." );
 		var passwordProtected = ( arguments.KeyExists( "password") AND !password.Trim().IsEmpty() );
-		if( passwordProtected AND !engineSupportsEncryption )
-			Throw( type=exceptionType, message="Reading password protected files is not supported for Adobe ColdFusion", detail="Reading password protected files currently only works in Lucee, not ColdFusion" );
-		var workbook = passwordProtected? decryptFile( arguments.src, password ): workbookFromFile( arguments.src );
+		/* if( passwordProtected AND !engineSupportsWriteEncryption )
+			Throw( type=exceptionType, message="Reading password protected files is not supported for Adobe ColdFusion", detail="Reading password protected files currently only works in Lucee, not ColdFusion" ); */
+		var workbook = passwordProtected? workbookFromFile( arguments.src, password ): workbookFromFile( arguments.src );
 		if( arguments.KeyExists( "sheetName" ) )
 			setActiveSheet( workbook=workbook, sheetName=arguments.sheetName );
 		if( !arguments.KeyExists( "format" ) )
@@ -1582,7 +1582,7 @@ component{
 		if( !arguments.overwrite AND FileExists( arguments.filepath ) )
 			Throw( type=exceptionType, message="File already exists", detail="The file path specified already exists. Use 'overwrite=true' if you wish to overwrite it." );
 		var passwordProtect = ( arguments.KeyExists( "password" ) AND !arguments.password.Trim().IsEmpty() );
-		if( passwordProtect AND !engineSupportsEncryption )
+		if( passwordProtect AND !engineSupportsWriteEncryption )
 			Throw( type=exceptionType, message="Password protection is not supported for Adobe ColdFusion", detail="Password protection currently only works in Lucee, not ColdFusion" );
 		if( passwordProtect AND isBinaryFormat( arguments.workbook ) )
 			Throw( type=exceptionType, message="Whole file password protection is not supported for binary workbooks", detail="Password protection only works with XML ('xlsx') workbooks." );
@@ -1801,30 +1801,6 @@ component{
 			return loadClass( variables.SXSSFWorkbookClassName ).init( JavaCast( "int", streamingWindowSize ) );
 		}
 		return loadClass( variables.XSSFWorkbookClassName ).init();
-	}
-
-	private any function decryptFile( required string filepath, required string password ){
-		var isBinaryFile = ( arguments.filepath.ListLast( "." ) IS "xls" );
-		if( isBinaryFile )
-			Throw( type=exceptionType, message="Invalid file type", detail="The library only supports opening encrypted XML (.xlsx) spreadsheets. This file appears to be a binary (.xls) spreadsheet." );
-		lock name="#arguments.filepath#" timeout=5 {
-			try{
-				var file = CreateObject( "java", "java.io.File" ).init( arguments.filepath );
-				var fs = loadClass( "org.apache.poi.poifs.filesystem.POIFSFileSystem" ).init( file );
-				var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( fs );
-				var decryptor = loadClass( "org.apache.poi.poifs.crypt.Decryptor" ).getInstance( info );
-				if( decryptor.verifyPassword( arguments.password ) )
-					return loadClass( variables.XSSFWorkbookClassName ).init( decryptor.getDataStream( fs ) );
-				Throw( type=exceptionType, message="Invalid password", detail="The file cannot be read because the password is incorrect." );
-			}
-			catch( org.apache.poi.poifs.filesystem.NotOLE2FileException exception ){
-				Throw( type=exceptionType, message="Invalid spreadsheet file", detail="The file #arguments.filepath# does not appear to be a spreadsheet" );
-			}
-			finally{
-				if( local.KeyExists( "fs" ) )
-					fs.close();
-			}
-		}
 	}
 
 	private query function deleteHiddenColumnsFromQuery( required sheet, required query result ){
@@ -2622,14 +2598,16 @@ component{
 			Throw( type=exceptionType, message="Too Many Arguments", detail="Only one argument is allowed. Specify either a sheetName or sheetNumber, not both" );
 	}
 
-	private any function workbookFromFile( required string path ){
+	private any function workbookFromFile( required string path, string password ){
 		// works with both xls and xlsx
 		try{
 			lock name="#arguments.path#" timeout=5 {
+				var className = "org.apache.poi.ss.usermodel.WorkbookFactory";
 				var file = CreateObject( "java", "java.io.FileInputStream" ).init( arguments.path );
-				var workbook = loadClass( "org.apache.poi.ss.usermodel.WorkbookFactory" ).create( file );
+				if( arguments.KeyExists( "password" ) )
+					return loadClass( className ).create( file, arguments.password );
+				return loadClass( className ).create( file );
 			}
-			return workbook;
 		}
 		catch( org.apache.poi.openxml4j.exceptions.InvalidFormatException exception ){
 			handleInvalidSpreadsheetFile( arguments.path );
