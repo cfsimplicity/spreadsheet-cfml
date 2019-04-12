@@ -51,6 +51,7 @@ component{
 		return {
 			dateFormats: dateFormats
 			,engine: server.coldfusion.productname & " " & ( isACF? server.coldfusion.productversion: ( server.lucee.version?: "?" ) )
+			,engineSupportsEncryption: engineSupportsWriteEncryption //for backwards compat only //TODO remove on next major version
 			,engineSupportsWriteEncryption: engineSupportsWriteEncryption
 			,javaLoaderDotPath: javaLoaderDotPath
 			,javaClassesLastLoadedVia: javaClassesLastLoadedVia
