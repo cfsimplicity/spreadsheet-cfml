@@ -531,7 +531,7 @@ component{
 		if( !dataIsQuery && !dataIsArray )
 			Throw( type=exceptionType, message="Invalid data argument", detail="The data passed in must be either a query or an array of row arrays." );
 		var totalRows = dataIsQuery? arguments.data.recordCount: arguments.data.Len();
-		if( dataIsArray && totalRows == 0 )
+		if( totalRows == 0 )
 			return;
 		// array data must be an array of arrays, not structs
 		if( dataIsArray && !IsArray( arguments.data[ 1 ] ) )
@@ -937,7 +937,7 @@ component{
 					,column: ( cell.getColumnIndex() + 1 )
 				};
 				try{
-					formulaStruct.formula=cell.getCellFormula();
+					formulaStruct.formula = cell.getCellFormula();
 				}
 				catch( any exception ){
 					formulaStruct.formula = "";
@@ -1168,8 +1168,6 @@ component{
 		if( !FileExists( arguments.src ) )
 			Throw( type=exceptionType, message="Non-existent file", detail="Cannot find the file #arguments.src#." );
 		var passwordProtected = ( arguments.KeyExists( "password") AND !password.Trim().IsEmpty() );
-		/* if( passwordProtected AND !engineSupportsWriteEncryption )
-			Throw( type=exceptionType, message="Reading password protected files is not supported for Adobe ColdFusion", detail="Reading password protected files currently only works in Lucee, not ColdFusion" ); */
 		var workbook = passwordProtected? workbookFromFile( arguments.src, password ): workbookFromFile( arguments.src );
 		if( arguments.KeyExists( "sheetName" ) )
 			setActiveSheet( workbook=workbook, sheetName=arguments.sheetName );
