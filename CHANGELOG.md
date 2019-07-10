@@ -1,3 +1,8 @@
+## 2.2.1 - 10 July 2019
+
+ - \#164 Upgrade Apache Commons CSV to 1.6
+ - \#166 Bug fix: autoSizeColumn - key [columnIndex] doesn't exist in argument scope
+
 ## 2.2.0 - 12 April 2019
 
  - \#163 Upgrade POI to 4.1.0
