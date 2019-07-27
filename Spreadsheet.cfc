@@ -2459,7 +2459,7 @@ component{
 		if( arguments.KeyExists( "sheetName" ) )
 			arguments.sheetNumber = ( getSheetIndexFromName( arguments.workbook, arguments.sheetName ) +1 );
 			//the position is valid if it an integer between 1 and the total number of sheets in the workbook
-		if( sheetNumber AND ( arguments.sheetNumber EQ Round( arguments.sheetNumber ) ) AND ( arguments.sheetNumber LTE arguments.workbook.getNumberOfSheets() ) )
+		if( arguments.sheetNumber AND ( arguments.sheetNumber EQ Round( arguments.sheetNumber ) ) AND ( arguments.sheetNumber LTE arguments.workbook.getNumberOfSheets() ) )
 			return true;
 		return false;
 	}
