@@ -30,10 +30,10 @@ component{
 	/* Meta utilities */
 
 	private void function overrideDefaultDateFormats( required struct formats ){
-		for( var format in formats ){
+		for( var format in arguments.formats ){
 			if( !variables.dateFormats.KeyExists( format ) )
 				Throw( type=exceptionType, message="Invalid date format key", detail="'#format#' is not a valid dateformat key. Valid keys are DATE, DATETIME, TIME and TIMESTAMP" );
-			variables.dateFormats[ format ] = formats[ format ];
+			variables.dateFormats[ format ] = arguments.formats[ format ];
 		}
 	}
 
