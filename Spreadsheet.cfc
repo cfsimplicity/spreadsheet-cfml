@@ -1492,19 +1492,41 @@ component{
 		getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).setHeightInPoints( JavaCast( "int", arguments.height ) );
 	}
 
+	public void function setSheetTopMargin( required workbook, numeric marginSize, string sheetName, numeric sheetNumber ){
+		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
+		sheet.setMargin( sheet.TopMargin, arguments.marginSize );
+	}
+
+	public void function setSheetBottomMargin( required workbook, numeric marginSize, string sheetName, numeric sheetNumber ){
+		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
+		sheet.setMargin( sheet.BottomMargin, arguments.marginSize );
+	}
+
+	public void function setSheetLeftMargin( required workbook, numeric marginSize, string sheetName, numeric sheetNumber ){
+		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
+		sheet.setMargin( sheet.LeftMargin, arguments.marginSize );
+	}
+
+	public void function setSheetRightMargin( required workbook, numeric marginSize, string sheetName, numeric sheetNumber ){
+		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
+		sheet.setMargin( sheet.RightMargin, arguments.marginSize );
+	}
+
+	public void function setSheetHeaderMargin( required workbook, numeric marginSize, string sheetName, numeric sheetNumber ){
+		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
+		sheet.setMargin( sheet.HeaderMargin, arguments.marginSize );
+	}
+
+	public void function setSheetFooterMargin( required workbook, numeric marginSize, string sheetName, numeric sheetNumber ){
+		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
+		sheet.setMargin( sheet.FooterMargin, arguments.marginSize );
+	}
+
 	public void function setSheetPrintOrientation( required workbook, required string mode, string sheetName, numeric sheetNumber ){
 		if( !ListFindNoCase( "landscape,portrait", arguments.mode ) )
 			Throw( type=exceptionType, message="Invalid mode argument", detail="#mode# is not a valid 'mode' argument. Use 'portrait' or 'landscape'" );
-		var sheetNameSupplied = ( arguments.KeyExists( "sheetName" ) AND Len( arguments.sheetName ) );
-		if( sheetNameSupplied AND arguments.KeyExists( "sheetNumber" ) )
-			Throw( type=exceptionType, message="Invalid arguments", detail="Specify either a sheetName or sheetNumber, not both" );
 		var setToLandscape = ( LCase( arguments.mode ) IS "landscape" );
-		if( sheetNameSupplied )
-			var sheet = getSheetByName( arguments.workbook, arguments.sheetName );
-		else if( arguments.KeyExists( "sheetNumber" ) )
-			var sheet = getSheetByNumber( arguments.workbook, arguments.sheetNumber );
-		else
-			var sheet = getActiveSheet( arguments.workbook );
+		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
 		sheet.getPrintSetup().setLandscape( JavaCast( "boolean", setToLandscape ) );
 	}
 
@@ -2199,6 +2221,17 @@ component{
 	private any function getSheetByName( required workbook, required string sheetName ){
 		validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
 		return arguments.workbook.getSheet( JavaCast( "string", arguments.sheetName ) );
+	}
+
+	private any function getSheetByNameOrNumber( required workbook, string sheetName, numeric sheetNumber ){
+		var sheetNameSupplied = ( arguments.KeyExists( "sheetName" ) AND Len( arguments.sheetName ) );
+		if( sheetNameSupplied AND arguments.KeyExists( "sheetNumber" ) )
+			Throw( type=exceptionType, message="Invalid arguments", detail="Specify either a sheetName or sheetNumber, not both" );
+		if( sheetNameSupplied )
+			return getSheetByName( arguments.workbook, arguments.sheetName );
+		if( arguments.KeyExists( "sheetNumber" ) )
+			return getSheetByNumber( arguments.workbook, arguments.sheetNumber );
+		return getActiveSheet( arguments.workbook );
 	}
 
 	private any function getSheetByNumber( required workbook, required numeric sheetNumber ){
