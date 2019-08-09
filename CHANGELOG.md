@@ -1,3 +1,7 @@
+# 2.3.0 - 9 August 2019
+
+ - \#167 Add support for setting sheet print margins
+
 ## 2.2.1 - 10 July 2019
 
  - \#164 Upgrade Apache Commons CSV to 1.6
