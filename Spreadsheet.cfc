@@ -1434,6 +1434,18 @@ component{
 		getActiveSheet( arguments.workbook ).setColumnWidth( JavaCast( "int", columnIndex ), JavaCast( "int", ( arguments.width * 256 ) ) );
 	}
 
+	public void function setFitToPage( required workbook, required boolean state, numeric pagesWide, numeric pagesHigh ){
+		var sheet = getActiveSheet( arguments.workbook );
+		sheet.setFitToPage( JavaCast( "boolean", arguments.state ) );
+		sheet.setAutoBreaks( JavaCast( "boolean", arguments.state ) ); //seems dependent on this matching
+		if( !arguments.state )
+			return;
+		if( arguments.KeyExists( "pagesWide" ) && IsValid( "integer", arguments.pagesWide ) )
+			sheet.getPrintSetup().setFitWidth( JavaCast( "short", arguments.pagesWide ) );
+		if( arguments.KeyExists( "pagesWide" ) && IsValid( "integer", arguments.pagesHigh ) )
+			sheet.getPrintSetup().setFitHeight( JavaCast( "short", arguments.pagesHigh ) );
+	}
+
 	public void function setFooter(
 		required workbook
 		,string leftFooter=""
