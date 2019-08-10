@@ -4,7 +4,7 @@ Originally adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo
 
 ## Rationale
 
-Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of the box. An extension exists for [Lucee](https://github.com/Leftbower/cfspreadsheet-lucee-5), but I decided to create a standalone library which doesn't depend on customisation of the engine.
+Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of the box. An [extension exists for Lucee](https://github.com/Leftbower/cfspreadsheet-lucee-5), but I decided to create a standalone library which doesn't depend on customisation of the engine.
 
 ## Library vs Extension
 
