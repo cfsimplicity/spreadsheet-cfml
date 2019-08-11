@@ -1,4 +1,8 @@
-# 2.3.0 - 9 August 2019
+## 2.4.0 - 11 August 2019
+
+ - \#168 Allow the active sheet's "fit to page" print options to be controlled
+
+## 2.3.0 - 9 August 2019
 
  - \#167 Add support for setting sheet print margins
 
