@@ -4,7 +4,7 @@ Originally adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo
 
 ## Rationale
 
-Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of the box. An extension exists for [Lucee](https://github.com/Leftbower/cfspreadsheet-lucee-5), but I decided to create a standalone library which doesn't depend on customisation of the engine.
+Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of the box. An [extension exists for Lucee](https://github.com/Leftbower/cfspreadsheet-lucee-5), but I decided to create a standalone library which doesn't depend on customisation of the engine.
 
 ## Library vs Extension
 
@@ -127,6 +127,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [renameSheet](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/renameSheet)
 * [removeSheetNumber](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/removeSheetNumber)
 * [setCellRangeValue](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setCellRangeValue)
+* [setFitToPage](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setFitToPage)
 * [setReadOnly](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setReadOnly)
 * [setRepeatingColumns](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setRepeatingColumns)
 * [setRepeatingRows](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setRepeatingRows)

@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "2.3.0";
+	variables.version = "2.4.0";
 	variables.javaLoaderName = "spreadsheetLibraryClassLoader-#variables.version#-#Hash( GetCurrentTemplatePath() )#";
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -1434,6 +1434,18 @@ component{
 		getActiveSheet( arguments.workbook ).setColumnWidth( JavaCast( "int", columnIndex ), JavaCast( "int", ( arguments.width * 256 ) ) );
 	}
 
+	public void function setFitToPage( required workbook, required boolean state, numeric pagesWide, numeric pagesHigh ){
+		var sheet = getActiveSheet( arguments.workbook );
+		sheet.setFitToPage( JavaCast( "boolean", arguments.state ) );
+		sheet.setAutoBreaks( JavaCast( "boolean", arguments.state ) ); //seems dependent on this matching
+		if( !arguments.state )
+			return;
+		if( arguments.KeyExists( "pagesWide" ) && IsValid( "integer", arguments.pagesWide ) )
+			sheet.getPrintSetup().setFitWidth( JavaCast( "short", arguments.pagesWide ) );
+		if( arguments.KeyExists( "pagesWide" ) && IsValid( "integer", arguments.pagesHigh ) )
+			sheet.getPrintSetup().setFitHeight( JavaCast( "short", arguments.pagesHigh ) );
+	}
+
 	public void function setFooter(
 		required workbook
 		,string leftFooter=""
@@ -1492,32 +1504,32 @@ component{
 		getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).setHeightInPoints( JavaCast( "int", arguments.height ) );
 	}
 
-	public void function setSheetTopMargin( required workbook, numeric marginSize, string sheetName, numeric sheetNumber ){
+	public void function setSheetTopMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
 		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
 		sheet.setMargin( sheet.TopMargin, arguments.marginSize );
 	}
 
-	public void function setSheetBottomMargin( required workbook, numeric marginSize, string sheetName, numeric sheetNumber ){
+	public void function setSheetBottomMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
 		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
 		sheet.setMargin( sheet.BottomMargin, arguments.marginSize );
 	}
 
-	public void function setSheetLeftMargin( required workbook, numeric marginSize, string sheetName, numeric sheetNumber ){
+	public void function setSheetLeftMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
 		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
 		sheet.setMargin( sheet.LeftMargin, arguments.marginSize );
 	}
 
-	public void function setSheetRightMargin( required workbook, numeric marginSize, string sheetName, numeric sheetNumber ){
+	public void function setSheetRightMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
 		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
 		sheet.setMargin( sheet.RightMargin, arguments.marginSize );
 	}
 
-	public void function setSheetHeaderMargin( required workbook, numeric marginSize, string sheetName, numeric sheetNumber ){
+	public void function setSheetHeaderMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
 		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
 		sheet.setMargin( sheet.HeaderMargin, arguments.marginSize );
 	}
 
-	public void function setSheetFooterMargin( required workbook, numeric marginSize, string sheetName, numeric sheetNumber ){
+	public void function setSheetFooterMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
 		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
 		sheet.setMargin( sheet.FooterMargin, arguments.marginSize );
 	}
