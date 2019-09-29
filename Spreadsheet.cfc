@@ -3041,8 +3041,8 @@ component{
 	private boolean function _isDate( required value ){
 		if( !IsDate( arguments.value ) )
 			return false;
-		// Lucee will treat 01-23112 as a date!
-		if( REFind( "\d\d[[:punct:]]\d{5,}", arguments.value ) ) // NB: member function doesn't work on dates in Lucee
+		// Lucee will treat 01-23112 or 23112-01 as a date!
+		if( ParseDateTime( arguments.value ).Year() > 9999 ) //ACF future limit
 			return false;
 		return true;
 	}

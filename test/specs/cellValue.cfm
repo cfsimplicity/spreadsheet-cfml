@@ -65,10 +65,16 @@ describe( "cellValue", function(){
 		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
 	});
 
-	it( "handles non-date values correctly that Lucee incorrectly treats as dates", function(){
+	it( "handles non-date values correctly that Lucee parses as partial dates far in the future", function(){
 		value = "01-23112";
 		s.setCellValue( workbook, value, 1, 1 );
 		expected = "01-23112";
+		actual = s.getCellValue( workbook, 1, 1 );
+		expect( actual ).toBe( expected );
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
+		value = "23112-01";
+		s.setCellValue( workbook, value, 1, 1 );
+		expected = "23112-01";
 		actual = s.getCellValue( workbook, 1, 1 );
 		expect( actual ).toBe( expected );
 		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
