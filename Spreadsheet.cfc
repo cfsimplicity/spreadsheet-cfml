@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "2.4.0";
+	variables.version = "2.5.0";
 	variables.javaLoaderName = "spreadsheetLibraryClassLoader-#variables.version#-#Hash( GetCurrentTemplatePath() )#";
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -3041,8 +3041,8 @@ component{
 	private boolean function _isDate( required value ){
 		if( !IsDate( arguments.value ) )
 			return false;
-		// Lucee will treat 01-23112 as a date!
-		if( REFind( "\d\d[[:punct:]]\d{5,}", arguments.value ) ) // NB: member function doesn't work on dates in Lucee
+		// Lucee will treat 01-23112 or 23112-01 as a date!
+		if( ParseDateTime( arguments.value ).Year() > 9999 ) //ACF future limit
 			return false;
 		return true;
 	}
@@ -3090,6 +3090,7 @@ component{
 			tempColumnNames[ i ] = "column#i#";
 		var q = QueryNew( tempColumnNames.ToList(), arguments.columnTypeList, arguments.data );
 		// restore the real names without ACF barfing on them
+		// 20191121: Note ACF2018 HotFix 5 introduced a bug with setColumnNames(): https://tracker.adobe.com/#/view/CF-4205435
 		q.setColumnNames( arguments.columnNames );
 		return q;
 	}
