@@ -3090,6 +3090,7 @@ component{
 			tempColumnNames[ i ] = "column#i#";
 		var q = QueryNew( tempColumnNames.ToList(), arguments.columnTypeList, arguments.data );
 		// restore the real names without ACF barfing on them
+		// 20191121: Note ACF2018 HotFix 5 introduced a bug with setColumnNames(): https://tracker.adobe.com/#/view/CF-4205435
 		q.setColumnNames( arguments.columnNames );
 		return q;
 	}
