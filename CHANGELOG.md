@@ -1,3 +1,8 @@
+## 2.5.0 - 21 November 2019
+
+ - \#170 Upgrade POI to 4.1.1
+ - \#169 Improve handling of clearly non-date values which Lucee will parse as dates far in the future
+
 ## 2.4.0 - 11 August 2019
 
  - \#168 Allow the active sheet's "fit to page" print options to be controlled
