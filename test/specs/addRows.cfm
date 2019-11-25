@@ -212,6 +212,11 @@ describe( "addRows",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Doesn't error if the workbook is SXSSF and autoSizeColumns is true", function(){
+		var workbook = s.newStreamingXlsx();
+		s.addRows( workbook=local.workbook, data=data, autoSizeColumns=true );
+	});
+
 	describe( "addRows throws an exception if",function(){
 
 		/* Skip this test by default: can take a long time */
