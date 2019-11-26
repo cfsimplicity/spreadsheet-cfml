@@ -181,9 +181,14 @@ The `read()` method also features the following additional options not available
 The following international date masks are used by default to read and write cell values formatted as dates:
 
 * DATE = `yyyy-mm-dd`
-* DATETIME = `yyyy-mm-dd HH:nn:ss`
 * TIME = `hh:mm:ss`
 * TIMESTAMP = `yyyy-mm-dd hh:mm:ss`
+
+An additional mask is used to output datetime values from the `read()` method into HTML or CSV formats:
+
+* DATETIME = `yyyy-mm-dd HH:nn:ss`
+
+NB: _Do not confuse `DATETIME` and `TIMESTAMP`._ In general you should override the `TIMESTAMP` mask.
 
 Each of these can be overridden by passing in a struct including the value(s) to be overridden when instantiating the Spreadsheet component. For example:
 

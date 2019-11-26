@@ -22,6 +22,58 @@ describe( "dateFormats customisability",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "allows the format of date and time values to be customised", function() {
+		//Dates
+		variables.workbook = s.new();
+		var dateValue =  CreateDate( 2019, 04, 12 );
+		var timeValue = CreateTime( 1, 5, 5 );
+		var timestampValue = CreateDateTime(  2019, 04, 12, 1, 5, 5 );
+
+		s.setCellValue( workbook, dateValue, 1, 1 );
+		expected = DateFormat( dateValue, "yyyy-mm-dd" );
+		actual = s.getCellValue( workbook, 1, 1 );
+		expect( actual ).toBe( expected );
+		//Times
+		s.setCellValue( workbook, timeValue, 1, 1 );
+		expected = TimeFormat( timeValue, "hh:mm:ss" );
+		actual = s.getCellValue( workbook, 1, 1 );
+		expect( actual ).toBe( expected );
+		//timestamps
+		s.setCellValue( workbook, timestampValue, 1, 1 );
+		expected = DateTimeFormat( timestampValue, "yyyy-mm-dd hh:nn:ss" );
+		actual = s.getCellValue( workbook, 1, 1 );
+		expect( actual ).toBe( expected );
+
+		// custom date format
+		s = newSpreadsheetInstance( dateFormats={ DATE="mm/dd/yyyy" } );
+		s.setCellValue( workbook, dateValue, 1, 1 );
+		expected = DateFormat( dateValue, "mm/dd/yyyy" );
+		actual = s.getCellValue( workbook, 1, 1 );
+		expect( actual ).toBe( expected );
+		//custom time format
+		s = newSpreadsheetInstance( dateFormats={ TIME="h:m:s" } );
+		s.setCellValue( workbook, timeValue, 1, 1 );
+		expected = TimeFormat( timeValue, "h:m:s" );
+		actual = s.getCellValue( workbook, 1, 1 );
+		//custom timestamp format
+		s = newSpreadsheetInstance( dateFormats={ TIMESTAMP="mm/dd/yyyy h:m:s" } );
+		s.setCellValue( workbook, timestampValue, 1, 1 );
+		expected = DateTimeFormat( timestampValue, "mm/dd/yyyy h:n:s" );
+		actual = s.getCellValue( workbook, 1, 1 );
+	});
+
+	it( "Uses the overridden DATETIME format mask when generating CSV and HTML",function() {
+		s = newSpreadsheetInstance( dateFormats={ DATETIME="mm/dd/yyyy h:n:s" } );
+		path = getTestFilePath( "test.xls" );
+		actual = s.read( src=path, format="html" );
+		expected = "<tbody><tr><td>a</td><td>b</td></tr><tr><td>1</td><td>04/01/2015 12:0:0</td></tr><tr><td>04/01/2015 1:1:1</td><td>2</td></tr></tbody>";
+		expect( actual ).toBe( expected );
+		var crlf = Chr( 13 ) & Chr( 10 );
+		expected = '"a","b"#crlf#"1","04/01/2015 12:0:0"#crlf#"04/01/2015 1:1:1","2"';
+		actual = s.read( src=path, format="csv" );
+		expect( actual ).toBe( expected );
+	});
+
 	describe( "dateFormats: throws an exception if",function(){
 
 		it( "a passed format key is invalid",function() {
