@@ -2,7 +2,7 @@
 describe( "dateFormats customisability",function(){
 
 	it( "the default dateFormats can be overridden individually",function() {
-		var s=newSpreadsheetInstance();
+		local.s=newSpreadsheetInstance();
 		expected={
 			DATE="yyyy-mm-dd"
 			,DATETIME="yyyy-mm-dd HH:nn:ss"
@@ -11,7 +11,7 @@ describe( "dateFormats customisability",function(){
 		};
 		actual=s.getDateFormats();
 		expect( actual ).toBe( expected );
-		s=newSpreadsheetInstance( dateFormats={ DATE="mm/dd/yyyy" } );
+		local.s = newSpreadsheetInstance( dateFormats={ DATE="mm/dd/yyyy" } );
 		expected={
 			DATE="mm/dd/yyyy"
 			,DATETIME="yyyy-mm-dd HH:nn:ss"
@@ -45,25 +45,25 @@ describe( "dateFormats customisability",function(){
 		expect( actual ).toBe( expected );
 
 		// custom date format
-		s = newSpreadsheetInstance( dateFormats={ DATE="mm/dd/yyyy" } );
+		local.s = newSpreadsheetInstance( dateFormats={ DATE="mm/dd/yyyy" } );
 		s.setCellValue( workbook, dateValue, 1, 1 );
 		expected = DateFormat( dateValue, "mm/dd/yyyy" );
 		actual = s.getCellValue( workbook, 1, 1 );
 		expect( actual ).toBe( expected );
 		//custom time format
-		s = newSpreadsheetInstance( dateFormats={ TIME="h:m:s" } );
+		local.s = newSpreadsheetInstance( dateFormats={ TIME="h:m:s" } );
 		s.setCellValue( workbook, timeValue, 1, 1 );
 		expected = TimeFormat( timeValue, "h:m:s" );
 		actual = s.getCellValue( workbook, 1, 1 );
 		//custom timestamp format
-		s = newSpreadsheetInstance( dateFormats={ TIMESTAMP="mm/dd/yyyy h:m:s" } );
+		local.s = newSpreadsheetInstance( dateFormats={ TIMESTAMP="mm/dd/yyyy h:m:s" } );
 		s.setCellValue( workbook, timestampValue, 1, 1 );
 		expected = DateTimeFormat( timestampValue, "mm/dd/yyyy h:n:s" );
 		actual = s.getCellValue( workbook, 1, 1 );
 	});
 
 	it( "Uses the overridden DATETIME format mask when generating CSV and HTML",function() {
-		s = newSpreadsheetInstance( dateFormats={ DATETIME="mm/dd/yyyy h:n:s" } );
+		local.s = newSpreadsheetInstance( dateFormats={ DATETIME="mm/dd/yyyy h:n:s" } );
 		path = getTestFilePath( "test.xls" );
 		actual = s.read( src=path, format="html" );
 		expected = "<tbody><tr><td>a</td><td>b</td></tr><tr><td>1</td><td>04/01/2015 12:0:0</td></tr><tr><td>04/01/2015 1:1:1</td><td>2</td></tr></tbody>";
@@ -78,7 +78,7 @@ describe( "dateFormats customisability",function(){
 
 		it( "a passed format key is invalid",function() {
 			expect( function(){
-				var s=newSpreadsheetInstance( dateFormats={ DAT="mm/dd/yyyy" } );
+				local.s = newSpreadsheetInstance( dateFormats={ DAT="mm/dd/yyyy" } );
 			}).toThrow( regex="Invalid date format key" );
 		});
 
