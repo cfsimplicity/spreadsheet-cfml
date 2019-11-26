@@ -3058,7 +3058,7 @@ component{
 			if( !exception.message CONTAINS "undefined" )
 				rethrow;
 			//ACF
-			return q.ColumnList.ListToArray();
+			return q.getMetaData().getColumnLabels();
 		}
 	}
 

@@ -189,6 +189,12 @@ describe( "addRows",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Includes query columns in the same case and order as the original query", function() {
+		local.data = QueryNew( "Header2,Header1", "VarChar,VarChar", [ [ "b","a" ], [ "d","c" ] ] );
+		s.addRows( workbook=workbook, data=local.data, includeQueryColumnNames=true );
+		expect( s.getCellValue( workbook, 1, 1 ) ).toBeWithCase( "Header2" );
+	});
+
 	it( "Can include the query column names starting at a specific row",function(){
 		s.addRow( workbook, "x,y" );
 		s.addRows( workbook=workbook, data=data, row=2, includeQueryColumnNames=true );
