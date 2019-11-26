@@ -2379,16 +2379,16 @@ component{
 	  return values;
 	}
 
-	private string function queryToCsv( required query query, numeric headerRow ){
+	private string function queryToCsv( required query query, numeric headerRow, boolean includeHeaderRow=false ){
 		var result = CreateObject( "Java", "java.lang.StringBuilder" ).init();
 		var crlf = Chr( 13 ) & Chr( 10 );
 		var columns = _queryColumnArray( arguments.query );
-		var generateHeaderRow = ( arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
+		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
 		if( generateHeaderRow )
 			result.Append( generateCsvRow( columns ) );
 		for( var row in arguments.query ){
 			var rowValues = [];
-			for( column in columns )
+			for( var column in columns )
 				rowValues.Append( row[ column ] );
 			result.Append( crlf & generateCsvRow( rowValues ) );
 		}
@@ -2406,10 +2406,10 @@ component{
 		return result.toString().substring( 1 );
 	}
 
-	private string function queryToHtml( required query query, numeric headerRow ){
+	private string function queryToHtml( required query query, numeric headerRow, boolean includeHeaderRow=false ){
 		var result = CreateObject( "Java", "java.lang.StringBuilder" ).init();
 		var columns = _queryColumnArray( arguments.query );
-		var generateHeaderRow = ( arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
+		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
 		if( generateHeaderRow ){
 			result.Append( "<thead>" );
 			result.Append( generateHtmlRow( columns, true ) );
@@ -2417,8 +2417,8 @@ component{
 		}
 		result.Append( "<tbody>" );
 		for( var row in arguments.query ){
-			var rowValues=[];
-			for( column in columns )
+			var rowValues = [];
+			for( var column in columns )
 				rowValues.Append( row[ column ] );
 			result.Append( generateHtmlRow( rowValues ) );
 		}
@@ -3092,7 +3092,6 @@ component{
 			tempColumnNames[ i ] = "column#i#";
 		var q = QueryNew( tempColumnNames.ToList(), arguments.columnTypeList, arguments.data );
 		// restore the real names without ACF barfing on them
-		// 20191121: Note ACF2018 HotFix 5 introduced a bug with setColumnNames(): https://tracker.adobe.com/#/view/CF-4205435
 		q.setColumnNames( arguments.columnNames );
 		return q;
 	}
