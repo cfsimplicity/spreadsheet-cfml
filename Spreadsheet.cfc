@@ -3038,6 +3038,16 @@ component{
 		return similarExistingColor.getIndex();
 	}
 
+	public numeric function getColumnWidth( required workbook, required numeric column ){
+		var columnIndex = ( arguments.column -1 );
+		return ( getActiveSheet( arguments.workbook ).getColumnWidth( JavaCast( "int", columnIndex ) ) / 256 );// whole character width (of zero character)
+	}
+
+	public numeric function getColumnWidthInPixels( required workbook, required numeric column ){
+		var columnIndex = ( arguments.column -1 );
+		return getActiveSheet( arguments.workbook ).getColumnWidthInPixels( JavaCast( "int", columnIndex ) );
+	}
+
 	/* Override troublesome engine BIFs */
 
 	private boolean function _isDate( required value ){
