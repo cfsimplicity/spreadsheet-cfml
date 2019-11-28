@@ -148,6 +148,11 @@ describe( "addRow", function(){
 		}		
 	});
 
+	it( "Doesn't error if the workbook is SXSSF and autoSizeColumns is true", function(){
+		var workbook = s.newStreamingXlsx();
+		s.addRow( workbook=local.workbook, data=data, autoSizeColumns=true );
+	});
+
 	describe( "addRow throws an exception if", function(){
 
 		it( "row is zero or less", function() {

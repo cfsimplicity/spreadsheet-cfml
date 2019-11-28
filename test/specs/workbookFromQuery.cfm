@@ -18,5 +18,11 @@ describe( "workbookFromQuery",function(){
 		expect( workbook.getClass().name ).toBe( "org.apache.poi.xssf.usermodel.XSSFWorkbook" );
 	});
 
+	it( "Adds the header row in the same case and order as the query columns", function() {
+		local.query = QueryNew( "Header2,Header1", "VarChar,VarChar", [ [ "b","a" ], [ "d","c" ] ] );
+		workbook = s.workbookFromQuery( data=local.query, addHeaderRow=true );
+		expect( s.getCellValue( workbook, 1, 1 ) ).toBeWithCase( "Header2" );
+	});
+
 });	
 </cfscript>

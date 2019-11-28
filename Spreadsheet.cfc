@@ -1,6 +1,6 @@
 component{
 
-	variables.version = "2.5.0";
+	variables.version = "2.6.0";
 	variables.javaLoaderName = "spreadsheetLibraryClassLoader-#variables.version#-#Hash( GetCurrentTemplatePath() )#";
 	variables.javaLoaderDotPath = "javaLoader.JavaLoader";
 	variables.dateFormats = {
@@ -629,6 +629,8 @@ component{
 			Throw( type=exceptionType, message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
 		/* Adjusts the width of the specified column to fit the contents. For performance reasons, this should normally be called only once per column. */
 		var columnIndex = ( arguments.column -1 );
+		if( isStreamingXmlFormat( arguments.workbook ) )
+			getActiveSheet( arguments.workbook ).trackColumnForAutoSizing( JavaCast( "int", columnIndex ) );
 		getActiveSheet( arguments.workbook ).autoSizeColumn( columnIndex, arguments.useMergedCells );
 	}
 
@@ -2377,16 +2379,16 @@ component{
 	  return values;
 	}
 
-	private string function queryToCsv( required query query, numeric headerRow ){
+	private string function queryToCsv( required query query, numeric headerRow, boolean includeHeaderRow=false ){
 		var result = CreateObject( "Java", "java.lang.StringBuilder" ).init();
 		var crlf = Chr( 13 ) & Chr( 10 );
 		var columns = _queryColumnArray( arguments.query );
-		var generateHeaderRow = ( arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
+		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
 		if( generateHeaderRow )
 			result.Append( generateCsvRow( columns ) );
 		for( var row in arguments.query ){
 			var rowValues = [];
-			for( column in columns )
+			for( var column in columns )
 				rowValues.Append( row[ column ] );
 			result.Append( crlf & generateCsvRow( rowValues ) );
 		}
@@ -2404,10 +2406,10 @@ component{
 		return result.toString().substring( 1 );
 	}
 
-	private string function queryToHtml( required query query, numeric headerRow ){
+	private string function queryToHtml( required query query, numeric headerRow, boolean includeHeaderRow=false ){
 		var result = CreateObject( "Java", "java.lang.StringBuilder" ).init();
 		var columns = _queryColumnArray( arguments.query );
-		var generateHeaderRow = ( arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
+		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
 		if( generateHeaderRow ){
 			result.Append( "<thead>" );
 			result.Append( generateHtmlRow( columns, true ) );
@@ -2415,8 +2417,8 @@ component{
 		}
 		result.Append( "<tbody>" );
 		for( var row in arguments.query ){
-			var rowValues=[];
-			for( column in columns )
+			var rowValues = [];
+			for( var column in columns )
 				rowValues.Append( row[ column ] );
 			result.Append( generateHtmlRow( rowValues ) );
 		}
@@ -3036,6 +3038,16 @@ component{
 		return similarExistingColor.getIndex();
 	}
 
+	public numeric function getColumnWidth( required workbook, required numeric column ){
+		var columnIndex = ( arguments.column -1 );
+		return ( getActiveSheet( arguments.workbook ).getColumnWidth( JavaCast( "int", columnIndex ) ) / 256 );// whole character width (of zero character)
+	}
+
+	public numeric function getColumnWidthInPixels( required workbook, required numeric column ){
+		var columnIndex = ( arguments.column -1 );
+		return getActiveSheet( arguments.workbook ).getColumnWidthInPixels( JavaCast( "int", columnIndex ) );
+	}
+
 	/* Override troublesome engine BIFs */
 
 	private boolean function _isDate( required value ){
@@ -3056,7 +3068,7 @@ component{
 			if( !exception.message CONTAINS "undefined" )
 				rethrow;
 			//ACF
-			return q.ColumnList.ListToArray();
+			return q.getColumnNames();
 		}
 	}
 
@@ -3090,7 +3102,6 @@ component{
 			tempColumnNames[ i ] = "column#i#";
 		var q = QueryNew( tempColumnNames.ToList(), arguments.columnTypeList, arguments.data );
 		// restore the real names without ACF barfing on them
-		// 20191121: Note ACF2018 HotFix 5 introduced a bug with setColumnNames(): https://tracker.adobe.com/#/view/CF-4205435
 		q.setColumnNames( arguments.columnNames );
 		return q;
 	}
