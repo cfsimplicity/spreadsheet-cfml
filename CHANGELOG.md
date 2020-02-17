@@ -1,3 +1,8 @@
+ ## 2.7.0 - 17 February 2020
+
+ - \#175 Upgrade POI to 4.1.2
+ - \#176 Upgrade Apache Commons CSV to 1.8
+
 ## 2.6.0 - 28 November 2019
 
 - Enhancements
@@ -8,7 +13,7 @@
 	-	\#172 In ACF query column case and order is not preserved
 	- \#171 Using autoSizeColumns with a Streaming XLSX workbook causes an exception
 
- ## 2.5.0 - 21 November 2019
+## 2.5.0 - 21 November 2019
 
  - \#170 Upgrade POI to 4.1.1
  - \#169 Improve handling of clearly non-date values which Lucee will parse as dates far in the future
