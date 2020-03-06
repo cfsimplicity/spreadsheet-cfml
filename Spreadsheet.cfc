@@ -2986,7 +2986,11 @@ component{
 
 	private numeric function getColorIndex( required string colorName ){
 		var findColor = arguments.colorName.Trim().UCase();
-		var indexedColors = loadClass( "org.apache.poi.ss.usermodel.IndexedColors" );
+		//check for 9 extra colours from old org.apache.poi.ss.usermodel.IndexedColors and map
+		var deprecatedNames = [ "BLACK1", "WHITE1", "RED1", "BRIGHT_GREEN1", "BLUE1", "YELLOW1", "PINK1", "TURQUOISE1", "LIGHT_TURQUOISE1" ];
+		if( deprecatedNames.Find( findColor ) )
+			findColor = findColor.Left( findColor.Len() - 1 );
+		var indexedColors = loadClass( "org.apache.poi.hssf.util.HSSFColor$HSSFColorPredefined" );
 		try{
 			var color = indexedColors.valueOf( JavaCast( "string", findColor ) );
 			return color.getIndex();
