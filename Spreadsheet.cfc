@@ -993,6 +993,15 @@ component{
 		return result;
 	}
 
+	public array function getPresetColorNames(){
+		var presetEnum = loadClass( "org.apache.poi.hssf.util.HSSFColor$HSSFColorPredefined" );
+		var result = [];
+		for( var value in presetEnum.values() )
+			result.Append( value.name() );
+		result.Sort( "text" );//ACF2016 (not 2018) returns "YES" from a sort instead of the sorted array, so perform sort separately.
+		return result;
+	}
+
 	public numeric function getRowCount( required workbook, sheetNameOrNumber ){
 		if( arguments.KeyExists( "sheetNameOrNumber" ) ){
 			if( IsValid( "integer", arguments.sheetNameOrNumber ) AND IsNumeric( arguments.sheetNameOrNumber ) )
@@ -2996,7 +3005,7 @@ component{
 			return color.getIndex();
 		}
 		catch( any exception ){
-			Throw( type=exceptionType, message="Invalid Color", detail="The color provided (#arguments.colorName#) is not valid." );
+			Throw( type=exceptionType, message="Invalid Color", detail="The color provided (#arguments.colorName#) is not valid. Use getPresetColorNames() for a list of valid color names" );
 		}
 	}
 
