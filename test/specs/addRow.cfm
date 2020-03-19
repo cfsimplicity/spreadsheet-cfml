@@ -144,7 +144,7 @@ describe( "addRow", function(){
 
 	it( "Can insert more than 4009 rows containing dates without triggering an exception", function(){
 		for( var i=1; i LTE 4010; i++ ){
-			s.addRow( workbook, "2016-07-14" );
+			variables.s.addRow( variables.workbook, "2016-07-14" ); 
 		}		
 	});
 

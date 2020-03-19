@@ -93,11 +93,11 @@ Purpose:    Utlitity class for loading Java Classes
 </cffunction>
 
 <cffunction name="getURLClassLoader" hint="Returns the com.compoundtheory.classloader.NetworkClassLoader in case you need access to it" access="public" returntype="any" output="false">
-	<cfreturn instance.ClassLoader />
+	<cfreturn variables.instance.ClassLoader />
 </cffunction>
 
 <cffunction name="getClassLoadPaths" access="public" returntype="array" output="false">
-	<cfreturn instance.classLoadPaths />
+	<cfreturn variables.instance.classLoadPaths />
 </cffunction>
 
 	
