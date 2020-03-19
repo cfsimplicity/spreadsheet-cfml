@@ -1706,8 +1706,9 @@ component accessors="true"{
 	}
 
 	private void function addInfoXml( required workbook, required struct info ){
-		var documentProperties = arguments.workbook.getProperties().getExtendedProperties().getUnderlyingProperties();
-		var coreProperties = arguments.workbook.getProperties().getCoreProperties();
+		var workbookProperties = isStreamingXmlFormat( arguments.workbook )? arguments.workbook.getXSSFWorkbook().getProperties(): arguments.workbook.getProperties();
+		var documentProperties = workbookProperties.getExtendedProperties().getUnderlyingProperties();
+		var coreProperties = workbookProperties.getCoreProperties();
 		for( var key in arguments.info ){
 			var value = JavaCast( "string", arguments.info[ key ] );
 			switch( key ){
@@ -2701,8 +2702,9 @@ component accessors="true"{
 	}
 
 	private struct function xmlInfo( required workbook ){
-		var documentProperties = arguments.workbook.getProperties().getExtendedProperties().getUnderlyingProperties();
-		var coreProperties = arguments.workbook.getProperties().getCoreProperties();
+		var workbookProperties = isStreamingXmlFormat( arguments.workbook )? arguments.workbook.getXSSFWorkbook().getProperties(): arguments.workbook.getProperties();
+		var documentProperties = workbookProperties.getExtendedProperties().getUnderlyingProperties();
+		var coreProperties = workbookProperties.getCoreProperties();
 		var result = {
 			author: coreProperties.getCreator()?:""
 			,category: coreProperties.getCategory()?:""

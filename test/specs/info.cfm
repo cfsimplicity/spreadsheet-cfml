@@ -44,6 +44,16 @@ describe( "info", function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Adds and can get back info from a streaming xlsx", function() {
+		workbook = s.newStreamingXlsx();
+		s.addInfo( workbook, infoToAdd );
+		infoToBeReturned.spreadSheetType = "Excel (2007)";
+		expected = infoToBeReturned;
+		actual = s.info( workbook );
+		actual.creationDate = DateFormat( actual.creationDate, "yyyymmdd" ); // Doesn't return this value so mock
+		expect( actual ).toBe( expected );
+	});
+
 	it( "Handles missing lastAuthor value in an xlsx", function(){
 		infoToAdd.delete( "lastAuthor" );
 		infoToBeReturned.delete( "lastAuthor" );
