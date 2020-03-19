@@ -463,7 +463,7 @@ component{
 
 	public void function addPageBreaks( required workbook, string rowBreaks="", string columnBreaks="" ){
 		arguments.rowBreaks = Trim( arguments.rowBreaks ); //Dont' use member function in case value is in fact numeric
-		arguments.columnBreaks = Trim( columnBreaks );
+		arguments.columnBreaks = Trim( arguments.columnBreaks );
 		if( arguments.rowBreaks.IsEmpty() AND arguments.columnBreaks.IsEmpty() )
 			Throw( type=exceptionType, message="Missing argument", detail="You must specify the rows and/or columns at which page breaks should be added." );
 		arguments.rowBreaks = arguments.rowBreaks.ListToArray();
@@ -1813,12 +1813,12 @@ component{
 	private any function createRow( required workbook, numeric rowNum=getNextEmptyRow( arguments.workbook ), boolean overwrite=true ){
 		/* get existing row (if any)  */
 		var sheet = getActiveSheet( arguments.workbook );
-		var row = sheet.getRow( JavaCast( "int", rowNum ) );
+		var row = sheet.getRow( JavaCast( "int", arguments.rowNum ) );
 		if( arguments.overwrite AND !IsNull( row ) )
 			sheet.removeRow( row ); /* forcibly remove existing row and all cells  */
-		if( arguments.overwrite OR IsNull( sheet.getRow( JavaCast( "int", rowNum ) ) ) ){
+		if( arguments.overwrite OR IsNull( sheet.getRow( JavaCast( "int", arguments.rowNum ) ) ) ){
 			try{
-				row = sheet.createRow( JavaCast( "int", rowNum ) );
+				row = sheet.createRow( JavaCast( "int", arguments.rowNum ) );
 			}
 			catch( java.lang.IllegalArgumentException exception ){
 				if( exception.message.FindNoCase( "Invalid row number (65536)" ) )
@@ -2217,7 +2217,7 @@ component{
 
 	private array function getRowData( required workbook, required row, array columnRanges=[], boolean includeRichTextFormatting=false ){
 		var result = [];
-		if( !columnRanges.Len() ){
+		if( !arguments.columnRanges.Len() ){
 			var columnRange = {
 				startAt: 1
 				,endAt: arguments.row.GetLastCellNum()
@@ -2482,7 +2482,7 @@ component{
 				var formatter = arguments.workbook.getCreationHelper().createDataFormat();
 				//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
 				getCellUtil().setCellStyleProperty( arguments.cell, getCellUtil().DATA_FORMAT, formatter.getFormat( JavaCast( "string", cellFormat ) ) );
-				cell.setCellType( arguments.cell.CellType.NUMERIC );
+				arguments.cell.setCellType( arguments.cell.CellType.NUMERIC );
 				/*  Excel's uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling - */
 				if( cellFormat EQ variables.dateFormats.TIME ){
 					var dateUtil = getDateUtil();
@@ -2799,7 +2799,7 @@ component{
 		}
 		cssStyles = cssStyles.toString();
 		if( cssStyles.IsEmpty() )
-			return contents;
+			return arguments.contents;
 		return "<span style=""#cssStyles#"">#arguments.contents#</span>";
 	}
 
