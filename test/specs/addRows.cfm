@@ -229,11 +229,11 @@ describe( "addRows",function(){
 		xit( "adding more than 65536 rows to a binary spreadsheet",function() {
 			expect( function(){
 				var rows=[];
-				for( i=1; i <= 65537; i++ ){
+				for( var i=1; i <= 65537; i++ ){
 					rows.append( [ i ] );
 				}
 				var data=QueryNew( "ID","Integer",rows );
-				s.addRows( workbook,data );
+				variables.s.addRows( workbook,data );
 			}).toThrow( regex="Too many rows" );
 		});
 
