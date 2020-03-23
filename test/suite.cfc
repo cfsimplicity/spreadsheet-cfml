@@ -16,7 +16,7 @@ component extends="testbox.system.BaseSpec"{
 	}
 
 	function getTestFilePath( required string filename ){
-		return filesDirectoryPath & filename;
+		return variables.filesDirectoryPath & arguments.filename;
 	}
 
 	function afterAll(){
@@ -30,10 +30,10 @@ component extends="testbox.system.BaseSpec"{
 			/* beforeEach( function( currentSpec ) {}); */
 
 			afterEach(function( currentSpec ) {
-		    if( FileExists( tempXlsPath ) )
-		    	FileDelete( tempXlsPath );
-		    if( FileExists( tempXlsxPath ) )
-		    	FileDelete( tempXlsxPath );
+		    if( FileExists( variables.tempXlsPath ) )
+		    	FileDelete( variables.tempXlsPath );
+		    if( FileExists( variables.tempXlsxPath ) )
+		    	FileDelete( variables.tempXlsxPath );
 			});
 
 			var specs = DirectoryList( ExpandPath( "specs" ), false, "name", "*.cfm" );

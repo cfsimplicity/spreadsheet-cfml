@@ -117,7 +117,7 @@ describe( "formatCell", function(){
 		expect( cellFormat.indent ).toBe( 17 );
 	});
 
-	it( "treats indents of 15+ as the maxiumn 15 on XLS", function(){
+	it( "treats indents of 15+ as the maximum 15 on XLS", function(){
 		var format = { indent: 17 };
 		var cellFormat = setAndGetFormat( xls, format );
 		expect( cellFormat.indent ).toBe( 15 );
@@ -283,6 +283,15 @@ describe( "formatCell", function(){
 		s.formatCell( xlsx, { underline: "double accounting" }, 1, 1 );
 		var cellFormat = s.getCellFormat( xlsx, 1, 1 );
 		expect( cellFormat.underline ).toBe( "double accounting" );
+	});
+
+	it( "will map 9 deprecated colour names ending in 1 to the corresponding valid value", function(){
+		// include numbers either side of 127 which might throw ACF
+		var deprecatedName = "RED1";
+		var format = { color: deprecatedName, bottombordercolor: deprecatedName };
+		var cellFormat = setAndGetFormat( xlsx, format );
+		expect( cellFormat.color ).toBe( "255,0,0" ); //font color
+		expect( cellFormat.bottombordercolor ).toBe( "255,0,0" ); //style color
 	});
 
 	it( "can set a non preset RGB triplet color on an XLSX workbook cell", function(){

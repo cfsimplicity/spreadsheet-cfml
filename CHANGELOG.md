@@ -1,4 +1,14 @@
- ## 2.7.0 - 17 February 2020
+## 2.8.0 - 23 March 2020
+
+- Enhancements
+	- \#181 Add "INT" to query column formats cast as numeric
+	- \#179 Provide a list of all predefined colours available to formatting methods
+
+- Fixes
+ - \#182 addInfo() not working with Streaming XLSX 
+ - \#178 Color index lookup is using a deprecated enum class
+
+## 2.7.0 - 17 February 2020
 
  - \#175 Upgrade POI to 4.1.2
  - \#176 Upgrade Apache Commons CSV to 1.8
