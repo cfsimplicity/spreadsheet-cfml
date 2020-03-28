@@ -1,6 +1,6 @@
-# Spreadsheet library for Lucee
+# Spreadsheet library for Lucee (and Adobe ColdFusion)
 
-Originally adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo extension, this is a standalone library for reading, creating and formatting spreadsheets in [Lucee Server](http://lucee.org/) which does not require installation as an extension.
+Originally adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo extension, this is a standalone library for reading, creating and formatting spreadsheets in [Lucee Server](http://lucee.org/) which does not require installation as an extension. It can also be used with Adobe ColdFusion.
 
 ## Rationale
 
@@ -25,11 +25,17 @@ Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of 
 
 - Existing code needs adapting to invoke the library. Existing CFML spreadsheet functions and the `<cfspreadsheet>` tag won't work with it.
 
+### Adobe ColdFusion
+
+Although primarily intended for Lucee, the library can be run under ColdFusion 2016 or higher. This may be useful where you want to your codebase to be cross-compatible between the two engines.
+
+Please note though that _writing password-protected files only works with Lucee_.
+
 ## Minimum Requirements for version 2.x
 
 - Java 8 or higher
 - Lucee 5.x or higher
-- Adobe ColdFusion 2016 or higher (See below for limitations of ACF support)
+- Adobe ColdFusion 2016 or higher
 
 If you are running Java 6 and 7, Lucee 4.5 or ACF11, please use [version 1.x.](https://github.com/cfsimplicity/lucee-spreadsheet/tags)
 
@@ -200,12 +206,6 @@ Each of these can be overridden by passing in a struct including the value(s) to
 spreadsheet = New spreadsheetLibrary.spreadsheet( dateFormats={ DATE: "mm/dd/yyyy" } );
 </cfscript>
 ```
-
-### Adobe ColdFusion
-
-Although primarily intended for Lucee, the library can be run under ColdFusion 2016 or higher. This may be useful where you want to your codebase to be cross-compatible between the two engines.
-
-Please note though that _writing password-protected files only works with Lucee_.
 
 ### JavaLoader
 
