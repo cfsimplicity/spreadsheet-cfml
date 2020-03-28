@@ -557,7 +557,6 @@ component accessors="true"{
 		if( arguments.KeyExists( "row" ) AND ( arguments.row LTE lastRow ) AND arguments.insert )
 			shiftRows( arguments.workbook, arguments.row, lastRow, totalRows );
 		var currentRowIndex = insertAtRowIndex;
-		var dateUtil = getDateUtil();
 		if( dataIsQuery ){
 			var queryColumns = getQueryColumnFormats( arguments.data );
 			var cellIndex = ( arguments.column -1 );
@@ -2069,8 +2068,7 @@ component accessors="true"{
 		/* Get the value of the cell based on the data type. The thing to worry about here is cell forumlas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values. */
 		if( cellIsOfType( arguments.cell, "NUMERIC" ) ){
 			/* Get numeric cell data. This could be a standard number, could also be a date value. */
-			var dateUtil = getDateUtil();
-			if( dateUtil.isCellDateFormatted( arguments.cell ) ){
+			if( getDateUtil().isCellDateFormatted( arguments.cell ) ){
 				var cellValue = arguments.cell.getDateCellValue();
 				if( DateCompare( "1899-12-31", cellValue, "d" ) EQ 0 ) // TIME
 					return getFormatter().formatCellValue( arguments.cell );//return as a time formatted string to avoid default epoch date 1899-12-31
@@ -2502,9 +2500,8 @@ component accessors="true"{
 				arguments.cell.setCellType( arguments.cell.CellType.NUMERIC );
 				/*  Excel's uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling - */
 				if( cellFormat EQ this.getDateFormats().TIME ){
-					var dateUtil = getDateUtil();
 					arguments.value = TimeFormat( arguments.value, "HH:MM:SS" );
-				 	arguments.cell.setCellValue( dateUtil.convertTime( arguments.value ) );
+				 	arguments.cell.setCellValue( getDateUtil().convertTime( arguments.value ) );
 				}
 				else
 					arguments.cell.setCellValue( ParseDateTime( arguments.value ) );
