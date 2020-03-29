@@ -2192,7 +2192,7 @@ component accessors="true"{
 		for( var col in metadata ){
 			var columnType = col.typeName?: "";// typename is missing in ACF if not specified in the query
 			switch( columnType ){
-				case "DATE": case "TIMESTAMP":
+				case "DATE": case "TIMESTAMP": case "DATETIME": case "DATETIME2":
 					col.cellDataType = "DATE";
 				break;
 				case "TIME":
@@ -2484,10 +2484,11 @@ component accessors="true"{
 	}
 
 	private void function setCellValueAsType( required workbook, required cell, required value, string type ){
+		var validCellTypes = [ "string", "numeric", "date", "time", "boolean", "blank" ];
 		if( !arguments.KeyExists( "type" ) ) //autodetect type
 			arguments.type = detectValueDataType( arguments.value );
-		else if( !ListFindNoCase( "string,numeric,date,time,boolean,blank", arguments.type ) )
-			Throw( type=this.getExceptionType(), message="Invalid data type: '#arguments.type#'", detail="The data type must be one of 'string', 'numeric', 'date' 'boolean' or 'blank'." );
+		else if( !validCellTypes.FindNoCase( arguments.type ) )
+			Throw( type=this.getExceptionType(), message="Invalid data type: '#arguments.type#'", detail="The data type must be one of the following: #validCellTypes.ToList( ', ' )#." );
 		/* Note: To properly apply date/number formatting:
 			- cell type must be CELL_TYPE_NUMERIC
 			- cell value must be applied as a java.util.Date or java.lang.Double (NOT as a string)
