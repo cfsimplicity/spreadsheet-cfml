@@ -125,7 +125,7 @@ describe( "addRows",function(){
 		workbook = s.new();
 		var dateValue = CreateDate( 2015, 04, 12 );
 		var timeValue = CreateTime( 1, 0, 0 );
-		var dateTimeValue = createDateTime( 2015, 04, 12, 1, 0, 0 );
+		var dateTimeValue = CreateDateTime( 2015, 04, 12, 1, 0, 0 );
 		var dataAsArray = [ [ dateValue, timeValue, dateTimeValue ] ];
 		s.addRows( workbook, dataAsArray );
 		actual = s.sheetToQuery( workbook );
@@ -136,6 +136,38 @@ describe( "addRows",function(){
 		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
 		expect( s.getCellType( workbook, 1, 2 ) ).toBe( "numeric" );
 		expect( s.getCellType( workbook, 1, 3 ) ).toBe( "numeric" );
+	});
+
+	it( "Formats time and timestamp values correctly when custom mask includes fractions of a second",function() {
+		dateFormats = {
+			TIME: "hh:mm:ss.000"
+			,TIMESTAMP: "yyyy-mm-dd hh:mm:ss.000"
+		};
+		var s = newSpreadsheetInstance( dateFormats: dateFormats );
+		/*
+		ACF doesn't support milliseconds, ie:
+			var timeValue = CreateTime( 1, 0, 0, 999 );
+			var dateTimeValue = CreateDateTime( 2015, 04, 12, 1, 0, 0, 999 );
+		So use java to create datetime objects including milliseconds
+		*/
+		var timeValue = CreateObject( "java", "java.util.Date" ).init( JavaCast( "long", 360000999 ) );
+		var dateTimeValue = CreateObject( "java", "java.util.Date" ).init( JavaCast( "long", 1428796800999 ) );
+		var data = QueryNew( "column1,column2", "Time,Timestamp", [ [ timeValue, dateTimeValue ] ] );
+		s.addRows( variables.workbook, data );
+		expectedTimeValue = data.column1[ 1 ].TimeFormat( "hh:nn:ss:l" );
+		expectedDateTimeValue = data.column2[ 1 ].DateTimeFormat( "yyyy-mm-dd hh:nn:ss:l" );
+		actual = s.sheetToQuery( workbook );
+		actualTimeValue = actual.column1[ 1 ];
+		actualDateTimeValue = actual.column2[ 1 ];
+		//array data
+		var workbook = s.new();
+		var dataAsArray = [ [ timeValue, dateTimeValue ] ];
+		s.addRows( workbook, dataAsArray );
+		expectedTimeValue = data.column1[ 1 ].TimeFormat( "hh:nn:ss:l" );
+		expectedDateTimeValue = data.column2[ 1 ].DateTimeFormat( "yyyy-mm-dd hh:nn:ss:l" );
+		actual = s.sheetToQuery( workbook );
+		actualTimeValue = actual.column1[ 1 ];
+		actualDateTimeValue = actual.column2[ 1 ];
 	});
 
 	it( "Adds zeros as zeros, not booleans",function(){

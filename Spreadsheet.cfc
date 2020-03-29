@@ -578,8 +578,10 @@ component accessors="true"{
 							setCellValueAsType( arguments.workbook, cell, value, "numeric" );
 							break;
 						case "DATE":
+						setCellValueAsType( arguments.workbook, cell, value, "date" );
+							break;
 						case "TIME":
-							setCellValueAsType( arguments.workbook, cell, value, "date" );
+							setCellValueAsType( arguments.workbook, cell, value, "time" );
 							break;
 						case "BOOLEAN":
 							setCellValueAsType( arguments.workbook, cell, value, "boolean" );
@@ -2070,7 +2072,7 @@ component accessors="true"{
 			/* Get numeric cell data. This could be a standard number, could also be a date value. */
 			if( getDateUtil().isCellDateFormatted( arguments.cell ) ){
 				var cellValue = arguments.cell.getDateCellValue();
-				if( DateCompare( "1899-12-31", cellValue, "d" ) EQ 0 ) // TIME
+				if( isTimeOnlyValue( cellValue ) )
 					return getFormatter().formatCellValue( arguments.cell );//return as a time formatted string to avoid default epoch date 1899-12-31
 				return cellValue;
 			}
@@ -2103,15 +2105,24 @@ component accessors="true"{
 		return variables.dateUtil;
 	}
 
-	private string function getDateTimeValueFormat( required any value ){
+	private string function getDateTimeValueFormat( required date value ){
 		/* Returns the default date mask for the given value: DATE (only), TIME (only) or TIMESTAMP */
-		var dateTime = ParseDateTime( arguments.value );
-		var dateOnly = CreateDate( Year( dateTime ), Month( dateTime ), Day( dateTime ) );
-		if( DateCompare( arguments.value, dateOnly, "s" ) EQ 0 )
+		var dateOnly = CreateDate( Year( arguments.value ), Month( arguments.value ), Day( arguments.value ) );
+		if( isDateOnlyValue( arguments.value ) )
 			return this.getDateFormats().DATE;
-		if( DateCompare( "1899-12-30", dateOnly, "d" ) EQ 0 )
+		if( isTimeOnlyValue( arguments.value ) )
 			return this.getDateFormats().TIME;
 		return this.getDateFormats().TIMESTAMP;
+	}
+
+	private boolean function isDateOnlyValue( required date value ){
+		var dateOnly = CreateDate( Year( arguments.value ), Month( arguments.value ), Day( arguments.value ) );
+		return ( DateCompare( arguments.value, dateOnly, "s" ) == 0 );
+	}
+
+	private boolean function isTimeOnlyValue( required date value ){
+		//NB: this will only detect CF time object (epoch = 1899-12-30), not those using unix epoch 1970-01-01
+		return ( Year( arguments.value ) == "1899" );
 	}
 
 	private numeric function getDefaultCharWidth( required workbook ){
@@ -2475,7 +2486,7 @@ component accessors="true"{
 	private void function setCellValueAsType( required workbook, required cell, required value, string type ){
 		if( !arguments.KeyExists( "type" ) ) //autodetect type
 			arguments.type = detectValueDataType( arguments.value );
-		else if( !ListFindNoCase( "string,numeric,date,boolean,blank", arguments.type ) )
+		else if( !ListFindNoCase( "string,numeric,date,time,boolean,blank", arguments.type ) )
 			Throw( type=this.getExceptionType(), message="Invalid data type: '#arguments.type#'", detail="The data type must be one of 'string', 'numeric', 'date' 'boolean' or 'blank'." );
 		/* Note: To properly apply date/number formatting:
 			- cell type must be CELL_TYPE_NUMERIC
@@ -2487,24 +2498,32 @@ component accessors="true"{
 				arguments.cell.setCellType( arguments.cell.CellType.NUMERIC );
 				arguments.cell.setCellValue( JavaCast( "double", Val( arguments.value ) ) );
 				return;
-			case "date":
+			case "date": case "time":
 				//handle empty strings which can't be treated as dates
 				if( !Len( Trim( arguments.value ) ) ){
 					arguments.cell.setCellType( arguments.cell.CellType.BLANK ); //no need to set the value: it will be blank
 					return;
 				}
-				var cellFormat = getDateTimeValueFormat( arguments.value );
+				// if time has been specified, trust the source to avoid incorrect time value parsing
+				if( arguments.type == "time" ){
+					var dateTimeValue = arguments.value;
+					var cellFormat = this.getDateFormats().TIME; //don't include the epoch date in the display
+				}
+				else {
+					var dateTimeValue = ParseDateTime( arguments.value );
+					var cellFormat = getDateTimeValueFormat( dateTimeValue );// check if DATE, TIME or TIMESTAMP
+				}
 				var formatter = arguments.workbook.getCreationHelper().createDataFormat();
 				//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
 				getCellUtil().setCellStyleProperty( arguments.cell, getCellUtil().DATA_FORMAT, formatter.getFormat( JavaCast( "string", cellFormat ) ) );
 				arguments.cell.setCellType( arguments.cell.CellType.NUMERIC );
-				/*  Excel's uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling - */
-				if( cellFormat EQ this.getDateFormats().TIME ){
-					arguments.value = TimeFormat( arguments.value, "HH:MM:SS" );
-				 	arguments.cell.setCellValue( getDateUtil().convertTime( arguments.value ) );
+				/*  Excel uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling */
+				if( arguments.type == "time" || isTimeOnlyValue( dateTimeValue ) ){
+					dateTimeValue = dateTimeValue.Add( "d", 2 );//shift the epoch forward to match Excel's
+					var javaDate = dateTimeValue.from( dateTimeValue.toInstant() );// dateUtil needs a java date
+					dateTimeValue = ( getDateUtil().getExcelDate( javaDate ) -1 );//Convert to Excel's double value for dates, minus the 1 complete day to leave the day fraction (= time value)
 				}
-				else
-					arguments.cell.setCellValue( ParseDateTime( arguments.value ) );
+				arguments.cell.setCellValue( dateTimeValue );
 				return;
 			case "boolean":
 				//handle empty strings/nulls which can't be treated as booleans
