@@ -269,8 +269,8 @@ component accessors="true"{
 		,required string filepath
 		,boolean overwrite=false
 		,boolean addHeaderRow=true
-		,boldHeaderRow=true
-		,xmlFormat=false
+		,boolean boldHeaderRow=true
+		,boolean xmlFormat=false
 		,boolean streamingXml=false
 		,numeric streamingWindowSize=100
 	){
@@ -985,7 +985,7 @@ component accessors="true"{
 		var columnIndex = ( arguments.column -1 );
 		var rowObject = getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
 		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
-		var formatter = getFormatter();
+		var formatter = getDataFormatter();
 		if( cellIsOfType( cell, "FORMULA" ) ){
 			var formulaEvaluator = arguments.workbook.getCreationHelper().createFormulaEvaluator();
 			return formatter.formatCellValue( cell, formulaEvaluator );
@@ -1008,6 +1008,16 @@ component accessors="true"{
 			result = Max( result, row.getLastCellNum() );
 		}
 		return result;
+	}
+
+	public numeric function getColumnWidth( required workbook, required numeric column ){
+		var columnIndex = ( arguments.column -1 );
+		return ( getActiveSheet( arguments.workbook ).getColumnWidth( JavaCast( "int", columnIndex ) ) / 256 );// whole character width (of zero character)
+	}
+
+	public numeric function getColumnWidthInPixels( required workbook, required numeric column ){
+		var columnIndex = ( arguments.column -1 );
+		return getActiveSheet( arguments.workbook ).getColumnWidthInPixels( JavaCast( "int", columnIndex ) );
 	}
 
 	public array function getPresetColorNames(){
@@ -1668,234 +1678,35 @@ component accessors="true"{
 
 	/* PRIVATE METHODS */
 
-	private void function addInfoBinary( required workbook, required struct info ){
-		arguments.workbook.createInformationProperties(); // creates the following if missing
-		var documentSummaryInfo = arguments.workbook.getDocumentSummaryInformation();
-		var summaryInfo = arguments.workbook.getSummaryInformation();
-		for( var key in arguments.info ){
-			var value = JavaCast( "string", arguments.info[ key ] );
-			switch( key ){
-				case "author":
-					summaryInfo.setAuthor( value );
-					break;
-				case "category":
-					documentSummaryInfo.setCategory( value );
-					break;
-				case "lastauthor":
-					summaryInfo.setLastAuthor( value );
-					break;
-				case "comments":
-					summaryInfo.setComments( value );
-					break;
-				case "keywords":
-					summaryInfo.setKeywords( value );
-					break;
-				case "manager":
-					documentSummaryInfo.setManager( value );
-					break;
-				case "company":
-					documentSummaryInfo.setCompany( value );
-					break;
-				case "subject":
-					summaryInfo.setSubject( value );
-					break;
-				case "title":
-					summaryInfo.setTitle( value );
-					break;
-			}
-		}
+	/* Class loading */
+	private array function getJarPaths(){
+		var libPath = GetDirectoryFromPath( GetCurrentTemplatePath() ) & "lib/";
+		return DirectoryList( libPath );
 	}
 
-	private void function addInfoXml( required workbook, required struct info ){
-		var workbookProperties = isStreamingXmlFormat( arguments.workbook )? arguments.workbook.getXSSFWorkbook().getProperties(): arguments.workbook.getProperties();
-		var documentProperties = workbookProperties.getExtendedProperties().getUnderlyingProperties();
-		var coreProperties = workbookProperties.getCoreProperties();
-		for( var key in arguments.info ){
-			var value = JavaCast( "string", arguments.info[ key ] );
-			switch( key ){
-				case "author":
-					coreProperties.setCreator( value  );
-					break;
-				case "category":
-					coreProperties.setCategory( value );
-					break;
-				case "lastauthor":
-					coreProperties.getUnderlyingProperties().setLastModifiedByProperty( value );
-					break;
-				case "comments":
-					coreProperties.setDescription( value );
-					break;
-				case "keywords":
-					coreProperties.setKeywords( value );
-					break;
-				case "subject":
-					coreProperties.setSubjectProperty( value );
-					break;
-				case "title":
-					coreProperties.setTitle( value );
-					break;
-				case "manager":
-					documentProperties.setManager( value );
-					break;
-				case "company":
-					documentProperties.setCompany( value );
-					break;
-			}
-		}
-	}
-
-	private void function addRowToSheetData(
-		required workbook
-		,required struct sheet
-		,required numeric rowIndex
-		,boolean includeRichTextFormatting=false
-	){
-		if( ( arguments.rowIndex EQ arguments.sheet.headerRowIndex ) AND !arguments.sheet.includeHeaderRow )
-			return;
-		var rowData = [];
-		var row = arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
-		if( IsNull( row ) ){
-			if( arguments.sheet.includeBlankRows )
-				arguments.sheet.data.Append( rowData );
-			return;
-		}
-		if( rowIsEmpty( row ) AND !arguments.sheet.includeBlankRows )
-			return;
-		rowData = getRowData( arguments.workbook, row, arguments.sheet.columnRanges, arguments.includeRichTextFormatting );
-		arguments.sheet.data.Append( rowData );
-		if( !arguments.sheet.columnRanges.Len() ){
-			var rowColumnCount = row.GetLastCellNum();
-			arguments.sheet.totalColumnCount = Max( arguments.sheet.totalColumnCount, rowColumnCount );
-		}
-	}
-
-	private struct function binaryInfo( required workbook ){
-		var documentProperties = arguments.workbook.getDocumentSummaryInformation();
-		var coreProperties = arguments.workbook.getSummaryInformation();
-		return {
-			author: coreProperties.getAuthor()?:""
-			,category: documentProperties.getCategory()?:""
-			,comments: coreProperties.getComments()?:""
-			,creationDate: coreProperties.getCreateDateTime()?:""
-			,lastEdited: ( coreProperties.getEditTime() EQ 0 )? "": CreateObject( "java", "java.util.Date" ).init( coreProperties.getEditTime() )
-			,subject: coreProperties.getSubject()?:""
-			,title: coreProperties.getTitle()?:""
-			,lastAuthor: coreProperties.getLastAuthor()?:""
-			,keywords: coreProperties.getKeywords()?:""
-			,lastSaved: coreProperties.getLastSaveDateTime()?:""
-			,manager: documentProperties.getManager()?:""
-			,company: documentProperties.getCompany()?:""
-		};
-	}
-
-	private boolean function cellExists( required workbook, required numeric rowNumber, required numeric columnNumber ){
-		var rowIndex = ( arguments.rowNumber -1 );
-		var columnIndex = ( arguments.columnNumber -1 );
-		var checkRow = getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
-		return !IsNull( checkRow ) AND !IsNull( checkRow.getCell( JavaCast( "int", columnIndex ) ) );
-	}
-
-	private boolean function cellIsOfType( required cell, required string type ){
-		var cellType = arguments.cell.getCellType();
-		return ObjectEquals( cellType, cellType[ arguments.type ] );
-	}
-
-	private numeric function columnCountFromRanges( required array ranges ){
-		var result = 0;
-		for( var thisRange in arguments.ranges ){
-			for( var i = thisRange.startAt; i LTE thisRange.endAt; i++ )
-				result++;
-		}
-		return result;
-	}
-
-	private array function convertSignedRGBToPositiveTriplet( required any signedRGB ){
-		// When signed, values of 128+ are negative: convert then to positive values
-		var result = [];
-		for( var i=1; i LTE 3; i++ ){
-			result.Append( ( arguments.signedRGB[ i ] < 0 )? ( arguments.signedRGB[ i ] + 256 ): arguments.signedRGB[ i ] );
-		}
-		return result;
-	}
-
-	private any function createCell( required row, numeric cellNum=arguments.row.getLastCellNum(), overwrite=true ){
-		/* get existing cell (if any)  */
-		var cell = arguments.row.getCell( JavaCast( "int", arguments.cellNum ) );
-		if( arguments.overwrite AND !IsNull( cell ) )
-			arguments.row.removeCell( cell );/* forcibly remove the existing cell  */
-		if( arguments.overwrite OR IsNull( cell ) )
-			cell = arguments.row.createCell( JavaCast( "int", arguments.cellNum ) );/* create a brand new cell  */
-		return cell;
-	}
-
-	private any function createRow( required workbook, numeric rowNum=getNextEmptyRow( arguments.workbook ), boolean overwrite=true ){
-		/* get existing row (if any)  */
-		var sheet = getActiveSheet( arguments.workbook );
-		var row = sheet.getRow( JavaCast( "int", arguments.rowNum ) );
-		if( arguments.overwrite AND !IsNull( row ) )
-			sheet.removeRow( row ); /* forcibly remove existing row and all cells  */
-		if( arguments.overwrite OR IsNull( sheet.getRow( JavaCast( "int", arguments.rowNum ) ) ) ){
+	private function loadClass( required string javaclass ){
+		if( !this.getRequiresJavaLoader() ){
+			// If not using JL, *the correct* POI jars must be in the class path and any older versions *removed*
 			try{
-				row = sheet.createRow( JavaCast( "int", arguments.rowNum ) );
+				this.setJavaClassesLastLoadedVia( "The java class path" );
+				return CreateObject( "java", arguments.javaclass );
 			}
-			catch( java.lang.IllegalArgumentException exception ){
-				if( exception.message.FindNoCase( "Invalid row number (65536)" ) )
-					Throw( type=this.getExceptionType(), message="Too many rows", detail="Binary spreadsheets are limited to 65535 rows. Consider using an XML format spreadsheet instead." );
-				else
-					rethrow;
+			catch( any exception ){
+				this.setJavaClassesLastLoadedVia( "JavaLoader" );
+				return loadClassUsingJavaLoader( arguments.javaclass );
 			}
 		}
-		return row;
+		this.setJavaClassesLastLoadedVia( "JavaLoader" );
+		return loadClassUsingJavaLoader( arguments.javaclass );
 	}
 
-	private any function createWorkBook(
-		required string sheetName
-		,boolean xmlFormat=false
-		,boolean streamingXml=false
-		,numeric streamingWindowSize=100
-	){
-		validateSheetName( arguments.sheetName );
-		if( !arguments.xmlFormat )
-			return loadClass( this.getHSSFWorkbookClassName() ).init();
-		if( arguments.streamingXml ){
-			if( ( !IsValid( "integer", arguments.streamingWindowSize ) || arguments.streamingWindowSize < 1 ) )
-			Throw( type=this.getExceptionType(), message="Invalid 'streamingWindowSize' argument", detail="'streamingWindowSize' must be an integer value greater than 1" );
-			return loadClass( this.getSXSSFWorkbookClassName() ).init( JavaCast( "int", streamingWindowSize ) );
-		}
-		return loadClass( this.getXSSFWorkbookClassName() ).init();
+	private function loadClassUsingJavaLoader( required string javaclass ){
+		if( !server.KeyExists( this.getJavaLoaderName() ) )
+			server[ this.getJavaLoaderName() ] = CreateObject( "component", this.getJavaLoaderDotPath() ).init( loadPaths=getJarPaths(), loadColdFusionClassPath=false, trustedSource=true );
+		return server[ this.getJavaLoaderName() ].create( arguments.javaclass );
 	}
 
-	private query function deleteHiddenColumnsFromQuery( required sheet, required query result ){
-		var startIndex = ( arguments.sheet.totalColumnCount -1 );
-		for( var colIndex = startIndex; colIndex GTE 0; colIndex-- ){
-			if( !arguments.sheet.object.isColumnHidden( JavaCast( "int", colIndex ) ) )
-				continue;
-			var columnNumber = ( colIndex +1 );
-			arguments.result = _queryDeleteColumn( arguments.result, arguments.sheet.columnNames[ columnNumber ] );
-			arguments.sheet.totalColumnCount--;
-			arguments.sheet.columnNames.DeleteAt( columnNumber );
-		}
-		return arguments.result;
-	}
-
-	private void function deleteSheetAtIndex( required workbook, required numeric sheetIndex ){
-		arguments.workbook.removeSheetAt( JavaCast( "int", arguments.sheetIndex ) );
-	}
-
-	private string function detectValueDataType( required value ){
-		// Numeric must precede date test
-		// Golden default rule: treat numbers with leading zeros as STRINGS: not numbers (lucee) or dates (ACF);
-		// Do not detect booleans: leave as strings
-		if( REFind( "^0[\d]+", arguments.value ) )
-			return "string";
-		if( IsNumeric( arguments.value ) )
-			return "numeric";
-		if( _isDate( arguments.value ) )
-			return "date";
-		if( !Len( Trim( arguments.value ) ) )
-			return "blank";
-		return "string";
-	}
+	/* Files */
 
 	private void function downloadBinaryVariable( required binaryVariable, required string filename, required contentType ){
 		cfheader( name="Content-Disposition", value='attachment; filename="#arguments.filename#"' );
@@ -1955,43 +1766,6 @@ component accessors="true"{
 		}
 	}
 
-	private numeric function estimateColumnWidth( required workbook, required any value ){
-		/* Estimates approximate column width based on cell value and default character width. */
-		/*
-		"Excel bases its measurement of column widths on the number of digits (specifically, the number of zeros) in the column, using the Normal style font."
-		This function approximates the column width using the number of characters and the default character width in the normal font. POI expresses the width in 1/256 of Excel's character unit. The maximum size in POI is: (255 * 256)
-		*/
-		var defaultWidth = getDefaultCharWidth( arguments.workbook );
-		var numOfChars = Len( arguments.value );
-		var width = ( numOfChars * defaultWidth +5 ) / ( defaultWidth * 256 );
-	    // Do not allow the size to exceed POI's maximum
-		return min( width, ( 255 * 256 ) );
-	}
-
-	private array function extractRanges( required string rangeList ){
-		/*
-		A range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. Ignores any white space.
-		Parses and validates a list of row/column numbers. Returns an array of structures with the keys: startAt, endAt
-		*/
-		var result = [];
-		var rangeTest = "^[0-9]{1,}(-[0-9]{1,})?$";
-		var ranges = ListToArray( arguments.rangeList );
-		for( var thisRange in ranges ){
-			/* remove all white space */
-			thisRange.reReplace( "\s+","","ALL" );
-			if( !REFind( rangeTest, thisRange ) )
-				Throw( type=this.getExceptionType(), message="Invalid range value", detail="The range value '#thisRange#' is not valid." );
-			var parts = ListToArray( thisRange,"-" );
-			//if this is a single number, the start/endAt values are the same
-			var range = {
-				startAt: parts[ 1 ]
-				,endAt: parts[ parts.Len() ]
-			};
-			result.Append( range );
-		}
-		return result;
-	}
-
 	private string function filenameSafe( required string input ){
 		var charsToRemove	=	"\|\\\*\/\:""<>~&";
 		var result = arguments.input.reReplace( "[#charsToRemove#]+", "", "ALL" ).Left( 255 );
@@ -2000,18 +1774,72 @@ component accessors="true"{
 		return result;
 	}
 
-	private void function doFillMergedCellsWithVisibleValue( required workbook, required sheet ){
-		if( !sheetHasMergedRegions( arguments.sheet ) )
-			return;
-		for( var regionIndex = 0; regionIndex LT arguments.sheet.getNumMergedRegions(); regionIndex++ ){
-			var region = arguments.sheet.getMergedRegion( regionIndex );
-			var regionStartRowNumber = ( region.getFirstRow() +1 );
-			var regionEndRowNumber = ( region.getLastRow() +1 );
-			var regionStartColumnNumber = ( region.getFirstColumn() +1 );
-			var regionEndColumnNumber = ( region.getLastColumn() +1 );
-			var visibleValue = getCellValue( arguments.workbook, regionStartRowNumber, regionStartColumnNumber );
-			setCellRangeValue( arguments.workbook, visibleValue, regionStartRowNumber, regionEndRowNumber, regionStartColumnNumber, regionEndColumnNumber );
+	private void function handleInvalidSpreadsheetFile( required string path ){
+		var detail = "The file #arguments.path# does not appear to be a binary or xml spreadsheet.";
+		if( isCsvOrTextFile( arguments.path ) )
+			detail &= " It may be a CSV file, in which case use 'csvToQuery()' to read it";
+		Throw( type="cfsimplicity.lucee.spreadsheet.invalidFile", message="Invalid spreadsheet file", detail=detail );
+	}
+
+	private boolean function isCsvOrTextFile( required string path ){
+		var contentType = FileGetMimeType( arguments.path ).ListLast( "/" );
+		return ListFindNoCase( "plain,csv", contentType );//Lucee=text/plain ACF=text/csv
+	}
+
+	/* Workbooks */
+
+	private any function createWorkBook(
+		required string sheetName
+		,boolean xmlFormat=false
+		,boolean streamingXml=false
+		,numeric streamingWindowSize=100
+	){
+		validateSheetName( arguments.sheetName );
+		if( !arguments.xmlFormat )
+			return loadClass( this.getHSSFWorkbookClassName() ).init();
+		if( arguments.streamingXml ){
+			if( ( !IsValid( "integer", arguments.streamingWindowSize ) || arguments.streamingWindowSize < 1 ) )
+			Throw( type=this.getExceptionType(), message="Invalid 'streamingWindowSize' argument", detail="'streamingWindowSize' must be an integer value greater than 1" );
+			return loadClass( this.getSXSSFWorkbookClassName() ).init( JavaCast( "int", streamingWindowSize ) );
 		}
+		return loadClass( this.getXSSFWorkbookClassName() ).init();
+	}
+
+	private any function workbookFromFile( required string path, string password ){
+		// works with both xls and xlsx
+		try{
+			lock name="#arguments.path#" timeout=5 {
+				var className = "org.apache.poi.ss.usermodel.WorkbookFactory";
+				var file = CreateObject( "java", "java.io.FileInputStream" ).init( arguments.path );
+				if( arguments.KeyExists( "password" ) )
+					return loadClass( className ).create( file, arguments.password );
+				return loadClass( className ).create( file );
+			}
+		}
+		catch( org.apache.poi.openxml4j.exceptions.InvalidFormatException exception ){
+			handleInvalidSpreadsheetFile( arguments.path );
+		}
+		catch( org.apache.poi.hssf.OldExcelFormatException exception ){
+			Throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #arguments.path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
+		}
+		catch( any exception ){
+			//For ACF which doesn't return the correct exception types
+			if( exception.message CONTAINS "Your InputStream was neither" )
+				handleInvalidSpreadsheetFile( arguments.path );
+			if( exception.message CONTAINS "spreadsheet seems to be Excel 5" )
+				Throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #arguments.path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
+			rethrow;
+		}
+		finally{
+			if( local.KeyExists( "file" ) )
+				file.close();
+		}
+	}
+
+	/* Sheets */
+
+	private void function deleteSheetAtIndex( required workbook, required numeric sheetIndex ){
+		arguments.workbook.removeSheetAt( JavaCast( "int", arguments.sheetIndex ) );
 	}
 
 	private string function generateUniqueSheetName( required workbook ){
@@ -2033,238 +1861,6 @@ component accessors="true"{
 
 	private any function getActiveSheetName( required workbook ){
 		return getActiveSheet( arguments.workbook ).getSheetName();
-	}
-
-	private numeric function getAWTFontStyle( required any poiFont ){
-		var font = loadClass( "java.awt.Font" );
-		var isBold = arguments.poiFont.getBold();
-		if( isBold && arguments.poiFont.getItalic() )
-	  	return BitOr( font.BOLD, font.ITALIC );
-		if( isBold )
-			return font.BOLD;
-		if( arguments.poiFont.getItalic() )
-			return font.ITALIC;
-		return font.PLAIN;
-	}
-
-	private any function getCellAt( required workbook, required numeric rowNumber, required numeric columnNumber ){
-		if( !cellExists( argumentCollection=arguments ) )
-			Throw( type=this.getExceptionType(), message="Invalid cell", detail="The requested cell [#arguments.rowNumber#,#arguments.columnNumber#] does not exist in the active sheet" );
-		var rowIndex = ( arguments.rowNumber -1 );
-		var columnIndex = ( arguments.columnNumber -1 );
-		return getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).getCell( JavaCast( "int", columnIndex ) );
-	}
-
-	private any function getCellRangeAddressFromReference( required string rangeReference ){
-		/* rangeReference = usually a standard area ref (e.g. "B1:D8"). May be a single cell ref (e.g. "B5") in which case the result is a 1 x 1 cell range. May also be a whole row range (e.g. "3:5"), or a whole column range (e.g. "C:F") */
-		return loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String", arguments.rangeReference ) );
-	}
-
-	private any function getCellUtil(){
-		if( IsNull( variables.cellUtil ) )
-			variables.cellUtil = loadClass( "org.apache.poi.ss.util.CellUtil" );
-		return variables.cellUtil;
-	}
-
-	private any function getCellValueAsType( required workbook, required cell ){
-		/* Get the value of the cell based on the data type. The thing to worry about here is cell forumlas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values. */
-		if( cellIsOfType( arguments.cell, "NUMERIC" ) ){
-			/* Get numeric cell data. This could be a standard number, could also be a date value. */
-			if( getDateUtil().isCellDateFormatted( arguments.cell ) ){
-				var cellValue = arguments.cell.getDateCellValue();
-				if( isTimeOnlyValue( cellValue ) )
-					return getFormatter().formatCellValue( arguments.cell );//return as a time formatted string to avoid default epoch date 1899-12-31
-				return cellValue;
-			}
-			return arguments.cell.getNumericCellValue();
-		}
-		if( cellIsOfType( arguments.cell, "FORMULA" ) ){
-			var formulaEvaluator = arguments.workbook.getCreationHelper().createFormulaEvaluator();
-			try{
-				return getFormatter().formatCellValue( arguments.cell, formulaEvaluator );
-			}
-			catch( any exception ){
-				Throw( type=this.getExceptionType(), message="Failed to run formula", detail="There is a problem with the formula in sheet #arguments.cell.getSheet().getSheetName()# row #( arguments.cell.getRowIndex() +1 )# column #( arguments.cell.getColumnIndex() +1 )#");
-			}
-		}
-		if( cellIsOfType( arguments.cell, "BOOLEAN" ) )
-			return arguments.cell.getBooleanCellValue();
-	 	if( cellIsOfType( arguments.cell, "BLANK" ) )
-			return "";
-		try{
-			return arguments.cell.getStringCellValue();
-		}
-		catch( any exception ){
-			return "";
-		}
-	}
-
-	private any function getDateUtil(){
-		if( IsNull( variables.dateUtil ) )
-			variables.dateUtil = loadClass( "org.apache.poi.ss.usermodel.DateUtil" );
-		return variables.dateUtil;
-	}
-
-	private string function getDateTimeValueFormat( required date value ){
-		/* Returns the default date mask for the given value: DATE (only), TIME (only) or TIMESTAMP */
-		var dateOnly = CreateDate( Year( arguments.value ), Month( arguments.value ), Day( arguments.value ) );
-		if( isDateOnlyValue( arguments.value ) )
-			return this.getDateFormats().DATE;
-		if( isTimeOnlyValue( arguments.value ) )
-			return this.getDateFormats().TIME;
-		return this.getDateFormats().TIMESTAMP;
-	}
-
-	private boolean function isDateOnlyValue( required date value ){
-		var dateOnly = CreateDate( Year( arguments.value ), Month( arguments.value ), Day( arguments.value ) );
-		return ( DateCompare( arguments.value, dateOnly, "s" ) == 0 );
-	}
-
-	private boolean function isTimeOnlyValue( required date value ){
-		//NB: this will only detect CF time object (epoch = 1899-12-30), not those using unix epoch 1970-01-01
-		return ( Year( arguments.value ) == "1899" );
-	}
-
-	private numeric function getDefaultCharWidth( required workbook ){
-		/* Estimates the default character width using Excel's 'Normal' font */
-		/* this is a compromise between hard coding a default value and the more complex method of using an AttributedString and TextLayout */
-		var defaultFont = arguments.workbook.getFontAt( 0 );
-		var style = getAWTFontStyle( defaultFont );
-		var font = loadClass( "java.awt.Font" );
-		var javaFont = font.init( defaultFont.getFontName(), style, defaultFont.getFontHeightInPoints() );
-		// this works
-		var transform = CreateObject( "java", "java.awt.geom.AffineTransform" );
-		var fontContext = CreateObject( "java", "java.awt.font.FontRenderContext" ).init( transform, true, true );
-		var bounds = javaFont.getStringBounds( "0", fontContext );
-		return bounds.getWidth();
-	}
-
-	private numeric function getFirstRowNum( required workbook ){
-		var sheet = getActiveSheet( arguments.workbook );
-		var firstRow = sheet.getFirstRowNum();
-		if( firstRow EQ 0 AND sheet.getPhysicalNumberOfRows() EQ 0 )
-			return -1;
-		return firstRow;
-	}
-
-	private any function getFormatter(){
-		/* Returns cell formatting utility object ie org.apache.poi.ss.usermodel.DataFormatter */
-		if( IsNull( variables.dataFormatter ) )
-			variables.dataFormatter = loadClass( "org.apache.poi.ss.usermodel.DataFormatter" ).init();
-		return variables.dataFormatter;
-	}
-
-	private array function getJarPaths(){
-		var libPath = GetDirectoryFromPath( GetCurrentTemplatePath() ) & "lib/";
-		return DirectoryList( libPath );
-	}
-
-	private struct function getJavaColorRGB( required string colorName ){
-		/* Returns a struct containing RGB values from java.awt.Color for the color name passed in */
-		var findColor = arguments.colorName.Trim().UCase();
-		var color = CreateObject( "Java", "java.awt.Color" );
-		if( IsNull( color[ findColor ] ) OR !IsInstanceOf( color[ findColor ], "java.awt.Color" ) )//don't use member functions on color
-			Throw( type=this.getExceptionType(), message="Invalid color", detail="The color provided (#arguments.colorName#) is not valid." );
-		color = color[ findColor ];
-		var colorRGB = {
-			red: color.getRed()
-			,green: color.getGreen()
-			,blue: color.getBlue()
-		};
-		return colorRGB;
-	}
-
-	private numeric function getLastRowNum( required workbook, sheet=getActiveSheet( workbook ) ){
-		var lastRow = arguments.sheet.getLastRowNum();
-		if( lastRow EQ 0 AND arguments.sheet.getPhysicalNumberOfRows() EQ 0 )
-			return -1; //The sheet is empty. Return -1 instead of 0
-		return lastRow;
-	}
-
-	private numeric function getNextEmptyRow( workbook ){
-		return ( getLastRowNum( arguments.workbook ) +1 );
-	}
-
-	private array function getQueryColumnFormats( required query query ){
-		/* extract the query columns and data types  */
-		var metadata = GetMetaData( arguments.query );
-		/* assign default formats based on the data type of each column */
-		for( var col in metadata ){
-			var columnType = col.typeName?: "";// typename is missing in ACF if not specified in the query
-			switch( columnType ){
-				case "DATE": case "TIMESTAMP": case "DATETIME": case "DATETIME2":
-					col.cellDataType = "DATE";
-				break;
-				case "TIME":
-					col.cellDataType = "TIME";
-				break;
-				/* Note: Excel only supports "double" for numbers. Casting very large DECIMIAL/NUMERIC or BIGINT values to double may result in a loss of precision or conversion to NEGATIVE_INFINITY / POSITIVE_INFINITY. */
-				case "DECIMAL": case "BIGINT": case "NUMERIC": case "DOUBLE": case "FLOAT": case "INT": case "INTEGER": case "REAL": case "SMALLINT": case "TINYINT":
-					col.cellDataType = "DOUBLE";
-				break;
-				case "BOOLEAN": case "BIT":
-					col.cellDataType = "BOOLEAN";
-				break;
-				default:
-					col.cellDataType = "STRING";
-			}
-		}
-		return metadata;
-	}
-
-	private string function getRgbTripletForStyleColorFormat( required workbook, required cellStyle, required string format ){
-		var rgbTriplet = [];
-		var isXlsx = isXmlFormat( arguments.workbook );
-		var colorObject = "";
-		if( !isXlsx )
-			var palette = arguments.workbook.getCustomPalette();
-		switch( arguments.format ){
-			case "bottombordercolor":
-				colorObject = isXlsx? arguments.cellStyle.getBottomBorderXSSFColor(): palette.getColor( arguments.cellStyle.getBottomBorderColor() );
-				break;
-			case "fgcolor":
-				colorObject = isXlsx? arguments.cellStyle.getFillForegroundXSSFColor(): palette.getColor( arguments.cellStyle.getFillForegroundColor() );
-				break;
-			case "leftbordercolor":
-				colorObject = isXlsx? arguments.cellStyle.getLeftBorderXSSFColor(): palette.getColor( arguments.cellStyle.getLeftBorderColor() );
-				break;
-			case "rightbordercolor":
-				colorObject = isXlsx? arguments.cellStyle.getRightBorderXSSFColor(): palette.getColor( arguments.cellStyle.getRightBorderColor() );
-				break;
-			case "topbordercolor":
-				colorObject = isXlsx? arguments.cellStyle.getTopBorderXSSFColor(): palette.getColor( arguments.cellStyle.getTopBorderColor() );
-				break;
-		}
-		if( IsNull( colorObject ) OR IsSimpleValue( colorObject) ) // HSSF will return an empty string rather than a null if the color doesn't exist
-			return "";
-		rgbTriplet = isXlsx? convertSignedRGBToPositiveTriplet( colorObject.getRGB() ): colorObject.getTriplet();
-		return ArrayToList( rgbTriplet );
-	}
-
-	private array function getRowData( required workbook, required row, array columnRanges=[], boolean includeRichTextFormatting=false ){
-		var result = [];
-		if( !arguments.columnRanges.Len() ){
-			var columnRange = {
-				startAt: 1
-				,endAt: arguments.row.GetLastCellNum()
-			};
-			arguments.columnRanges = [ columnRange ];
-		}
-		for( var thisRange in arguments.columnRanges ){
-			for( var i = thisRange.startAt; i LTE thisRange.endAt; i++ ){
-				var colIndex = ( i-1 );
-				var cell = arguments.row.GetCell( JavaCast( "int", colIndex ) );
-				if( IsNull( cell ) ){
-					result.Append( "" );
-					continue;
-				}
-				var cellValue = getCellValueAsType( arguments.workbook, cell );
-				if( arguments.includeRichTextFormatting AND cellIsOfType( cell, "STRING" ) )
-					cellValue = richStringCellValueToHtml( arguments.workbook, cell,cellValue );
-				result.Append( cellValue );
-			}
-		}
-		return result;
 	}
 
 	private any function getSheetByName( required workbook, required string sheetName ){
@@ -2294,254 +1890,8 @@ component accessors="true"{
 		return arguments.workbook.getSheetIndex( JavaCast( "string", arguments.sheetName ) );
 	}
 
-	private string function getUnderlineFormatAsString( required cellFont ){
-		var lookup = {};
-		lookup[ 0 ] = "none";
-		lookup[ 1 ] = "single";
-		lookup[ 2 ] = "double";
-		lookup[ 33 ] = "single accounting";
-		lookup[ 34 ] = "double accounting";
-		if( lookup.KeyExists( arguments.cellFont.getUnderline() ) )
-			return lookup[ arguments.cellFont.getUnderline() ];
-		return "unknown";
-	}
-
-	private void function handleInvalidSpreadsheetFile( required string path ){
-		var detail = "The file #arguments.path# does not appear to be a binary or xml spreadsheet.";
-		if( isCsvOrTextFile( arguments.path ) )
-			detail &= " It may be a CSV file, in which case use 'csvToQuery()' to read it";
-		Throw( type="cfsimplicity.lucee.spreadsheet.invalidFile", message="Invalid spreadsheet file", detail=detail );
-	}
-
-	private any function initializeCell( required workbook, required numeric rowNumber, required numeric columnNumber ){
-		var rowIndex = JavaCast( "int", ( arguments.rowNumber -1 ) );
-		var columnIndex = JavaCast( "int", ( arguments.columnNumber -1 ) );
-		var rowObject = getCellUtil().getRow( rowIndex, getActiveSheet( arguments.workbook ) );
-		var cellObject = getCellUtil().getCell( rowObject, columnIndex );
-		return cellObject;
-	}
-
-	private boolean function isCsvOrTextFile( required string path ){
-		var contentType = FileGetMimeType( arguments.path ).ListLast( "/" );
-		return ListFindNoCase( "plain,csv", contentType );//Lucee=text/plain ACF=text/csv
-	}
-
-	private boolean function isDateObject( required input ){
-		return arguments.input.getClass().getName() IS "java.util.Date";
-	}
-
-	private boolean function isString( required input ){
-		return arguments.input.getClass().getName() IS "java.lang.String";
-	}
-
-	private function loadClass( required string javaclass ){
-		if( !this.getRequiresJavaLoader() ){
-			// If not using JL, *the correct* POI jars must be in the class path and any older versions *removed*
-			try{
-				this.setJavaClassesLastLoadedVia( "The java class path" );
-				return CreateObject( "java", arguments.javaclass );
-			}
-			catch( any exception ){
-				this.setJavaClassesLastLoadedVia( "JavaLoader" );
-				return loadClassUsingJavaLoader( arguments.javaclass );
-			}
-		}
-		this.setJavaClassesLastLoadedVia( "JavaLoader" );
-		return loadClassUsingJavaLoader( arguments.javaclass );
-	}
-
-	private function loadClassUsingJavaLoader( required string javaclass ){
-		if( !server.KeyExists( this.getJavaLoaderName() ) )
-			server[ this.getJavaLoaderName() ] = CreateObject( "component", this.getJavaLoaderDotPath() ).init( loadPaths=getJarPaths(), loadColdFusionClassPath=false, trustedSource=true );
-		return server[ this.getJavaLoaderName() ].create( arguments.javaclass );
-	}
-
 	private void function moveSheet( required workbook, required string sheetName, required string moveToIndex ){
 		arguments.workbook.setSheetOrder( JavaCast( "String", arguments.sheetName ), JavaCast( "int", arguments.moveToIndex ) );
-	}
-
-	private array function parseRowData( required string line, required string delimiter, boolean handleEmbeddedCommas=true ){
-		var elements = ListToArray( arguments.line, arguments.delimiter );
-		var potentialQuotes = 0;
-		arguments.line = ToString( arguments.line );
-		if( arguments.delimiter EQ "," AND arguments.handleEmbeddedCommas )
-			potentialQuotes = arguments.line.ReplaceAll( "[^']", "" ).length();
-		if( potentialQuotes <= 1 )
-		  return elements;
-		//For ACF compatibility, find any values enclosed in single quotes and treat them as a single element.
-		var currentValue = 0;
-		var nextValue = "";
-		var isEmbeddedValue = false;
-		var values = [];
-		var buffer = CreateObject( "Java", "java.lang.StringBuilder" ).init();
-		var maxElements = ArrayLen( elements );
-
-		for( var i = 1; i LTE maxElements; i++ ) {
-		  currentValue = Trim( elements[ i ] );
-		  nextValue = i < maxElements ? elements[ i + 1 ] : "";
-		  var isComplete = false;
-		  var hasLeadingQuote = ( currentValue.Left( 1 ) IS "'" );
-		  var hasTrailingQuote = ( currentValue.Right( 1 ) IS "'" );
-		  var isFinalElement = ( i == maxElements );
-		  if( hasLeadingQuote )
-			  isEmbeddedValue = true;
-		  if( isEmbeddedValue AND hasTrailingQuote )
-			  isComplete = true;
-		  /* We are finished with this value if:
-			  * no quotes were found OR
-			  * it is the final value OR
-			  * the next value is embedded in quotes
-		  */
-		  if( !isEmbeddedValue || isFinalElement || ( nextValue.Left( 1 ) IS "'" ) )
-			  isComplete = true;
-		  if( isEmbeddedValue || isComplete ){
-			  // if this a partial value, append the delimiter
-			  if( isEmbeddedValue AND buffer.length() GT 0 )
-				  buffer.Append( "," );
-			  buffer.Append( elements[ i ] );
-		  }
-		  if( isComplete ){
-			  var finalValue = buffer.toString();
-			  var startAt = finalValue.indexOf( "'" );
-			  var endAt = finalValue.lastIndexOf( "'" );
-			  if( isEmbeddedValue AND startAt GTE 0 AND endAt GT startAt )
-				  finalValue = finalValue.substring( ( startAt +1 ), endAt );
-			  values.Append( finalValue );
-			  buffer.setLength( 0 );
-			  isEmbeddedValue = false;
-		  }
-	  }
-	  return values;
-	}
-
-	private string function queryToCsv( required query query, numeric headerRow, boolean includeHeaderRow=false ){
-		var result = CreateObject( "Java", "java.lang.StringBuilder" ).init();
-		var crlf = Chr( 13 ) & Chr( 10 );
-		var columns = _queryColumnArray( arguments.query );
-		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
-		if( generateHeaderRow )
-			result.Append( generateCsvRow( columns ) );
-		for( var row in arguments.query ){
-			var rowValues = [];
-			for( var column in columns )
-				rowValues.Append( row[ column ] );
-			result.Append( crlf & generateCsvRow( rowValues ) );
-		}
-		return result.toString().Trim();
-	}
-
-	private string function generateCsvRow( required array values, delimiter="," ){
-		var result = CreateObject( "Java", "java.lang.StringBuilder" ).init();
-		for( var value in arguments.values ){
-			if( isDateObject( value ) )
-				value = DateTimeFormat( value, this.getDateFormats().DATETIME );
-			value = Replace( value, '"', '""', "ALL" );//can't use member function in case its a non-string
-			result.Append( '#arguments.delimiter#"#value#"' );
-		}
-		return result.toString().substring( 1 );
-	}
-
-	private string function queryToHtml( required query query, numeric headerRow, boolean includeHeaderRow=false ){
-		var result = CreateObject( "Java", "java.lang.StringBuilder" ).init();
-		var columns = _queryColumnArray( arguments.query );
-		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
-		if( generateHeaderRow ){
-			result.Append( "<thead>" );
-			result.Append( generateHtmlRow( columns, true ) );
-			result.Append( "</thead>" );
-		}
-		result.Append( "<tbody>" );
-		for( var row in arguments.query ){
-			var rowValues = [];
-			for( var column in columns )
-				rowValues.Append( row[ column ] );
-			result.Append( generateHtmlRow( rowValues ) );
-		}
-		result.Append( "</tbody>" );
-		return result.toString();
-	}
-
-	private string function generateHtmlRow( required array values, boolean isHeader=false ){
-		var result = CreateObject( "Java", "java.lang.StringBuilder" ).init();
-		result.Append( "<tr>" );
-		var columnTag = arguments.isHeader? "th": "td";
-		for( var value in arguments.values ){
-			if( isDateObject( value ) )
-				value = DateTimeFormat( value, this.getDateFormats().DATETIME );
-			result.Append( "<#columnTag#>#value#</#columnTag#>" );
-		}
-		result.Append( "</tr>" );
-		return result.toString();
-	}
-
-	private boolean function rowIsEmpty( required row ){
-		for( var i = arguments.row.getFirstCellNum(); i LT arguments.row.getLastCellNum(); i++ ){
-	    var cell = arguments.row.getCell( i );
-	    if( !IsNull( cell ) && !cellIsOfType( cell, "BLANK" ) )
-	      return false;
-	  }
-	  return true;
-	}
-
-	private void function setCellValueAsType( required workbook, required cell, required value, string type ){
-		var validCellTypes = [ "string", "numeric", "date", "time", "boolean", "blank" ];
-		if( !arguments.KeyExists( "type" ) ) //autodetect type
-			arguments.type = detectValueDataType( arguments.value );
-		else if( !validCellTypes.FindNoCase( arguments.type ) )
-			Throw( type=this.getExceptionType(), message="Invalid data type: '#arguments.type#'", detail="The data type must be one of the following: #validCellTypes.ToList( ', ' )#." );
-		/* Note: To properly apply date/number formatting:
-			- cell type must be CELL_TYPE_NUMERIC
-			- cell value must be applied as a java.util.Date or java.lang.Double (NOT as a string)
-			- cell style must have a dataFormat (datetime values only)
- 		*/
-		switch( arguments.type ){
-			case "numeric":
-				arguments.cell.setCellType( arguments.cell.CellType.NUMERIC );
-				arguments.cell.setCellValue( JavaCast( "double", Val( arguments.value ) ) );
-				return;
-			case "date": case "time":
-				//handle empty strings which can't be treated as dates
-				if( !Len( Trim( arguments.value ) ) ){
-					arguments.cell.setCellType( arguments.cell.CellType.BLANK ); //no need to set the value: it will be blank
-					return;
-				}
-				// if time has been specified, trust the source to avoid incorrect time value parsing
-				if( arguments.type == "time" ){
-					var dateTimeValue = arguments.value;
-					var cellFormat = this.getDateFormats().TIME; //don't include the epoch date in the display
-				}
-				else {
-					var dateTimeValue = ParseDateTime( arguments.value );
-					var cellFormat = getDateTimeValueFormat( dateTimeValue );// check if DATE, TIME or TIMESTAMP
-				}
-				var formatter = arguments.workbook.getCreationHelper().createDataFormat();
-				//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
-				getCellUtil().setCellStyleProperty( arguments.cell, getCellUtil().DATA_FORMAT, formatter.getFormat( JavaCast( "string", cellFormat ) ) );
-				arguments.cell.setCellType( arguments.cell.CellType.NUMERIC );
-				/*  Excel uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling */
-				if( arguments.type == "time" || isTimeOnlyValue( dateTimeValue ) ){
-					dateTimeValue = dateTimeValue.Add( "d", 2 );//shift the epoch forward to match Excel's
-					var javaDate = dateTimeValue.from( dateTimeValue.toInstant() );// dateUtil needs a java date
-					dateTimeValue = ( getDateUtil().getExcelDate( javaDate ) -1 );//Convert to Excel's double value for dates, minus the 1 complete day to leave the day fraction (= time value)
-				}
-				arguments.cell.setCellValue( dateTimeValue );
-				return;
-			case "boolean":
-				//handle empty strings/nulls which can't be treated as booleans
-				if( !Len( Trim( arguments.value ) ) ){
-					arguments.cell.setCellType( arguments.cell.CellType.BLANK ); //no need to set the value: it will be blank
-					return;
-				}
-				arguments.cell.setCellType( arguments.cell.CellType.BOOLEAN );
-				arguments.cell.setCellValue( JavaCast( "boolean", arguments.value ) );
-				return;
-			case "blank":
-				arguments.cell.setCellType( arguments.cell.CellType.BLANK ); //no need to set the value: it will be blank
-				return;
-		}
-		// string cellStyle.getAlignmentEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
-		arguments.cell.setCellType( arguments.cell.CellType.STRING );
-		arguments.cell.setCellValue( JavaCast( "string", arguments.value ) );
 	}
 
 	private boolean function sheetExists( required workbook, string sheetName, numeric sheetNumber ){
@@ -2642,15 +1992,6 @@ component accessors="true"{
 		return result;
 	}
 
-	private void function toggleColumnHidden( required workbook, required numeric columnNumber, required boolean state ){
-		getActiveSheet( arguments.workbook ).setColumnHidden( JavaCast( "int", arguments.columnNumber-1 ), JavaCast( "boolean", arguments.state ) );
-	}
-
-	private void function toggleRowHidden( required workbook, required numeric row, required boolean state ){
-		var rowIndex = ( arguments.row -1 );
-		getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).setZeroHeight( JavaCast( "boolean", arguments.state ) );
-	}
-
 	private void function validateSheetExistsWithName( required workbook, required string sheetName ){
 		if( !sheetExists( workbook=arguments.workbook, sheetName=arguments.sheetName ) )
 			Throw( type=this.getExceptionType(), message="Invalid sheet name [#arguments.sheetName#]", detail="The specified sheet was not found in the current workbook." );
@@ -2687,35 +2028,593 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Too Many Arguments", detail="Only one argument is allowed. Specify either a sheetName or sheetNumber, not both" );
 	}
 
-	private any function workbookFromFile( required string path, string password ){
-		// works with both xls and xlsx
-		try{
-			lock name="#arguments.path#" timeout=5 {
-				var className = "org.apache.poi.ss.usermodel.WorkbookFactory";
-				var file = CreateObject( "java", "java.io.FileInputStream" ).init( arguments.path );
-				if( arguments.KeyExists( "password" ) )
-					return loadClass( className ).create( file, arguments.password );
-				return loadClass( className ).create( file );
+	/* Rows */
+
+	private void function addRowToSheetData(
+		required workbook
+		,required struct sheet
+		,required numeric rowIndex
+		,boolean includeRichTextFormatting=false
+	){
+		if( ( arguments.rowIndex EQ arguments.sheet.headerRowIndex ) AND !arguments.sheet.includeHeaderRow )
+			return;
+		var rowData = [];
+		var row = arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
+		if( IsNull( row ) ){
+			if( arguments.sheet.includeBlankRows )
+				arguments.sheet.data.Append( rowData );
+			return;
+		}
+		if( rowIsEmpty( row ) AND !arguments.sheet.includeBlankRows )
+			return;
+		rowData = getRowData( arguments.workbook, row, arguments.sheet.columnRanges, arguments.includeRichTextFormatting );
+		arguments.sheet.data.Append( rowData );
+		if( !arguments.sheet.columnRanges.Len() ){
+			var rowColumnCount = row.GetLastCellNum();
+			arguments.sheet.totalColumnCount = Max( arguments.sheet.totalColumnCount, rowColumnCount );
+		}
+	}
+
+	private any function createRow( required workbook, numeric rowNum=getNextEmptyRow( arguments.workbook ), boolean overwrite=true ){
+		/* get existing row (if any)  */
+		var sheet = getActiveSheet( arguments.workbook );
+		var row = sheet.getRow( JavaCast( "int", arguments.rowNum ) );
+		if( arguments.overwrite AND !IsNull( row ) )
+			sheet.removeRow( row ); /* forcibly remove existing row and all cells  */
+		if( arguments.overwrite OR IsNull( sheet.getRow( JavaCast( "int", arguments.rowNum ) ) ) ){
+			try{
+				row = sheet.createRow( JavaCast( "int", arguments.rowNum ) );
+			}
+			catch( java.lang.IllegalArgumentException exception ){
+				if( exception.message.FindNoCase( "Invalid row number (65536)" ) )
+					Throw( type=this.getExceptionType(), message="Too many rows", detail="Binary spreadsheets are limited to 65535 rows. Consider using an XML format spreadsheet instead." );
+				else
+					rethrow;
 			}
 		}
-		catch( org.apache.poi.openxml4j.exceptions.InvalidFormatException exception ){
-			handleInvalidSpreadsheetFile( arguments.path );
+		return row;
+	}
+
+	private numeric function getFirstRowNum( required workbook ){
+		var sheet = getActiveSheet( arguments.workbook );
+		var firstRow = sheet.getFirstRowNum();
+		if( firstRow EQ 0 AND sheet.getPhysicalNumberOfRows() EQ 0 )
+			return -1;
+		return firstRow;
+	}
+
+	private numeric function getLastRowNum( required workbook, sheet=getActiveSheet( arguments.workbook ) ){
+		var lastRow = arguments.sheet.getLastRowNum();
+		if( lastRow EQ 0 AND arguments.sheet.getPhysicalNumberOfRows() EQ 0 )
+			return -1; //The sheet is empty. Return -1 instead of 0
+		return lastRow;
+	}
+
+	private numeric function getNextEmptyRow( workbook ){
+		return ( getLastRowNum( arguments.workbook ) +1 );
+	}
+
+	private array function getRowData( required workbook, required row, array columnRanges=[], boolean includeRichTextFormatting=false ){
+		var result = [];
+		if( !arguments.columnRanges.Len() ){
+			var columnRange = {
+				startAt: 1
+				,endAt: arguments.row.GetLastCellNum()
+			};
+			arguments.columnRanges = [ columnRange ];
 		}
-		catch( org.apache.poi.hssf.OldExcelFormatException exception ){
-			Throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #arguments.path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
+		for( var thisRange in arguments.columnRanges ){
+			for( var i = thisRange.startAt; i LTE thisRange.endAt; i++ ){
+				var colIndex = ( i-1 );
+				var cell = arguments.row.GetCell( JavaCast( "int", colIndex ) );
+				if( IsNull( cell ) ){
+					result.Append( "" );
+					continue;
+				}
+				var cellValue = getCellValueAsType( arguments.workbook, cell );
+				if( arguments.includeRichTextFormatting AND cellIsOfType( cell, "STRING" ) )
+					cellValue = richStringCellValueToHtml( arguments.workbook, cell,cellValue );
+				result.Append( cellValue );
+			}
+		}
+		return result;
+	}
+
+	private array function parseRowData( required string line, required string delimiter, boolean handleEmbeddedCommas=true ){
+		var elements = ListToArray( arguments.line, arguments.delimiter );
+		var potentialQuotes = 0;
+		arguments.line = ToString( arguments.line );
+		if( arguments.delimiter EQ "," AND arguments.handleEmbeddedCommas )
+			potentialQuotes = arguments.line.ReplaceAll( "[^']", "" ).length();
+		if( potentialQuotes <= 1 )
+		  return elements;
+		//For ACF compatibility, find any values enclosed in single quotes and treat them as a single element.
+		var currentValue = 0;
+		var nextValue = "";
+		var isEmbeddedValue = false;
+		var values = [];
+		var buffer = newJavaStringBuilder();
+		var maxElements = ArrayLen( elements );
+
+		for( var i = 1; i LTE maxElements; i++ ) {
+		  currentValue = Trim( elements[ i ] );
+		  nextValue = i < maxElements ? elements[ i + 1 ] : "";
+		  var isComplete = false;
+		  var hasLeadingQuote = ( currentValue.Left( 1 ) IS "'" );
+		  var hasTrailingQuote = ( currentValue.Right( 1 ) IS "'" );
+		  var isFinalElement = ( i == maxElements );
+		  if( hasLeadingQuote )
+			  isEmbeddedValue = true;
+		  if( isEmbeddedValue AND hasTrailingQuote )
+			  isComplete = true;
+		  /* We are finished with this value if:
+			  * no quotes were found OR
+			  * it is the final value OR
+			  * the next value is embedded in quotes
+		  */
+		  if( !isEmbeddedValue || isFinalElement || ( nextValue.Left( 1 ) IS "'" ) )
+			  isComplete = true;
+		  if( isEmbeddedValue || isComplete ){
+			  // if this a partial value, append the delimiter
+			  if( isEmbeddedValue AND buffer.length() GT 0 )
+				  buffer.Append( "," );
+			  buffer.Append( elements[ i ] );
+		  }
+		  if( isComplete ){
+			  var finalValue = buffer.toString();
+			  var startAt = finalValue.indexOf( "'" );
+			  var endAt = finalValue.lastIndexOf( "'" );
+			  if( isEmbeddedValue AND startAt GTE 0 AND endAt GT startAt )
+				  finalValue = finalValue.substring( ( startAt +1 ), endAt );
+			  values.Append( finalValue );
+			  buffer.setLength( 0 );
+			  isEmbeddedValue = false;
+		  }
+	  }
+	  return values;
+	}
+
+	private boolean function rowIsEmpty( required row ){
+		for( var i = arguments.row.getFirstCellNum(); i LT arguments.row.getLastCellNum(); i++ ){
+	    var cell = arguments.row.getCell( i );
+	    if( !IsNull( cell ) && !cellIsOfType( cell, "BLANK" ) )
+	      return false;
+	  }
+	  return true;
+	}
+
+	/* Columns */
+
+	private numeric function columnCountFromRanges( required array ranges ){
+		var result = 0;
+		for( var thisRange in arguments.ranges ){
+			for( var i = thisRange.startAt; i LTE thisRange.endAt; i++ )
+				result++;
+		}
+		return result;
+	}
+
+	private numeric function estimateColumnWidth( required workbook, required any value ){
+		/* Estimates approximate column width based on cell value and default character width. */
+		/*
+		"Excel bases its measurement of column widths on the number of digits (specifically, the number of zeros) in the column, using the Normal style font."
+		This function approximates the column width using the number of characters and the default character width in the normal font. POI expresses the width in 1/256 of Excel's character unit. The maximum size in POI is: (255 * 256)
+		*/
+		var defaultWidth = getDefaultCharWidth( arguments.workbook );
+		var numOfChars = Len( arguments.value );
+		var width = ( numOfChars * defaultWidth +5 ) / ( defaultWidth * 256 );
+	    // Do not allow the size to exceed POI's maximum
+		return min( width, ( 255 * 256 ) );
+	}
+
+	/* Cells */
+
+	private boolean function cellExists( required workbook, required numeric rowNumber, required numeric columnNumber ){
+		var rowIndex = ( arguments.rowNumber -1 );
+		var columnIndex = ( arguments.columnNumber -1 );
+		var checkRow = getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
+		return !IsNull( checkRow ) AND !IsNull( checkRow.getCell( JavaCast( "int", columnIndex ) ) );
+	}
+
+	private boolean function cellIsOfType( required cell, required string type ){
+		var cellType = arguments.cell.getCellType();
+		return ObjectEquals( cellType, cellType[ arguments.type ] );
+	}
+
+	private any function createCell( required row, numeric cellNum=arguments.row.getLastCellNum(), overwrite=true ){
+		/* get existing cell (if any)  */
+		var cell = arguments.row.getCell( JavaCast( "int", arguments.cellNum ) );
+		if( arguments.overwrite AND !IsNull( cell ) )
+			arguments.row.removeCell( cell );/* forcibly remove the existing cell  */
+		if( arguments.overwrite OR IsNull( cell ) )
+			cell = arguments.row.createCell( JavaCast( "int", arguments.cellNum ) );/* create a brand new cell  */
+		return cell;
+	}
+
+	private any function getCellAt( required workbook, required numeric rowNumber, required numeric columnNumber ){
+		if( !cellExists( argumentCollection=arguments ) )
+			Throw( type=this.getExceptionType(), message="Invalid cell", detail="The requested cell [#arguments.rowNumber#,#arguments.columnNumber#] does not exist in the active sheet" );
+		var rowIndex = ( arguments.rowNumber -1 );
+		var columnIndex = ( arguments.columnNumber -1 );
+		return getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).getCell( JavaCast( "int", columnIndex ) );
+	}
+
+	private any function getCellRangeAddressFromReference( required string rangeReference ){
+		/* rangeReference = usually a standard area ref (e.g. "B1:D8"). May be a single cell ref (e.g. "B5") in which case the result is a 1 x 1 cell range. May also be a whole row range (e.g. "3:5"), or a whole column range (e.g. "C:F") */
+		return loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String", arguments.rangeReference ) );
+	}
+
+	private any function getCellValueAsType( required workbook, required cell ){
+		/* Get the value of the cell based on the data type. The thing to worry about here is cell forumlas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values. */
+		if( cellIsOfType( arguments.cell, "NUMERIC" ) ){
+			/* Get numeric cell data. This could be a standard number, could also be a date value. */
+			if( getDateUtil().isCellDateFormatted( arguments.cell ) ){
+				var cellValue = arguments.cell.getDateCellValue();
+				if( isTimeOnlyValue( cellValue ) )
+					return getDataFormatter().formatCellValue( arguments.cell );//return as a time formatted string to avoid default epoch date 1899-12-31
+				return cellValue;
+			}
+			return arguments.cell.getNumericCellValue();
+		}
+		if( cellIsOfType( arguments.cell, "FORMULA" ) ){
+			var formulaEvaluator = arguments.workbook.getCreationHelper().createFormulaEvaluator();
+			try{
+				return getDataFormatter().formatCellValue( arguments.cell, formulaEvaluator );
+			}
+			catch( any exception ){
+				Throw( type=this.getExceptionType(), message="Failed to run formula", detail="There is a problem with the formula in sheet #arguments.cell.getSheet().getSheetName()# row #( arguments.cell.getRowIndex() +1 )# column #( arguments.cell.getColumnIndex() +1 )#");
+			}
+		}
+		if( cellIsOfType( arguments.cell, "BOOLEAN" ) )
+			return arguments.cell.getBooleanCellValue();
+	 	if( cellIsOfType( arguments.cell, "BLANK" ) )
+			return "";
+		try{
+			return arguments.cell.getStringCellValue();
 		}
 		catch( any exception ){
-			//For ACF which doesn't return the correct exception types
-			if( exception.message CONTAINS "Your InputStream was neither" )
-				handleInvalidSpreadsheetFile( arguments.path );
-			if( exception.message CONTAINS "spreadsheet seems to be Excel 5" )
-				Throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #arguments.path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
-			rethrow;
+			return "";
 		}
-		finally{
-			if( local.KeyExists( "file" ) )
-				file.close();
+	}
+
+	private any function initializeCell( required workbook, required numeric rowNumber, required numeric columnNumber ){
+		var rowIndex = JavaCast( "int", ( arguments.rowNumber -1 ) );
+		var columnIndex = JavaCast( "int", ( arguments.columnNumber -1 ) );
+		var rowObject = getCellUtil().getRow( rowIndex, getActiveSheet( arguments.workbook ) );
+		var cellObject = getCellUtil().getCell( rowObject, columnIndex );
+		return cellObject;
+	}
+
+	private void function setCellValueAsType( required workbook, required cell, required value, string type ){
+		var validCellTypes = [ "string", "numeric", "date", "time", "boolean", "blank" ];
+		if( !arguments.KeyExists( "type" ) ) //autodetect type
+			arguments.type = detectValueDataType( arguments.value );
+		else if( !validCellTypes.FindNoCase( arguments.type ) )
+			Throw( type=this.getExceptionType(), message="Invalid data type: '#arguments.type#'", detail="The data type must be one of the following: #validCellTypes.ToList( ', ' )#." );
+		/* Note: To properly apply date/number formatting:
+			- cell type must be CELL_TYPE_NUMERIC
+			- cell value must be applied as a java.util.Date or java.lang.Double (NOT as a string)
+			- cell style must have a dataFormat (datetime values only)
+ 		*/
+		switch( arguments.type ){
+			case "numeric":
+				arguments.cell.setCellType( arguments.cell.CellType.NUMERIC );
+				arguments.cell.setCellValue( JavaCast( "double", Val( arguments.value ) ) );
+				return;
+			case "date": case "time":
+				//handle empty strings which can't be treated as dates
+				if( !Len( Trim( arguments.value ) ) ){
+					arguments.cell.setCellType( arguments.cell.CellType.BLANK ); //no need to set the value: it will be blank
+					return;
+				}
+				// if time has been specified, trust the source to avoid incorrect time value parsing
+				if( arguments.type == "time" ){
+					var dateTimeValue = arguments.value;
+					var cellFormat = this.getDateFormats().TIME; //don't include the epoch date in the display
+				}
+				else {
+					var dateTimeValue = ParseDateTime( arguments.value );
+					var cellFormat = getDateTimeValueFormat( dateTimeValue );// check if DATE, TIME or TIMESTAMP
+				}
+				var dataFormat = arguments.workbook.getCreationHelper().createDataFormat();
+				//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
+				getCellUtil().setCellStyleProperty( arguments.cell, getCellUtil().DATA_FORMAT, dataFormat.getFormat( JavaCast( "string", cellFormat ) ) );
+				arguments.cell.setCellType( arguments.cell.CellType.NUMERIC );
+				/*  Excel uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling */
+				if( arguments.type == "time" || isTimeOnlyValue( dateTimeValue ) ){
+					dateTimeValue = dateTimeValue.Add( "d", 2 );//shift the epoch forward to match Excel's
+					var javaDate = dateTimeValue.from( dateTimeValue.toInstant() );// dateUtil needs a java date
+					dateTimeValue = ( getDateUtil().getExcelDate( javaDate ) -1 );//Convert to Excel's double value for dates, minus the 1 complete day to leave the day fraction (= time value)
+				}
+				arguments.cell.setCellValue( dateTimeValue );
+				return;
+			case "boolean":
+				//handle empty strings/nulls which can't be treated as booleans
+				if( !Len( Trim( arguments.value ) ) ){
+					arguments.cell.setCellType( arguments.cell.CellType.BLANK ); //no need to set the value: it will be blank
+					return;
+				}
+				arguments.cell.setCellType( arguments.cell.CellType.BOOLEAN );
+				arguments.cell.setCellValue( JavaCast( "boolean", arguments.value ) );
+				return;
+			case "blank":
+				arguments.cell.setCellType( arguments.cell.CellType.BLANK ); //no need to set the value: it will be blank
+				return;
 		}
+		// string cellStyle.getAlignmentEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
+		arguments.cell.setCellType( arguments.cell.CellType.STRING );
+		arguments.cell.setCellValue( JavaCast( "string", arguments.value ) );
+	}
+
+	/* Query data */
+	private query function deleteHiddenColumnsFromQuery( required sheet, required query result ){
+		var startIndex = ( arguments.sheet.totalColumnCount -1 );
+		for( var colIndex = startIndex; colIndex GTE 0; colIndex-- ){
+			if( !arguments.sheet.object.isColumnHidden( JavaCast( "int", colIndex ) ) )
+				continue;
+			var columnNumber = ( colIndex +1 );
+			arguments.result = _queryDeleteColumn( arguments.result, arguments.sheet.columnNames[ columnNumber ] );
+			arguments.sheet.totalColumnCount--;
+			arguments.sheet.columnNames.DeleteAt( columnNumber );
+		}
+		return arguments.result;
+	}
+
+	private array function getQueryColumnFormats( required query query ){
+		/* extract the query columns and data types  */
+		var metadata = GetMetaData( arguments.query );
+		/* assign default formats based on the data type of each column */
+		for( var col in metadata ){
+			var columnType = col.typeName?: "";// typename is missing in ACF if not specified in the query
+			switch( columnType ){
+				case "DATE": case "TIMESTAMP": case "DATETIME": case "DATETIME2":
+					col.cellDataType = "DATE";
+				break;
+				case "TIME":
+					col.cellDataType = "TIME";
+				break;
+				/* Note: Excel only supports "double" for numbers. Casting very large DECIMIAL/NUMERIC or BIGINT values to double may result in a loss of precision or conversion to NEGATIVE_INFINITY / POSITIVE_INFINITY. */
+				case "DECIMAL": case "BIGINT": case "NUMERIC": case "DOUBLE": case "FLOAT": case "INT": case "INTEGER": case "REAL": case "SMALLINT": case "TINYINT":
+					col.cellDataType = "DOUBLE";
+				break;
+				case "BOOLEAN": case "BIT":
+					col.cellDataType = "BOOLEAN";
+				break;
+				default:
+					col.cellDataType = "STRING";
+			}
+		}
+		return metadata;
+	}
+
+	private string function queryToCsv( required query query, numeric headerRow, boolean includeHeaderRow=false ){
+		var result = newJavaStringBuilder();
+		var crlf = Chr( 13 ) & Chr( 10 );
+		var columns = _queryColumnArray( arguments.query );
+		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
+		if( generateHeaderRow )
+			result.Append( generateCsvRow( columns ) );
+		for( var row in arguments.query ){
+			var rowValues = [];
+			for( var column in columns )
+				rowValues.Append( row[ column ] );
+			result.Append( crlf & generateCsvRow( rowValues ) );
+		}
+		return result.toString().Trim();
+	}
+
+	private string function queryToHtml( required query query, numeric headerRow, boolean includeHeaderRow=false ){
+		var result = newJavaStringBuilder();
+		var columns = _queryColumnArray( arguments.query );
+		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
+		if( generateHeaderRow ){
+			result.Append( "<thead>" );
+			result.Append( generateHtmlRow( columns, true ) );
+			result.Append( "</thead>" );
+		}
+		result.Append( "<tbody>" );
+		for( var row in arguments.query ){
+			var rowValues = [];
+			for( var column in columns )
+				rowValues.Append( row[ column ] );
+			result.Append( generateHtmlRow( rowValues ) );
+		}
+		result.Append( "</tbody>" );
+		return result.toString();
+	}
+
+	private string function generateCsvRow( required array values, delimiter="," ){
+		var result = newJavaStringBuilder();
+		for( var value in arguments.values ){
+			if( isDateObject( value ) )
+				value = DateTimeFormat( value, this.getDateFormats().DATETIME );
+			value = Replace( value, '"', '""', "ALL" );//can't use member function in case its a non-string
+			result.Append( '#arguments.delimiter#"#value#"' );
+		}
+		return result.toString().substring( 1 );
+	}
+
+	private string function generateHtmlRow( required array values, boolean isHeader=false ){
+		var result = newJavaStringBuilder();
+		result.Append( "<tr>" );
+		var columnTag = arguments.isHeader? "th": "td";
+		for( var value in arguments.values ){
+			if( isDateObject( value ) )
+				value = DateTimeFormat( value, this.getDateFormats().DATETIME );
+			result.Append( "<#columnTag#>#value#</#columnTag#>" );
+		}
+		result.Append( "</tr>" );
+		return result.toString();
+	}
+
+	/* Ranges */
+
+	private array function extractRanges( required string rangeList ){
+		/*
+		A range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. Ignores any white space.
+		Parses and validates a list of row/column numbers. Returns an array of structures with the keys: startAt, endAt
+		*/
+		var result = [];
+		var rangeTest = "^[0-9]{1,}(-[0-9]{1,})?$";
+		var ranges = ListToArray( arguments.rangeList );
+		for( var thisRange in ranges ){
+			/* remove all white space */
+			thisRange.reReplace( "\s+","","ALL" );
+			if( !REFind( rangeTest, thisRange ) )
+				Throw( type=this.getExceptionType(), message="Invalid range value", detail="The range value '#thisRange#' is not valid." );
+			var parts = ListToArray( thisRange,"-" );
+			//if this is a single number, the start/endAt values are the same
+			var range = {
+				startAt: parts[ 1 ]
+				,endAt: parts[ parts.Len() ]
+			};
+			result.Append( range );
+		}
+		return result;
+	}
+
+	/* Values */
+
+	private string function detectValueDataType( required value ){
+		// Numeric must precede date test
+		// Golden default rule: treat numbers with leading zeros as STRINGS: not numbers (lucee) or dates (ACF);
+		// Do not detect booleans: leave as strings
+		if( REFind( "^0[\d]+", arguments.value ) )
+			return "string";
+		if( IsNumeric( arguments.value ) )
+			return "numeric";
+		if( _isDate( arguments.value ) )
+			return "date";
+		if( !Len( Trim( arguments.value ) ) )
+			return "blank";
+		return "string";
+	}
+
+	private boolean function isString( required input ){
+		return arguments.input.getClass().getName() IS "java.lang.String";
+	}
+
+	/* Dates */
+
+	private string function getDateTimeValueFormat( required date value ){
+		/* Returns the default date mask for the given value: DATE (only), TIME (only) or TIMESTAMP */
+		var dateOnly = CreateDate( Year( arguments.value ), Month( arguments.value ), Day( arguments.value ) );
+		if( isDateOnlyValue( arguments.value ) )
+			return this.getDateFormats().DATE;
+		if( isTimeOnlyValue( arguments.value ) )
+			return this.getDateFormats().TIME;
+		return this.getDateFormats().TIMESTAMP;
+	}
+
+	private boolean function isDateObject( required input ){
+		return arguments.input.getClass().getName() IS "java.util.Date";
+	}
+
+	private boolean function isDateOnlyValue( required date value ){
+		var dateOnly = CreateDate( Year( arguments.value ), Month( arguments.value ), Day( arguments.value ) );
+		return ( DateCompare( arguments.value, dateOnly, "s" ) == 0 );
+	}
+
+	private boolean function isTimeOnlyValue( required date value ){
+		//NB: this will only detect CF time object (epoch = 1899-12-30), not those using unix epoch 1970-01-01
+		return ( Year( arguments.value ) == "1899" );
+	}
+
+	/* Info */
+
+	private void function addInfoBinary( required workbook, required struct info ){
+		arguments.workbook.createInformationProperties(); // creates the following if missing
+		var documentSummaryInfo = arguments.workbook.getDocumentSummaryInformation();
+		var summaryInfo = arguments.workbook.getSummaryInformation();
+		for( var key in arguments.info ){
+			var value = JavaCast( "string", arguments.info[ key ] );
+			switch( key ){
+				case "author":
+					summaryInfo.setAuthor( value );
+					break;
+				case "category":
+					documentSummaryInfo.setCategory( value );
+					break;
+				case "lastauthor":
+					summaryInfo.setLastAuthor( value );
+					break;
+				case "comments":
+					summaryInfo.setComments( value );
+					break;
+				case "keywords":
+					summaryInfo.setKeywords( value );
+					break;
+				case "manager":
+					documentSummaryInfo.setManager( value );
+					break;
+				case "company":
+					documentSummaryInfo.setCompany( value );
+					break;
+				case "subject":
+					summaryInfo.setSubject( value );
+					break;
+				case "title":
+					summaryInfo.setTitle( value );
+					break;
+			}
+		}
+	}
+
+	private void function addInfoXml( required workbook, required struct info ){
+		var workbookProperties = isStreamingXmlFormat( arguments.workbook )? arguments.workbook.getXSSFWorkbook().getProperties(): arguments.workbook.getProperties();
+		var documentProperties = workbookProperties.getExtendedProperties().getUnderlyingProperties();
+		var coreProperties = workbookProperties.getCoreProperties();
+		for( var key in arguments.info ){
+			var value = JavaCast( "string", arguments.info[ key ] );
+			switch( key ){
+				case "author":
+					coreProperties.setCreator( value  );
+					break;
+				case "category":
+					coreProperties.setCategory( value );
+					break;
+				case "lastauthor":
+					coreProperties.getUnderlyingProperties().setLastModifiedByProperty( value );
+					break;
+				case "comments":
+					coreProperties.setDescription( value );
+					break;
+				case "keywords":
+					coreProperties.setKeywords( value );
+					break;
+				case "subject":
+					coreProperties.setSubjectProperty( value );
+					break;
+				case "title":
+					coreProperties.setTitle( value );
+					break;
+				case "manager":
+					documentProperties.setManager( value );
+					break;
+				case "company":
+					documentProperties.setCompany( value );
+					break;
+			}
+		}
+	}
+	
+	private struct function binaryInfo( required workbook ){
+		var documentProperties = arguments.workbook.getDocumentSummaryInformation();
+		var coreProperties = arguments.workbook.getSummaryInformation();
+		return {
+			author: coreProperties.getAuthor()?:""
+			,category: documentProperties.getCategory()?:""
+			,comments: coreProperties.getComments()?:""
+			,creationDate: coreProperties.getCreateDateTime()?:""
+			,lastEdited: ( coreProperties.getEditTime() EQ 0 )? "": CreateObject( "java", "java.util.Date" ).init( coreProperties.getEditTime() )
+			,subject: coreProperties.getSubject()?:""
+			,title: coreProperties.getTitle()?:""
+			,lastAuthor: coreProperties.getLastAuthor()?:""
+			,keywords: coreProperties.getKeywords()?:""
+			,lastSaved: coreProperties.getLastSaveDateTime()?:""
+			,manager: documentProperties.getManager()?:""
+			,company: documentProperties.getCompany()?:""
+		};
 	}
 
 	private struct function xmlInfo( required workbook ){
@@ -2741,142 +2640,37 @@ component accessors="true"{
 		return result;
 	}
 
+	/* Visibility */
+
+	private void function doFillMergedCellsWithVisibleValue( required workbook, required sheet ){
+		if( !sheetHasMergedRegions( arguments.sheet ) )
+			return;
+		for( var regionIndex = 0; regionIndex LT arguments.sheet.getNumMergedRegions(); regionIndex++ ){
+			var region = arguments.sheet.getMergedRegion( regionIndex );
+			var regionStartRowNumber = ( region.getFirstRow() +1 );
+			var regionEndRowNumber = ( region.getLastRow() +1 );
+			var regionStartColumnNumber = ( region.getFirstColumn() +1 );
+			var regionEndColumnNumber = ( region.getLastColumn() +1 );
+			var visibleValue = getCellValue( arguments.workbook, regionStartRowNumber, regionStartColumnNumber );
+			setCellRangeValue( arguments.workbook, visibleValue, regionStartRowNumber, regionEndRowNumber, regionStartColumnNumber, regionEndColumnNumber );
+		}
+	}
+
+	private void function toggleColumnHidden( required workbook, required numeric columnNumber, required boolean state ){
+		getActiveSheet( arguments.workbook ).setColumnHidden( JavaCast( "int", arguments.columnNumber-1 ), JavaCast( "boolean", arguments.state ) );
+	}
+
+	private void function toggleRowHidden( required workbook, required numeric row, required boolean state ){
+		var rowIndex = ( arguments.row -1 );
+		getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).setZeroHeight( JavaCast( "boolean", arguments.state ) );
+	}
+
 	/* Formatting */
-
-	private string function richStringCellValueToHtml( required workbook, required cell, required cellValue ){
-		var richTextValue = arguments.cell.getRichStringCellValue();
-		var totalRuns = richTextValue.numFormattingRuns();
-		var baseFont = arguments.cell.getCellStyle().getFont( arguments.workbook );
-		if( totalRuns EQ 0  )
-			return baseFontToHtml( arguments.workbook, arguments.cellValue, baseFont );
-		// Runs never start at the beginning: the string before the first run is always in the baseFont format
-		var startOfFirstRun = richTextValue.getIndexOfFormattingRun( 0 );
-		var initialContents = arguments.cellValue.Mid( 1, startOfFirstRun );//before the first run
-		var initialHtml = baseFontToHtml( arguments.workbook, initialContents, baseFont );
-		var result = CreateObject( "Java", "java.lang.StringBuilder" ).init();
-		result.Append( initialHtml );
-		var endOfCellValuePosition = arguments.cellValue.Len();
-		for( var runIndex = 0; runIndex LT totalRuns; runIndex++ ){
-			var run = {};
-			run.index = runIndex;
-			run.number = ( runIndex +1 );
-			run.font = arguments.workbook.getFontAt( richTextValue.getFontOfFormattingRun( runIndex ) );
-			run.css = runFontToHtml( arguments.workbook, baseFont, run.font );
-			run.isLast = ( run.number EQ totalRuns );
-			run.startPosition = ( richTextValue.getIndexOfFormattingRun( runIndex ) +1 );
-			run.endPosition = run.isLast? endOfCellValuePosition: richTextValue.getIndexOfFormattingRun( ( runIndex +1 ) );
-			run.length = ( ( run.endPosition +1 ) -run.startPosition );
-			run.content = arguments.cellValue.Mid( run.startPosition, run.length );
-			if( run.css.IsEmpty() ){
-				result.Append( run.content );
-				continue;
-			}
-			run.html = '<span style="#run.css#">#run.content#</span>';
-			result.Append( run.html );
-		}
-		return result.toString();
-	}
-
-	private string function runFontToHtml( required workbook, required baseFont, required runFont ){
-		/* NB: the order of processing is important for the tests to match */
-		var cssStyles = CreateObject( "Java", "java.lang.StringBuilder" ).init();
-		/* bold */
-		if( compare( arguments.runFont.getBold(), arguments.baseFont.getBold() ) )
-			cssStyles.Append( fontStyleToCss( "bold", arguments.runFont.getBold() ) );
-		/* color */
-		if( compare( arguments.runFont.getColor(), arguments.baseFont.getColor() ) AND !fontColorIsBlack( arguments.runFont.getColor() ) )
-			cssStyles.Append( fontStyleToCss( "color", arguments.runFont.getColor(), arguments.workbook ) );
-		/* italic */
-		if( compare( arguments.runFont.getItalic(), arguments.baseFont.getItalic() ) )
-			cssStyles.Append( fontStyleToCss( "italic", arguments.runFont.getItalic() ) );
-		/* underline/strike */
-		if( compare( arguments.runFont.getStrikeout(), arguments.baseFont.getStrikeout() ) OR Compare( arguments.runFont.getUnderline(), arguments.baseFont.getUnderline() ) ){
-			var decorationValue	=	[];
-			if( !arguments.baseFont.getStrikeout() AND arguments.runFont.getStrikeout() )
-				decorationValue.Append( "line-through" );
-			if( !arguments.baseFont.getUnderline() AND arguments.runFont.getUnderline() )
-				decorationValue.Append( "underline" );
-			//if either or both are in the base format, and either or both are NOT in the run format, set the decoration to none.
-			if(
-					( arguments.baseFont.getUnderline() OR arguments.baseFont.getStrikeout() )
-					AND
-					( !arguments.runFont.getUnderline() OR !arguments.runFont.getUnderline() )
-				){
-				cssStyles.Append( fontStyleToCss( "decoration", "none" ) );
-			}
-			else
-				cssStyles.Append( fontStyleToCss( "decoration", decorationValue.ToList( " " ) ) );
-		}
-		return cssStyles.toString();
-	}
-
-	private string function baseFontToHtml( required workbook, required contents, required baseFont ){
-		/* the order of processing is important for the tests to match */
-		/* font family and size not parsed here because all cells would trigger formatting of these attributes: defaults can't be assumed */
-		var cssStyles = CreateObject( "Java", "java.lang.StringBuilder" ).init();
-		/* bold */
-		if( arguments.baseFont.getBold() )
-			cssStyles.Append( fontStyleToCss( "bold", true ) );
-		/* color */
-		if( !fontColorIsBlack( arguments.baseFont.getColor() ) )
-			cssStyles.Append( fontStyleToCss( "color", arguments.baseFont.getColor(), arguments.workbook ) );
-		/* italic */
-		if( arguments.baseFont.getItalic() )
-			cssStyles.Append( fontStyleToCss( "italic", true ) );
-		/* underline/strike */
-		if( arguments.baseFont.getStrikeout() OR arguments.baseFont.getUnderline() ){
-			var decorationValue	=	[];
-			if( arguments.baseFont.getStrikeout() )
-				decorationValue.Append( "line-through" );
-			if( arguments.baseFont.getUnderline() )
-				decorationValue.Append( "underline" );
-			cssStyles.Append( fontStyleToCss( "decoration", decorationValue.ToList( " " ) ) );
-		}
-		cssStyles = cssStyles.toString();
-		if( cssStyles.IsEmpty() )
-			return arguments.contents;
-		return "<span style=""#cssStyles#"">#arguments.contents#</span>";
-	}
-
-	private string function fontStyleToCss( required string styleType, required any styleValue, workbook ){
-		/*
-		Support limited to:
-			bold
-			color
-			italic
-			strikethrough
-			single underline
-		*/
-		switch( arguments.styleType ){
-			case "bold":
-				return "font-weight:" & ( arguments.styleValue? "bold;": "normal;" );
-			case "color":
-				if( !arguments.KeyExists( "workbook" ) )
-					Throw( type=this.getExceptionType(), message="The 'workbook' argument is required when generating color css styles" );
-				//http://ragnarock99.blogspot.co.uk/2012/04/getting-hex-color-from-excel-cell.html
-				var rgb = arguments.workbook.getCustomPalette().getColor( arguments.styleValue ).getTriplet();
-				var javaColor = CreateObject( "Java", "java.awt.Color" ).init( JavaCast( "int", rgb[ 1 ] ), JavaCast( "int", rgb[ 2 ] ), JavaCast( "int", rgb[ 3 ] ) );
-				var hex	=	CreateObject( "Java", "java.lang.Integer" ).toHexString( javaColor.getRGB() );
-				hex = hex.subString( 2, hex.length() );
-				return "color:##" & hex & ";";
-			case "italic":
-				return "font-style:" & ( arguments.styleValue? "italic;": "normal;" );
-			case "decoration":
-				return "text-decoration:#arguments.styleValue#;";//need to pass desired combination of "underline" and "line-through"
-		}
-		Throw( type=this.getExceptionType(), message="Unrecognised style for css conversion" );
-	}
-
-	private boolean function fontColorIsBlack( required fontColor ){
-		return ( arguments.fontColor IS 8 ) OR ( arguments.fontColor IS 32767 );
-	}
 
 	private any function buildCellStyle( required workbook, required struct format ){
 		/*  TODO: Reuse styles  */
 		var cellStyle = arguments.workbook.createCellStyle();
-		var formatter = arguments.workbook.getCreationHelper().createDataFormat();
 		var font = 0;
-		var formatIndex = 0;
 		for( var setting in arguments.format ){
 			var settingValue = arguments.format[ setting ];
 			switch( setting ){
@@ -2902,7 +2696,8 @@ component accessors="true"{
 					cellStyle.setFont( font );
 				break;
 				case "dataformat":
-					cellStyle.setDataFormat( formatter.getFormat( JavaCast( "string", settingValue ) ) );
+					var dataFormat = arguments.workbook.getCreationHelper().createDataFormat();
+					cellStyle.setDataFormat( dataFormat.getFormat( JavaCast( "string", settingValue ) ) );
 				break;
 				case "fgcolor":
 					cellStyle.setFillForegroundColor( getColor( arguments.workbook, settingValue ) );
@@ -3012,6 +2807,82 @@ component accessors="true"{
 		return cellStyle;
 	}
 
+	private string function getUnderlineFormatAsString( required cellFont ){
+		var lookup = {};
+		lookup[ 0 ] = "none";
+		lookup[ 1 ] = "single";
+		lookup[ 2 ] = "double";
+		lookup[ 33 ] = "single accounting";
+		lookup[ 34 ] = "double accounting";
+		if( lookup.KeyExists( arguments.cellFont.getUnderline() ) )
+			return lookup[ arguments.cellFont.getUnderline() ];
+		return "unknown";
+	}
+
+	private string function richStringCellValueToHtml( required workbook, required cell, required cellValue ){
+		var richTextValue = arguments.cell.getRichStringCellValue();
+		var totalRuns = richTextValue.numFormattingRuns();
+		var baseFont = arguments.cell.getCellStyle().getFont( arguments.workbook );
+		if( totalRuns EQ 0  )
+			return baseFontToHtml( arguments.workbook, arguments.cellValue, baseFont );
+		// Runs never start at the beginning: the string before the first run is always in the baseFont format
+		var startOfFirstRun = richTextValue.getIndexOfFormattingRun( 0 );
+		var initialContents = arguments.cellValue.Mid( 1, startOfFirstRun );//before the first run
+		var initialHtml = baseFontToHtml( arguments.workbook, initialContents, baseFont );
+		var result = newJavaStringBuilder();
+		result.Append( initialHtml );
+		var endOfCellValuePosition = arguments.cellValue.Len();
+		for( var runIndex = 0; runIndex LT totalRuns; runIndex++ ){
+			var run = {};
+			run.index = runIndex;
+			run.number = ( runIndex +1 );
+			run.font = arguments.workbook.getFontAt( richTextValue.getFontOfFormattingRun( runIndex ) );
+			run.css = runFontToHtml( arguments.workbook, baseFont, run.font );
+			run.isLast = ( run.number EQ totalRuns );
+			run.startPosition = ( richTextValue.getIndexOfFormattingRun( runIndex ) +1 );
+			run.endPosition = run.isLast? endOfCellValuePosition: richTextValue.getIndexOfFormattingRun( ( runIndex +1 ) );
+			run.length = ( ( run.endPosition +1 ) -run.startPosition );
+			run.content = arguments.cellValue.Mid( run.startPosition, run.length );
+			if( run.css.IsEmpty() ){
+				result.Append( run.content );
+				continue;
+			}
+			run.html = '<span style="#run.css#">#run.content#</span>';
+			result.Append( run.html );
+		}
+		return result.toString();
+	}
+
+	/* Fonts */
+
+	private string function baseFontToHtml( required workbook, required contents, required baseFont ){
+		/* the order of processing is important for the tests to match */
+		/* font family and size not parsed here because all cells would trigger formatting of these attributes: defaults can't be assumed */
+		var cssStyles = newJavaStringBuilder();
+		/* bold */
+		if( arguments.baseFont.getBold() )
+			cssStyles.Append( fontStyleToCss( "bold", true ) );
+		/* color */
+		if( !fontColorIsBlack( arguments.baseFont.getColor() ) )
+			cssStyles.Append( fontStyleToCss( "color", arguments.baseFont.getColor(), arguments.workbook ) );
+		/* italic */
+		if( arguments.baseFont.getItalic() )
+			cssStyles.Append( fontStyleToCss( "italic", true ) );
+		/* underline/strike */
+		if( arguments.baseFont.getStrikeout() OR arguments.baseFont.getUnderline() ){
+			var decorationValue	=	[];
+			if( arguments.baseFont.getStrikeout() )
+				decorationValue.Append( "line-through" );
+			if( arguments.baseFont.getUnderline() )
+				decorationValue.Append( "underline" );
+			cssStyles.Append( fontStyleToCss( "decoration", decorationValue.ToList( " " ) ) );
+		}
+		cssStyles = cssStyles.toString();
+		if( cssStyles.IsEmpty() )
+			return arguments.contents;
+		return "<span style=""#cssStyles#"">#arguments.contents#</span>";
+	}
+
 	private any function cloneFont( required workbook, required fontToClone ){
 		var newFont = arguments.workbook.createFont();
 		/*  copy the existing cell's font settings to the new font  */
@@ -3028,11 +2899,114 @@ component accessors="true"{
 		return newFont;
 	}
 
+	private boolean function fontColorIsBlack( required fontColor ){
+		return ( arguments.fontColor IS 8 ) OR ( arguments.fontColor IS 32767 );
+	}
+
+	private string function fontStyleToCss( required string styleType, required any styleValue, workbook ){
+		/*
+		Support limited to:
+			bold
+			color
+			italic
+			strikethrough
+			single underline
+		*/
+		switch( arguments.styleType ){
+			case "bold":
+				return "font-weight:" & ( arguments.styleValue? "bold;": "normal;" );
+			case "color":
+				if( !arguments.KeyExists( "workbook" ) )
+					Throw( type=this.getExceptionType(), message="The 'workbook' argument is required when generating color css styles" );
+				//http://ragnarock99.blogspot.co.uk/2012/04/getting-hex-color-from-excel-cell.html
+				var rgb = arguments.workbook.getCustomPalette().getColor( arguments.styleValue ).getTriplet();
+				var javaColor = CreateObject( "Java", "java.awt.Color" ).init( JavaCast( "int", rgb[ 1 ] ), JavaCast( "int", rgb[ 2 ] ), JavaCast( "int", rgb[ 3 ] ) );
+				var hex	=	CreateObject( "Java", "java.lang.Integer" ).toHexString( javaColor.getRGB() );
+				hex = hex.subString( 2, hex.length() );
+				return "color:##" & hex & ";";
+			case "italic":
+				return "font-style:" & ( arguments.styleValue? "italic;": "normal;" );
+			case "decoration":
+				return "text-decoration:#arguments.styleValue#;";//need to pass desired combination of "underline" and "line-through"
+		}
+		Throw( type=this.getExceptionType(), message="Unrecognised style for css conversion" );
+	}
+
+	private numeric function getAWTFontStyle( required any poiFont ){
+		var font = loadClass( "java.awt.Font" );
+		var isBold = arguments.poiFont.getBold();
+		if( isBold && arguments.poiFont.getItalic() )
+	  	return BitOr( font.BOLD, font.ITALIC );
+		if( isBold )
+			return font.BOLD;
+		if( arguments.poiFont.getItalic() )
+			return font.ITALIC;
+		return font.PLAIN;
+	}
+
+	private numeric function getDefaultCharWidth( required workbook ){
+		/* Estimates the default character width using Excel's 'Normal' font */
+		/* this is a compromise between hard coding a default value and the more complex method of using an AttributedString and TextLayout */
+		var defaultFont = arguments.workbook.getFontAt( 0 );
+		var style = getAWTFontStyle( defaultFont );
+		var font = loadClass( "java.awt.Font" );
+		var javaFont = font.init( defaultFont.getFontName(), style, defaultFont.getFontHeightInPoints() );
+		// this works
+		var transform = CreateObject( "java", "java.awt.geom.AffineTransform" );
+		var fontContext = CreateObject( "java", "java.awt.font.FontRenderContext" ).init( transform, true, true );
+		var bounds = javaFont.getStringBounds( "0", fontContext );
+		return bounds.getWidth();
+	}
+
+	private string function runFontToHtml( required workbook, required baseFont, required runFont ){
+		/* NB: the order of processing is important for the tests to match */
+		var cssStyles = newJavaStringBuilder();
+		/* bold */
+		if( Compare( arguments.runFont.getBold(), arguments.baseFont.getBold() ) )
+			cssStyles.Append( fontStyleToCss( "bold", arguments.runFont.getBold() ) );
+		/* color */
+		if( Compare( arguments.runFont.getColor(), arguments.baseFont.getColor() ) AND !fontColorIsBlack( arguments.runFont.getColor() ) )
+			cssStyles.Append( fontStyleToCss( "color", arguments.runFont.getColor(), arguments.workbook ) );
+		/* italic */
+		if( Compare( arguments.runFont.getItalic(), arguments.baseFont.getItalic() ) )
+			cssStyles.Append( fontStyleToCss( "italic", arguments.runFont.getItalic() ) );
+		/* underline/strike */
+		if( Compare( arguments.runFont.getStrikeout(), arguments.baseFont.getStrikeout() ) OR Compare( arguments.runFont.getUnderline(), arguments.baseFont.getUnderline() ) ){
+			var decorationValue	=	[];
+			if( !arguments.baseFont.getStrikeout() AND arguments.runFont.getStrikeout() )
+				decorationValue.Append( "line-through" );
+			if( !arguments.baseFont.getUnderline() AND arguments.runFont.getUnderline() )
+				decorationValue.Append( "underline" );
+			//if either or both are in the base format, and either or both are NOT in the run format, set the decoration to none.
+			if(
+					( arguments.baseFont.getUnderline() OR arguments.baseFont.getStrikeout() )
+					AND
+					( !arguments.runFont.getUnderline() OR !arguments.runFont.getUnderline() )
+				){
+				cssStyles.Append( fontStyleToCss( "decoration", "none" ) );
+			}
+			else
+				cssStyles.Append( fontStyleToCss( "decoration", decorationValue.ToList( " " ) ) );
+		}
+		return cssStyles.toString();
+	}
+	
+	/* Color */
+
+	private array function convertSignedRGBToPositiveTriplet( required any signedRGB ){
+		// When signed, values of 128+ are negative: convert then to positive values
+		var result = [];
+		for( var i=1; i LTE 3; i++ ){
+			result.Append( ( arguments.signedRGB[ i ] < 0 )? ( arguments.signedRGB[ i ] + 256 ): arguments.signedRGB[ i ] );
+		}
+		return result;
+	}
+
 	private numeric function getColorIndex( required string colorName ){
 		var findColor = arguments.colorName.Trim().UCase();
 		//check for 9 extra colours from old org.apache.poi.ss.usermodel.IndexedColors and map
 		var deprecatedNames = [ "BLACK1", "WHITE1", "RED1", "BRIGHT_GREEN1", "BLUE1", "YELLOW1", "PINK1", "TURQUOISE1", "LIGHT_TURQUOISE1" ];
-		if( deprecatedNames.Find( findColor ) )
+		if( ArrayFind( deprecatedNames, findColor ) )
 			findColor = findColor.Left( findColor.Len() - 1 );
 		var indexedColors = loadClass( "org.apache.poi.hssf.util.HSSFColor$HSSFColorPredefined" );
 		try{
@@ -3086,14 +3060,73 @@ component accessors="true"{
 		return similarExistingColor.getIndex();
 	}
 
-	public numeric function getColumnWidth( required workbook, required numeric column ){
-		var columnIndex = ( arguments.column -1 );
-		return ( getActiveSheet( arguments.workbook ).getColumnWidth( JavaCast( "int", columnIndex ) ) / 256 );// whole character width (of zero character)
+	private struct function getJavaColorRGB( required string colorName ){
+		/* Returns a struct containing RGB values from java.awt.Color for the color name passed in */
+		var findColor = arguments.colorName.Trim().UCase();
+		var color = CreateObject( "Java", "java.awt.Color" );
+		if( IsNull( color[ findColor ] ) OR !IsInstanceOf( color[ findColor ], "java.awt.Color" ) )//don't use member functions on color
+			Throw( type=this.getExceptionType(), message="Invalid color", detail="The color provided (#arguments.colorName#) is not valid." );
+		color = color[ findColor ];
+		var colorRGB = {
+			red: color.getRed()
+			,green: color.getGreen()
+			,blue: color.getBlue()
+		};
+		return colorRGB;
 	}
 
-	public numeric function getColumnWidthInPixels( required workbook, required numeric column ){
-		var columnIndex = ( arguments.column -1 );
-		return getActiveSheet( arguments.workbook ).getColumnWidthInPixels( JavaCast( "int", columnIndex ) );
+	private string function getRgbTripletForStyleColorFormat( required workbook, required cellStyle, required string format ){
+		var rgbTriplet = [];
+		var isXlsx = isXmlFormat( arguments.workbook );
+		var colorObject = "";
+		if( !isXlsx )
+			var palette = arguments.workbook.getCustomPalette();
+		switch( arguments.format ){
+			case "bottombordercolor":
+				colorObject = isXlsx? arguments.cellStyle.getBottomBorderXSSFColor(): palette.getColor( arguments.cellStyle.getBottomBorderColor() );
+				break;
+			case "fgcolor":
+				colorObject = isXlsx? arguments.cellStyle.getFillForegroundXSSFColor(): palette.getColor( arguments.cellStyle.getFillForegroundColor() );
+				break;
+			case "leftbordercolor":
+				colorObject = isXlsx? arguments.cellStyle.getLeftBorderXSSFColor(): palette.getColor( arguments.cellStyle.getLeftBorderColor() );
+				break;
+			case "rightbordercolor":
+				colorObject = isXlsx? arguments.cellStyle.getRightBorderXSSFColor(): palette.getColor( arguments.cellStyle.getRightBorderColor() );
+				break;
+			case "topbordercolor":
+				colorObject = isXlsx? arguments.cellStyle.getTopBorderXSSFColor(): palette.getColor( arguments.cellStyle.getTopBorderColor() );
+				break;
+		}
+		if( IsNull( colorObject ) OR IsSimpleValue( colorObject) ) // HSSF will return an empty string rather than a null if the color doesn't exist
+			return "";
+		rgbTriplet = isXlsx? convertSignedRGBToPositiveTriplet( colorObject.getRGB() ): colorObject.getTriplet();
+		return ArrayToList( rgbTriplet );
+	}
+
+	/* Return helper objects */
+
+	private any function getCellUtil(){
+		if( IsNull( variables.cellUtil ) )
+			variables.cellUtil = loadClass( "org.apache.poi.ss.util.CellUtil" );
+		return variables.cellUtil;
+	}
+
+	private any function getDataFormatter(){
+		/* Returns cell formatting utility object ie org.apache.poi.ss.usermodel.DataFormatter */
+		if( IsNull( variables.dataFormatter ) )
+			variables.dataFormatter = loadClass( "org.apache.poi.ss.usermodel.DataFormatter" ).init();
+		return variables.dataFormatter;
+	}
+
+	private any function getDateUtil(){
+		if( IsNull( variables.dateUtil ) )
+			variables.dateUtil = loadClass( "org.apache.poi.ss.usermodel.DateUtil" );
+		return variables.dateUtil;
+	}
+
+	private any function newJavaStringBuilder(){
+		return CreateObject( "Java", "java.lang.StringBuilder" ).init();
 	}
 
 	/* Override troublesome engine BIFs */
