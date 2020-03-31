@@ -902,36 +902,36 @@ component accessors="true"{
 		if( !cellExists( arguments.workbook, arguments.row, arguments.column ) )
 			Throw( type=this.getExceptionType(), message="Invalid cell", detail="There doesn't appear to be a cell at row #row#, column #column#" );
 		var cellStyle = getCellAt( arguments.workbook, arguments.row, arguments.column ).getCellStyle();
-		var cellFont = arguments.workbook.getFontAt( cellStyle.getFontIndex() );
+		var cellFont = arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() );
 		if( isXmlFormat( arguments.workbook ) )
 			var rgb = convertSignedRGBToPositiveTriplet( cellFont.getXSSFColor().getRGB() );
 		else
 			var rgb = IsNull( cellFont.getHSSFColor( arguments.workbook ) )? []: cellFont.getHSSFColor( arguments.workbook ).getTriplet();
 		return {
-			alignment: cellStyle.getAlignmentEnum().toString()
+			alignment: cellStyle.getAlignment().toString()
 			,bold: cellFont.getBold()
-			,bottomborder: cellStyle.getBorderBottomEnum().toString()
+			,bottomborder: cellStyle.getBorderBottom().toString()
 			,bottombordercolor: getRgbTripletForStyleColorFormat( arguments.workbook, cellStyle, "bottombordercolor" )
 			,color: ArrayToList( rgb )
 			,dataformat: cellStyle.getDataFormatString()
 			,fgcolor: getRgbTripletForStyleColorFormat( arguments.workbook, cellStyle, "fgcolor" )
-			,fillpattern: cellStyle.getFillPatternEnum().toString()
+			,fillpattern: cellStyle.getFillPattern().toString()
 			,font: cellFont.getFontName()
 			,fontsize: cellFont.getFontHeightInPoints()
 			,indent: cellStyle.getIndention()
 			,italic: cellFont.getItalic()
-			,leftborder: cellStyle.getBorderLeftEnum().toString()
+			,leftborder: cellStyle.getBorderLeft().toString()
 			,leftbordercolor: getRgbTripletForStyleColorFormat( arguments.workbook, cellStyle, "leftbordercolor" )
 			,quoteprefixed: cellStyle.getQuotePrefixed()
-			,rightborder: cellStyle.getBorderRightEnum().toString()
+			,rightborder: cellStyle.getBorderRight().toString()
 			,rightbordercolor: getRgbTripletForStyleColorFormat( arguments.workbook, cellStyle, "rightbordercolor" )
 			,rotation: cellStyle.getRotation()
 			,strikeout: cellFont.getStrikeout()
 			,textwrap: cellStyle.getWrapText()
-			,topborder: cellStyle.getBorderTopEnum().toString()
+			,topborder: cellStyle.getBorderTop().toString()
 			,topbordercolor: getRgbTripletForStyleColorFormat( arguments.workbook, cellStyle, "topbordercolor" )
 			,underline: getUnderlineFormatAsString( cellFont )
-			,verticalalignment: cellStyle.getVerticalAlignmentEnum().toString()
+			,verticalalignment: cellStyle.getVerticalAlignment().toString()
 		};
 	}
 
@@ -975,7 +975,7 @@ component accessors="true"{
 		var columnIndex = ( arguments.column -1 );
 		var rowObject = getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
 		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
-		return cell.getCellTypeEnum().toString();
+		return cell.getCellType().toString();
 	}
 
 	public any function getCellValue( required workbook, required numeric row, required numeric column ){
@@ -2341,7 +2341,6 @@ component accessors="true"{
 				arguments.cell.setCellType( arguments.cell.CellType.BLANK ); //no need to set the value: it will be blank
 				return;
 		}
-		// string cellStyle.getAlignmentEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
 		arguments.cell.setCellType( arguments.cell.CellType.STRING );
 		arguments.cell.setCellValue( JavaCast( "string", arguments.value ) );
 	}
@@ -2675,23 +2674,23 @@ component accessors="true"{
 			var settingValue = arguments.format[ setting ];
 			switch( setting ){
 				case "alignment":
-					var alignment = cellStyle.getAlignmentEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
+					var alignment = cellStyle.getAlignment()[ JavaCast( "string", UCase( settingValue ) ) ];
 					cellStyle.setAlignment( alignment );
 				break;
 				case "bold":
-					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() ) );
 					font.setBold( JavaCast( "boolean", settingValue ) );
 					cellStyle.setFont( font );
 				break;
 				case "bottomborder":
-					var borderStyle = cellStyle.getBorderBottomEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
+					var borderStyle = cellStyle.getBorderBottom()[ JavaCast( "string", UCase( settingValue ) ) ];
 					cellStyle.setBorderBottom( borderStyle );
 				break;
 				case "bottombordercolor":
 					cellStyle.setBottomBorderColor( getColor( arguments.workbook, settingValue ) );
 				break;
 				case "color":
-					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() ) );
 					font.setColor( getColor( arguments.workbook, settingValue ) );
 					cellStyle.setFont( font );
 				break;
@@ -2703,23 +2702,23 @@ component accessors="true"{
 					cellStyle.setFillForegroundColor( getColor( arguments.workbook, settingValue ) );
 					/*  make sure we always apply a fill pattern or the color will not be visible  */
 					if( !arguments.KeyExists( "fillpattern" ) ){
-						var fillpattern = cellStyle.getFillPatternEnum()[ JavaCast( "string", "SOLID_FOREGROUND" ) ];
+						var fillpattern = cellStyle.getFillPattern()[ JavaCast( "string", "SOLID_FOREGROUND" ) ];
 						cellStyle.setFillPattern( fillpattern );
 					}
 				break;
 				case "fillpattern":
 					if( settingValue IS "nofill" ) //CF 9 docs list "nofill" as opposed to "no_fill"
 						settingValue = "NO_FILL";
-					var fillpattern = cellStyle.getFillPatternEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
+					var fillpattern = cellStyle.getFillPattern()[ JavaCast( "string", UCase( settingValue ) ) ];
 					cellStyle.setFillPattern( fillpattern );
 				break;
 				case "font":
-					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() ) );
 					font.setFontName( JavaCast( "string", settingValue ) );
 					cellStyle.setFont( font );
 				break;
 				case "fontsize":
-					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() ) );
 					font.setFontHeightInPoints( JavaCast( "int", settingValue ) );
 					cellStyle.setFont( font );
 				break;
@@ -2733,12 +2732,12 @@ component accessors="true"{
 					cellStyle.setIndention( JavaCast( "int", indentValue ) );
 				break;
 				case "italic":
-					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndex ( ) ) );
+					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt ( ) ) );
 					font.setItalic( JavaCast( "boolean", settingValue ) );
 					cellStyle.setFont( font );
 				break;
 				case "leftborder":
-					var borderStyle = cellStyle.getBorderLeftEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
+					var borderStyle = cellStyle.getBorderLeft()[ JavaCast( "string", UCase( settingValue ) ) ];
 					cellStyle.setBorderLeft( borderStyle );
 				break;
 				case "leftbordercolor":
@@ -2752,7 +2751,7 @@ component accessors="true"{
 					cellStyle.setQuotePrefixed( JavaCast( "boolean", settingValue ) );
 				break;
 				case "rightborder":
-					var borderStyle = cellStyle.getBorderRightEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
+					var borderStyle = cellStyle.getBorderRight()[ JavaCast( "string", UCase( settingValue ) ) ];
 					cellStyle.setBorderRight( borderStyle );
 				break;
 				case "rightbordercolor":
@@ -2762,7 +2761,7 @@ component accessors="true"{
 					cellStyle.setRotation( JavaCast( "int", settingValue ) );
 				break;
 				case "strikeout":
-					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() ) );
 					font.setStrikeout( JavaCast( "boolean", settingValue ) );
 					cellStyle.setFont( font );
 				break;
@@ -2770,7 +2769,7 @@ component accessors="true"{
 					cellStyle.setWrapText( JavaCast( "boolean", settingValue ) );
 				break;
 				case "topborder":
-					var borderStyle = cellStyle.getBorderTopEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
+					var borderStyle = cellStyle.getBorderTop()[ JavaCast( "string", UCase( settingValue ) ) ];
 					cellStyle.setBorderTop( borderStyle );
 				break;
 				case "topbordercolor":
@@ -2794,12 +2793,12 @@ component accessors="true"{
 								return cellStyle; //invalid - do nothing
 							underlineType = settingValue? 1: 0;
 					}
-					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndex() ) );
+					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() ) );
 					font.setUnderline( JavaCast( "byte", underlineType ) );
 					cellStyle.setFont( font );
 				break;
 				case "verticalalignment":
-					var alignment = cellStyle.getVerticalAlignmentEnum()[ JavaCast( "string", UCase( settingValue ) ) ];
+					var alignment = cellStyle.getVerticalAlignment()[ JavaCast( "string", UCase( settingValue ) ) ];
 					cellStyle.setVerticalAlignment( alignment );
 				break;
 			}
