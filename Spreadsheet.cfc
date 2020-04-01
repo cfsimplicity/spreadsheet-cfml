@@ -77,11 +77,18 @@ component accessors="true"{
 		};
 	}
 
-	// Diagnostic tool: check physical path of a specific class
+	/* Diagnostic tools */
+
+	/* check physical path of a specific class */
 	public void function dumpPathToClass( required string className ){
 		var classLoader = loadClass( arguments.className ).getClass().getClassLoader();
 		var path = classLoader.getResource( arguments.className.Replace( ".", "/", "all" ) & ".class" ).getPath();
 		WriteDump( path );
+	}
+
+	/* how many styles in a workbook (limit is 4K) */
+	public numeric function getWorkbookCellStylesTotal( required workbook ){
+		return arguments.workbook.getNumCellStyles();
 	}
 
 	/* MAIN PUBLIC API */
