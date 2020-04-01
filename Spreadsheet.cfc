@@ -1823,6 +1823,7 @@ component accessors="true"{
 
 	private any function workbookFromFile( required string path, string password ){
 		// works with both xls and xlsx
+		// see https://stackoverflow.com/a/46149469 for why FileInputStream is preferable to File
 		try{
 			lock name="#arguments.path#" timeout=5 {
 				var className = "org.apache.poi.ss.usermodel.WorkbookFactory";
