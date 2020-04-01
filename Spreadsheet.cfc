@@ -2701,7 +2701,7 @@ component accessors="true"{
 				case "fgcolor":
 					cellStyle.setFillForegroundColor( getColor( arguments.workbook, settingValue ) );
 					/*  make sure we always apply a fill pattern or the color will not be visible  */
-					if( !arguments.KeyExists( "fillpattern" ) ){
+					if( !arguments.format.KeyExists( "fillpattern" ) ){
 						var fillpattern = cellStyle.getFillPattern()[ JavaCast( "string", "SOLID_FOREGROUND" ) ];
 						cellStyle.setFillPattern( fillpattern );
 					}
