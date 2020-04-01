@@ -769,10 +769,14 @@ component accessors="true"{
 		,required struct format
 		,required numeric row
 		,required numeric column
+		,boolean overwriteCurrentStyle=true
 		,any cellStyle
 	){
 		var cell = initializeCell( arguments.workbook, arguments.row, arguments.column );
-		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
+		if( arguments.overwriteCurrentStyle )
+			var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
+		else
+			var style = buildCellStyle( arguments.workbook, arguments.format, cell.getCellStyle() );
 		cell.setCellStyle( style );
 	}
 
@@ -783,12 +787,13 @@ component accessors="true"{
 		,required numeric endRow
 		,required numeric startColumn
 		,required numeric endColumn
+		,boolean overwriteCurrentStyle=true
 		,any cellStyle
 		){
 		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
 		for( var rowNumber = arguments.startRow; rowNumber LTE arguments.endRow; rowNumber++ ){
 			for( var columnNumber = arguments.startColumn; columnNumber LTE arguments.endColumn; columnNumber++ )
-				formatCell( arguments.workbook, arguments.format, rowNumber, columnNumber, style );
+				formatCell( arguments.workbook, arguments.format, rowNumber, columnNumber, arguments.overwriteCurrentStyle, style );
 		}
 	}
 
@@ -796,6 +801,7 @@ component accessors="true"{
 		required workbook
 		,required struct format
 		,required numeric column
+		,boolean overwriteCurrentStyle=true
 		,any cellStyle
 	){
 		if( arguments.column LT 1 )
@@ -805,7 +811,7 @@ component accessors="true"{
 		var columnNumber = arguments.column;
 		while( rowIterator.hasNext() ){
 			var rowNumber = rowIterator.next().getRowNum() + 1;
-			formatCell( arguments.workbook, arguments.format, rowNumber, columnNumber, style );
+			formatCell( arguments.workbook, arguments.format, rowNumber, columnNumber, arguments.overwriteCurrentStyle, style );
 		}
 	}
 
@@ -813,6 +819,7 @@ component accessors="true"{
 		required workbook
 		,required struct format
 		,required string range
+		,boolean overwriteCurrentStyle=true
 		,any cellStyle
 	){
 		/* Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. */
@@ -821,11 +828,11 @@ component accessors="true"{
 		for( var thisRange in allRanges ){
 			if( thisRange.startAt EQ thisRange.endAt ){
 				/* Just one column */
-				formatColumn( arguments.workbook, arguments.format, thisRange.startAt, style );
+				formatColumn( arguments.workbook, arguments.format, thisRange.startAt, arguments.overwriteCurrentStyle, style );
 				continue;
 			}
 			for( var columnNumber = thisRange.startAt; columnNumber LTE thisRange.endAt; columnNumber++ )
-				formatColumn( arguments.workbook, arguments.format, columnNumber, style );
+				formatColumn( arguments.workbook, arguments.format, columnNumber, arguments.overwriteCurrentStyle, style );
 		}
 	}
 
@@ -833,6 +840,7 @@ component accessors="true"{
 		required workbook
 		,required struct format
 		,required numeric row
+		,boolean overwriteCurrentStyle=true
 		,any cellStyle
 	){
 		var rowIndex = ( arguments.row -1 );
@@ -842,13 +850,14 @@ component accessors="true"{
 		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
 		var cellIterator = theRow.cellIterator();
 		while( cellIterator.hasNext() )
-			formatCell( arguments.workbook, arguments.format, arguments.row, ( cellIterator.next().getColumnIndex() +1 ), style );
+			formatCell( arguments.workbook, arguments.format, arguments.row, ( cellIterator.next().getColumnIndex() +1 ), arguments.overwriteCurrentStyle, style );
 	}
 
 	public void function formatRows(
 		required workbook
 		,required struct format
 		,required string range
+		,boolean overwriteCurrentStyle=true
 		,any cellStyle
 	){
 		/* Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. */
@@ -857,11 +866,11 @@ component accessors="true"{
 		for( var thisRange in allRanges ){
 			if( thisRange.startAt EQ thisRange.endAt ){
 				/* Just one row */
-				formatRow( arguments.workbook, arguments.format, thisRange.startAt, style );
+				formatRow( arguments.workbook, arguments.format, thisRange.startAt, arguments.overwriteCurrentStyle, style );
 				continue;
 			}
 			for( var rowNumber = thisRange.startAt; rowNumber LTE thisRange.endAt; rowNumber++ )
-				formatRow( arguments.workbook, arguments.format, rowNumber, style );
+				formatRow( arguments.workbook, arguments.format, rowNumber, arguments.overwriteCurrentStyle, style );
 		}
 	}
 
@@ -2673,9 +2682,8 @@ component accessors="true"{
 
 	/* Formatting */
 
-	private any function buildCellStyle( required workbook, required struct format ){
-		/*  TODO: Reuse styles  */
-		var cellStyle = arguments.workbook.createCellStyle();
+	private any function buildCellStyle( required workbook, required struct format, existingStyle ){
+		var cellStyle = arguments.existingStyle?: arguments.workbook.createCellStyle();
 		var font = 0;
 		for( var setting in arguments.format ){
 			var settingValue = arguments.format[ setting ];
