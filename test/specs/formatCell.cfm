@@ -8,8 +8,8 @@ describe( "formatCell", function(){
 		s.setCellValue( xlsx, "test", 1, 1 );
 	});
 
-	setAndGetFormat = function( wb, format ){
-		s.formatCell( wb, format, 1, 1 );
+	setAndGetFormat = function( wb, format, overwriteCurrentStyle=true ){
+		s.formatCell( workbook=wb, format=format, row=1, column=1, overwriteCurrentStyle=overwriteCurrentStyle );
 		return s.getCellFormat( wb, 1, 1 );
 	};
 
@@ -301,6 +301,32 @@ describe( "formatCell", function(){
 		var cellFormat = setAndGetFormat( xlsx, format );
 		expect( cellFormat.color ).toBe( triplet ); //font color
 		expect( cellFormat.bottombordercolor ).toBe( triplet ); //style color
+	});
+
+	it( "can preserve the existing font properties when setting bold, color, font name, font size, italic, strikeout and underline", function(){
+		var format = { font: "Helvetica" };
+		setAndGetFormat( xls, format );
+		format = { bold: true };
+		var cellFormat = setAndGetFormat( xls, format, false );
+		expect( cellFormat.font ).toBe( "Helvetica" );
+		var format = { color: "BLUE" };
+		var cellFormat = setAndGetFormat( xls, format, false );
+		expect( cellFormat.font ).toBe( "Helvetica" );
+		var format = { fontsize: 24 };
+		var cellFormat = setAndGetFormat( xls, format, false );
+		expect( cellFormat.font ).toBe( "Helvetica" );
+		var format = { italic: true };
+		var cellFormat = setAndGetFormat( xls, format, false );
+		expect( cellFormat.font ).toBe( "Helvetica" );
+		var format = { strikeout: true };
+		var cellFormat = setAndGetFormat( xls, format, false );
+		expect( cellFormat.font ).toBe( "Helvetica" );
+		var format = { underline: true };
+		var cellFormat = setAndGetFormat( xls, format, false );
+		expect( cellFormat.font ).toBe( "Helvetica" );
+		var format = { font: "Courier New" };
+		var cellFormat = setAndGetFormat( xls, format, false );
+		expect( cellFormat.fontsize ).toBe( 24 );
 	});
 
 });	
