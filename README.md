@@ -206,6 +206,11 @@ Each of these can be overridden by passing in a struct including the value(s) to
 spreadsheet = New spreadsheetLibrary.spreadsheet( dateFormats={ DATE: "mm/dd/yyyy" } );
 </cfscript>
 ```
+While the above will set the library defaults, you can format cells with specific masks using the `dataFormat` attribute which can be passed to [formatCell](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/formatCell) and the other [formatting](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/Formatting-options) methods, as part of the `format` argument:
+```
+// display datetime value with millisecond precision
+spreadsheet.formatColumn( workbook , { dataformat: "yyyy-mm-dd hh:mm:ss.000" }, 1 );
+```
 
 ### JavaLoader
 
