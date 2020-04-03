@@ -1,3 +1,12 @@
+## 2.9.0 - 3 April 2020
+
+- Enhancements
+	- \#186 Add option to formatting methods to preserve existing cell styles
+	- \#184 Add support for DATETIME and DATETIME2 (MSSQL) database column types
+
+- Fixes
+	- \#185 Time only values do not respect custom TIME format specifying fractions of a second Fixes
+
 ## 2.8.0 - 23 March 2020
 
 - Enhancements
