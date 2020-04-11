@@ -298,10 +298,18 @@ component accessors="true"{
 
 	/* End convenience methods */
 
-	public void function addAutofilter( required workbook, required string cellRange ){
+	public void function addAutofilter( required workbook, string cellRange="" ){
 		arguments.cellRange = arguments.cellRange.Trim();
-		if( arguments.cellRange.IsEmpty() )
-			Throw( type=this.getExceptionType(), message="Empty cellRange argument", detail="You must provide a cell range reference in the form 'A1:Z1'" );
+		if( arguments.cellRange.IsEmpty() ){
+			//default to all columns in the first row
+			var cellRangeAddress = loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).init(
+				JavaCast( "int", 0 )
+				,JavaCast( "int", 0 )
+				,JavaCast( "int", 0 )
+				,JavaCast( "int", ( getColumnCount( arguments.workbook ) -1 ) )
+			);
+			arguments.cellRange = cellRangeAddress.formatAsString();
+		}
 		getActiveSheet( arguments.workbook ).setAutoFilter( getCellRangeAddressFromReference( arguments.cellRange ) );
 	}
 

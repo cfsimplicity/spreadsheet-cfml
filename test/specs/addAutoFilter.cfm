@@ -10,17 +10,14 @@ describe( "addAutoFilter",function(){
 	it( "Doesn't error when passing valid arguments",function() {
 		s.addAutoFilter( xls, "A1:B1" );
 		s.addAutoFilter( xlsx, "A1:B1" );
+		// default to all cols in first row if no row range passed
+		s.addAutoFilter( xls );
+		s.addAutoFilter( xlsx );
 	});
 
 	it( "Doesn't error when passing valid arguments with extra trailing/leading space",function() {
 		s.addAutoFilter( xls, " A1:B1 " );
 		s.addAutoFilter( xlsx, " A1:B1 " );
-	});
-
-	it( "Throws a helpful exception if range argument is present but empty",function() {
-		expect( function(){
-			s.addAutoFilter( xls, "" );
-		}).toThrow( regex="Empty cellRange argument" );
 	});
 
 });	
