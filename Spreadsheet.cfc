@@ -13,7 +13,6 @@ component accessors="true"{
 	property name="javaLoaderName";
 	property name="requiresJavaLoader" type="boolean" default="true";
 	//detected state
-	property name="engineSupportsWriteEncryption" type="boolean";
 	property name="isACF" type="boolean";
 	property name="javaClassesLastLoadedVia" default="Nothing loaded yet";
 	//cached POI helper objects
@@ -54,7 +53,6 @@ component accessors="true"{
 
 	private void function detectEngineProperties(){
 		this.setIsACF( ( server.coldfusion.productname IS "ColdFusion Server" ) );
-		this.setEngineSupportsWriteEncryption( !this.getIsACF() );
 	}
 
 	public void function flushPoiLoader(){
@@ -67,8 +65,6 @@ component accessors="true"{
 		return {
 			dateFormats: this.getDateFormats()
 			,engine: server.coldfusion.productname & " " & ( this.getIsACF()? server.coldfusion.productversion: ( server.lucee.version?: "?" ) )
-			,engineSupportsEncryption: this.getEngineSupportsWriteEncryption() //for backwards compat only //TODO remove on next major version
-			,engineSupportsWriteEncryption: this.getEngineSupportsWriteEncryption()
 			,javaLoaderDotPath: this.getJavaLoaderDotPath()
 			,javaClassesLastLoadedVia: this.getJavaClassesLastLoadedVia()
 			,javaLoaderName: this.getJavaLoaderName()
@@ -1678,8 +1674,6 @@ component accessors="true"{
 		if( !arguments.overwrite AND FileExists( arguments.filepath ) )
 			Throw( type=this.getExceptionType(), message="File already exists", detail="The file path specified already exists. Use 'overwrite=true' if you wish to overwrite it." );
 		var passwordProtect = ( arguments.KeyExists( "password" ) AND !arguments.password.Trim().IsEmpty() );
-		if( passwordProtect AND !this.getEngineSupportsWriteEncryption() )
-			Throw( type=this.getExceptionType(), message="Password protection is not supported for Adobe ColdFusion", detail="Password protection currently only works in Lucee, not ColdFusion" );
 		if( passwordProtect AND isBinaryFormat( arguments.workbook ) )
 			Throw( type=this.getExceptionType(), message="Whole file password protection is not supported for binary workbooks", detail="Password protection only works with XML ('xlsx') workbooks." );
 		try{
@@ -1761,8 +1755,12 @@ component accessors="true"{
 				// set up a POI filesystem object
 				var poifs = loadClass( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
 				try{
-					// set up an encrypted stream withini the POI filesystem
-					var encryptedStream = encryptor.getDataStream( poifs );
+					// set up an encrypted stream within the POI filesystem
+					// ACF gets confused by encryptor.getDataStream( POIFSFileSystem ) signature. Using getRoot() means getDataStream( POIFSFileSystem ) will be used
+					if( this.getIsACF() )
+						var encryptedStream = encryptor.getDataStream( poifs.getRoot() );
+					else
+						var encryptedStream = encryptor.getDataStream( poifs );
 					// read in the unencrypted wb file and write it to the encrypted stream
 					var workbook = workbookFromFile( arguments.filepath );
 					workbook.write( encryptedStream );

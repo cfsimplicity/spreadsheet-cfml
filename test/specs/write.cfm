@@ -52,20 +52,16 @@ describe( "write", function(){
 		actual = s.read( src=tempXlsxPath, format="query" );
 		expect( actual ).toBe( expected );
 	});
-
-	if( variables.s.getEnvironment().engineSupportsWriteEncryption ){
 		
-		it( "Can write an XLSX file encrypted with a password", function(){
-			data = QueryNew( "column1", "VarChar", [ [ "secret" ] ] );
-			workbook = s.newXlsx();
-			s.addRows( workbook,data );
-			s.write( workbook=workbook, filepath=tempXlsxPath, overwrite=true, password="pass" );
-			expected = data;
-			actual = s.read( src=tempXlsxPath, format="query", password="pass" );
-			expect( actual ).toBe( expected );
-		});
-
-	}
+	it( "Can write an XLSX file encrypted with a password", function(){
+		data = QueryNew( "column1", "VarChar", [ [ "secret" ] ] );
+		workbook = s.newXlsx();
+		s.addRows( workbook,data );
+		s.write( workbook=workbook, filepath=tempXlsxPath, overwrite=true, password="pass" );
+		expected = data;
+		actual = s.read( src=tempXlsxPath, format="query", password="pass" );
+		expect( actual ).toBe( expected );
+	});
 
 	describe( "write throws an exception if", function(){
 

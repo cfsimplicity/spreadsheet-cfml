@@ -29,8 +29,6 @@ Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of 
 
 Although primarily intended for Lucee, the library can be run under ColdFusion 2016 or higher. This may be useful where you want to your codebase to be cross-compatible between the two engines.
 
-Please note though that _writing password-protected files only works with Lucee_.
-
 ## Minimum Requirements for version 2.x
 
 - Java 8 or higher
