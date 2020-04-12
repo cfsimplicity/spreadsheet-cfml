@@ -297,15 +297,11 @@ component accessors="true"{
 	public void function addAutofilter( required workbook, string cellRange="", numeric row=1 ){
 		arguments.cellRange = arguments.cellRange.Trim();
 		if( arguments.cellRange.IsEmpty() ){
-			//default to all columns in the specified row
+			//default to all columns in the first (default) or specified row 
 			var rowIndex = ( Max( 0, arguments.row -1 ) );
-			var cellRangeAddress = loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).init(
-				JavaCast( "int", rowIndex )
-				,JavaCast( "int", rowIndex )
-				,JavaCast( "int", 0 )
-				,JavaCast( "int", ( getColumnCount( arguments.workbook ) -1 ) )
-			);
-			arguments.cellRange = cellRangeAddress.formatAsString();
+			var cellRangeAddress = getCellRangeAddressFromColumnAndRowIndices( rowIndex, rowIndex, 0, ( getColumnCount( arguments.workbook ) -1 ) );
+			getActiveSheet( arguments.workbook ).setAutoFilter( cellRangeAddress );
+			return;
 		}
 		getActiveSheet( arguments.workbook ).setAutoFilter( getCellRangeAddressFromReference( arguments.cellRange ) );
 	}
@@ -1159,11 +1155,11 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid startRow or endRow", detail="Row values must be greater than 0 and the startRow cannot be greater than the endRow." );
 		if( arguments.startColumn LT 1 OR arguments.startColumn GT arguments.endColumn )
 			Throw( type=this.getExceptionType(), message="Invalid startColumn or endColumn", detail="Column values must be greater than 0 and the startColumn cannot be greater than the endColumn." );
-		var cellRangeAddress = loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).init(
-			JavaCast( "int", ( arguments.startRow - 1 ) )
-			,JavaCast( "int", ( arguments.endRow - 1 ) )
-			,JavaCast( "int", ( arguments.startColumn - 1 ) )
-			,JavaCast( "int", ( arguments.endColumn - 1 ) )
+		var cellRangeAddress = getCellRangeAddressFromColumnAndRowIndices(
+			( arguments.startRow - 1 )
+			,( arguments.endRow - 1 )
+			,( arguments.startColumn - 1 )
+			,( arguments.endColumn - 1 )
 		);
 		getActiveSheet( arguments.workbook ).addMergedRegion( cellRangeAddress );
 		if( !arguments.emptyInvisibleCells )
@@ -1481,9 +1477,8 @@ component accessors="true"{
 		,required numeric startColumn
 		,required numeric endColumn
 	){
-		/* Sets the same value to a range of cells */
-		for( var rowNumber = arguments.startRow; rowNumber LTE arguments.endRow; rowNumber++ ){
-			for( var columnNumber = arguments.startColumn; columnNumber LTE arguments.endColumn; columnNumber++ )
+		for( var rowNumber = arguments.endRow; rowNumber >= arguments.startRow; rowNumber-- ){
+			for( var columnNumber = arguments.endColumn; columnNumber >= arguments.startColumn; columnNumber-- )
 				setCellValue( arguments.workbook, arguments.value, rowNumber, columnNumber );
 		}
 	}
@@ -2261,6 +2256,21 @@ component accessors="true"{
 		var rowIndex = ( arguments.rowNumber -1 );
 		var columnIndex = ( arguments.columnNumber -1 );
 		return getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).getCell( JavaCast( "int", columnIndex ) );
+	}
+
+	private any function getCellRangeAddressFromColumnAndRowIndices(
+		required numeric startRowIndex
+		,required numeric endRowIndex
+		,required numeric startColumnIndex
+		,required numeric endColumnIndex
+	){
+		//index = 0 based
+		return loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).init(
+			JavaCast( "int", arguments.startRowIndex )
+			,JavaCast( "int", arguments.endRowIndex )
+			,JavaCast( "int", arguments.startColumnIndex )
+			,JavaCast( "int", arguments.endColumnIndex )
+		);
 	}
 
 	private any function getCellRangeAddressFromReference( required string rangeReference ){
