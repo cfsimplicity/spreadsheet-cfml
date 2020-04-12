@@ -13,6 +13,9 @@ describe( "addAutoFilter",function(){
 		// default to all cols in first row if no row range passed
 		s.addAutoFilter( xls );
 		s.addAutoFilter( xlsx );
+		// allow row to be specified instead of range
+		s.addAutoFilter( workbook = xls, row = 2 );
+		s.addAutoFilter( workbook = xlsx, row = 2 );
 	});
 
 	it( "Doesn't error when passing valid arguments with extra trailing/leading space",function() {

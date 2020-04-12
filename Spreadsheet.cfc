@@ -298,13 +298,14 @@ component accessors="true"{
 
 	/* End convenience methods */
 
-	public void function addAutofilter( required workbook, string cellRange="" ){
+	public void function addAutofilter( required workbook, string cellRange="", numeric row=1 ){
 		arguments.cellRange = arguments.cellRange.Trim();
 		if( arguments.cellRange.IsEmpty() ){
-			//default to all columns in the first row
+			//default to all columns in the specified row
+			var rowIndex = ( Max( 0, arguments.row -1 ) );
 			var cellRangeAddress = loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).init(
-				JavaCast( "int", 0 )
-				,JavaCast( "int", 0 )
+				JavaCast( "int", rowIndex )
+				,JavaCast( "int", rowIndex )
 				,JavaCast( "int", 0 )
 				,JavaCast( "int", ( getColumnCount( arguments.workbook ) -1 ) )
 			);
