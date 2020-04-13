@@ -1337,42 +1337,41 @@ component accessors="true"{
 			* verticalalignment
 			* visible
 		 */
+		var factory = arguments.workbook.getCreationHelper();
+		var commentString = factory.createRichTextString( JavaCast( "string", arguments.comment.comment ) );
+		var anchor = factory.createClientAnchor();
+		var anchorValues = {};
+		if( arguments.comment.KeyExists( "anchor" ) ){
+			//specifies the position and size of the comment, e.g. "4,8,6,11"
+			var anchorValueArray = arguments.comment.anchor.ListToArray();
+			anchorValues.col1 = anchorValueArray[ 1 ];
+			anchorValues.row1 = anchorValueArray[ 2 ];
+			anchorValues.col2 = anchorValueArray[ 3 ];
+			anchorValues.row2 = anchorValueArray[ 4 ];
+		}
+		else{
+			//no position specified, so use the row/column values to set a default
+			anchorValues.col1 = arguments.column;
+			anchorValues.row1 = arguments.row;
+			anchorValues.col2 = ( arguments.column +2 );
+			anchorValues.row2 = ( arguments.row +2 );
+		}
+		anchor.setRow1( JavaCast( "int", anchorValues.row1 ) );
+		anchor.setCol1( JavaCast( "int", anchorValues.col1 ) );
+		anchor.setRow2( JavaCast( "int", anchorValues.row2 ) );
+		anchor.setCol2( JavaCast( "int", anchorValues.col2 ) );
 		var drawingPatriarch = getActiveSheet( arguments.workbook ).createDrawingPatriarch();
-		var commentString = loadClass( "org.apache.poi.hssf.usermodel.HSSFRichTextString" ).init( JavaCast( "string", arguments.comment.comment ) );
-		var javaColorRGB = 0;
-		if( arguments.comment.KeyExists( "anchor" ) )
-			var clientAnchor = loadClass( "org.apache.poi.hssf.usermodel.HSSFClientAnchor" ).init(
-				JavaCast( "int", 0 )
-				,JavaCast( "int", 0 )
-				,JavaCast( "int", 0 )
-				,JavaCast( "int", 0 )
-				,JavaCast( "short", ListGetAt( arguments.comment.anchor, 1 ) )
-				,JavaCast( "int", ListGetAt( arguments.comment.anchor, 2 ) )
-				,JavaCast( "short", ListGetAt( arguments.comment.anchor, 3 ) )
-				,JavaCast( "int", ListGetAt( arguments.comment.anchor, 4 ) )
-			);
-		else
-			var clientAnchor = loadClass( "org.apache.poi.hssf.usermodel.HSSFClientAnchor" ).init(
-				JavaCast( "int", 0 )
-				,JavaCast( "int", 0 )
-				,JavaCast( "int", 0 )
-				,JavaCast( "int", 0 )
-				,JavaCast( "short", arguments.column )
-				,JavaCast( "int", arguments.row )
-				,JavaCast( "short", ( arguments.column +2 ) )
-				,JavaCast( "int", ( arguments.row +2 ) )
-			);
-		var commentObject = drawingPatriarch.createComment( clientAnchor );
+		var commentObject = drawingPatriarch.createCellComment( anchor );
 		if( arguments.comment.KeyExists( "author" ) )
 			commentObject.setAuthor( JavaCast( "string", arguments.comment.author ) );
 		/* If we're going to do anything font related, need to create a font. Didn't really want to create it above since it might not be needed.  */
 		if( arguments.comment.KeyExists( "bold" )
-				OR arguments.comment.KeyExists( "color" )
-				OR arguments.comment.KeyExists( "font" )
-				OR arguments.comment.KeyExists( "italic" )
-				OR arguments.comment.KeyExists( "size" )
-				OR arguments.comment.KeyExists( "strikeout" )
-				OR arguments.comment.KeyExists( "underline" )
+				|| arguments.comment.KeyExists( "color" )
+				|| arguments.comment.KeyExists( "font" )
+				|| arguments.comment.KeyExists( "italic" )
+				|| arguments.comment.KeyExists( "size" )
+				|| arguments.comment.KeyExists( "strikeout" )
+				|| arguments.comment.KeyExists( "underline" )
 		){
 			var font = workbook.createFont();
 			if( arguments.comment.KeyExists( "bold" ) )
@@ -1389,7 +1388,7 @@ component accessors="true"{
 				font.setStrikeout( JavaCast( "boolean", arguments.comment.strikeout ) );
 			if( arguments.comment.KeyExists( "underline" ) )
 				font.setUnderline( JavaCast( "boolean", arguments.comment.underline ) );
-			arguments.commentString.applyFont( font );
+			commentString.applyFont( font );
 		}
 		if( arguments.comment.KeyExists( "fillColor" ) ){
 			javaColorRGB = getJavaColorRGB( arguments.comment.fillColor );
