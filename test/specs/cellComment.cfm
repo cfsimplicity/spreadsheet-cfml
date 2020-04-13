@@ -30,6 +30,9 @@ describe( "cellComment",function(){
 		expected = comments;
 		actual = s.getCellComment( workbook );
 		expect( actual ).toBe( expected );
+		//alias getCellComments
+		actual = s.getCellComments( workbook );
+		expect( actual ).toBe( expected );
 	});
 
 	describe( "cellComment throws an exception if",function(){

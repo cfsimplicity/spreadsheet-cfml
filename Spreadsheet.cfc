@@ -894,6 +894,10 @@ component accessors="true"{
 			return {};
 		}
 		/* row and column weren't provided so return all the comments as an array of structs */
+		return getCellComments( arguments.workbook );
+	}
+
+	public array function getCellComments( required workbook ){
 		var comments = [];
 		var commentsIterator = getActiveSheet( arguments.workbook ).getCellComments().values().iterator();
 		while( commentsIterator.hasNext() ){
