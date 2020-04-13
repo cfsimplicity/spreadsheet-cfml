@@ -893,24 +893,18 @@ component accessors="true"{
 			}
 			return {};
 		}
-		/* TODO: Look into checking all sheets in the workbook */
-		/* row and column weren't provided so loop over the whole sheet and return all the comments as an array of structs */
+		/* row and column weren't provided so return all the comments as an array of structs */
 		var comments = [];
-		var rowIterator = getActiveSheet( arguments.workbook ).rowIterator();
-		while( rowIterator.hasNext() ){
-			var cellIterator = rowIterator.next().cellIterator();
-			while( cellIterator.hasNext() ){
-				var commentObject = cellIterator.next().getCellComment();
-				if( !IsNull( commentObject ) ){
-					var comment = {
-						author: commentObject.getAuthor()
-						,comment: commentObject.getString().getString()
-						,column: arguments.column
-						,row: arguments.row
-					};
-					comments.Append( comment );
-				}
-			}
+		var commentsIterator = getActiveSheet( arguments.workbook ).getCellComments().values().iterator();
+		while( commentsIterator.hasNext() ){
+			var commentObject = commentsIterator.next();
+			var comment = {
+				author: commentObject.getAuthor()
+				,comment: commentObject.getString().getString()
+				,column: ( commentObject.getColumn() +1 )
+				,row: ( commentObject.getRow() +1 )
+			};
+			comments.Append( comment );
 		}
 		return comments;
 	}

@@ -15,6 +15,23 @@ describe( "cellComment",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Can get all comments in the current sheet",function() {
+		var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
+		var dataAsArray = [ [ "a", "b" ], [ "c", "d" ] ];
+		var workbook = s.newXls();
+		s.addRows( workbook, data );
+		var comments = [];
+		comments.Append( { author: "cfsimplicity", comment: "This is the comment in row 1 column 1" } );
+		comments.Append( { author: "cfsimplicity", comment: "This is the comment in row 2 column 2" } );
+		s.setCellComment( workbook, comments[ 1 ], 1, 1 );
+		s.setCellComment( workbook, comments[ 2 ], 2, 2 );
+		comments[ 1 ].Append( { column: 1, row: 1 } );
+		comments[ 2 ].Append( { column: 2, row: 2 } );
+		expected = comments;
+		actual = s.getCellComment( workbook );
+		expect( actual ).toBe( expected );
+	});
+
 	describe( "cellComment throws an exception if",function(){
 
 		it( "column specified but not row, or vice versa",function() {
