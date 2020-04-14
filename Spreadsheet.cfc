@@ -1391,7 +1391,7 @@ component accessors="true"{
 			if( arguments.comment.KeyExists( "strikeout" ) )
 				font.setStrikeout( JavaCast( "boolean", arguments.comment.strikeout ) );
 			if( arguments.comment.KeyExists( "underline" ) )
-				font.setUnderline( JavaCast( "boolean", arguments.comment.underline ) );
+				font.setUnderline( JavaCast( "byte", arguments.comment.underline ) );
 			commentString.applyFont( font );
 		}
 		var workbookIsHSSF = isBinaryFormat( arguments.workbook );
@@ -1417,9 +1417,9 @@ component accessors="true"{
 		/* Horizontal alignment can be left, center, right, justify, or distributed. Note that the constants on the Java class are slightly different in some cases: 'center'=CENTERED 'justify'=JUSTIFIED */
 		if(  workbookIsHSSF && arguments.comment.KeyExists( "horizontalAlignment" ) ){
 			if( arguments.comment.horizontalAlignment.UCase() IS "CENTER" )
-				arguments.comment.horizontalAlignment="CENTERED";
+				arguments.comment.horizontalAlignment = "CENTERED";
 			if( arguments.comment.horizontalAlignment.UCase() IS "JUSTIFY" )
-				arguments.comment.horizontalAlignment="JUSTIFIED";
+				arguments.comment.horizontalAlignment = "JUSTIFIED";
 			commentObject.setHorizontalAlignment( JavaCast( "int", commentObject[ "HORIZONTAL_ALIGNMENT_" & arguments.comment.horizontalalignment.UCase() ] ) );
 		}
 		/* Vertical alignment can be top, center, bottom, justify, and distributed. Note that center and justify are DIFFERENT than the constants for horizontal alignment, which are CENTERED and JUSTIFIED. */
