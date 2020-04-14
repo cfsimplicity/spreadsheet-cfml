@@ -1,26 +1,26 @@
 <cfscript>
-describe( "cellComment",function(){
+describe( "cellComment", function(){
 
-	it( "Can set and get a comment from the specified cell",function() {
-		workbook = s.new();
-		s.addColumn( workbook, "1" );
-		theComment = {
+	it( "Can set and get a comment from the specified cell", function() {
+		var xls = s.new();
+		s.addColumn( xls, "1" );
+		var theComment = {
 			author="cfsimplicity"
 			,comment="This is the comment in row 1 column 1"
 		};
-		expected = Duplicate( theComment ).Append( { column: 1, row: 1 } );
-		s.setCellComment( workbook, theComment, 1, 1 );
-		actual = s.getCellComment( workbook, 1, 1 );
+		var expected = Duplicate( theComment ).Append( { column: 1, row: 1 } );
+		s.setCellComment( xls, theComment, 1, 1 );
+		var actual = s.getCellComment( xls, 1, 1 );
 		expect( actual ).toBe( expected );
 		//xlsx
-		workbook = s.newXlsx();
-		s.addColumn( workbook, "1" );
-		s.setCellComment( workbook, theComment, 1, 1 );
-		actual = s.getCellComment( workbook, 1, 1 );
+		var xlsx = s.newXlsx();
+		s.addColumn( xlsx, "1" );
+		s.setCellComment( xlsx, theComment, 1, 1 );
+		actual = s.getCellComment( xlsx, 1, 1 );
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Can get all comments in the current sheet",function() {
+	it( "Can get all comments in the current sheet", function() {
 		var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
 		var dataAsArray = [ [ "a", "b" ], [ "c", "d" ] ];
 		var workbook = s.newXls();
@@ -32,17 +32,45 @@ describe( "cellComment",function(){
 		s.setCellComment( workbook, comments[ 2 ], 2, 2 );
 		comments[ 1 ].Append( { column: 1, row: 1 } );
 		comments[ 2 ].Append( { column: 2, row: 2 } );
-		expected = comments;
-		actual = s.getCellComment( workbook );
+		var expected = comments;
+		var actual = s.getCellComment( workbook );
 		expect( actual ).toBe( expected );
 		//alias getCellComments
 		actual = s.getCellComments( workbook );
 		expect( actual ).toBe( expected );
 	});
 
-	describe( "cellComment throws an exception if",function(){
+	it( "can set comment styles without erroring", function(){
+		var xls = s.new();
+		s.addColumn( xls, "1" );
+		var theComment = {
+			anchor: "1,2,3,4"
+			,author: "cfsimplicity"
+			,bold: "true"
+			,comment: "This is the comment in row 1 column 1"
+			,color: "blue"
+			,font: "Times New Roman"
+			,italic: "true"
+			,size: 16
+			,strikeout: "true"
+			,underline: "true"
+			,visible: "true"
+			//following 5 not supported by xlsx
+			,fillcolor: "magenta"
+			,horizontalalignment: "center"
+			,linestyle: "dashsys"
+			,linestylecolor: "cyan"
+			,verticalalignment: "center"
+		};
+		s.setCellComment( xls, theComment, 1, 1 );
+		var xlsx = s.newXlsx();
+		s.addColumn( xlsx, "1" );
+		s.setCellComment( xlsx, theComment, 1, 1 );
+	});
 
-		it( "column specified but not row, or vice versa",function() {
+	describe( "cellComment throws an exception if", function(){
+
+		it( "column specified but not row, or vice versa", function() {
 			expect( function(){
 				s.getCellComment( workbook=workbook, row=1 );
 				s.getCellComment( workbook=workbook, column=1 );

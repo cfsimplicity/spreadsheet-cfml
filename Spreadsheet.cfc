@@ -1364,15 +1364,19 @@ component accessors="true"{
 		var commentObject = drawingPatriarch.createCellComment( anchor );
 		if( arguments.comment.KeyExists( "author" ) )
 			commentObject.setAuthor( JavaCast( "string", arguments.comment.author ) );
-		/* If we're going to do anything font related, need to create a font. Didn't really want to create it above since it might not be needed.  */
-		if( arguments.comment.KeyExists( "bold" )
-				|| arguments.comment.KeyExists( "color" )
-				|| arguments.comment.KeyExists( "font" )
-				|| arguments.comment.KeyExists( "italic" )
-				|| arguments.comment.KeyExists( "size" )
-				|| arguments.comment.KeyExists( "strikeout" )
-				|| arguments.comment.KeyExists( "underline" )
-		){
+		if( arguments.comment.KeyExists( "visible" ) )
+			commentObject.setVisible( JavaCast( "boolean", arguments.comment.visible ) );//doesn't always seem to work
+		/* If we're going to do anything font related, need to create a font. Didn't really want to create it above since it might not be needed. */
+		var commentHasFontStyles = (
+			arguments.comment.KeyExists( "bold" )
+			|| arguments.comment.KeyExists( "color" )
+			|| arguments.comment.KeyExists( "font" )
+			|| arguments.comment.KeyExists( "italic" )
+			|| arguments.comment.KeyExists( "size" )
+			|| arguments.comment.KeyExists( "strikeout" )
+			|| arguments.comment.KeyExists( "underline" )
+		);
+		if( commentHasFontStyles ){
 			var font = workbook.createFont();
 			if( arguments.comment.KeyExists( "bold" ) )
 				font.setBold( JavaCast( "boolean", arguments.comment.bold ) );
@@ -1390,54 +1394,38 @@ component accessors="true"{
 				font.setUnderline( JavaCast( "boolean", arguments.comment.underline ) );
 			commentString.applyFont( font );
 		}
-		if( arguments.comment.KeyExists( "fillColor" ) ){
-			javaColorRGB = getJavaColorRGB( arguments.comment.fillColor );
+		var workbookIsHSSF = isBinaryFormat( arguments.workbook );
+		//the following 5 properties are not currently supported on XSSFComment: https://github.com/cfsimplicity/lucee-spreadsheet/issues/192
+		if( workbookIsHSSF && arguments.comment.KeyExists( "fillColor" ) ){
+			var javaColorRGB = getJavaColorRGB( arguments.comment.fillColor );
 			commentObject.setFillColor(
 				JavaCast( "int", javaColorRGB.red )
 				,JavaCast( "int", javaColorRGB.green )
 				,JavaCast( "int", javaColorRGB.blue )
 			);
 		}
-		/*
-			Horizontal alignment can be left, center, right, justify, or distributed. Note that the constants on the Java class are slightly different in some cases:
-			'center'=CENTERED
-			'justify'=JUSTIFIED
-		 */
-		if( arguments.comment.KeyExists( "horizontalAlignment" ) ){
-			if( arguments.comment.horizontalAlignment.UCase() IS "CENTER" )
-				arguments.comment.horizontalAlignment="CENTERED";
-			if( arguments.comment.horizontalAlignment.UCase() IS "JUSTIFY" )
-				arguments.comment.horizontalAlignment="JUSTIFIED";
-			commentObject.setHorizontalAlignment( JavaCast( "int", commentObject[ "HORIZONTAL_ALIGNMENT_" & arguments.comment.horizontalalignment.UCase() ] ) );
-		}
-		/*
-		Valid values for linestyle are:
-				* solid
-				* dashsys
-				* dashdotsys
-				* dashdotdotsys
-				* dotgel
-				* dashgel
-				* longdashgel
-				* dashdotgel
-				* longdashdotgel
-				* longdashdotdotgel
-		 */
-		if( arguments.comment.KeyExists( "lineStyle" ) )
+		if( workbookIsHSSF && arguments.comment.KeyExists( "lineStyle" ) )
 		 	commentObject.setLineStyle( JavaCast( "int", commentObject[ "LINESTYLE_" & arguments.comment.lineStyle.UCase() ] ) );
-		if( arguments.comment.KeyExists( "lineStyleColor" ) ){
-			javaColorRGB = getJavaColorRGB( arguments.comment.lineStyleColor );
+		if( workbookIsHSSF && arguments.comment.KeyExists( "lineStyleColor" ) ){
+			var javaColorRGB = getJavaColorRGB( arguments.comment.lineStyleColor );
 			commentObject.setLineStyleColor(
 				JavaCast( "int", javaColorRGB.red )
 				,JavaCast( "int", javaColorRGB.green )
 				,JavaCast( "int", javaColorRGB.blue )
 			);
 		}
+		/* Horizontal alignment can be left, center, right, justify, or distributed. Note that the constants on the Java class are slightly different in some cases: 'center'=CENTERED 'justify'=JUSTIFIED */
+		if(  workbookIsHSSF && arguments.comment.KeyExists( "horizontalAlignment" ) ){
+			if( arguments.comment.horizontalAlignment.UCase() IS "CENTER" )
+				arguments.comment.horizontalAlignment="CENTERED";
+			if( arguments.comment.horizontalAlignment.UCase() IS "JUSTIFY" )
+				arguments.comment.horizontalAlignment="JUSTIFIED";
+			commentObject.setHorizontalAlignment( JavaCast( "int", commentObject[ "HORIZONTAL_ALIGNMENT_" & arguments.comment.horizontalalignment.UCase() ] ) );
+		}
 		/* Vertical alignment can be top, center, bottom, justify, and distributed. Note that center and justify are DIFFERENT than the constants for horizontal alignment, which are CENTERED and JUSTIFIED. */
-		if( arguments.comment.KeyExists( "verticalAlignment" ) )
+		if(  workbookIsHSSF && arguments.comment.KeyExists( "verticalAlignment" ) )
 			commentObject.setVerticalAlignment( JavaCast( "int", commentObject[ "VERTICAL_ALIGNMENT_" & arguments.comment.verticalAlignment.UCase() ] ) );
-		if( arguments.comment.KeyExists( "visible" ) )
-			commentObject.setVisible( JavaCast( "boolean", arguments.comment.visible ) );//doesn't seem to work
+		//END HSSF only styles
 		commentObject.setString( commentString );
 		var cell = initializeCell( arguments.workbook, arguments.row, arguments.column );
 		cell.setCellComment( commentObject );
