@@ -1,3 +1,17 @@
+## 2.10.0 - 14 April 2020
+
+- Enhancements
+	- \#190 Add getCellComments() as alias for getCellComment() with no row/column specified
+	- \#188 Allow addAutoFilter to accept a row number instead of a cell range
+	- \#187 Allow addAutoFilter to default to the first row
+
+- Fixes
+	- \#194 setCellComment() with underline throws exception on ACF
+	- \#193 Prevent setCellComment() throwing an exception on XLSX when unsupported styles are set
+	- \#191 setCellComment() throws exception on XLSX
+	- \#189 Row and column number values missing from getCellComment() structs when all returned from sheet 
+	- \#109 Write encryption doesn't work on ACF
+
 ## 2.9.0 - 3 April 2020
 
 - Enhancements
@@ -5,7 +19,7 @@
 	- \#184 Add support for DATETIME and DATETIME2 (MSSQL) database column types
 
 - Fixes
-	- \#185 Time only values do not respect custom TIME format specifying fractions of a second Fixes
+	- \#185 Time only values do not respect custom TIME format specifying fractions of a second
 
 ## 2.8.0 - 23 March 2020
 
@@ -14,13 +28,13 @@
 	- \#179 Provide a list of all predefined colours available to formatting methods
 
 - Fixes
- - \#182 addInfo() not working with Streaming XLSX 
- - \#178 Color index lookup is using a deprecated enum class
+	- \#182 addInfo() not working with Streaming XLSX 
+	- \#178 Color index lookup is using a deprecated enum class
 
 ## 2.7.0 - 17 February 2020
 
- - \#175 Upgrade POI to 4.1.2
- - \#176 Upgrade Apache Commons CSV to 1.8
+- \#175 Upgrade POI to 4.1.2
+- \#176 Upgrade Apache Commons CSV to 1.8
 
 ## 2.6.0 - 28 November 2019
 
@@ -34,27 +48,27 @@
 
 ## 2.5.0 - 21 November 2019
 
- - \#170 Upgrade POI to 4.1.1
- - \#169 Improve handling of clearly non-date values which Lucee will parse as dates far in the future
+- \#170 Upgrade POI to 4.1.1
+- \#169 Improve handling of clearly non-date values which Lucee will parse as dates far in the future
 
 ## 2.4.0 - 11 August 2019
 
- - \#168 Allow the active sheet's "fit to page" print options to be controlled
+- \#168 Allow the active sheet's "fit to page" print options to be controlled
 
 ## 2.3.0 - 9 August 2019
 
- - \#167 Add support for setting sheet print margins
+- \#167 Add support for setting sheet print margins
 
 ## 2.2.1 - 10 July 2019
 
- - \#164 Upgrade Apache Commons CSV to 1.6
- - \#166 Bug fix: autoSizeColumn - key [columnIndex] doesn't exist in argument scope
+- \#164 Upgrade Apache Commons CSV to 1.6
+- \#166 Bug fix: autoSizeColumn - key [columnIndex] doesn't exist in argument scope
 
 ## 2.2.0 - 12 April 2019
 
- - \#163 Upgrade POI to 4.1.0
- - \#162 Support decryption of encrypted binary (XLS) spreadsheets. Add support for decryption in ACF.
- - DEPRECATED: `engineSupportsEncryption` environment key. Use `engineSupportsWriteEncryption`
+- \#163 Upgrade POI to 4.1.0
+- \#162 Support decryption of encrypted binary (XLS) spreadsheets. Add support for decryption in ACF.
+- DEPRECATED: `engineSupportsEncryption` environment key. Use `engineSupportsWriteEncryption`
 
 ## 2.1.1 - 29 March 2019
 

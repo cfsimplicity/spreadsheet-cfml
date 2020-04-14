@@ -29,8 +29,6 @@ Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of 
 
 Although primarily intended for Lucee, the library can be run under ColdFusion 2016 or higher. This may be useful where you want to your codebase to be cross-compatible between the two engines.
 
-Please note though that _writing password-protected files only works with Lucee_.
-
 ## Minimum Requirements for version 2.x
 
 - Java 8 or higher
@@ -119,6 +117,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [cleanUpStreamingXml](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/cleanUpStreamingXml)
 * [clearCell](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCell)
 * [clearCellRange](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCellRange)
+* [getCellComments](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellComments)
 * [getCellFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellFormat)
 * [getCellType](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellType)
 * [getColumnWidth](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getColumnWidth)

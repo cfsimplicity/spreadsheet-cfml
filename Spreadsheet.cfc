@@ -1,7 +1,7 @@
 component accessors="true"{
 
 	//static
-	property name="version" default="2.9.0" setter="false";
+	property name="version" default="2.10.0" setter="false";
 	property name="exceptionType" default="cfsimplicity.lucee.spreadsheet" setter="false";
 	//commonly invoked POI class names
 	property name="HSSFWorkbookClassName" default="org.apache.poi.hssf.usermodel.HSSFWorkbook" setter="false";
@@ -13,7 +13,6 @@ component accessors="true"{
 	property name="javaLoaderName";
 	property name="requiresJavaLoader" type="boolean" default="true";
 	//detected state
-	property name="engineSupportsWriteEncryption" type="boolean";
 	property name="isACF" type="boolean";
 	property name="javaClassesLastLoadedVia" default="Nothing loaded yet";
 	//cached POI helper objects
@@ -54,7 +53,6 @@ component accessors="true"{
 
 	private void function detectEngineProperties(){
 		this.setIsACF( ( server.coldfusion.productname IS "ColdFusion Server" ) );
-		this.setEngineSupportsWriteEncryption( !this.getIsACF() );
 	}
 
 	public void function flushPoiLoader(){
@@ -67,8 +65,6 @@ component accessors="true"{
 		return {
 			dateFormats: this.getDateFormats()
 			,engine: server.coldfusion.productname & " " & ( this.getIsACF()? server.coldfusion.productversion: ( server.lucee.version?: "?" ) )
-			,engineSupportsEncryption: this.getEngineSupportsWriteEncryption() //for backwards compat only //TODO remove on next major version
-			,engineSupportsWriteEncryption: this.getEngineSupportsWriteEncryption()
 			,javaLoaderDotPath: this.getJavaLoaderDotPath()
 			,javaClassesLastLoadedVia: this.getJavaClassesLastLoadedVia()
 			,javaLoaderName: this.getJavaLoaderName()
@@ -298,10 +294,15 @@ component accessors="true"{
 
 	/* End convenience methods */
 
-	public void function addAutofilter( required workbook, required string cellRange ){
+	public void function addAutofilter( required workbook, string cellRange="", numeric row=1 ){
 		arguments.cellRange = arguments.cellRange.Trim();
-		if( arguments.cellRange.IsEmpty() )
-			Throw( type=this.getExceptionType(), message="Empty cellRange argument", detail="You must provide a cell range reference in the form 'A1:Z1'" );
+		if( arguments.cellRange.IsEmpty() ){
+			//default to all columns in the first (default) or specified row 
+			var rowIndex = ( Max( 0, arguments.row -1 ) );
+			var cellRangeAddress = getCellRangeAddressFromColumnAndRowIndices( rowIndex, rowIndex, 0, ( getColumnCount( arguments.workbook ) -1 ) );
+			getActiveSheet( arguments.workbook ).setAutoFilter( cellRangeAddress );
+			return;
+		}
 		getActiveSheet( arguments.workbook ).setAutoFilter( getCellRangeAddressFromReference( arguments.cellRange ) );
 	}
 
@@ -892,24 +893,22 @@ component accessors="true"{
 			}
 			return {};
 		}
-		/* TODO: Look into checking all sheets in the workbook */
-		/* row and column weren't provided so loop over the whole sheet and return all the comments as an array of structs */
+		/* row and column weren't provided so return all the comments as an array of structs */
+		return getCellComments( arguments.workbook );
+	}
+
+	public array function getCellComments( required workbook ){
 		var comments = [];
-		var rowIterator = getActiveSheet( arguments.workbook ).rowIterator();
-		while( rowIterator.hasNext() ){
-			var cellIterator = rowIterator.next().cellIterator();
-			while( cellIterator.hasNext() ){
-				var commentObject = cellIterator.next().getCellComment();
-				if( !IsNull( commentObject ) ){
-					var comment = {
-						author: commentObject.getAuthor()
-						,comment: commentObject.getString().getString()
-						,column: arguments.column
-						,row: arguments.row
-					};
-					comments.Append( comment );
-				}
-			}
+		var commentsIterator = getActiveSheet( arguments.workbook ).getCellComments().values().iterator();
+		while( commentsIterator.hasNext() ){
+			var commentObject = commentsIterator.next();
+			var comment = {
+				author: commentObject.getAuthor()
+				,comment: commentObject.getString().getString()
+				,column: ( commentObject.getColumn() +1 )
+				,row: ( commentObject.getRow() +1 )
+			};
+			comments.Append( comment );
 		}
 		return comments;
 	}
@@ -1154,11 +1153,11 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid startRow or endRow", detail="Row values must be greater than 0 and the startRow cannot be greater than the endRow." );
 		if( arguments.startColumn LT 1 OR arguments.startColumn GT arguments.endColumn )
 			Throw( type=this.getExceptionType(), message="Invalid startColumn or endColumn", detail="Column values must be greater than 0 and the startColumn cannot be greater than the endColumn." );
-		var cellRangeAddress = loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).init(
-			JavaCast( "int", ( arguments.startRow - 1 ) )
-			,JavaCast( "int", ( arguments.endRow - 1 ) )
-			,JavaCast( "int", ( arguments.startColumn - 1 ) )
-			,JavaCast( "int", ( arguments.endColumn - 1 ) )
+		var cellRangeAddress = getCellRangeAddressFromColumnAndRowIndices(
+			( arguments.startRow - 1 )
+			,( arguments.endRow - 1 )
+			,( arguments.startColumn - 1 )
+			,( arguments.endColumn - 1 )
 		);
 		getActiveSheet( arguments.workbook ).addMergedRegion( cellRangeAddress );
 		if( !arguments.emptyInvisibleCells )
@@ -1338,43 +1337,46 @@ component accessors="true"{
 			* verticalalignment
 			* visible
 		 */
+		var factory = arguments.workbook.getCreationHelper();
+		var commentString = factory.createRichTextString( JavaCast( "string", arguments.comment.comment ) );
+		var anchor = factory.createClientAnchor();
+		var anchorValues = {};
+		if( arguments.comment.KeyExists( "anchor" ) ){
+			//specifies the position and size of the comment, e.g. "4,8,6,11"
+			var anchorValueArray = arguments.comment.anchor.ListToArray();
+			anchorValues.col1 = anchorValueArray[ 1 ];
+			anchorValues.row1 = anchorValueArray[ 2 ];
+			anchorValues.col2 = anchorValueArray[ 3 ];
+			anchorValues.row2 = anchorValueArray[ 4 ];
+		}
+		else{
+			//no position specified, so use the row/column values to set a default
+			anchorValues.col1 = arguments.column;
+			anchorValues.row1 = arguments.row;
+			anchorValues.col2 = ( arguments.column +2 );
+			anchorValues.row2 = ( arguments.row +2 );
+		}
+		anchor.setRow1( JavaCast( "int", anchorValues.row1 ) );
+		anchor.setCol1( JavaCast( "int", anchorValues.col1 ) );
+		anchor.setRow2( JavaCast( "int", anchorValues.row2 ) );
+		anchor.setCol2( JavaCast( "int", anchorValues.col2 ) );
 		var drawingPatriarch = getActiveSheet( arguments.workbook ).createDrawingPatriarch();
-		var commentString = loadClass( "org.apache.poi.hssf.usermodel.HSSFRichTextString" ).init( JavaCast( "string", arguments.comment.comment ) );
-		var javaColorRGB = 0;
-		if( arguments.comment.KeyExists( "anchor" ) )
-			var clientAnchor = loadClass( "org.apache.poi.hssf.usermodel.HSSFClientAnchor" ).init(
-				JavaCast( "int", 0 )
-				,JavaCast( "int", 0 )
-				,JavaCast( "int", 0 )
-				,JavaCast( "int", 0 )
-				,JavaCast( "short", ListGetAt( arguments.comment.anchor, 1 ) )
-				,JavaCast( "int", ListGetAt( arguments.comment.anchor, 2 ) )
-				,JavaCast( "short", ListGetAt( arguments.comment.anchor, 3 ) )
-				,JavaCast( "int", ListGetAt( arguments.comment.anchor, 4 ) )
-			);
-		else
-			var clientAnchor = loadClass( "org.apache.poi.hssf.usermodel.HSSFClientAnchor" ).init(
-				JavaCast( "int", 0 )
-				,JavaCast( "int", 0 )
-				,JavaCast( "int", 0 )
-				,JavaCast( "int", 0 )
-				,JavaCast( "short", arguments.column )
-				,JavaCast( "int", arguments.row )
-				,JavaCast( "short", ( arguments.column +2 ) )
-				,JavaCast( "int", ( arguments.row +2 ) )
-			);
-		var commentObject = drawingPatriarch.createComment( clientAnchor );
+		var commentObject = drawingPatriarch.createCellComment( anchor );
 		if( arguments.comment.KeyExists( "author" ) )
 			commentObject.setAuthor( JavaCast( "string", arguments.comment.author ) );
-		/* If we're going to do anything font related, need to create a font. Didn't really want to create it above since it might not be needed.  */
-		if( arguments.comment.KeyExists( "bold" )
-				OR arguments.comment.KeyExists( "color" )
-				OR arguments.comment.KeyExists( "font" )
-				OR arguments.comment.KeyExists( "italic" )
-				OR arguments.comment.KeyExists( "size" )
-				OR arguments.comment.KeyExists( "strikeout" )
-				OR arguments.comment.KeyExists( "underline" )
-		){
+		if( arguments.comment.KeyExists( "visible" ) )
+			commentObject.setVisible( JavaCast( "boolean", arguments.comment.visible ) );//doesn't always seem to work
+		/* If we're going to do anything font related, need to create a font. Didn't really want to create it above since it might not be needed. */
+		var commentHasFontStyles = (
+			arguments.comment.KeyExists( "bold" )
+			|| arguments.comment.KeyExists( "color" )
+			|| arguments.comment.KeyExists( "font" )
+			|| arguments.comment.KeyExists( "italic" )
+			|| arguments.comment.KeyExists( "size" )
+			|| arguments.comment.KeyExists( "strikeout" )
+			|| arguments.comment.KeyExists( "underline" )
+		);
+		if( commentHasFontStyles ){
 			var font = workbook.createFont();
 			if( arguments.comment.KeyExists( "bold" ) )
 				font.setBold( JavaCast( "boolean", arguments.comment.bold ) );
@@ -1389,57 +1391,41 @@ component accessors="true"{
 			if( arguments.comment.KeyExists( "strikeout" ) )
 				font.setStrikeout( JavaCast( "boolean", arguments.comment.strikeout ) );
 			if( arguments.comment.KeyExists( "underline" ) )
-				font.setUnderline( JavaCast( "boolean", arguments.comment.underline ) );
-			arguments.commentString.applyFont( font );
+				font.setUnderline( JavaCast( "byte", arguments.comment.underline ) );
+			commentString.applyFont( font );
 		}
-		if( arguments.comment.KeyExists( "fillColor" ) ){
-			javaColorRGB = getJavaColorRGB( arguments.comment.fillColor );
+		var workbookIsHSSF = isBinaryFormat( arguments.workbook );
+		//the following 5 properties are not currently supported on XSSFComment: https://github.com/cfsimplicity/lucee-spreadsheet/issues/192
+		if( workbookIsHSSF && arguments.comment.KeyExists( "fillColor" ) ){
+			var javaColorRGB = getJavaColorRGB( arguments.comment.fillColor );
 			commentObject.setFillColor(
 				JavaCast( "int", javaColorRGB.red )
 				,JavaCast( "int", javaColorRGB.green )
 				,JavaCast( "int", javaColorRGB.blue )
 			);
 		}
-		/*
-			Horizontal alignment can be left, center, right, justify, or distributed. Note that the constants on the Java class are slightly different in some cases:
-			'center'=CENTERED
-			'justify'=JUSTIFIED
-		 */
-		if( arguments.comment.KeyExists( "horizontalAlignment" ) ){
-			if( arguments.comment.horizontalAlignment.UCase() IS "CENTER" )
-				arguments.comment.horizontalAlignment="CENTERED";
-			if( arguments.comment.horizontalAlignment.UCase() IS "JUSTIFY" )
-				arguments.comment.horizontalAlignment="JUSTIFIED";
-			commentObject.setHorizontalAlignment( JavaCast( "int", commentObject[ "HORIZONTAL_ALIGNMENT_" & arguments.comment.horizontalalignment.UCase() ] ) );
-		}
-		/*
-		Valid values for linestyle are:
-				* solid
-				* dashsys
-				* dashdotsys
-				* dashdotdotsys
-				* dotgel
-				* dashgel
-				* longdashgel
-				* dashdotgel
-				* longdashdotgel
-				* longdashdotdotgel
-		 */
-		if( arguments.comment.KeyExists( "lineStyle" ) )
+		if( workbookIsHSSF && arguments.comment.KeyExists( "lineStyle" ) )
 		 	commentObject.setLineStyle( JavaCast( "int", commentObject[ "LINESTYLE_" & arguments.comment.lineStyle.UCase() ] ) );
-		if( arguments.comment.KeyExists( "lineStyleColor" ) ){
-			javaColorRGB = getJavaColorRGB( arguments.comment.lineStyleColor );
+		if( workbookIsHSSF && arguments.comment.KeyExists( "lineStyleColor" ) ){
+			var javaColorRGB = getJavaColorRGB( arguments.comment.lineStyleColor );
 			commentObject.setLineStyleColor(
 				JavaCast( "int", javaColorRGB.red )
 				,JavaCast( "int", javaColorRGB.green )
 				,JavaCast( "int", javaColorRGB.blue )
 			);
 		}
+		/* Horizontal alignment can be left, center, right, justify, or distributed. Note that the constants on the Java class are slightly different in some cases: 'center'=CENTERED 'justify'=JUSTIFIED */
+		if(  workbookIsHSSF && arguments.comment.KeyExists( "horizontalAlignment" ) ){
+			if( arguments.comment.horizontalAlignment.UCase() IS "CENTER" )
+				arguments.comment.horizontalAlignment = "CENTERED";
+			if( arguments.comment.horizontalAlignment.UCase() IS "JUSTIFY" )
+				arguments.comment.horizontalAlignment = "JUSTIFIED";
+			commentObject.setHorizontalAlignment( JavaCast( "int", commentObject[ "HORIZONTAL_ALIGNMENT_" & arguments.comment.horizontalalignment.UCase() ] ) );
+		}
 		/* Vertical alignment can be top, center, bottom, justify, and distributed. Note that center and justify are DIFFERENT than the constants for horizontal alignment, which are CENTERED and JUSTIFIED. */
-		if( arguments.comment.KeyExists( "verticalAlignment" ) )
+		if(  workbookIsHSSF && arguments.comment.KeyExists( "verticalAlignment" ) )
 			commentObject.setVerticalAlignment( JavaCast( "int", commentObject[ "VERTICAL_ALIGNMENT_" & arguments.comment.verticalAlignment.UCase() ] ) );
-		if( arguments.comment.KeyExists( "visible" ) )
-			commentObject.setVisible( JavaCast( "boolean", arguments.comment.visible ) );//doesn't seem to work
+		//END HSSF only styles
 		commentObject.setString( commentString );
 		var cell = initializeCell( arguments.workbook, arguments.row, arguments.column );
 		cell.setCellComment( commentObject );
@@ -1476,9 +1462,8 @@ component accessors="true"{
 		,required numeric startColumn
 		,required numeric endColumn
 	){
-		/* Sets the same value to a range of cells */
-		for( var rowNumber = arguments.startRow; rowNumber LTE arguments.endRow; rowNumber++ ){
-			for( var columnNumber = arguments.startColumn; columnNumber LTE arguments.endColumn; columnNumber++ )
+		for( var rowNumber = arguments.endRow; rowNumber >= arguments.startRow; rowNumber-- ){
+			for( var columnNumber = arguments.endColumn; columnNumber >= arguments.startColumn; columnNumber-- )
 				setCellValue( arguments.workbook, arguments.value, rowNumber, columnNumber );
 		}
 	}
@@ -1669,8 +1654,6 @@ component accessors="true"{
 		if( !arguments.overwrite AND FileExists( arguments.filepath ) )
 			Throw( type=this.getExceptionType(), message="File already exists", detail="The file path specified already exists. Use 'overwrite=true' if you wish to overwrite it." );
 		var passwordProtect = ( arguments.KeyExists( "password" ) AND !arguments.password.Trim().IsEmpty() );
-		if( passwordProtect AND !this.getEngineSupportsWriteEncryption() )
-			Throw( type=this.getExceptionType(), message="Password protection is not supported for Adobe ColdFusion", detail="Password protection currently only works in Lucee, not ColdFusion" );
 		if( passwordProtect AND isBinaryFormat( arguments.workbook ) )
 			Throw( type=this.getExceptionType(), message="Whole file password protection is not supported for binary workbooks", detail="Password protection only works with XML ('xlsx') workbooks." );
 		try{
@@ -1752,8 +1735,12 @@ component accessors="true"{
 				// set up a POI filesystem object
 				var poifs = loadClass( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
 				try{
-					// set up an encrypted stream withini the POI filesystem
-					var encryptedStream = encryptor.getDataStream( poifs );
+					// set up an encrypted stream within the POI filesystem
+					// ACF gets confused by encryptor.getDataStream( POIFSFileSystem ) signature. Using getRoot() means getDataStream( POIFSFileSystem ) will be used
+					if( this.getIsACF() )
+						var encryptedStream = encryptor.getDataStream( poifs.getRoot() );
+					else
+						var encryptedStream = encryptor.getDataStream( poifs );
 					// read in the unencrypted wb file and write it to the encrypted stream
 					var workbook = workbookFromFile( arguments.filepath );
 					workbook.write( encryptedStream );
@@ -2254,6 +2241,21 @@ component accessors="true"{
 		var rowIndex = ( arguments.rowNumber -1 );
 		var columnIndex = ( arguments.columnNumber -1 );
 		return getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).getCell( JavaCast( "int", columnIndex ) );
+	}
+
+	private any function getCellRangeAddressFromColumnAndRowIndices(
+		required numeric startRowIndex
+		,required numeric endRowIndex
+		,required numeric startColumnIndex
+		,required numeric endColumnIndex
+	){
+		//index = 0 based
+		return loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).init(
+			JavaCast( "int", arguments.startRowIndex )
+			,JavaCast( "int", arguments.endRowIndex )
+			,JavaCast( "int", arguments.startColumnIndex )
+			,JavaCast( "int", arguments.endColumnIndex )
+		);
 	}
 
 	private any function getCellRangeAddressFromReference( required string rangeReference ){
