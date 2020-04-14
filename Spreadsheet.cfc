@@ -1,7 +1,7 @@
 component accessors="true"{
 
 	//static
-	property name="version" default="2.9.0-develop" setter="false";
+	property name="version" default="2.10.0" setter="false";
 	property name="exceptionType" default="cfsimplicity.lucee.spreadsheet" setter="false";
 	//commonly invoked POI class names
 	property name="HSSFWorkbookClassName" default="org.apache.poi.hssf.usermodel.HSSFWorkbook" setter="false";

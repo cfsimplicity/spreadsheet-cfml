@@ -1,3 +1,17 @@
+## 2.10.0 - 14 April 2020
+
+- Enhancements
+	- \#190 Add getCellComments() as alias for getCellComment() with no row/column specified
+	- \#188 Allow addAutoFilter to accept a row number instead of a cell range
+	- \#187 Allow addAutoFilter to default to the first row
+
+- Fixes
+	- \#194 setCellComment() with underline throws exception on ACF
+	- \#193 Prevent setCellComment() throwing an exception on XLSX when unsupported styles are set
+	- \#191 setCellComment() throws exception on XLSX
+	- \#189 Row and column number values missing from getCellComment() structs when all returned from sheet 
+	- \#109 Write encryption doesn't work on ACF
+
 ## 2.9.0 - 3 April 2020
 
 - Enhancements

@@ -117,6 +117,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [cleanUpStreamingXml](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/cleanUpStreamingXml)
 * [clearCell](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCell)
 * [clearCellRange](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCellRange)
+* [getCellComments](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellComments)
 * [getCellFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellFormat)
 * [getCellType](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellType)
 * [getColumnWidth](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getColumnWidth)
