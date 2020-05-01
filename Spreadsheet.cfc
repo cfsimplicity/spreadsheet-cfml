@@ -1736,7 +1736,7 @@ component accessors="true"{
 				var poifs = loadClass( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
 				try{
 					// set up an encrypted stream within the POI filesystem
-					// ACF gets confused by encryptor.getDataStream( POIFSFileSystem ) signature. Using getRoot() means getDataStream( POIFSFileSystem ) will be used
+					// ACF gets confused by encryptor.getDataStream( POIFSFileSystem ) signature. Using getRoot() means getDataStream( DirectoryNode ) will be used
 					if( this.getIsACF() )
 						var encryptedStream = encryptor.getDataStream( poifs.getRoot() );
 					else
