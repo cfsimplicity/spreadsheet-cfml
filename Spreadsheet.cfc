@@ -3035,10 +3035,30 @@ component accessors="true"{
 		}
 	}
 
+	private boolean function isHexColor(required string inputString){
+		return len(arguments.inputString) IS 6 and not len(javacast("string", arguments.inputString).replaceAll("\d", "").replaceAll("(?i)[a-f]",""));
+	}
+
+	private string function HexToRGB(required string hexColor){
+		var response = [];
+		var i=0;
+		arguments.hexColor = arguments.hexColor.replaceAll('##','');
+		if (isHexColor(arguments.hexColor)){
+			for (i=1; i lte 5; i=i+2){
+				arrayAppend(response, InputBaseN(mid(arguments.hexColor,i,2),16));
+			}
+		}
+		return arrayToList(response);
+	}
+
 	private any function getColor( required workbook, required string colorValue ){
 		/* if colorValue is a preset name, returns the index */
 		/* if colorValue is an RGB Triplet eg. "255,255,255" then the exact color object is returned for xlsx, or the nearest color's index if xls */
 		var isRGB = ListLen( arguments.colorValue ) EQ 3;
+		if (isHexColor(arguments.colorValue)){
+			arguments.colorValue = HexToRGB(arguments.colorValue);
+			isRGB = ListLen( arguments.colorValue ) EQ 3;
+		}
 		if( !isRGB )
 			return getColorIndex( arguments.colorValue );
 		var rgb = ListToArray( arguments.colorValue );
