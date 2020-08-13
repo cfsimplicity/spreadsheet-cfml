@@ -3035,12 +3035,33 @@ component accessors="true"{
 		}
 	}
 
+	private boolean function isHexColor( required string inputString ){
+		arguments.inputString = arguments.inputString.Replace( "##", "" );
+		return ( Len( arguments.inputString ) == 6 ) && !Len( JavaCast( "string", arguments.inputString ).ReplaceAll( "\d", "" ).ReplaceAll( "(?i)[a-f]", "" ) );
+	}
+
+	private string function hexToRGB( required string hexColor ){
+		var response = [];
+		arguments.hexColor = arguments.hexColor.Replace( "##", "" );
+		if( !isHexColor( arguments.hexColor ) )
+			return "";
+		for( var i=1; i <= 5; i=i+2 ){
+			response.Append( InputBaseN( Mid( arguments.hexColor, i, 2 ), 16 ) );
+		}
+		return response.ToList();
+	}
+
 	private any function getColor( required workbook, required string colorValue ){
 		/* if colorValue is a preset name, returns the index */
+		/* if colorValue is hex it will be converted to RGB */
 		/* if colorValue is an RGB Triplet eg. "255,255,255" then the exact color object is returned for xlsx, or the nearest color's index if xls */
-		var isRGB = ListLen( arguments.colorValue ) EQ 3;
-		if( !isRGB )
-			return getColorIndex( arguments.colorValue );
+		var isRGB = ListLen( arguments.colorValue ) == 3;
+		if( !isRGB ){
+			if( isHexColor( arguments.colorValue ) )
+				arguments.colorValue = hexToRGB( arguments.colorValue );
+			else
+				return getColorIndex( arguments.colorValue );
+		}
 		var rgb = ListToArray( arguments.colorValue );
 		if( isXmlFormat( arguments.workbook ) ){
 			var rgbBytes = [
