@@ -308,7 +308,7 @@ component accessors="true"{
 
 	public void function addColumn(
 		required workbook
-		,required string data /* Delimited list of cell values */
+		,required data /* Delimited list of values OR array */
 		,numeric startRow
 		,numeric startColumn
 		,boolean insert=true
@@ -334,7 +334,7 @@ component accessors="true"{
 				cellNum = 0;
 		}
 		var columnNumber = ( cellNum +1 );
-		var columnData = ListToArray( arguments.data, arguments.delimiter );
+		var columnData = IsArray( arguments.data )? arguments.data: ListToArray( arguments.data, arguments.delimiter );
 		for( var cellValue in columnData ){
 			/* if rowNum is greater than the last row of the sheet, need to create a new row  */
 			if( rowNum GT sheet.getLastRowNum() OR IsNull( sheet.getRow( rowNum ) ) )

@@ -3,12 +3,20 @@ describe( "addColumn",function(){
 
 	beforeEach( function(){
 		variables.columnData = "a,b";
+		variables.dataAsArray = [ "a", "b" ];
 		variables.workbook = s.new();
 	});
 
 	it( "Adds a column with the minimum arguments",function() {
 		s.addColumn( workbook,columnData );
 		expected = QueryNew( "column1","VarChar",[ [ "a" ],[ "b" ] ] );
+		actual = s.sheetToQuery( workbook );
+		expect( actual ).toBe( expected );
+	});
+
+	it( "Adds a column with the minimum arguments using array data",function() {
+		s.addColumn( workbook, dataAsArray );
+		expected = QueryNew( "column1", "VarChar", [ [ "a" ], [ "b" ] ] );
 		actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 	});
