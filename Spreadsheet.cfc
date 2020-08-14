@@ -3036,15 +3036,14 @@ component accessors="true"{
 	}
 
 	private boolean function isHexColor( required string inputString ){
-		arguments.inputString = arguments.inputString.Replace( "##", "" );
-		return ( Len( arguments.inputString ) == 6 ) && !Len( JavaCast( "string", arguments.inputString ).ReplaceAll( "\d", "" ).ReplaceAll( "(?i)[a-f]", "" ) );
+		return arguments.inputString.REFindNoCase( "^##?[a-f]{6,6}$" );
 	}
 
 	private string function hexToRGB( required string hexColor ){
-		var response = [];
-		arguments.hexColor = arguments.hexColor.Replace( "##", "" );
 		if( !isHexColor( arguments.hexColor ) )
 			return "";
+		arguments.hexColor = arguments.hexColor.Replace( "##", "" );
+		var response = [];
 		for( var i=1; i <= 5; i=i+2 ){
 			response.Append( InputBaseN( Mid( arguments.hexColor, i, 2 ), 16 ) );
 		}

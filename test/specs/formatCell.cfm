@@ -319,6 +319,14 @@ describe( "formatCell", function(){
 		expect( cellFormat.bottombordercolor ).toBe( triplet ); //style color
 	});
 
+	it( "Throws an exception if an invalid hex value is passed",function() {
+		expect( function(){
+			var hex = "FF22BB";
+			var format = { color: hex, bottombordercolor: hex };
+			var cellFormat = setAndGetFormat( xlsx, format );
+		}).toThrow( regex="Invalid color" );
+	});
+
 
 	it( "can preserve the existing font properties when setting bold, color, font name, font size, italic, strikeout and underline", function(){
 		var format = { font: "Helvetica" };
