@@ -184,7 +184,7 @@ describe( "addRows",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Handles blank date and boolean values correctly", function(){
+	it( "Handles empty values correctly", function(){
 		var data = QueryNew( "column1,column2,column3,column4,column5", "Date,Time,Timestamp,Bit,Integer",[ [ "", "", "", "", "" ] ] );
 		s.addRows( workbook, data );
 		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "blank" );
@@ -193,6 +193,17 @@ describe( "addRows",function(){
 		expect( s.getCellType( workbook, 1, 4 ) ).toBe( "blank" );
 		expect( s.getCellType( workbook, 1, 5 ) ).toBe( "numeric" );
 		//doesn't apply to array data which has no column types
+	});
+
+	it( "Can ignore query column types, so that each cell's type is auto-detected from its value", function(){
+		var dateValue = CreateDate( 2015, 04, 12 );
+		var data = QueryNew( "column1", "VarChar", [ [ 0 ], [ 1 ], [ 1.1 ], [ dateValue ], [ "hello" ] ] );
+		s.addRows( workbook=workbook, data=data, ignoreQueryColumnDataTypes=true );
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
+		expect( s.getCellType( workbook, 2, 1 ) ).toBe( "numeric" );
+		expect( s.getCellType( workbook, 3, 1 ) ).toBe( "numeric" );
+		expect( s.getCellType( workbook, 4, 1 ) ).toBe( "numeric" );
+		expect( s.getCellType( workbook, 5, 1 ) ).toBe( "string" );
 	});
 
 	it( "Adds strings with leading zeros as strings not numbers",function(){

@@ -98,6 +98,7 @@ component accessors="true"{
 		,boolean xmlFormat=false
 		,boolean streamingXml=false
 		,numeric streamingWindowSize=100
+		,boolean ignoreQueryColumnDataTypes=false
 	){
 		/* Pass in a query and get a spreadsheet binary file ready to stream to the browser */
 		var workbook = workbookFromQuery( argumentCollection=arguments );
@@ -183,12 +184,21 @@ component accessors="true"{
 		,string contentType
 		,boolean streamingXml=false
 		,numeric streamingWindowSize=100
+		,boolean ignoreQueryColumnDataTypes=false
 	){
 		var safeFilename = filenameSafe( arguments.filename );
 		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$","" );
 		var extension = ( arguments.xmlFormat || arguments.streamingXml )? "xlsx": "xls";
 		arguments.filename = filenameWithoutExtension & "." & extension;
-		var binary = binaryFromQuery( arguments.data, arguments.addHeaderRow, arguments.boldHeaderRow, arguments.xmlFormat, arguments.streamingXml, arguments.streamingWindowSize );
+		var binary = binaryFromQuery(
+			arguments.data
+			,arguments.addHeaderRow
+			,arguments.boldHeaderRow
+			,arguments.xmlFormat
+			,arguments.streamingXml
+			,arguments.streamingWindowSize
+			,arguments.ignoreQueryColumnDataTypes
+		);
 		if( !arguments.KeyExists( "contentType" ) )
 			arguments.contentType = arguments.xmlFormat? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/msexcel";
 		downloadBinaryVariable( binary, arguments.filename, arguments.contentType );
@@ -253,6 +263,7 @@ component accessors="true"{
 		,boolean xmlFormat=false
 		,boolean streamingXml=false
 		,numeric streamingWindowSize=100
+		,boolean ignoreQueryColumnDataTypes=false
 	){
 		var workbook = new( xmlFormat=arguments.xmlFormat, streamingXml=arguments.streamingXml, streamingWindowSize=arguments.streamingWindowSize );
 		if( arguments.addHeaderRow ){
@@ -260,10 +271,10 @@ component accessors="true"{
 			addRow( workbook, columns );
 			if( arguments.boldHeaderRow )
 				formatRow( workbook, { bold: true }, 1 );
-			addRows( workbook, arguments.data, 2, 1 );
+			addRows( workbook=workbook, data=arguments.data, row=2, column=1, ignoreQueryColumnDataTypes=arguments.ignoreQueryColumnDataTypes );
 		}
 		else
-			addRows( workbook, arguments.data );
+			addRows( workbook=workbook, data=arguments.data, ignoreQueryColumnDataTypes=arguments.ignoreQueryColumnDataTypes );
 		return workbook;
 	}
 
@@ -276,6 +287,7 @@ component accessors="true"{
 		,boolean xmlFormat=false
 		,boolean streamingXml=false
 		,numeric streamingWindowSize=100
+		,boolean ignoreQueryColumnDataTypes=false
 	){
 		if( !arguments.xmlFormat AND ( ListLast( arguments.filepath, "." ) IS "xlsx" ) )
 			arguments.xmlFormat = true;
@@ -286,6 +298,7 @@ component accessors="true"{
 			,xmlFormat=arguments.xmlFormat
 			,streamingXml=arguments.streamingXml
 			,streamingWindowSize=arguments.streamingWindowSize
+			,ignoreQueryColumnDataTypes=arguments.ignoreQueryColumnDataTypes
 		);
 		if( xmlFormat AND ( ListLast( arguments.filepath, "." ) IS "xls" ) )
 			arguments.filepath &= "x";// force to .xlsx
@@ -549,6 +562,7 @@ component accessors="true"{
 		,boolean insert=true
 		,boolean autoSizeColumns=false
 		,boolean includeQueryColumnNames=false
+		,boolean ignoreQueryColumnDataTypes=false
 	){
 		var dataIsQuery = IsQuery( arguments.data );
 		var dataIsArray = IsArray( arguments.data );
@@ -580,7 +594,12 @@ component accessors="true"{
 	   		for( var queryColumn in queryColumns ){
 	   			var cell = createCell( newRow, cellIndex, false );
 					var value = dataRow[ queryColumn.name ];
-					/* Cast the values to the correct type  */
+					if( arguments.ignoreQueryColumnDataTypes ){
+						setCellValueAsType( arguments.workbook, cell, value );
+						cellIndex++;
+						continue;
+					}
+					/* Cast the values to the query column type  */
 					switch( queryColumn.cellDataType ){
 						case "DOUBLE":
 							setCellValueAsType( arguments.workbook, cell, value, "numeric" );
