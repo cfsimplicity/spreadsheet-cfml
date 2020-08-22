@@ -543,8 +543,8 @@ component accessors="true"{
 		}
 		var theRow = arguments.KeyExists( "row" )? createRow( arguments.workbook, arguments.row -1 ): createRow( arguments.workbook );
 		var dataIsArray = IsArray( arguments.data );
-		var rowValues = dataIsArray? arguments.data: parseRowData( arguments.data, arguments.delimiter, arguments.handleEmbeddedCommas );
-		var cellIndex = arguments.column -1;
+		var rowValues = dataIsArray? arguments.data: parseListDataToArray( arguments.data, arguments.delimiter, arguments.handleEmbeddedCommas );
+		var cellIndex = ( arguments.column -1 );
 		for( var cellValue in rowValues ){
 			var cell = createCell( theRow, cellIndex );
 			setCellValueAsType( arguments.workbook, cell, Trim( cellValue ) );
@@ -2143,7 +2143,7 @@ component accessors="true"{
 		return result;
 	}
 
-	private array function parseRowData( required string line, required string delimiter, boolean handleEmbeddedCommas=true ){
+	private array function parseListDataToArray( required string line, required string delimiter, boolean handleEmbeddedCommas=true ){
 		var elements = ListToArray( arguments.line, arguments.delimiter );
 		var potentialQuotes = 0;
 		arguments.line = ToString( arguments.line );
@@ -2496,10 +2496,10 @@ component accessors="true"{
 		var ranges = ListToArray( arguments.rangeList );
 		for( var thisRange in ranges ){
 			/* remove all white space */
-			thisRange.reReplace( "\s+","","ALL" );
+			thisRange.REReplace( "\s+", "", "ALL" );
 			if( !REFind( rangeTest, thisRange ) )
 				Throw( type=this.getExceptionType(), message="Invalid range value", detail="The range value '#thisRange#' is not valid." );
-			var parts = ListToArray( thisRange,"-" );
+			var parts = ListToArray( thisRange, "-" );
 			//if this is a single number, the start/endAt values are the same
 			var range = {
 				startAt: parts[ 1 ]
