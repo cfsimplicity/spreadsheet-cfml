@@ -600,25 +600,25 @@ component accessors="true"{
 						continue;
 					}
 					/* Cast the values to the query column type  */
+					var poiCellType = "string";
 					switch( queryColumn.cellDataType ){
 						case "DOUBLE":
-							setCellValueAsType( arguments.workbook, cell, value, "numeric" );
+							poiCellType = "numeric";
 							break;
 						case "DATE":
-						setCellValueAsType( arguments.workbook, cell, value, "date" );
+							poiCellType = "date";
 							break;
 						case "TIME":
-							setCellValueAsType( arguments.workbook, cell, value, "time" );
+							poiCellType = "time";
 							break;
 						case "BOOLEAN":
-							setCellValueAsType( arguments.workbook, cell, value, "boolean" );
+							poiCellType = "boolean";
 							break;
 						default:
 							if( IsSimpleValue( value ) AND !Len( value ) ) //NB don't use member function: won't work if numeric
-								setCellValueAsType( arguments.workbook, cell, value, "blank" );
-							else
-								setCellValueAsType( arguments.workbook, cell, value, "string" );
+								poiCellType = "blank";
 					}
+					setCellValueAsType( arguments.workbook, cell, value, poiCellType );
 					cellIndex++;
 	   		}
 	   		currentRowIndex++;
@@ -631,22 +631,22 @@ component accessors="true"{
 					thisColumn++;
 				}
 			}
+			return;
 		}
-		else { //data is an array
-			for( var dataRow in arguments.data ){
-				var newRow = createRow( arguments.workbook, currentRowIndex, false );
-				var cellIndex = ( arguments.column -1 );
-	   		/* populate all columns in the row */
-	   		for( var cellValue in dataRow ){
-					var cell = createCell( newRow, cellIndex );
-					setCellValueAsType( arguments.workbook, cell, Trim( cellValue ) );
-					if( arguments.autoSizeColumns )
-						autoSizeColumn( arguments.workbook, arguments.column );
-					cellIndex++;
-				}
-				currentRowIndex++;
-	   	}
-		}
+		//data is an array
+		for( var dataRow in arguments.data ){
+			var newRow = createRow( arguments.workbook, currentRowIndex, false );
+			var cellIndex = ( arguments.column -1 );
+   		/* populate all columns in the row */
+   		for( var cellValue in dataRow ){
+				var cell = createCell( newRow, cellIndex );
+				setCellValueAsType( arguments.workbook, cell, Trim( cellValue ) );
+				if( arguments.autoSizeColumns )
+					autoSizeColumn( arguments.workbook, arguments.column );
+				cellIndex++;
+			}
+			currentRowIndex++;
+   	}
 	}
 
 	public void function addSplitPane(
