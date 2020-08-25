@@ -99,6 +99,7 @@ component accessors="true"{
 		,boolean streamingXml=false
 		,numeric streamingWindowSize=100
 		,boolean ignoreQueryColumnDataTypes=false
+		,struct datatypes
 	){
 		/* Pass in a query and get a spreadsheet binary file ready to stream to the browser */
 		var workbook = workbookFromQuery( argumentCollection=arguments );
@@ -185,20 +186,24 @@ component accessors="true"{
 		,boolean streamingXml=false
 		,numeric streamingWindowSize=100
 		,boolean ignoreQueryColumnDataTypes=false
+		,struct datatypes
 	){
 		var safeFilename = filenameSafe( arguments.filename );
 		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$","" );
 		var extension = ( arguments.xmlFormat || arguments.streamingXml )? "xlsx": "xls";
 		arguments.filename = filenameWithoutExtension & "." & extension;
-		var binary = binaryFromQuery(
-			arguments.data
-			,arguments.addHeaderRow
-			,arguments.boldHeaderRow
-			,arguments.xmlFormat
-			,arguments.streamingXml
-			,arguments.streamingWindowSize
-			,arguments.ignoreQueryColumnDataTypes
-		);
+		var binaryFromQueryArgs = {
+			data: arguments.data
+			,addHeaderRow: arguments.addHeaderRow
+			,boldHeaderRow: argumentsboldHeaderRow
+			,xmlFormat: arguments.xmlFormat
+			,streamingXml: arguments.streamingXml
+			,streamingWindowSize: arguments.streamingWindowSize
+			,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
+		};
+		if( arguments.KeyExists( "datatypes" ) )
+			binaryFromQueryArgs.datatypes = arguments.datatypes;
+		var binary = binaryFromQuery( argumentCollection=binaryFromQueryArgs );
 		if( !arguments.KeyExists( "contentType" ) )
 			arguments.contentType = arguments.xmlFormat? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/msexcel";
 		downloadBinaryVariable( binary, arguments.filename, arguments.contentType );
@@ -264,17 +269,25 @@ component accessors="true"{
 		,boolean streamingXml=false
 		,numeric streamingWindowSize=100
 		,boolean ignoreQueryColumnDataTypes=false
+		,struct datatypes
 	){
 		var workbook = new( xmlFormat=arguments.xmlFormat, streamingXml=arguments.streamingXml, streamingWindowSize=arguments.streamingWindowSize );
+		var addRowsArgs = {
+			workbook: workbook
+			,data: arguments.data
+			,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
+		};
+		if( arguments.KeyExists( "datatypes" ) )
+			addRowsArgs.datatypes = arguments.datatypes;
 		if( arguments.addHeaderRow ){
 			var columns = _queryColumnArray( arguments.data );
 			addRow( workbook, columns );
 			if( arguments.boldHeaderRow )
 				formatRow( workbook, { bold: true }, 1 );
-			addRows( workbook=workbook, data=arguments.data, row=2, column=1, ignoreQueryColumnDataTypes=arguments.ignoreQueryColumnDataTypes );
+			addRowsArgs.row = 2;
+			addRowsArgs.column = 1;
 		}
-		else
-			addRows( workbook=workbook, data=arguments.data, ignoreQueryColumnDataTypes=arguments.ignoreQueryColumnDataTypes );
+		addRows( argumentCollection=addRowsArgs );
 		return workbook;
 	}
 
@@ -288,18 +301,22 @@ component accessors="true"{
 		,boolean streamingXml=false
 		,numeric streamingWindowSize=100
 		,boolean ignoreQueryColumnDataTypes=false
+		,struct datatypes
 	){
 		if( !arguments.xmlFormat AND ( ListLast( arguments.filepath, "." ) IS "xlsx" ) )
 			arguments.xmlFormat = true;
-		var workbook = workbookFromQuery(
-			data=arguments.data
-			,addHeaderRow=arguments.addHeaderRow
-			,boldHeaderRow=arguments.boldHeaderRow
-			,xmlFormat=arguments.xmlFormat
-			,streamingXml=arguments.streamingXml
-			,streamingWindowSize=arguments.streamingWindowSize
-			,ignoreQueryColumnDataTypes=arguments.ignoreQueryColumnDataTypes
-		);
+		var workbookFromQueryArgs = {
+			data: arguments.data
+			,addHeaderRow: arguments.addHeaderRow
+			,boldHeaderRow: arguments.boldHeaderRow
+			,xmlFormat: arguments.xmlFormat
+			,streamingXml: arguments.streamingXml
+			,streamingWindowSize: arguments.streamingWindowSize
+			,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
+		};
+		if( arguments.KeyExists( "datatypes" ) )
+			workbookFromQueryArgs.datatypes = arguments.datatypes;
+		var workbook = workbookFromQuery( argumentCollection=workbookFromQueryArgs );
 		if( xmlFormat AND ( ListLast( arguments.filepath, "." ) IS "xls" ) )
 			arguments.filepath &= "x";// force to .xlsx
 		write( workbook=workbook, filepath=arguments.filepath, overwrite=arguments.overwrite );
@@ -526,6 +543,7 @@ component accessors="true"{
 		,string delimiter=","
 		,boolean handleEmbeddedCommas=true /* When true, values enclosed in single quotes are treated as a single element like in ACF. Only applies when the delimiter is a comma. */
 		,boolean autoSizeColumns=false
+		,struct datatypes
 	){
 		if( arguments.KeyExists( "row" ) AND ( arguments.row LTE 0 ) )
 			Throw( type=this.getExceptionType(), message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
@@ -533,6 +551,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
 		if( !arguments.insert AND !arguments.KeyExists( "row") )
 			Throw( type=this.getExceptionType(), message="Missing row value", detail="To replace a row using 'insert', please specify the row to replace." );
+		checkDataTypesArgument( arguments );
 		var lastRow = getNextEmptyRow( arguments.workbook );
 		//If the requested row already exists...
 		if( arguments.KeyExists( "row" ) AND ( arguments.row LTE lastRow ) ){
@@ -547,7 +566,10 @@ component accessors="true"{
 		var cellIndex = ( arguments.column -1 );
 		for( var cellValue in rowValues ){
 			var cell = createCell( theRow, cellIndex );
-			setCellValueAsType( arguments.workbook, cell, Trim( cellValue ) );
+			if( arguments.KeyExists( "datatypes" ) )
+   			setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes );
+   		else
+				setCellValueAsType( arguments.workbook, cell, cellValue );
 			if( arguments.autoSizeColumns )
 				autoSizeColumn( arguments.workbook, arguments.column );
 			cellIndex++;
@@ -563,11 +585,13 @@ component accessors="true"{
 		,boolean autoSizeColumns=false
 		,boolean includeQueryColumnNames=false
 		,boolean ignoreQueryColumnDataTypes=false
+		,struct datatypes
 	){
 		var dataIsQuery = IsQuery( arguments.data );
 		var dataIsArray = IsArray( arguments.data );
 		if( !dataIsQuery && !dataIsArray )
 			Throw( type=this.getExceptionType(), message="Invalid data argument", detail="The data passed in must be either a query or an array of row arrays." );
+		checkDataTypesArgument( arguments );
 		var totalRows = dataIsQuery? arguments.data.recordCount: arguments.data.Len();
 		if( totalRows == 0 )
 			return;
@@ -587,15 +611,22 @@ component accessors="true"{
 				addRow( workbook=arguments.workbook, data=columnNames, row=currentRowIndex +1, column=arguments.column );
 				currentRowIndex++;
 			}
+			if( arguments.KeyExists( "datatypes" ) ){
+				param local.columnNames = _queryColumnArray( arguments.data );
+				convertDataTypeOverrideColumnNamesToNumbers( arguments.datatypes, columnNames );
+			}
 			for( var dataRow in arguments.data ){
 				var newRow = createRow( arguments.workbook, currentRowIndex, false );
 				cellIndex = ( arguments.column -1 );//reset for this row
 	   		/* populate all columns in the row */
 	   		for( var queryColumn in queryColumns ){
 	   			var cell = createCell( newRow, cellIndex, false );
-					var value = dataRow[ queryColumn.name ];
+					var cellValue = dataRow[ queryColumn.name ];
 					if( arguments.ignoreQueryColumnDataTypes ){
-						setCellValueAsType( arguments.workbook, cell, value );
+						if( arguments.KeyExists( "datatypes" ) )
+		   				setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes );
+		   			else
+							setCellValueAsType( arguments.workbook, cell, cellValue );
 						cellIndex++;
 						continue;
 					}
@@ -615,10 +646,13 @@ component accessors="true"{
 							poiCellType = "boolean";
 							break;
 						default:
-							if( IsSimpleValue( value ) AND !Len( value ) ) //NB don't use member function: won't work if numeric
+							if( IsSimpleValue( cellValue ) AND !Len( cellValue ) ) //NB don't use member function: won't work if numeric
 								poiCellType = "blank";
 					}
-					setCellValueAsType( arguments.workbook, cell, value, poiCellType );
+					if( arguments.KeyExists( "datatypes" ) )
+	   				setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes );
+	   			else
+						setCellValueAsType( arguments.workbook, cell, cellValue, poiCellType );
 					cellIndex++;
 	   		}
 	   		currentRowIndex++;
@@ -639,8 +673,11 @@ component accessors="true"{
 			var cellIndex = ( arguments.column -1 );
    		/* populate all columns in the row */
    		for( var cellValue in dataRow ){
-				var cell = createCell( newRow, cellIndex );
-				setCellValueAsType( arguments.workbook, cell, Trim( cellValue ) );
+   			var cell = createCell( newRow, cellIndex );
+   			if( arguments.KeyExists( "datatypes" ) )
+   				setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes );
+   			else
+					setCellValueAsType( arguments.workbook, cell, cellValue );
 				if( arguments.autoSizeColumns )
 					autoSizeColumn( arguments.workbook, arguments.column );
 				cellIndex++;
@@ -2510,7 +2547,7 @@ component accessors="true"{
 		return result;
 	}
 
-	/* Values */
+	/* Value data types */
 
 	private string function detectValueDataType( required value ){
 		// Numeric must precede date test
@@ -2527,8 +2564,74 @@ component accessors="true"{
 		return "string";
 	}
 
+	private boolean function valueCanBeSetAsType( required value, required type ){
+		//when overriding types, check values can be cast as numbers or dates
+		switch( arguments.type ){
+			case "numeric":
+				return IsNumeric( arguments.value );
+			case "date":
+				return _isDate( arguments.value );
+		}
+		return true;
+	}
+
 	private boolean function isString( required input ){
 		return arguments.input.getClass().getName() IS "java.lang.String";
+	}
+
+	/* Data type overriding */
+
+	private void function checkDataTypesArgument( required struct args ){
+		if( arguments.args.KeyExists( "datatypes" ) && datatypeOverridesContainInvalidTypes( arguments.args.datatypes ) )
+			Throw( type=this.getExceptionType(), message="Invalid datatype(s)", detail="One or more of the datatypes specified is invalid. Valid types are #validCellOverrideTypes().ToList( ', ' )# and the columns they apply to should be passed as an array" );
+	}
+
+	private void function convertDataTypeOverrideColumnNamesToNumbers( required struct datatypeOverrides, required array columnNames ){
+		for( var type in arguments.datatypeOverrides ){
+			var columnRefs = arguments.datatypeOverrides[ type ];
+			//NB: DO NOT SCOPE datatypeOverrides and columnNames vars inside closure!!
+			columnRefs.Each( function( value, index ){
+				if( !IsNumeric( value ) ){
+					var columnNumber = ArrayFindNoCase( columnNames, value );//ACF 2016 doesn't support member function on array
+					columnRefs.DeleteAt( index );
+					columnRefs.Append( columnNumber );
+					datatypeOverrides[ type ] = columnRefs;
+				}
+			});
+		}
+	}
+
+	private boolean function datatypeOverridesContainInvalidTypes( required struct datatypeOverrides ){
+		for( var type in arguments.datatypeOverrides ){
+			if( !isValidCellOverrideType( type ) || !IsArray( arguments.datatypeOverrides[ type ] ) )
+				return true;
+		}
+		return false;
+	}
+
+	private string function getCellTypeOverride( required numeric cellIndex, required struct datatypeOverrides ){
+		var columnNumber = ( arguments.cellIndex +1 );
+		for( var type in arguments.datatypeOverrides ){
+			if( arguments.datatypeOverrides[ type ].Find( columnNumber ) )
+				return type;
+		}
+		return "";
+	}
+
+	private boolean function isValidCellOverrideType( required string type ){
+		return validCellOverrideTypes().FindNoCase( arguments.type );
+	}
+
+	private void function setCellDataTypeWithOverride( required workbook, required cell, required cellValue, required numeric cellIndex, required struct datatypeOverrides ){
+		var cellTypeOverride = getCellTypeOverride( arguments.cellIndex, arguments.datatypeOverrides );
+		if( cellTypeOverride.Len() && valueCanBeSetAsType( arguments.cellValue, cellTypeOverride ) )
+			setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue, cellTypeOverride );
+		else
+			setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue );
+	}
+
+	private array function validCellOverrideTypes(){
+		return [ "numeric", "string", "date" ];
 	}
 
 	/* Dates */
