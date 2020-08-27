@@ -650,7 +650,7 @@ component accessors="true"{
 								poiCellType = "blank";
 					}
 					if( arguments.KeyExists( "datatypes" ) )
-	   				setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes );
+	   				setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes, poiCellType );
 	   			else
 						setCellValueAsType( arguments.workbook, cell, cellValue, poiCellType );
 					cellIndex++;
@@ -2592,7 +2592,7 @@ component accessors="true"{
 			//NB: DO NOT SCOPE datatypeOverrides and columnNames vars inside closure!!
 			columnRefs.Each( function( value, index ){
 				if( !IsNumeric( value ) ){
-					var columnNumber = ArrayFindNoCase( columnNames, value );//ACF 2016 doesn't support member function on array
+					var columnNumber = ArrayFindNoCase( columnNames, value );//ACF won't accept member function on this array for some reason
 					columnRefs.DeleteAt( index );
 					columnRefs.Append( columnNumber );
 					datatypeOverrides[ type ] = columnRefs;
@@ -2622,12 +2622,25 @@ component accessors="true"{
 		return validCellOverrideTypes().FindNoCase( arguments.type );
 	}
 
-	private void function setCellDataTypeWithOverride( required workbook, required cell, required cellValue, required numeric cellIndex, required struct datatypeOverrides ){
+	private void function setCellDataTypeWithOverride( required workbook
+		,required cell
+		,required cellValue
+		,required numeric cellIndex
+		,required struct datatypeOverrides
+		,string defaultType
+	){
 		var cellTypeOverride = getCellTypeOverride( arguments.cellIndex, arguments.datatypeOverrides );
-		if( cellTypeOverride.Len() && valueCanBeSetAsType( arguments.cellValue, cellTypeOverride ) )
+		if( cellTypeOverride.Len() && valueCanBeSetAsType( arguments.cellValue, cellTypeOverride ) ){
 			setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue, cellTypeOverride );
-		else
-			setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue );
+			return;
+		}
+		// if no override, use an already set default (i.e. query column type)
+		if( arguments.KeyExists( "defaultType" ) ){
+			setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue, arguments.defaultType );
+			return;
+		}
+		// autodetect
+		setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue );
 	}
 
 	private array function validCellOverrideTypes(){

@@ -343,6 +343,14 @@ describe( "addRows",function(){
 			expect( s.getCellType( workbook, 1, 3 ) ).toBe( "string" );
 		});
 
+		it( "Query data values with NO type override, default to query column types", function() {
+			var data = QueryNew( "Number,String", "VarChar,VarChar", [ [ 1234, "01234" ] ] );
+			var datatypes = { numeric: [ 2 ] };
+			s.addRows( workbook=workbook, data=data, datatypes=datatypes );
+			expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
+			expect( s.getCellType( workbook, 1, 2 ) ).toBe( "numeric" );
+		});
+
 		it( "Values in query data fall back to the autodetected type if they don't match the overridden type and ignoreQueryColumnDataTypes is true", function() {
 			var data = QueryNew( "Number,String,Date", "VarChar,VarChar,VarChar", [ [ "01234", "alpha", "alpha" ] ] );
 			var datatypes = { numeric: [ 1, 2 ], date: [ 3 ] };
