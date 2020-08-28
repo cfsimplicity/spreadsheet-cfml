@@ -80,6 +80,17 @@ describe( "cellValue", function(){
 		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
 	});
 
+	it( "does not accept '9a' or '9p' or '9 a' as valid dates, correcting ACF", function() {
+		values = [ "9a", "9p", "9 a", "9    p" ];
+		values.Each( function( value ){
+			s.setCellValue( workbook, value, 1, 1 );
+			expected = value;
+			actual = s.getCellValue( workbook, 1, 1 );
+			expect( actual ).toBe( expected );
+			expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
+		});
+	});
+
 	describe( "allows the auto data type detection to be overridden", function(){
 
 		it( "allows forcing values to be added as strings", function(){
