@@ -2382,15 +2382,11 @@ component accessors="true"{
 					arguments.cell.setCellType( arguments.cell.CellType.BLANK ); //no need to set the value: it will be blank
 					return;
 				}
-				// if time has been specified, trust the source to avoid incorrect time value parsing
-				if( arguments.type == "time" ){
-					var dateTimeValue = arguments.value;
+				var dateTimeValue = ParseDateTime( arguments.value );
+				if( arguments.type == "time" )
 					var cellFormat = this.getDateFormats().TIME; //don't include the epoch date in the display
-				}
-				else {
-					var dateTimeValue = ParseDateTime( arguments.value );
+				else
 					var cellFormat = getDateTimeValueFormat( dateTimeValue );// check if DATE, TIME or TIMESTAMP
-				}
 				var dataFormat = arguments.workbook.getCreationHelper().createDataFormat();
 				//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
 				getCellUtil().setCellStyleProperty( arguments.cell, getCellUtil().DATA_FORMAT, dataFormat.getFormat( JavaCast( "string", cellFormat ) ) );
@@ -2569,8 +2565,10 @@ component accessors="true"{
 		switch( arguments.type ){
 			case "numeric":
 				return IsNumeric( arguments.value );
-			case "date":
+			case "date": case "time":
 				return _IsDate( arguments.value );
+			case "boolean":
+				return IsBoolean( arguments.value );
 		}
 		return true;
 	}
@@ -2651,7 +2649,7 @@ component accessors="true"{
 	}
 
 	private array function validCellOverrideTypes(){
-		return [ "numeric", "string", "date", "auto" ];
+		return [ "numeric", "string", "date", "time", "boolean", "auto" ];
 	}
 
 	/* Dates */
