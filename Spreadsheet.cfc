@@ -161,7 +161,7 @@ component accessors="true"{
 		}
 		if( arguments.firstRowIsHeader )
 			rows.DeleteAt( 1 );
-		return _queryNew( columnList, "", rows );
+		return _QueryNew( columnList, "", rows );
 	}
 
 	public void function download( required workbook, required string filename, string contentType ){
@@ -280,7 +280,7 @@ component accessors="true"{
 		if( arguments.KeyExists( "datatypes" ) )
 			addRowsArgs.datatypes = arguments.datatypes;
 		if( arguments.addHeaderRow ){
-			var columns = _queryColumnArray( arguments.data );
+			var columns = _QueryColumnArray( arguments.data );
 			addRow( workbook, columns );
 			if( arguments.boldHeaderRow )
 				formatRow( workbook, { bold: true }, 1 );
@@ -607,12 +607,12 @@ component accessors="true"{
 			var queryColumns = getQueryColumnFormats( arguments.data );
 			var cellIndex = ( arguments.column -1 );
 			if( arguments.includeQueryColumnNames ){
-				var columnNames = _queryColumnArray( arguments.data );
+				var columnNames = _QueryColumnArray( arguments.data );
 				addRow( workbook=arguments.workbook, data=columnNames, row=currentRowIndex +1, column=arguments.column );
 				currentRowIndex++;
 			}
 			if( arguments.KeyExists( "datatypes" ) ){
-				param local.columnNames = _queryColumnArray( arguments.data );
+				param local.columnNames = _QueryColumnArray( arguments.data );
 				convertDataTypeOverrideColumnNamesToNumbers( arguments.datatypes, columnNames );
 			}
 			for( var dataRow in arguments.data ){
@@ -2043,7 +2043,7 @@ component accessors="true"{
 			for( var i=1; i LTE sheet.totalColumnCount; i++ )
 				sheet.columnNames.Append( "column" & i );
 		}
-		var result = _queryNew( sheet.columnNames, "", sheet.data );
+		var result = _QueryNew( sheet.columnNames, "", sheet.data );
 		if( !arguments.includeHiddenColumns ){
 			result = deleteHiddenColumnsFromQuery( sheet, result );
 			if( sheet.totalColumnCount EQ 0 )
@@ -2427,7 +2427,7 @@ component accessors="true"{
 			if( !arguments.sheet.object.isColumnHidden( JavaCast( "int", colIndex ) ) )
 				continue;
 			var columnNumber = ( colIndex +1 );
-			arguments.result = _queryDeleteColumn( arguments.result, arguments.sheet.columnNames[ columnNumber ] );
+			arguments.result = _QueryDeleteColumn( arguments.result, arguments.sheet.columnNames[ columnNumber ] );
 			arguments.sheet.totalColumnCount--;
 			arguments.sheet.columnNames.DeleteAt( columnNumber );
 		}
@@ -2464,7 +2464,7 @@ component accessors="true"{
 	private string function queryToCsv( required query query, numeric headerRow, boolean includeHeaderRow=false ){
 		var result = newJavaStringBuilder();
 		var crlf = Chr( 13 ) & Chr( 10 );
-		var columns = _queryColumnArray( arguments.query );
+		var columns = _QueryColumnArray( arguments.query );
 		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
 		if( generateHeaderRow )
 			result.Append( generateCsvRow( columns ) );
@@ -2479,7 +2479,7 @@ component accessors="true"{
 
 	private string function queryToHtml( required query query, numeric headerRow, boolean includeHeaderRow=false ){
 		var result = newJavaStringBuilder();
-		var columns = _queryColumnArray( arguments.query );
+		var columns = _QueryColumnArray( arguments.query );
 		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
 		if( generateHeaderRow ){
 			result.Append( "<thead>" );
@@ -2557,7 +2557,7 @@ component accessors="true"{
 			return "string";
 		if( IsNumeric( arguments.value ) )
 			return "numeric";
-		if( _isDate( arguments.value ) )
+		if( _IsDate( arguments.value ) )
 			return "date";
 		if( !Len( Trim( arguments.value ) ) )
 			return "blank";
@@ -2570,7 +2570,7 @@ component accessors="true"{
 			case "numeric":
 				return IsNumeric( arguments.value );
 			case "date":
-				return _isDate( arguments.value );
+				return _IsDate( arguments.value );
 		}
 		return true;
 	}
@@ -3303,7 +3303,7 @@ component accessors="true"{
 
 	/* Override troublesome engine BIFs */
 
-	private boolean function _isDate( required value ){
+	private boolean function _IsDate( required value ){
 		if( !IsDate( arguments.value ) )
 			return false;
 		// Lucee will treat 01-23112 or 23112-01 as a date!
@@ -3316,7 +3316,7 @@ component accessors="true"{
 	}
 
 	/* ACF compatibility functions */
-	private array function _queryColumnArray( required query q ){
+	private array function _QueryColumnArray( required query q ){
 		try{
 			return QueryColumnArray( arguments.q ); //Lucee
 		}
@@ -3347,7 +3347,7 @@ component accessors="true"{
 		}
 	}
 
-	private query function _queryNew( required array columnNames, required string columnTypeList, required array data ){
+	private query function _QueryNew( required array columnNames, required string columnTypeList, required array data ){
 		//ACF QueryNew() won't accept invalid variable names in the column name list (e.g. which names including commas), hence clunky workaround:
 		//NB: 'data' should not contain structs since they use the column name as key: always use array of row arrays instead
 		if( !this.getIsACF() )
