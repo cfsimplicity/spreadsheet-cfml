@@ -363,6 +363,16 @@ describe( "addRows",function(){
 			expect( s.getCellType( workbook, 1, 3 ) ).toBe( "string" );
 		});
 
+		it( "Query data values in columns with an override type of 'auto' will have their type auto-detected, regardless of the query column type", function() {
+			var data = QueryNew( "One,Two", "VarChar,VarChar", [ [ "2020-08-24", "2020-08-24" ], [ "3.1", "3.1" ] ] );
+			var datatypes = { auto: [ 1 ] };
+			s.addRows( workbook=workbook, data=data, datatypes=datatypes );
+			expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
+			expect( s.getCellType( workbook, 1, 2 ) ).toBe( "string" );
+			expect( s.getCellType( workbook, 2, 1 ) ).toBe( "numeric" );
+			expect( s.getCellType( workbook, 2, 2 ) ).toBe( "string" );
+		});
+
 	});
 
 	describe( "addRows throws an exception if",function(){

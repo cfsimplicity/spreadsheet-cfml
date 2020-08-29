@@ -2622,7 +2622,8 @@ component accessors="true"{
 		return validCellOverrideTypes().FindNoCase( arguments.type );
 	}
 
-	private void function setCellDataTypeWithOverride( required workbook
+	private void function setCellDataTypeWithOverride(
+		required workbook
 		,required cell
 		,required cellValue
 		,required numeric cellIndex
@@ -2630,21 +2631,27 @@ component accessors="true"{
 		,string defaultType
 	){
 		var cellTypeOverride = getCellTypeOverride( arguments.cellIndex, arguments.datatypeOverrides );
-		if( cellTypeOverride.Len() && valueCanBeSetAsType( arguments.cellValue, cellTypeOverride ) ){
-			setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue, cellTypeOverride );
-			return;
+		if( cellTypeOverride.Len() ){
+			if( cellTypeOverride == "auto" ){
+				setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue );
+				return;
+			}
+			if( valueCanBeSetAsType( arguments.cellValue, cellTypeOverride ) ){
+				setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue, cellTypeOverride );
+				return;
+			}
 		}
 		// if no override, use an already set default (i.e. query column type)
 		if( arguments.KeyExists( "defaultType" ) ){
 			setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue, arguments.defaultType );
 			return;
 		}
-		// autodetect
+		// default autodetect
 		setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue );
 	}
 
 	private array function validCellOverrideTypes(){
-		return [ "numeric", "string", "date" ];
+		return [ "numeric", "string", "date", "auto" ];
 	}
 
 	/* Dates */
