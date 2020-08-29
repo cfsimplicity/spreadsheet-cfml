@@ -81,7 +81,7 @@ describe( "cellValue", function(){
 	});
 
 	it( "does not accept '9a' or '9p' or '9 a' as valid dates, correcting ACF", function() {
-		values = [ "9a", "9p", "9 a", "9    p" ];
+		values = [ "9a", "9p", "9 a", "9    p", "9A" ];
 		values.Each( function( value ){
 			s.setCellValue( workbook, value, 1, 1 );
 			expected = value;

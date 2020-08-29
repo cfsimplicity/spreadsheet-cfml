@@ -3310,7 +3310,7 @@ component accessors="true"{
 		if( ParseDateTime( arguments.value ).Year() > 9999 ) //ACF future limit
 			return false;
 		// ACF accepts "9a", "9p", "9 a" as dates
-		if( REFind( "\d+\s*[ap]{1,1}", arguments.value ) ) //ACF no member function
+		if( REFind( "\d+\s*[apAP]{1,1}", arguments.value ) ) //ACF no member function
 			return false;
 		return true;
 	}
