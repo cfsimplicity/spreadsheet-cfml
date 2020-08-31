@@ -2195,7 +2195,6 @@ component accessors="true"{
 		var values = [];
 		var buffer = newJavaStringBuilder();
 		var maxElements = ArrayLen( elements );
-
 		for( var i = 1; i LTE maxElements; i++ ) {
 		  currentValue = Trim( elements[ i ] );
 		  nextValue = i < maxElements ? elements[ i + 1 ] : "";
@@ -2315,12 +2314,16 @@ component accessors="true"{
 	}
 
 	private any function getCellRangeAddressFromReference( required string rangeReference ){
-		/* rangeReference = usually a standard area ref (e.g. "B1:D8"). May be a single cell ref (e.g. "B5") in which case the result is a 1 x 1 cell range. May also be a whole row range (e.g. "3:5"), or a whole column range (e.g. "C:F") */
+		/*
+		rangeReference = usually a standard area ref (e.g. "B1:D8"). May be a single cell ref (e.g. "B5") in which case the result is a 1 x 1 cell range. May also be a whole row range (e.g. "3:5"), or a whole column range (e.g. "C:F")
+		*/
 		return loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String", arguments.rangeReference ) );
 	}
 
 	private any function getCellValueAsType( required workbook, required cell ){
-		/* Get the value of the cell based on the data type. The thing to worry about here is cell forumlas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values. */
+		/*
+		Get the value of the cell based on the data type. The thing to worry about here is cell formulas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values.
+		*/
 		if( cellIsOfType( arguments.cell, "NUMERIC" ) ){
 			/* Get numeric cell data. This could be a standard number, could also be a date value. */
 			if( getDateUtil().isCellDateFormatted( arguments.cell ) ){
@@ -3315,7 +3318,7 @@ component accessors="true"{
 		if( ParseDateTime( arguments.value ).Year() > 9999 ) //ACF future limit
 			return false;
 		// ACF accepts "9a", "9p", "9 a" as dates
-		if( REFind( "\d+\s*[apAP]{1,1}", arguments.value ) ) //ACF no member function
+		if( REFind( "^\d+\s*[apAP]{1,1}$", arguments.value ) ) //ACF no member function
 			return false;
 		return true;
 	}

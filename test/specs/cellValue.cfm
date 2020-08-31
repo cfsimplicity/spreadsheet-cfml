@@ -91,6 +91,15 @@ describe( "cellValue", function(){
 		});
 	});
 
+	it( "but does accept date strings with AM or PM", function() {
+		s.setCellValue( workbook, "8/22/2020 10:34 AM", 1, 1 );
+		expect( s.getCellValue( workbook, 1, 1 ) ).toBe( "2020-08-22 10:34:00" );
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
+		s.setCellValue( workbook, "12:53 pm", 1, 1 );
+		expect( s.getCellValue( workbook, 1, 1 ) ).toBe( "12:53:00" );
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
+	});
+
 	describe( "allows the auto data type detection to be overridden", function(){
 
 		it( "allows forcing values to be added as strings", function(){
