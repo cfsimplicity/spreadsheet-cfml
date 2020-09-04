@@ -303,6 +303,31 @@ describe( "formatCell", function(){
 		expect( cellFormat.bottombordercolor ).toBe( triplet ); //style color
 	});
 
+	it( "can set a non preset Hex color value on an XLSX workbook cell", function(){
+		var hex = "FFFFFF";
+		var triplet = "255,255,255";
+		var format = { color: hex, bottombordercolor: hex };
+		var cellFormat = setAndGetFormat( xlsx, format );
+		expect( cellFormat.color ).toBe( triplet ); //font color
+		expect( cellFormat.bottombordercolor ).toBe( triplet ); //style color
+		// handle leading #
+		var hex = "##FFFFFF";
+		var triplet = "255,255,255";
+		var format = { color: hex, bottombordercolor: hex };
+		var cellFormat = setAndGetFormat( xlsx, format );
+		expect( cellFormat.color ).toBe( triplet ); //font color
+		expect( cellFormat.bottombordercolor ).toBe( triplet ); //style color
+	});
+
+	it( "Throws an exception if an invalid hex value is passed",function() {
+		expect( function(){
+			var hex = "FF22BB";
+			var format = { color: hex, bottombordercolor: hex };
+			var cellFormat = setAndGetFormat( xlsx, format );
+		}).toThrow( regex="Invalid color" );
+	});
+
+
 	it( "can preserve the existing font properties when setting bold, color, font name, font size, italic, strikeout and underline", function(){
 		var format = { font: "Helvetica" };
 		setAndGetFormat( xls, format );

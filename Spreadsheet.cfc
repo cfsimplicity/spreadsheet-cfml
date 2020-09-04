@@ -1,7 +1,7 @@
 component accessors="true"{
 
 	//static
-	property name="version" default="2.10.0" setter="false";
+	property name="version" default="2.11.0" setter="false";
 	property name="exceptionType" default="cfsimplicity.lucee.spreadsheet" setter="false";
 	//commonly invoked POI class names
 	property name="HSSFWorkbookClassName" default="org.apache.poi.hssf.usermodel.HSSFWorkbook" setter="false";
@@ -98,6 +98,8 @@ component accessors="true"{
 		,boolean xmlFormat=false
 		,boolean streamingXml=false
 		,numeric streamingWindowSize=100
+		,boolean ignoreQueryColumnDataTypes=false
+		,struct datatypes
 	){
 		/* Pass in a query and get a spreadsheet binary file ready to stream to the browser */
 		var workbook = workbookFromQuery( argumentCollection=arguments );
@@ -159,7 +161,7 @@ component accessors="true"{
 		}
 		if( arguments.firstRowIsHeader )
 			rows.DeleteAt( 1 );
-		return _queryNew( columnList, "", rows );
+		return _QueryNew( columnList, "", rows );
 	}
 
 	public void function download( required workbook, required string filename, string contentType ){
@@ -183,12 +185,25 @@ component accessors="true"{
 		,string contentType
 		,boolean streamingXml=false
 		,numeric streamingWindowSize=100
+		,boolean ignoreQueryColumnDataTypes=false
+		,struct datatypes
 	){
 		var safeFilename = filenameSafe( arguments.filename );
 		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$","" );
 		var extension = ( arguments.xmlFormat || arguments.streamingXml )? "xlsx": "xls";
 		arguments.filename = filenameWithoutExtension & "." & extension;
-		var binary = binaryFromQuery( arguments.data, arguments.addHeaderRow, arguments.boldHeaderRow, arguments.xmlFormat, arguments.streamingXml, arguments.streamingWindowSize );
+		var binaryFromQueryArgs = {
+			data: arguments.data
+			,addHeaderRow: arguments.addHeaderRow
+			,boldHeaderRow: argumentsboldHeaderRow
+			,xmlFormat: arguments.xmlFormat
+			,streamingXml: arguments.streamingXml
+			,streamingWindowSize: arguments.streamingWindowSize
+			,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
+		};
+		if( arguments.KeyExists( "datatypes" ) )
+			binaryFromQueryArgs.datatypes = arguments.datatypes;
+		var binary = binaryFromQuery( argumentCollection=binaryFromQueryArgs );
 		if( !arguments.KeyExists( "contentType" ) )
 			arguments.contentType = arguments.xmlFormat? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/msexcel";
 		downloadBinaryVariable( binary, arguments.filename, arguments.contentType );
@@ -253,17 +268,26 @@ component accessors="true"{
 		,boolean xmlFormat=false
 		,boolean streamingXml=false
 		,numeric streamingWindowSize=100
+		,boolean ignoreQueryColumnDataTypes=false
+		,struct datatypes
 	){
 		var workbook = new( xmlFormat=arguments.xmlFormat, streamingXml=arguments.streamingXml, streamingWindowSize=arguments.streamingWindowSize );
+		var addRowsArgs = {
+			workbook: workbook
+			,data: arguments.data
+			,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
+		};
+		if( arguments.KeyExists( "datatypes" ) )
+			addRowsArgs.datatypes = arguments.datatypes;
 		if( arguments.addHeaderRow ){
-			var columns = _queryColumnArray( arguments.data );
+			var columns = _QueryColumnArray( arguments.data );
 			addRow( workbook, columns );
 			if( arguments.boldHeaderRow )
 				formatRow( workbook, { bold: true }, 1 );
-			addRows( workbook, arguments.data, 2, 1 );
+			addRowsArgs.row = 2;
+			addRowsArgs.column = 1;
 		}
-		else
-			addRows( workbook, arguments.data );
+		addRows( argumentCollection=addRowsArgs );
 		return workbook;
 	}
 
@@ -276,17 +300,23 @@ component accessors="true"{
 		,boolean xmlFormat=false
 		,boolean streamingXml=false
 		,numeric streamingWindowSize=100
+		,boolean ignoreQueryColumnDataTypes=false
+		,struct datatypes
 	){
 		if( !arguments.xmlFormat AND ( ListLast( arguments.filepath, "." ) IS "xlsx" ) )
 			arguments.xmlFormat = true;
-		var workbook = workbookFromQuery(
-			data=arguments.data
-			,addHeaderRow=arguments.addHeaderRow
-			,boldHeaderRow=arguments.boldHeaderRow
-			,xmlFormat=arguments.xmlFormat
-			,streamingXml=arguments.streamingXml
-			,streamingWindowSize=arguments.streamingWindowSize
-		);
+		var workbookFromQueryArgs = {
+			data: arguments.data
+			,addHeaderRow: arguments.addHeaderRow
+			,boldHeaderRow: arguments.boldHeaderRow
+			,xmlFormat: arguments.xmlFormat
+			,streamingXml: arguments.streamingXml
+			,streamingWindowSize: arguments.streamingWindowSize
+			,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
+		};
+		if( arguments.KeyExists( "datatypes" ) )
+			workbookFromQueryArgs.datatypes = arguments.datatypes;
+		var workbook = workbookFromQuery( argumentCollection=workbookFromQueryArgs );
 		if( xmlFormat AND ( ListLast( arguments.filepath, "." ) IS "xls" ) )
 			arguments.filepath &= "x";// force to .xlsx
 		write( workbook=workbook, filepath=arguments.filepath, overwrite=arguments.overwrite );
@@ -308,7 +338,7 @@ component accessors="true"{
 
 	public void function addColumn(
 		required workbook
-		,required string data /* Delimited list of cell values */
+		,required data /* Delimited list of values OR array */
 		,numeric startRow
 		,numeric startColumn
 		,boolean insert=true
@@ -334,7 +364,7 @@ component accessors="true"{
 				cellNum = 0;
 		}
 		var columnNumber = ( cellNum +1 );
-		var columnData = ListToArray( arguments.data, arguments.delimiter );
+		var columnData = IsArray( arguments.data )? arguments.data: ListToArray( arguments.data, arguments.delimiter );
 		for( var cellValue in columnData ){
 			/* if rowNum is greater than the last row of the sheet, need to create a new row  */
 			if( rowNum GT sheet.getLastRowNum() OR IsNull( sheet.getRow( rowNum ) ) )
@@ -513,6 +543,7 @@ component accessors="true"{
 		,string delimiter=","
 		,boolean handleEmbeddedCommas=true /* When true, values enclosed in single quotes are treated as a single element like in ACF. Only applies when the delimiter is a comma. */
 		,boolean autoSizeColumns=false
+		,struct datatypes
 	){
 		if( arguments.KeyExists( "row" ) AND ( arguments.row LTE 0 ) )
 			Throw( type=this.getExceptionType(), message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
@@ -520,6 +551,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
 		if( !arguments.insert AND !arguments.KeyExists( "row") )
 			Throw( type=this.getExceptionType(), message="Missing row value", detail="To replace a row using 'insert', please specify the row to replace." );
+		checkDataTypesArgument( arguments );
 		var lastRow = getNextEmptyRow( arguments.workbook );
 		//If the requested row already exists...
 		if( arguments.KeyExists( "row" ) AND ( arguments.row LTE lastRow ) ){
@@ -530,11 +562,14 @@ component accessors="true"{
 		}
 		var theRow = arguments.KeyExists( "row" )? createRow( arguments.workbook, arguments.row -1 ): createRow( arguments.workbook );
 		var dataIsArray = IsArray( arguments.data );
-		var rowValues = dataIsArray? arguments.data: parseRowData( arguments.data, arguments.delimiter, arguments.handleEmbeddedCommas );
-		var cellIndex = arguments.column -1;
+		var rowValues = dataIsArray? arguments.data: parseListDataToArray( arguments.data, arguments.delimiter, arguments.handleEmbeddedCommas );
+		var cellIndex = ( arguments.column -1 );
 		for( var cellValue in rowValues ){
 			var cell = createCell( theRow, cellIndex );
-			setCellValueAsType( arguments.workbook, cell, Trim( cellValue ) );
+			if( arguments.KeyExists( "datatypes" ) )
+   			setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes );
+   		else
+				setCellValueAsType( arguments.workbook, cell, cellValue );
 			if( arguments.autoSizeColumns )
 				autoSizeColumn( arguments.workbook, arguments.column );
 			cellIndex++;
@@ -549,11 +584,14 @@ component accessors="true"{
 		,boolean insert=true
 		,boolean autoSizeColumns=false
 		,boolean includeQueryColumnNames=false
+		,boolean ignoreQueryColumnDataTypes=false
+		,struct datatypes
 	){
 		var dataIsQuery = IsQuery( arguments.data );
 		var dataIsArray = IsArray( arguments.data );
 		if( !dataIsQuery && !dataIsArray )
 			Throw( type=this.getExceptionType(), message="Invalid data argument", detail="The data passed in must be either a query or an array of row arrays." );
+		checkDataTypesArgument( arguments );
 		var totalRows = dataIsQuery? arguments.data.recordCount: arguments.data.Len();
 		if( totalRows == 0 )
 			return;
@@ -569,9 +607,13 @@ component accessors="true"{
 			var queryColumns = getQueryColumnFormats( arguments.data );
 			var cellIndex = ( arguments.column -1 );
 			if( arguments.includeQueryColumnNames ){
-				var columnNames = _queryColumnArray( arguments.data );
+				var columnNames = _QueryColumnArray( arguments.data );
 				addRow( workbook=arguments.workbook, data=columnNames, row=currentRowIndex +1, column=arguments.column );
 				currentRowIndex++;
+			}
+			if( arguments.KeyExists( "datatypes" ) ){
+				param local.columnNames = _QueryColumnArray( arguments.data );
+				convertDataTypeOverrideColumnNamesToNumbers( arguments.datatypes, columnNames );
 			}
 			for( var dataRow in arguments.data ){
 				var newRow = createRow( arguments.workbook, currentRowIndex, false );
@@ -579,27 +621,38 @@ component accessors="true"{
 	   		/* populate all columns in the row */
 	   		for( var queryColumn in queryColumns ){
 	   			var cell = createCell( newRow, cellIndex, false );
-					var value = dataRow[ queryColumn.name ];
-					/* Cast the values to the correct type  */
+					var cellValue = dataRow[ queryColumn.name ];
+					if( arguments.ignoreQueryColumnDataTypes ){
+						if( arguments.KeyExists( "datatypes" ) )
+		   				setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes );
+		   			else
+							setCellValueAsType( arguments.workbook, cell, cellValue );
+						cellIndex++;
+						continue;
+					}
+					/* Cast the values to the query column type  */
+					var poiCellType = "string";
 					switch( queryColumn.cellDataType ){
 						case "DOUBLE":
-							setCellValueAsType( arguments.workbook, cell, value, "numeric" );
+							poiCellType = "numeric";
 							break;
 						case "DATE":
-						setCellValueAsType( arguments.workbook, cell, value, "date" );
+							poiCellType = "date";
 							break;
 						case "TIME":
-							setCellValueAsType( arguments.workbook, cell, value, "time" );
+							poiCellType = "time";
 							break;
 						case "BOOLEAN":
-							setCellValueAsType( arguments.workbook, cell, value, "boolean" );
+							poiCellType = "boolean";
 							break;
 						default:
-							if( IsSimpleValue( value ) AND !Len( value ) ) //NB don't use member function: won't work if numeric
-								setCellValueAsType( arguments.workbook, cell, value, "blank" );
-							else
-								setCellValueAsType( arguments.workbook, cell, value, "string" );
+							if( IsSimpleValue( cellValue ) AND !Len( cellValue ) ) //NB don't use member function: won't work if numeric
+								poiCellType = "blank";
 					}
+					if( arguments.KeyExists( "datatypes" ) )
+	   				setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes, poiCellType );
+	   			else
+						setCellValueAsType( arguments.workbook, cell, cellValue, poiCellType );
 					cellIndex++;
 	   		}
 	   		currentRowIndex++;
@@ -612,22 +665,25 @@ component accessors="true"{
 					thisColumn++;
 				}
 			}
+			return;
 		}
-		else { //data is an array
-			for( var dataRow in arguments.data ){
-				var newRow = createRow( arguments.workbook, currentRowIndex, false );
-				var cellIndex = ( arguments.column -1 );
-	   		/* populate all columns in the row */
-	   		for( var cellValue in dataRow ){
-					var cell = createCell( newRow, cellIndex );
-					setCellValueAsType( arguments.workbook, cell, Trim( cellValue ) );
-					if( arguments.autoSizeColumns )
-						autoSizeColumn( arguments.workbook, arguments.column );
-					cellIndex++;
-				}
-				currentRowIndex++;
-	   	}
-		}
+		//data is an array
+		for( var dataRow in arguments.data ){
+			var newRow = createRow( arguments.workbook, currentRowIndex, false );
+			var cellIndex = ( arguments.column -1 );
+   		/* populate all columns in the row */
+   		for( var cellValue in dataRow ){
+   			var cell = createCell( newRow, cellIndex );
+   			if( arguments.KeyExists( "datatypes" ) )
+   				setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes );
+   			else
+					setCellValueAsType( arguments.workbook, cell, cellValue );
+				if( arguments.autoSizeColumns )
+					autoSizeColumn( arguments.workbook, arguments.column );
+				cellIndex++;
+			}
+			currentRowIndex++;
+   	}
 	}
 
 	public void function addSplitPane(
@@ -1736,7 +1792,7 @@ component accessors="true"{
 				var poifs = loadClass( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
 				try{
 					// set up an encrypted stream within the POI filesystem
-					// ACF gets confused by encryptor.getDataStream( POIFSFileSystem ) signature. Using getRoot() means getDataStream( POIFSFileSystem ) will be used
+					// ACF gets confused by encryptor.getDataStream( POIFSFileSystem ) signature. Using getRoot() means getDataStream( DirectoryNode ) will be used
 					if( this.getIsACF() )
 						var encryptedStream = encryptor.getDataStream( poifs.getRoot() );
 					else
@@ -1987,7 +2043,7 @@ component accessors="true"{
 			for( var i=1; i LTE sheet.totalColumnCount; i++ )
 				sheet.columnNames.Append( "column" & i );
 		}
-		var result = _queryNew( sheet.columnNames, "", sheet.data );
+		var result = _QueryNew( sheet.columnNames, "", sheet.data );
 		if( !arguments.includeHiddenColumns ){
 			result = deleteHiddenColumnsFromQuery( sheet, result );
 			if( sheet.totalColumnCount EQ 0 )
@@ -2124,7 +2180,7 @@ component accessors="true"{
 		return result;
 	}
 
-	private array function parseRowData( required string line, required string delimiter, boolean handleEmbeddedCommas=true ){
+	private array function parseListDataToArray( required string line, required string delimiter, boolean handleEmbeddedCommas=true ){
 		var elements = ListToArray( arguments.line, arguments.delimiter );
 		var potentialQuotes = 0;
 		arguments.line = ToString( arguments.line );
@@ -2139,7 +2195,6 @@ component accessors="true"{
 		var values = [];
 		var buffer = newJavaStringBuilder();
 		var maxElements = ArrayLen( elements );
-
 		for( var i = 1; i LTE maxElements; i++ ) {
 		  currentValue = Trim( elements[ i ] );
 		  nextValue = i < maxElements ? elements[ i + 1 ] : "";
@@ -2259,12 +2314,16 @@ component accessors="true"{
 	}
 
 	private any function getCellRangeAddressFromReference( required string rangeReference ){
-		/* rangeReference = usually a standard area ref (e.g. "B1:D8"). May be a single cell ref (e.g. "B5") in which case the result is a 1 x 1 cell range. May also be a whole row range (e.g. "3:5"), or a whole column range (e.g. "C:F") */
+		/*
+		rangeReference = usually a standard area ref (e.g. "B1:D8"). May be a single cell ref (e.g. "B5") in which case the result is a 1 x 1 cell range. May also be a whole row range (e.g. "3:5"), or a whole column range (e.g. "C:F")
+		*/
 		return loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String", arguments.rangeReference ) );
 	}
 
 	private any function getCellValueAsType( required workbook, required cell ){
-		/* Get the value of the cell based on the data type. The thing to worry about here is cell forumlas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values. */
+		/*
+		Get the value of the cell based on the data type. The thing to worry about here is cell formulas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values.
+		*/
 		if( cellIsOfType( arguments.cell, "NUMERIC" ) ){
 			/* Get numeric cell data. This could be a standard number, could also be a date value. */
 			if( getDateUtil().isCellDateFormatted( arguments.cell ) ){
@@ -2326,15 +2385,11 @@ component accessors="true"{
 					arguments.cell.setCellType( arguments.cell.CellType.BLANK ); //no need to set the value: it will be blank
 					return;
 				}
-				// if time has been specified, trust the source to avoid incorrect time value parsing
-				if( arguments.type == "time" ){
-					var dateTimeValue = arguments.value;
+				var dateTimeValue = ParseDateTime( arguments.value );
+				if( arguments.type == "time" )
 					var cellFormat = this.getDateFormats().TIME; //don't include the epoch date in the display
-				}
-				else {
-					var dateTimeValue = ParseDateTime( arguments.value );
+				else
 					var cellFormat = getDateTimeValueFormat( dateTimeValue );// check if DATE, TIME or TIMESTAMP
-				}
 				var dataFormat = arguments.workbook.getCreationHelper().createDataFormat();
 				//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
 				getCellUtil().setCellStyleProperty( arguments.cell, getCellUtil().DATA_FORMAT, dataFormat.getFormat( JavaCast( "string", cellFormat ) ) );
@@ -2371,7 +2426,7 @@ component accessors="true"{
 			if( !arguments.sheet.object.isColumnHidden( JavaCast( "int", colIndex ) ) )
 				continue;
 			var columnNumber = ( colIndex +1 );
-			arguments.result = _queryDeleteColumn( arguments.result, arguments.sheet.columnNames[ columnNumber ] );
+			arguments.result = _QueryDeleteColumn( arguments.result, arguments.sheet.columnNames[ columnNumber ] );
 			arguments.sheet.totalColumnCount--;
 			arguments.sheet.columnNames.DeleteAt( columnNumber );
 		}
@@ -2408,7 +2463,7 @@ component accessors="true"{
 	private string function queryToCsv( required query query, numeric headerRow, boolean includeHeaderRow=false ){
 		var result = newJavaStringBuilder();
 		var crlf = Chr( 13 ) & Chr( 10 );
-		var columns = _queryColumnArray( arguments.query );
+		var columns = _QueryColumnArray( arguments.query );
 		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
 		if( generateHeaderRow )
 			result.Append( generateCsvRow( columns ) );
@@ -2423,7 +2478,7 @@ component accessors="true"{
 
 	private string function queryToHtml( required query query, numeric headerRow, boolean includeHeaderRow=false ){
 		var result = newJavaStringBuilder();
-		var columns = _queryColumnArray( arguments.query );
+		var columns = _QueryColumnArray( arguments.query );
 		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
 		if( generateHeaderRow ){
 			result.Append( "<thead>" );
@@ -2477,10 +2532,10 @@ component accessors="true"{
 		var ranges = ListToArray( arguments.rangeList );
 		for( var thisRange in ranges ){
 			/* remove all white space */
-			thisRange.reReplace( "\s+","","ALL" );
+			thisRange.REReplace( "\s+", "", "ALL" );
 			if( !REFind( rangeTest, thisRange ) )
 				Throw( type=this.getExceptionType(), message="Invalid range value", detail="The range value '#thisRange#' is not valid." );
-			var parts = ListToArray( thisRange,"-" );
+			var parts = ListToArray( thisRange, "-" );
 			//if this is a single number, the start/endAt values are the same
 			var range = {
 				startAt: parts[ 1 ]
@@ -2491,7 +2546,7 @@ component accessors="true"{
 		return result;
 	}
 
-	/* Values */
+	/* Value data types */
 
 	private string function detectValueDataType( required value ){
 		// Numeric must precede date test
@@ -2501,15 +2556,103 @@ component accessors="true"{
 			return "string";
 		if( IsNumeric( arguments.value ) )
 			return "numeric";
-		if( _isDate( arguments.value ) )
+		if( _IsDate( arguments.value ) )
 			return "date";
 		if( !Len( Trim( arguments.value ) ) )
 			return "blank";
 		return "string";
 	}
 
+	private boolean function valueCanBeSetAsType( required value, required type ){
+		//when overriding types, check values can be cast as numbers or dates
+		switch( arguments.type ){
+			case "numeric":
+				return IsNumeric( arguments.value );
+			case "date": case "time":
+				return _IsDate( arguments.value );
+			case "boolean":
+				return IsBoolean( arguments.value );
+		}
+		return true;
+	}
+
 	private boolean function isString( required input ){
 		return arguments.input.getClass().getName() IS "java.lang.String";
+	}
+
+	/* Data type overriding */
+
+	private void function checkDataTypesArgument( required struct args ){
+		if( arguments.args.KeyExists( "datatypes" ) && datatypeOverridesContainInvalidTypes( arguments.args.datatypes ) )
+			Throw( type=this.getExceptionType(), message="Invalid datatype(s)", detail="One or more of the datatypes specified is invalid. Valid types are #validCellOverrideTypes().ToList( ', ' )# and the columns they apply to should be passed as an array" );
+	}
+
+	private void function convertDataTypeOverrideColumnNamesToNumbers( required struct datatypeOverrides, required array columnNames ){
+		for( var type in arguments.datatypeOverrides ){
+			var columnRefs = arguments.datatypeOverrides[ type ];
+			//NB: DO NOT SCOPE datatypeOverrides and columnNames vars inside closure!!
+			columnRefs.Each( function( value, index ){
+				if( !IsNumeric( value ) ){
+					var columnNumber = ArrayFindNoCase( columnNames, value );//ACF won't accept member function on this array for some reason
+					columnRefs.DeleteAt( index );
+					columnRefs.Append( columnNumber );
+					datatypeOverrides[ type ] = columnRefs;
+				}
+			});
+		}
+	}
+
+	private boolean function datatypeOverridesContainInvalidTypes( required struct datatypeOverrides ){
+		for( var type in arguments.datatypeOverrides ){
+			if( !isValidCellOverrideType( type ) || !IsArray( arguments.datatypeOverrides[ type ] ) )
+				return true;
+		}
+		return false;
+	}
+
+	private string function getCellTypeOverride( required numeric cellIndex, required struct datatypeOverrides ){
+		var columnNumber = ( arguments.cellIndex +1 );
+		for( var type in arguments.datatypeOverrides ){
+			if( arguments.datatypeOverrides[ type ].Find( columnNumber ) )
+				return type;
+		}
+		return "";
+	}
+
+	private boolean function isValidCellOverrideType( required string type ){
+		return validCellOverrideTypes().FindNoCase( arguments.type );
+	}
+
+	private void function setCellDataTypeWithOverride(
+		required workbook
+		,required cell
+		,required cellValue
+		,required numeric cellIndex
+		,required struct datatypeOverrides
+		,string defaultType
+	){
+		var cellTypeOverride = getCellTypeOverride( arguments.cellIndex, arguments.datatypeOverrides );
+		if( cellTypeOverride.Len() ){
+			if( cellTypeOverride == "auto" ){
+				setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue );
+				return;
+			}
+			if( valueCanBeSetAsType( arguments.cellValue, cellTypeOverride ) ){
+				setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue, cellTypeOverride );
+				return;
+			}
+		}
+		// if no override, use an already set default (i.e. query column type)
+		if( arguments.KeyExists( "defaultType" ) ){
+			setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue, arguments.defaultType );
+			return;
+		}
+		// default autodetect
+		setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue );
+	}
+
+	private array function validCellOverrideTypes(){
+		return [ "numeric", "string", "date", "time", "boolean", "auto" ];
 	}
 
 	/* Dates */
@@ -3035,12 +3178,32 @@ component accessors="true"{
 		}
 	}
 
+	private boolean function isHexColor( required string inputString ){
+		return arguments.inputString.REFindNoCase( "^##?[a-f]{6,6}$" );
+	}
+
+	private string function hexToRGB( required string hexColor ){
+		if( !isHexColor( arguments.hexColor ) )
+			return "";
+		arguments.hexColor = arguments.hexColor.Replace( "##", "" );
+		var response = [];
+		for( var i=1; i <= 5; i=i+2 ){
+			response.Append( InputBaseN( Mid( arguments.hexColor, i, 2 ), 16 ) );
+		}
+		return response.ToList();
+	}
+
 	private any function getColor( required workbook, required string colorValue ){
 		/* if colorValue is a preset name, returns the index */
+		/* if colorValue is hex it will be converted to RGB */
 		/* if colorValue is an RGB Triplet eg. "255,255,255" then the exact color object is returned for xlsx, or the nearest color's index if xls */
-		var isRGB = ListLen( arguments.colorValue ) EQ 3;
-		if( !isRGB )
-			return getColorIndex( arguments.colorValue );
+		var isRGB = ListLen( arguments.colorValue ) == 3;
+		if( !isRGB ){
+			if( isHexColor( arguments.colorValue ) )
+				arguments.colorValue = hexToRGB( arguments.colorValue );
+			else
+				return getColorIndex( arguments.colorValue );
+		}
 		var rgb = ListToArray( arguments.colorValue );
 		if( isXmlFormat( arguments.workbook ) ){
 			var rgbBytes = [
@@ -3148,17 +3311,20 @@ component accessors="true"{
 
 	/* Override troublesome engine BIFs */
 
-	private boolean function _isDate( required value ){
+	private boolean function _IsDate( required value ){
 		if( !IsDate( arguments.value ) )
 			return false;
 		// Lucee will treat 01-23112 or 23112-01 as a date!
 		if( ParseDateTime( arguments.value ).Year() > 9999 ) //ACF future limit
 			return false;
+		// ACF accepts "9a", "9p", "9 a" as dates
+		if( REFind( "^\d+\s*[apAP]{1,1}$", arguments.value ) ) //ACF no member function
+			return false;
 		return true;
 	}
 
 	/* ACF compatibility functions */
-	private array function _queryColumnArray( required query q ){
+	private array function _QueryColumnArray( required query q ){
 		try{
 			return QueryColumnArray( arguments.q ); //Lucee
 		}
@@ -3189,7 +3355,7 @@ component accessors="true"{
 		}
 	}
 
-	private query function _queryNew( required array columnNames, required string columnTypeList, required array data ){
+	private query function _QueryNew( required array columnNames, required string columnTypeList, required array data ){
 		//ACF QueryNew() won't accept invalid variable names in the column name list (e.g. which names including commas), hence clunky workaround:
 		//NB: 'data' should not contain structs since they use the column name as key: always use array of row arrays instead
 		if( !this.getIsACF() )

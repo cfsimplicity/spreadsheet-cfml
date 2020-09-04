@@ -153,6 +153,61 @@ describe( "addRow", function(){
 		s.addRow( workbook=local.workbook, data=data, autoSizeColumns=true );
 	});
 
+	describe( "addRow() data type overriding",function(){
+
+		it( "throws an error if invalid types are specified in the datatype struct", function() {
+			expect( function(){
+				var data = [ "a", "b" ];
+				var datatypes = { numeric: [ 1 ], varchar: [ 2 ] };
+				s.addRow( workbook=workbook, data=data, datatypes=datatypes );
+			}).toThrow( message="Invalid datatype(s)" );
+		});
+
+		it( "throws an error if columns to override are not specified as arrays in the datatype struct", function() {
+			expect( function(){
+				var data = [ "a", "b" ];
+				var datatypes = { numeric: "1", string: "2" };
+				s.addRow( workbook=workbook, data=data, datatypes=datatypes );
+			}).toThrow( message="Invalid datatype(s)" );
+		});
+
+		it( "Allows column data types to be overridden", function(){
+			var datatypes = { numeric: [ 1 ], string: [ 2 ] };// can't test dates: date strings are always converted correctly!
+			var data = "01234,1234567890123456";
+			s.addRow( workbook, data );
+			expect( s.getCellValue( workbook, 1, 1 ) ).toBe( "01234" );
+			expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
+			expect( s.getCellType( workbook, 1, 2 ) ).toBe( "numeric" );
+			s.addRow( workbook=workbook, data=data, datatypes=datatypes );
+			expect( s.getCellValue( workbook, 2, 1 ) ).toBe( "1234" );
+			expect( s.getCellType( workbook, 2, 1 ) ).toBe( "numeric" );
+			expect( s.getCellType( workbook, 2, 2 ) ).toBe( "string" );
+			// array data
+			data = [ "01234", 1234567890123456 ];
+			s.addRow( workbook=workbook, data=data, datatypes=datatypes );
+			expect( s.getCellValue( workbook, 3, 1 ) ).toBe( "1234" );
+			expect( s.getCellType( workbook, 3, 1 ) ).toBe( "numeric" );
+			expect( s.getCellType( workbook, 3, 2 ) ).toBe( "string" );
+		});
+
+		it( "Values fall back to the autodetected type if they don't match the overridden type", function() {
+			var datatypes = { numeric: [ 1, 2 ] };
+			var data = "01234,alpha";
+			s.addRow( workbook=workbook, data=data, datatypes=datatypes );
+			expect( s.getCellValue( workbook, 1, 1 ) ).toBe( 1234 );
+			expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
+			expect( s.getCellValue( workbook, 1, 2 ) ).toBe( "alpha" );
+			expect( s.getCellType( workbook, 1, 2 ) ).toBe( "string" );
+			data = [ "01234", "alpha" ];
+			s.addRow( workbook=workbook, data=data, datatypes=datatypes );
+			expect( s.getCellValue( workbook, 2, 1 ) ).toBe( 1234 );
+			expect( s.getCellType( workbook, 2, 1 ) ).toBe( "numeric" );
+			expect( s.getCellValue( workbook, 2, 2 ) ).toBe( "alpha" );
+			expect( s.getCellType( workbook, 2, 2 ) ).toBe( "string" );
+		});
+
+	});
+
 	describe( "addRow throws an exception if", function(){
 
 		it( "row is zero or less", function() {

@@ -1,3 +1,12 @@
+## 2.11.0 - 4 September 2020
+
+- Enhancements
+ - \#201 Prevent ACF from treating "9a" or "9p" as a date/time value
+ - \#200 When adding rows allow default data types to be overridden
+ - \#199 Allow rows generated from queries to ignore the query column data types
+ - \#198 Allow addColumn() to take data as an array
+ - \#197 Add support for valid 6 character hexadecimal colors
+
 ## 2.10.0 - 14 April 2020
 
 - Enhancements

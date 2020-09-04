@@ -184,7 +184,7 @@ describe( "addRows",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Handles blank date and boolean values correctly", function(){
+	it( "Handles empty values correctly", function(){
 		var data = QueryNew( "column1,column2,column3,column4,column5", "Date,Time,Timestamp,Bit,Integer",[ [ "", "", "", "", "" ] ] );
 		s.addRows( workbook, data );
 		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "blank" );
@@ -193,6 +193,17 @@ describe( "addRows",function(){
 		expect( s.getCellType( workbook, 1, 4 ) ).toBe( "blank" );
 		expect( s.getCellType( workbook, 1, 5 ) ).toBe( "numeric" );
 		//doesn't apply to array data which has no column types
+	});
+
+	it( "Can ignore query column types, so that each cell's type is auto-detected from its value", function(){
+		var dateValue = CreateDate( 2015, 04, 12 );
+		var data = QueryNew( "column1", "VarChar", [ [ 0 ], [ 1 ], [ 1.1 ], [ dateValue ], [ "hello" ] ] );
+		s.addRows( workbook=workbook, data=data, ignoreQueryColumnDataTypes=true );
+		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
+		expect( s.getCellType( workbook, 2, 1 ) ).toBe( "numeric" );
+		expect( s.getCellType( workbook, 3, 1 ) ).toBe( "numeric" );
+		expect( s.getCellType( workbook, 4, 1 ) ).toBe( "numeric" );
+		expect( s.getCellType( workbook, 5, 1 ) ).toBe( "string" );
 	});
 
 	it( "Adds strings with leading zeros as strings not numbers",function(){
@@ -253,6 +264,134 @@ describe( "addRows",function(){
 	it( "Doesn't error if the workbook is SXSSF and autoSizeColumns is true", function(){
 		var workbook = s.newStreamingXlsx();
 		s.addRows( workbook=local.workbook, data=data, autoSizeColumns=true );
+	});
+
+	describe( "addRows() data type overriding",function(){
+
+		it( "throws an error if invalid types are specified in the datatype struct", function() {
+			expect( function(){
+				var data = [ [ "a", "b" ] ];
+				var datatypes = { numeric: [ 1 ], varchar: [ 2 ] };
+				s.addRows( workbook=workbook, data=data, datatypes=datatypes );
+			}).toThrow( message="Invalid datatype(s)" );
+		});
+
+		it( "throws an error if columns to override are not specified as arrays in the datatype struct", function() {
+			expect( function(){
+				var data = [ [ "a", "b" ] ];
+				var datatypes = { numeric: "1", string: "2" };
+				s.addRows( workbook=workbook, data=data, datatypes=datatypes );
+			}).toThrow( message="Invalid datatype(s)" );
+		});
+
+		it( "Allows column data types in data passed as an array to be overridden by column number", function(){
+			var data = [ [ "01234", 1234567890123456 ] ];
+			s.addRows( workbook, data );
+			expect( s.getCellValue( workbook, 1, 1 ) ).toBe( "01234" );
+			expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
+			expect( s.getCellType( workbook, 1, 2 ) ).toBe( "numeric" );
+			var datatypes = { numeric: [ 1 ], string: [ 2 ] };// can't test dates: date strings are always converted correctly!
+			s.addRows( workbook=workbook, data=data, datatypes=datatypes );
+			expect( s.getCellValue( workbook, 2, 1 ) ).toBe( "1234" );
+			expect( s.getCellType( workbook, 2, 1 ) ).toBe( "numeric" );
+			expect( s.getCellType( workbook, 2, 2 ) ).toBe( "string" );
+		});
+
+		it( "Allows column data types in data passed as a query to be overridden by column name or number", function(){
+			var data = QueryNew( "Number,Date,String,Time,Boolean", "VarChar,VarChar,BigInt,VarChar,VarChar", [ [ "01234", "2020-08-24", 1234567890123456, "2020-08-24 09:15:00", "yes" ] ] );
+			s.addRows( workbook, data );
+			expect( s.getCellValue( workbook, 1, 1 ) ).toBe( "01234" );
+			expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
+			expect( s.getCellType( workbook, 1, 2 ) ).toBe( "string" );
+			expect( s.getCellType( workbook, 1, 3 ) ).toBe( "numeric" );
+			expect( s.getCellType( workbook, 1, 4 ) ).toBe( "string" );
+			expect( s.getCellType( workbook, 1, 5 ) ).toBe( "string" );
+			var datatypes = { numeric: [ "Number" ], date: [ "Date" ], string: [ "String" ], time: [ "Time" ], boolean: [ "boolean" ] };
+			s.addRows( workbook=workbook, data=data, datatypes=datatypes );
+			expect( s.getCellValue( workbook, 2, 1 ) ).toBe( "1234" );
+			expect( s.getCellType( workbook, 2, 1 ) ).toBe( "numeric" );
+			expect( s.getCellType( workbook, 2, 2 ) ).toBe( "numeric" );//dates are stored as numbers in Excel
+			expect( IsDate( s.getCellValue( workbook, 2, 2 ) ) ).toBeTrue();
+			expect( s.getCellType( workbook, 2, 3 ) ).toBe( "string" );
+			expect( s.getCellType( workbook, 2, 4 ) ).toBe( "numeric" );
+			expect( s.getCellValue( workbook, 2, 4 ) ).toBe( "09:15:00" );
+			expect( s.getCellType( workbook, 2, 5 ) ).toBe( "boolean" );
+			// mixture of column names and numbers
+			var data = QueryNew( "Number1,Number2", "VarChar,VarChar", [ [ "01234", "01234" ] ] );
+			var datatypes = { numeric: [ "Number1", 2 ] };
+			s.addRows( workbook=workbook, data=data, datatypes=datatypes );
+			expect( s.getCellValue( workbook, 3, 1 ) ).toBe( "1234" );
+			expect( s.getCellValue( workbook, 3, 2 ) ).toBe( "1234" );
+			expect( s.getCellType( workbook, 3, 1 ) ).toBe( "numeric" );
+			expect( s.getCellType( workbook, 3, 2 ) ).toBe( "numeric" );
+		});
+
+		it( "Values in array data fall back to the autodetected type if they don't match the overridden type", function() {
+			var data = [ [ "01234", "alpha", "alpha", "alpha", "alpha" ] ];
+			var datatypes = { numeric: [ 1, 2 ], date: [ 3 ], time: [ 4 ], boolean: [ 5 ] };
+			s.addRows( workbook=workbook, data=data, datatypes=datatypes );
+			expect( s.getCellValue( workbook, 1, 1 ) ).toBe( 1234 );
+			expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
+			expect( s.getCellValue( workbook, 1, 2 ) ).toBe( "alpha" );
+			expect( s.getCellType( workbook, 1, 2 ) ).toBe( "string" );
+			expect( s.getCellValue( workbook, 1, 3 ) ).toBe( "alpha" );
+			expect( s.getCellType( workbook, 1, 3 ) ).toBe( "string" );
+			expect( s.getCellValue( workbook, 1, 4 ) ).toBe( "alpha" );
+			expect( s.getCellType( workbook, 1, 4 ) ).toBe( "string" );
+			expect( s.getCellValue( workbook, 1, 5 ) ).toBe( "alpha" );
+			expect( s.getCellType( workbook, 1, 5 ) ).toBe( "string" );
+		});
+
+		it( "Values in query data fall back to the query column type if they don't match the overridden type", function() {
+			var data = QueryNew( "Number,String,Date,Time,Boolean", "VarChar,VarChar,VarChar,VarChar,VarChar", [ [ "01234", "alpha", "alpha", "alpha" , "alpha"] ] );
+			var datatypes = { numeric: [ 1, 2 ], date: [ 3 ], time: [ 4 ], boolean: [ 5 ] };
+			s.addRows( workbook=workbook, data=data, datatypes=datatypes );
+			expect( s.getCellValue( workbook, 1, 1 ) ).toBe( 1234 );
+			expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
+			expect( s.getCellValue( workbook, 1, 2 ) ).toBe( "alpha" );
+			expect( s.getCellType( workbook, 1, 2 ) ).toBe( "string" );
+			expect( s.getCellValue( workbook, 1, 3 ) ).toBe( "alpha" );
+			expect( s.getCellType( workbook, 1, 3 ) ).toBe( "string" );
+			expect( s.getCellValue( workbook, 1, 4 ) ).toBe( "alpha" );
+			expect( s.getCellType( workbook, 1, 4 ) ).toBe( "string" );
+			expect( s.getCellValue( workbook, 1, 5 ) ).toBe( "alpha" );
+			expect( s.getCellType( workbook, 1, 5 ) ).toBe( "string" );
+		});
+
+		it( "Query data values with NO type override, default to query column types", function() {
+			var data = QueryNew( "Number,String", "VarChar,VarChar", [ [ 1234, "01234" ] ] );
+			var datatypes = { numeric: [ 2 ] };
+			s.addRows( workbook=workbook, data=data, datatypes=datatypes );
+			expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
+			expect( s.getCellType( workbook, 1, 2 ) ).toBe( "numeric" );
+		});
+
+		it( "Values in query data fall back to the autodetected type if they don't match the overridden type and ignoreQueryColumnDataTypes is true", function() {
+			var data = QueryNew( "Number,String,Date,Time,Boolean", "VarChar,VarChar,VarChar,VarChar,VarChar", [ [ "01234", "alpha", "alpha", "alpha" , "alpha"] ] );
+			var datatypes = { numeric: [ 1, 2 ], date: [ 3 ], time: [ 4 ], boolean: [ 5 ] };
+			s.addRows( workbook=workbook, data=data, ignoreQueryColumnDataTypes=true, datatypes=datatypes );
+			expect( s.getCellValue( workbook, 1, 1 ) ).toBe( 1234 );
+			expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
+			expect( s.getCellValue( workbook, 1, 2 ) ).toBe( "alpha" );
+			expect( s.getCellType( workbook, 1, 2 ) ).toBe( "string" );
+			expect( s.getCellValue( workbook, 1, 3 ) ).toBe( "alpha" );
+			expect( s.getCellType( workbook, 1, 3 ) ).toBe( "string" );
+			expect( s.getCellValue( workbook, 1, 4 ) ).toBe( "alpha" );
+			expect( s.getCellType( workbook, 1, 4 ) ).toBe( "string" );
+			expect( s.getCellValue( workbook, 1, 5 ) ).toBe( "alpha" );
+			expect( s.getCellType( workbook, 1, 5 ) ).toBe( "string" );
+		});
+
+		it( "Query data values in columns with an override type of 'auto' will have their type auto-detected, regardless of the query column type", function() {
+			var data = QueryNew( "One,Two", "VarChar,VarChar", [ [ "2020-08-24", "2020-08-24" ], [ "3.1", "3.1" ] ] );
+			var datatypes = { auto: [ 1 ] };
+			s.addRows( workbook=workbook, data=data, datatypes=datatypes );
+			expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
+			expect( s.getCellType( workbook, 1, 2 ) ).toBe( "string" );
+			expect( s.getCellType( workbook, 2, 1 ) ).toBe( "numeric" );
+			expect( s.getCellType( workbook, 2, 2 ) ).toBe( "string" );
+		});
+
 	});
 
 	describe( "addRows throws an exception if",function(){
