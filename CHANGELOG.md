@@ -1,3 +1,7 @@
+## 2.11.1 - 9 September 202
+
+- \#202 Bugfix for isHex regex
+
 ## 2.11.0 - 4 September 2020
 
 - Enhancements
