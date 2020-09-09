@@ -321,7 +321,7 @@ describe( "formatCell", function(){
 
 	it( "Throws an exception if an invalid hex value is passed",function() {
 		expect( function(){
-			var hex = "FF22BB";
+			var hex = "GGHHII";
 			var format = { color: hex, bottombordercolor: hex };
 			var cellFormat = setAndGetFormat( xlsx, format );
 		}).toThrow( regex="Invalid color" );

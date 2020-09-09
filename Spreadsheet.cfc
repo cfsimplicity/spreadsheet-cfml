@@ -3179,7 +3179,7 @@ component accessors="true"{
 	}
 
 	private boolean function isHexColor( required string inputString ){
-		return arguments.inputString.REFindNoCase( "^##?[0-9A-Fa-f]{6,6}$" );
+		return arguments.inputString.REFind( "^##?[0-9A-Fa-f]{6,6}$" );
 	}
 
 	private string function hexToRGB( required string hexColor ){
