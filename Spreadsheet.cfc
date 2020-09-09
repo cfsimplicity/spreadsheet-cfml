@@ -1,7 +1,7 @@
 component accessors="true"{
 
 	//static
-	property name="version" default="2.11.0" setter="false";
+	property name="version" default="2.11.1" setter="false";
 	property name="exceptionType" default="cfsimplicity.lucee.spreadsheet" setter="false";
 	//commonly invoked POI class names
 	property name="HSSFWorkbookClassName" default="org.apache.poi.hssf.usermodel.HSSFWorkbook" setter="false";
@@ -3179,7 +3179,7 @@ component accessors="true"{
 	}
 
 	private boolean function isHexColor( required string inputString ){
-		return arguments.inputString.REFindNoCase( "^##?[a-f]{6,6}$" );
+		return arguments.inputString.REFind( "^##?[0-9A-Fa-f]{6,6}$" );
 	}
 
 	private string function hexToRGB( required string hexColor ){
