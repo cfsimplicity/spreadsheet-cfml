@@ -31,25 +31,11 @@ describe( "csvToQuery",function(){
 		expect( actual ).toBe( basicExpectedQuery ); 	
 	});
 
-	it( "can accept an alternative delimiter", function() {
-		savecontent variable="local.csv"{
-			WriteOutput( '
-"Frumpo McNugget"|12345
-		');
-		};
-		//named args
-		var actual = s.csvToQuery( csv=csv, delimiter="|" );
-		expect( actual ).toBe( basicExpectedQuery );
-		//positional
-		var actual = s.csvToQuery( csv, "", false, true, "|" );
-		expect( actual ).toBe( basicExpectedQuery ); 
-	});
-
 	it( "can handle an embedded delimiter", function() {
 		savecontent variable="local.csv"{
 			WriteOutput( '
 "McNugget,Frumpo",12345
-		');
+			');
 		};
 		var expected = QueryNew( "column1,column2", "", [ [ "McNugget,Frumpo", "12345" ] ] );
 		var actual = s.csvToQuery( csv );
@@ -127,6 +113,37 @@ Frumpo,12345
 		expected.setColumnNames( [ "Name", "Phone Number" ] );
 		var actual = s.csvToQuery( csv=csv, firstRowIsHeader=true );
 		expect( actual ).toBe( expected ); 
+	});
+
+	describe( "delimiter handling", function(){
+
+		it( "can accept an alternative delimiter", function() {
+			savecontent variable="local.csv"{
+				WriteOutput( '
+"Frumpo McNugget"|12345
+				');
+			};
+			//named args
+			var actual = s.csvToQuery( csv=csv, delimiter="|" );
+			expect( actual ).toBe( basicExpectedQuery );
+			//positional
+			var actual = s.csvToQuery( csv, "", false, true, "|" );
+			expect( actual ).toBe( basicExpectedQuery ); 
+		});
+
+		it( "has special handling for tab delimited data", function(){
+			savecontent variable="local.csv"{
+				WriteOutput( '
+"Frumpo McNugget"#Chr( 9 )#12345
+				');
+			};
+			var validTabValues = [ "#Chr( 9 )#", "\t", "tab", "TAB" ];
+			for( var value in validTabValues ){
+				var actual = s.csvToQuery( csv=csv, delimiter="#value#" );
+				expect( actual ).toBe( basicExpectedQuery );
+			}
+		});
+
 	});
 
 	describe( "csvToQuery throws an exception if", function(){

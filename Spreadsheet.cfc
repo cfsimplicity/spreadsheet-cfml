@@ -128,12 +128,18 @@ component accessors="true"{
 				Throw( type=this.getExceptionType(), message="Invalid csv file", detail="#arguments.filepath# does not appear to be a text/csv file" );
 			arguments.csv = FileRead( arguments.filepath );
 		}
-		var format = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ];
-		format = format.withIgnoreSurroundingSpaces();//stop spaces between fields causing problems with embedded lines
-		if( arguments.trim )
-			arguments.csv = arguments.csv.Trim();
-		if( arguments.KeyExists( "delimiter" ) )
-			format = format.withDelimiter( JavaCast( "char", arguments.delimiter ) );
+		if( arguments.trim ) arguments.csv = arguments.csv.Trim();
+		if( arguments.KeyExists( "delimiter" ) ){
+			if( delimiterIsTab( arguments.delimiter ) )
+				var format = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ];
+			else {
+				var format = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ]
+					.withDelimiter( JavaCast( "char", arguments.delimiter ) )
+					.withIgnoreSurroundingSpaces();//stop spaces between fields causing problems with embedded lines
+			}
+		}
+		else
+			var format = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
 		var parsed = loadClass( "org.apache.commons.csv.CSVParser" ).parse( arguments.csv, format );
 		var records = parsed.getRecords();
 		var rows = [];
@@ -2679,6 +2685,12 @@ component accessors="true"{
 	private boolean function isTimeOnlyValue( required date value ){
 		//NB: this will only detect CF time object (epoch = 1899-12-30), not those using unix epoch 1970-01-01
 		return ( Year( arguments.value ) == "1899" );
+	}
+
+	/* Strings */
+
+	private boolean function delimiterIsTab( required string delimiter ){
+		return ArrayFindNoCase( [ "#Chr( 9 )#", "\t", "tab" ], arguments.delimiter );//CF2016 doesn't support [].FindNoCase( needle )
 	}
 
 	/* Info */
