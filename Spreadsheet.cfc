@@ -133,7 +133,7 @@ component accessors="true"{
 		if( arguments.trim )
 			arguments.csv = arguments.csv.Trim();
 		if( arguments.KeyExists( "delimiter" ) )
-			format = format.withDelimiter( JavaCast( "string", arguments.delimiter ) );
+			format = format.withDelimiter( JavaCast( "char", arguments.delimiter ) );
 		var parsed = loadClass( "org.apache.commons.csv.CSVParser" ).parse( arguments.csv, format );
 		var records = parsed.getRecords();
 		var rows = [];
