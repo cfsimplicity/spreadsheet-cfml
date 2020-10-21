@@ -82,7 +82,7 @@ component accessors="true"{
 		WriteDump( path );
 	}
 
-	/* how many styles in a workbook (limit is 4K) */
+	/* how many styles in a workbook (limit is 4K xls/64K xlsx) */
 	public numeric function getWorkbookCellStylesTotal( required workbook ){
 		return arguments.workbook.getNumCellStyles();
 	}
@@ -756,6 +756,10 @@ component accessors="true"{
 		}
 	}
 
+	public any function createCellStyle( required workbook, required struct format ){
+		return buildCellStyle( arguments.workbook, arguments.format );
+	}
+
 	public void function createSheet( required workbook, string sheetName, overwrite=false ){
 		if( arguments.KeyExists( "sheetName" ) )
 			validateSheetName( arguments.sheetName );
@@ -829,12 +833,13 @@ component accessors="true"{
 
 	public void function formatCell(
 		required workbook
-		,required struct format
+		,struct format={}
 		,required numeric row
 		,required numeric column
 		,boolean overwriteCurrentStyle=true
 		,any cellStyle
 	){
+		checkFormatArguments( argumentCollection=arguments );
 		var cell = initializeCell( arguments.workbook, arguments.row, arguments.column );
 		if( arguments.overwriteCurrentStyle )
 			var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
@@ -845,14 +850,15 @@ component accessors="true"{
 
 	public void function formatCellRange(
 		required workbook
-		,required struct format
+		,struct format={}
 		,required numeric startRow
 		,required numeric endRow
 		,required numeric startColumn
 		,required numeric endColumn
 		,boolean overwriteCurrentStyle=true
 		,any cellStyle
-		){
+	){
+		checkFormatArguments( argumentCollection=arguments );
 		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
 		for( var rowNumber = arguments.startRow; rowNumber LTE arguments.endRow; rowNumber++ ){
 			for( var columnNumber = arguments.startColumn; columnNumber LTE arguments.endColumn; columnNumber++ )
@@ -862,11 +868,12 @@ component accessors="true"{
 
 	public void function formatColumn(
 		required workbook
-		,required struct format
+		,struct format={}
 		,required numeric column
 		,boolean overwriteCurrentStyle=true
 		,any cellStyle
 	){
+		checkFormatArguments( argumentCollection=arguments );
 		if( arguments.column LT 1 )
 			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The column value must be greater than 0" );
 		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
@@ -880,11 +887,12 @@ component accessors="true"{
 
 	public void function formatColumns(
 		required workbook
-		,required struct format
+		,struct format={}
 		,required string range
 		,boolean overwriteCurrentStyle=true
 		,any cellStyle
 	){
+		checkFormatArguments( argumentCollection=arguments );
 		/* Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. */
 		var allRanges = extractRanges( arguments.range );
 		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
@@ -901,11 +909,12 @@ component accessors="true"{
 
 	public void function formatRow(
 		required workbook
-		,required struct format
+		,struct format={}
 		,required numeric row
 		,boolean overwriteCurrentStyle=true
 		,any cellStyle
 	){
+		checkFormatArguments( argumentCollection=arguments );
 		var rowIndex = ( arguments.row -1 );
 		var theRow = getActiveSheet( arguments.workbook ).getRow( rowIndex );
 		if( IsNull( theRow ) )
@@ -918,11 +927,12 @@ component accessors="true"{
 
 	public void function formatRows(
 		required workbook
-		,required struct format
+		,struct format={}
 		,required string range
 		,boolean overwriteCurrentStyle=true
 		,any cellStyle
 	){
+		checkFormatArguments( argumentCollection=arguments );
 		/* Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. */
 		var allRanges = extractRanges( arguments.range );
 		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
@@ -2977,6 +2987,17 @@ component accessors="true"{
 			}
 		}
 		return cellStyle;
+	}
+
+	private boolean function isValidCellStyleObject( required workbook, required any object ){
+		if( isBinaryFormat( arguments.workbook ) )
+			return ( arguments.object.getClass().getCanonicalName() == "org.apache.poi.hssf.usermodel.HSSFCellStyle" );
+		return ( arguments.object.getClass().getCanonicalName() == "org.apache.poi.xssf.usermodel.XSSFCellStyle" );
+	}
+
+	private void function checkFormatArguments( required workbook ){
+		if( arguments.KeyExists( "cellStyle" ) && !isValidCellStyleObject( arguments.workbook, arguments.cellStyle ) )
+			Throw( type=this.getExceptionType(), message="Invalid argument", detail="The 'cellStyle' argument is not a valid POI cellStyle object" );
 	}
 
 	private string function getUnderlineFormatAsString( required cellFont ){
