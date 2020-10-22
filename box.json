@@ -1,10 +1,10 @@
 {
     "name" : "LuceeSpreadsheet",
     "slug" : "lucee-spreadsheet",
-    "version" : "2.11.1",
-    "shortDescription" : "Spreadsheet Library for Lucee",
+    "version" : "2.12.0",
+    "shortDescription" : "Spreadsheet Library for Lucee (and Adobe ColdFusion)",
     "author" : "Julian Halliwell",
-    "location" : "https://github.com/cfsimplicity/lucee-spreadsheet/archive/v2.11.1.zip",
+    "location" : "https://github.com/cfsimplicity/lucee-spreadsheet/archive/v2.12.0.zip",
     "homepage" : "https://github.com/cfsimplicity/lucee-spreadsheet",
     "projectURL" : "https://github.com/cfsimplicity/lucee-spreadsheet",
     "documentation" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/master/README.md",
