@@ -8,7 +8,7 @@
 
 ## 2.11.1 - 9 September 2020
 
-	- \#202 Bugfix for isHex regex
+- \#202 Bugfix for isHex regex
 
 ## 2.11.0 - 4 September 2020
 
