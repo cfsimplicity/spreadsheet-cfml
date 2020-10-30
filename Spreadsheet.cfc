@@ -197,7 +197,7 @@ component accessors="true"{
 		var binaryFromQueryArgs = {
 			data: arguments.data
 			,addHeaderRow: arguments.addHeaderRow
-			,boldHeaderRow: argumentsboldHeaderRow
+			,boldHeaderRow: arguments.boldHeaderRow
 			,xmlFormat: arguments.xmlFormat
 			,streamingXml: arguments.streamingXml
 			,streamingWindowSize: arguments.streamingWindowSize
