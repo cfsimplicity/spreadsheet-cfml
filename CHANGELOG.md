@@ -1,3 +1,7 @@
+## 2.12.1 - 30 October 2020
+
+- \#206 Fix typo in downloadFileFromQuery()
+
 ## 2.12.0 - 22 October 2020
 
 - Enhancements
