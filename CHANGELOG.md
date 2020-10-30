@@ -1,3 +1,7 @@
+## 2.12.1 - 30 October 2020
+
+- \#206 Fix typo in downloadFileFromQuery()
+
 ## 2.12.0 - 22 October 2020
 
 - Enhancements
@@ -8,7 +12,7 @@
 
 ## 2.11.1 - 9 September 2020
 
-	- \#202 Bugfix for isHex regex
+- \#202 Bugfix for isHex regex
 
 ## 2.11.0 - 4 September 2020
 
