@@ -1,4 +1,4 @@
-## 2.12.2 - 12 October 2020
+## 2.12.2 - 12 November 2020
 
 - Fixes
 	- \#209 ACF2021: Class not found: org.apache.commons.io.output.ByteArrayOutputStream
