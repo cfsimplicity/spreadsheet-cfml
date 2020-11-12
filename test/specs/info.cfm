@@ -76,5 +76,10 @@ describe( "info", function(){
 		expect( actual ).toBe( expected );
 	});
 
+	afterEach( function(){
+		if( FileExists( variables.tempXlsPath ) ) FileDelete( variables.tempXlsPath );
+		if( FileExists( variables.tempXlsxPath ) ) FileDelete( variables.tempXlsxPath );
+	});
+
 });	
 </cfscript>
