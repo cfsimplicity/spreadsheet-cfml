@@ -1,7 +1,7 @@
 component accessors="true"{
 
 	//static
-	property name="version" default="2.12.1" setter="false";
+	property name="version" default="2.12.2" setter="false";
 	property name="exceptionType" default="cfsimplicity.lucee.spreadsheet" setter="false";
 	//commonly invoked POI class names
 	property name="HSSFWorkbookClassName" default="org.apache.poi.hssf.usermodel.HSSFWorkbook" setter="false";
@@ -1309,7 +1309,7 @@ component accessors="true"{
 	}
 
 	public binary function readBinary( required workbook ){
-		var baos = CreateObject( "Java", "org.apache.commons.io.output.ByteArrayOutputStream" ).init();
+		var baos = loadClass( "org.apache.commons.io.output.ByteArrayOutputStream" ).init();
 		arguments.workbook.write( baos );
 		baos.flush();
 		return baos.toByteArray();

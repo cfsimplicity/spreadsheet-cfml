@@ -10,13 +10,13 @@ component extends="testbox.system.BaseSpec"{
 	variables.s = newSpreadsheetInstance();
 	
 	function beforeAll(){
-	  variables.filesDirectoryPath = ExpandPath( "files/" );
+		if( server.KeyExists( s.getJavaLoaderName() ) ) server.delete( s.getJavaLoaderName() );
 	  variables.tempXlsPath = ExpandPath( "temp.xls" );
 	  variables.tempXlsxPath = ExpandPath( "temp.xlsx" );
 	}
 
 	function getTestFilePath( required string filename ){
-		return variables.filesDirectoryPath & arguments.filename;
+		return ExpandPath( "/root/test/files/" ) & arguments.filename;
 	}
 
 	function afterAll(){
@@ -25,23 +25,10 @@ component extends="testbox.system.BaseSpec"{
 
 	function run( testResults, testBox ){
 
-		describe( "spreadsheet test suite",function() {
-     
-			/* beforeEach( function( currentSpec ) {}); */
-
-			afterEach(function( currentSpec ) {
-		    if( FileExists( variables.tempXlsPath ) )
-		    	FileDelete( variables.tempXlsPath );
-		    if( FileExists( variables.tempXlsxPath ) )
-		    	FileDelete( variables.tempXlsxPath );
-			});
-
-			var specs = DirectoryList( ExpandPath( "specs" ), false, "name", "*.cfm" );
-			// run every file in the tests folder
-			for( var file in specs )
-				include "specs/#file#";	
-
-		});
+		var specs = DirectoryList( ExpandPath( "specs" ), false, "name", "*.cfm" );
+		// run every file in the tests folder
+		for( var file in specs )
+			include "specs/#file#";	
 
 	}
 

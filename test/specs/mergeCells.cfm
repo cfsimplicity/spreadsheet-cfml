@@ -50,7 +50,12 @@ describe( "mergeCells",function(){
 			}).toThrow( regex="Invalid" );
 		});
 
-	});	
+	});
+
+	afterEach( function(){
+		if( FileExists( variables.tempXlsPath ) ) FileDelete( variables.tempXlsPath );
+		if( FileExists( variables.tempXlsxPath ) ) FileDelete( variables.tempXlsxPath );
+	});
 	
 });	
 </cfscript>

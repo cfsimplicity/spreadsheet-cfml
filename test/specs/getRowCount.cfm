@@ -62,11 +62,11 @@ describe( "getRowCount",function(){
 			expect( function(){
 				var workbook = s.new();
 				var result = s.getRowCount( workbook, 2 );
-			}).toThrow( regex: "Invalid sheet" );
+			}).toThrow( regex="Invalid sheet" );
 			expect( function(){
 				var workbook = s.new();
 				var result = s.getRowCount( workbook, "test" );
-			}).toThrow( regex: "Invalid sheet" );
+			}).toThrow( regex="Invalid sheet" );
 		});
 
 	});	
