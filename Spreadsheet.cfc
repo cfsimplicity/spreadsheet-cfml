@@ -1309,7 +1309,7 @@ component accessors="true"{
 	}
 
 	public binary function readBinary( required workbook ){
-		var baos = CreateObject( "Java", "org.apache.commons.io.output.ByteArrayOutputStream" ).init();
+		var baos = loadClass( "org.apache.commons.io.output.ByteArrayOutputStream" ).init();
 		arguments.workbook.write( baos );
 		baos.flush();
 		return baos.toByteArray();
