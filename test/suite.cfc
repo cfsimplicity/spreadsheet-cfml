@@ -10,6 +10,7 @@ component extends="testbox.system.BaseSpec"{
 	variables.s = newSpreadsheetInstance();
 	
 	function beforeAll(){
+		if( server.KeyExists( s.getJavaLoaderName() ) ) server.delete( s.getJavaLoaderName() );
 	  variables.tempXlsPath = ExpandPath( "temp.xls" );
 	  variables.tempXlsxPath = ExpandPath( "temp.xlsx" );
 	}
