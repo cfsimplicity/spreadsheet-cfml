@@ -1,3 +1,9 @@
+## 2.12.2 - 12 October 2020
+
+- Fixes
+	- \#209 ACF2021: Class not found: org.apache.commons.io.output.ByteArrayOutputStream
+	- \#208 ACF2021: Issue using includes in Testbox suites
+
 ## 2.12.1 - 30 October 2020
 
 - \#206 Fix typo in downloadFileFromQuery()
