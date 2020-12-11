@@ -1,3 +1,8 @@
+## 2.13.0 - 11 December 2020
+
+- Enhancements
+	- \#212 Support CSV custom delimiters in read() and downloadCsvFromFile()
+
 ## 2.12.2 - 12 November 2020
 
 - Fixes
