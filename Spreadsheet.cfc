@@ -223,8 +223,10 @@ component accessors="true"{
 		,boolean includeHeaderRow=false
 		,boolean includeBlankRows=false
 		,boolean fillMergedCellsWithVisibleValue=false
+		,string delimiter=","
 	){
 		arguments.format = "csv";
+		arguments.csvDelimiter = arguments.delimiter;
 		var csv = read( argumentCollection=arguments );
 		var binary = ToBinary( ToBase64( csv.Trim() ) );
 		var safeFilename = filenameSafe( arguments.filename );
@@ -1264,6 +1266,7 @@ component accessors="true"{
 		,boolean includeHiddenColumns=true
 		,boolean includeRichTextFormatting=false
 		,string password
+		,string csvDelimiter=","
 	){
 		if( arguments.KeyExists( "query" ) )
 			Throw( type=this.getExceptionType(), message="Invalid argument 'query'.", detail="Just use format='query' to return a query object" );
@@ -1303,7 +1306,9 @@ component accessors="true"{
 			args.includeHeaderRow = arguments.includeHeaderRow;
 		}
 		switch( arguments.format ){
-			case "csv": return queryToCsv( argumentCollection=args );
+			case "csv":
+				args.delimiter = arguments.csvDelimiter;
+				return queryToCsv( argumentCollection=args );
 			case "html": return queryToHtml( argumentCollection=args );
 		}
 	}
@@ -2397,17 +2402,17 @@ component accessors="true"{
 		return metadata;
 	}
 
-	private string function queryToCsv( required query query, numeric headerRow, boolean includeHeaderRow=false ){
+	private string function queryToCsv( required query query, numeric headerRow, boolean includeHeaderRow=false, string delimiter="," ){
 		var result = newJavaStringBuilder();
 		var crlf = Chr( 13 ) & Chr( 10 );
 		var columns = _QueryColumnArray( arguments.query );
 		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
-		if( generateHeaderRow ) result.Append( generateCsvRow( columns ) );
+		if( generateHeaderRow ) result.Append( generateCsvRow( columns, arguments.delimiter ) );
 		for( var row in arguments.query ){
 			var rowValues = [];
 			for( var column in columns )
 				rowValues.Append( row[ column ] );
-			result.Append( crlf & generateCsvRow( rowValues ) );
+			result.Append( crlf & generateCsvRow( rowValues, arguments.delimiter ) );
 		}
 		return result.toString().Trim();
 	}

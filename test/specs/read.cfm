@@ -282,6 +282,14 @@ describe( "read",function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Accepts a custom delimiter when generating CSV", function() {
+		path = getTestFilePath( "test.xls" );
+		var crlf=Chr( 13 ) & Chr( 10 );
+		expected='"a"|"b"#crlf#"1"|"2015-04-01 00:00:00"#crlf#"2015-04-01 01:01:01"|"2"';
+		actual = s.read( src=path, format="csv", csvDelimiter="|" );
+		expect( actual ).toBe( expected );
+	});
+
 	it( "Can exclude columns formatted as 'hidden'",function() {
 		workbook = s.new();
 		s.addColumn( workbook,"a1" );
