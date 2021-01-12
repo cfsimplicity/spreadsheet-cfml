@@ -1480,6 +1480,8 @@ component accessors="true"{
 		//Automatically create the cell if it does not exist, instead of throwing an error
 		var cell = initializeCell( arguments.workbook, arguments.row, arguments.column );
 		cell.setCellFormula( JavaCast( "string", arguments.formula ) );
+		// Retrieve the cell value to trigger formula evaluation
+		getCellValue(Arguments.workbook, arguments.row, arguments.column);
 	}
 
 	public void function setCellValue( required workbook, required value, required numeric row, required numeric column, string type ){
