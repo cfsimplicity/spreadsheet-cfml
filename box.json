@@ -7,8 +7,8 @@
     "location" : "https://github.com/cfsimplicity/lucee-spreadsheet/archive/v2.13.0.zip",
     "homepage" : "https://github.com/cfsimplicity/lucee-spreadsheet",
     "projectURL" : "https://github.com/cfsimplicity/lucee-spreadsheet",
-    "documentation" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/master/README.md",
-    "changelog" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/master/CHANGELOG.md",
+    "documentation" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/main/README.md",
+    "changelog" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/main/CHANGELOG.md",
     "bugs" : "https://github.com/cfsimplicity/lucee-spreadsheet/issues",
     "repository" : { 
         "type" : "git", "URL" : "https://github.com/cfsimplicity/lucee-spreadsheet"
@@ -19,7 +19,7 @@
     ],
     "defaultEngine" : "lucee",
     "license" : [
-        { "type" : "MIT", "URL" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/master/LICENSE" }
+        { "type" : "MIT", "URL" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/main/LICENSE" }
     ],
     "devDependencies" : {
         "testbox" : ">=2.1.x"
