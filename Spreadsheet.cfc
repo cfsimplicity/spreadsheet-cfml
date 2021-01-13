@@ -1057,12 +1057,8 @@ component accessors="true"{
 		var columnIndex = ( arguments.column -1 );
 		var rowObject = getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
 		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
-		var formatter = getDataFormatter();
-		if( cellIsOfType( cell, "FORMULA" ) ){
-			var formulaEvaluator = arguments.workbook.getCreationHelper().createFormulaEvaluator();
-			return formatter.formatCellValue( cell, formulaEvaluator );
-		}
-		return formatter.formatCellValue( cell );
+		if( cellIsOfType( cell, "FORMULA" ) ) return getCellFormulaValue( arguments.workbook, cell );
+		return getDataFormatter().formatCellValue( cell );
 	}
 
 	public numeric function getColumnCount( required workbook, sheetNameOrNumber ){
@@ -2243,6 +2239,16 @@ component accessors="true"{
 		return getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).getCell( JavaCast( "int", columnIndex ) );
 	}
 
+	private any function getCellFormulaValue( required workbook, required cell ){
+		var formulaEvaluator = arguments.workbook.getCreationHelper().createFormulaEvaluator();
+		try{
+			return getDataFormatter().formatCellValue( arguments.cell, formulaEvaluator );
+		}
+		catch( any exception ){
+			Throw( type=this.getExceptionType(), message="Failed to run formula", detail="There is a problem with the formula in sheet #arguments.cell.getSheet().getSheetName()# row #( arguments.cell.getRowIndex() +1 )# column #( arguments.cell.getColumnIndex() +1 )#");
+		}
+	}
+
 	private any function getCellRangeAddressFromColumnAndRowIndices(
 		required numeric startRowIndex
 		,required numeric endRowIndex
@@ -2278,15 +2284,7 @@ component accessors="true"{
 			}
 			return arguments.cell.getNumericCellValue();
 		}
-		if( cellIsOfType( arguments.cell, "FORMULA" ) ){
-			var formulaEvaluator = arguments.workbook.getCreationHelper().createFormulaEvaluator();
-			try{
-				return getDataFormatter().formatCellValue( arguments.cell, formulaEvaluator );
-			}
-			catch( any exception ){
-				Throw( type=this.getExceptionType(), message="Failed to run formula", detail="There is a problem with the formula in sheet #arguments.cell.getSheet().getSheetName()# row #( arguments.cell.getRowIndex() +1 )# column #( arguments.cell.getColumnIndex() +1 )#");
-			}
-		}
+		if( cellIsOfType( arguments.cell, "FORMULA" ) ) return getCellFormulaValue( arguments.workbook, arguments.cell );
 		if( cellIsOfType( arguments.cell, "BOOLEAN" ) ) return arguments.cell.getBooleanCellValue();
 	 	if( cellIsOfType( arguments.cell, "BLANK" ) ) return "";
 		try{
