@@ -724,7 +724,7 @@ component accessors="true"{
 		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
 		if( IsNull( cell ) ) return;
 		cell.setCellStyle( defaultStyle );
-		cell.setCellType( cell.CellType.BLANK );
+		cell.setBlank();
 	}
 
 	public void function clearCellRange(
@@ -2310,19 +2310,18 @@ component accessors="true"{
 		else if( !validCellTypes.FindNoCase( arguments.type ) )
 			Throw( type=this.getExceptionType(), message="Invalid data type: '#arguments.type#'", detail="The data type must be one of the following: #validCellTypes.ToList( ', ' )#." );
 		/* Note: To properly apply date/number formatting:
-			- cell type must be CELL_TYPE_NUMERIC
+			- cell type must be CELL_TYPE_NUMERIC (NB: POI5+ can't set cell types explicitly anymore: https://bz.apache.org/bugzilla/show_bug.cgi?id=63118 )
 			- cell value must be applied as a java.util.Date or java.lang.Double (NOT as a string)
 			- cell style must have a dataFormat (datetime values only)
  		*/
 		switch( arguments.type ){
 			case "numeric":
-				arguments.cell.setCellType( arguments.cell.CellType.NUMERIC );
 				arguments.cell.setCellValue( JavaCast( "double", Val( arguments.value ) ) );
 				return;
 			case "date": case "time":
 				//handle empty strings which can't be treated as dates
 				if( !Len( Trim( arguments.value ) ) ){
-					arguments.cell.setCellType( arguments.cell.CellType.BLANK ); //no need to set the value: it will be blank
+					arguments.cell.setBlank(); //no need to set the value: it will be blank
 					return;
 				}
 				var dateTimeValue = ParseDateTime( arguments.value );
@@ -2333,7 +2332,6 @@ component accessors="true"{
 				var dataFormat = arguments.workbook.getCreationHelper().createDataFormat();
 				//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
 				getCellUtil().setCellStyleProperty( arguments.cell, getCellUtil().DATA_FORMAT, dataFormat.getFormat( JavaCast( "string", cellFormat ) ) );
-				arguments.cell.setCellType( arguments.cell.CellType.NUMERIC );
 				/*  Excel uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling */
 				if( arguments.type == "time" || isTimeOnlyValue( dateTimeValue ) ){
 					dateTimeValue = dateTimeValue.Add( "d", 2 );//shift the epoch forward to match Excel's
@@ -2345,17 +2343,15 @@ component accessors="true"{
 			case "boolean":
 				//handle empty strings/nulls which can't be treated as booleans
 				if( !Len( Trim( arguments.value ) ) ){
-					arguments.cell.setCellType( arguments.cell.CellType.BLANK ); //no need to set the value: it will be blank
+					arguments.cell.setBlank(); //no need to set the value: it will be blank
 					return;
 				}
-				arguments.cell.setCellType( arguments.cell.CellType.BOOLEAN );
 				arguments.cell.setCellValue( JavaCast( "boolean", arguments.value ) );
 				return;
 			case "blank":
-				arguments.cell.setCellType( arguments.cell.CellType.BLANK ); //no need to set the value: it will be blank
+				arguments.cell.setBlank(); //no need to set the value: it will be blank
 				return;
 		}
-		arguments.cell.setCellType( arguments.cell.CellType.STRING );
 		arguments.cell.setCellValue( JavaCast( "string", arguments.value ) );
 	}
 
