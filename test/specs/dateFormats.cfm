@@ -2,23 +2,23 @@
 describe( "dateFormats customisability",function(){
 
 	it( "the default dateFormats can be overridden individually",function() {
-		local.s=newSpreadsheetInstance();
-		expected={
-			DATE="yyyy-mm-dd"
-			,DATETIME="yyyy-mm-dd HH:nn:ss"
-			,TIME="hh:mm:ss"
-			,TIMESTAMP="yyyy-mm-dd hh:mm:ss"
+		local.s = newSpreadsheetInstance();
+		var expected = {
+			DATE: "yyyy-mm-dd"
+			,DATETIME: "yyyy-mm-dd HH:nn:ss"
+			,TIME: "hh:mm:ss"
+			,TIMESTAMP: "yyyy-mm-dd hh:mm:ss"
 		};
-		actual=s.getDateFormats();
+		var actual = s.getDateFormats();
 		expect( actual ).toBe( expected );
 		local.s = newSpreadsheetInstance( dateFormats={ DATE="mm/dd/yyyy" } );
-		expected={
-			DATE="mm/dd/yyyy"
-			,DATETIME="yyyy-mm-dd HH:nn:ss"
-			,TIME="hh:mm:ss"
-			,TIMESTAMP="yyyy-mm-dd hh:mm:ss"
+		expected = {
+			DATE: "mm/dd/yyyy"
+			,DATETIME: "yyyy-mm-dd HH:nn:ss"
+			,TIME: "hh:mm:ss"
+			,TIMESTAMP: "yyyy-mm-dd hh:mm:ss"
 		};
-		actual=s.getDateFormats();
+		actual = s.getDateFormats();
 		expect( actual ).toBe( expected );
 	});
 
@@ -30,8 +30,8 @@ describe( "dateFormats customisability",function(){
 		var timestampValue = CreateDateTime(  2019, 04, 12, 1, 5, 5 );
 
 		s.setCellValue( workbook, dateValue, 1, 1 );
-		expected = DateFormat( dateValue, "yyyy-mm-dd" );
-		actual = s.getCellValue( workbook, 1, 1 );
+		var expected = DateFormat( dateValue, "yyyy-mm-dd" );
+		var actual = s.getCellValue( workbook, 1, 1 );
 		expect( actual ).toBe( expected );
 		//Times
 		s.setCellValue( workbook, timeValue, 1, 1 );
@@ -64,9 +64,9 @@ describe( "dateFormats customisability",function(){
 
 	it( "Uses the overridden DATETIME format mask when generating CSV and HTML",function() {
 		local.s = newSpreadsheetInstance( dateFormats={ DATETIME="mm/dd/yyyy h:n:s" } );
-		path = getTestFilePath( "test.xls" );
-		actual = s.read( src=path, format="html" );
-		expected = "<tbody><tr><td>a</td><td>b</td></tr><tr><td>1</td><td>04/01/2015 12:0:0</td></tr><tr><td>04/01/2015 1:1:1</td><td>2</td></tr></tbody>";
+		var path = getTestFilePath( "test.xls" );
+		var actual = s.read( src=path, format="html" );
+		var expected = "<tbody><tr><td>a</td><td>b</td></tr><tr><td>1</td><td>04/01/2015 12:0:0</td></tr><tr><td>04/01/2015 1:1:1</td><td>2</td></tr></tbody>";
 		expect( actual ).toBe( expected );
 		var crlf = Chr( 13 ) & Chr( 10 );
 		expected = '"a","b"#crlf#"1","04/01/2015 12:0:0"#crlf#"04/01/2015 1:1:1","2"';

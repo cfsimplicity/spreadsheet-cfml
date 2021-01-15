@@ -1,13 +1,13 @@
 <cfscript>
-describe( "addImage",function(){
+describe( "addImage", function(){
 
-	it( "Doesn't error when adding an image to a binary spreadsheet",function() {
+	it( "Doesn't error when adding an image to a binary spreadsheet", function(){
 		var imagePath = getTestFilePath( "test.png" );
 		var workbook = s.newXls();
 		s.addImage( workbook=workbook, filepath=imagePath, anchor="1,1,2,2" );
 	});
 
-	it( "Doesn't error when adding an image to an XML spreadsheet",function() {
+	it( "Doesn't error when adding an image to an XML spreadsheet", function(){
 		var imagePath = getTestFilePath( "test.png" );
 		var workbook = s.newXlsx();
 		s.addImage( workbook=workbook, filepath=imagePath, anchor="1,1,2,2" );

@@ -1,5 +1,5 @@
 <cfscript>
-describe( "printGridLines",function(){
+describe( "printGridLines", function(){
 
 	beforeEach( function(){
 		var columnData = [ "a", "b", "c" ];
@@ -12,14 +12,14 @@ describe( "printGridLines",function(){
 		variables.xlsxSheet = s.getActiveSheet( xlsx );
 	});
 
-	it( "can be added",function() {
+	it( "can be added", function(){
 		s.addPrintGridLines( xls );
 		s.addPrintGridLines( xlsx );
 		expect( xlsSheet.isPrintGridlines() ).toBeTrue();
 		expect( xlsxSheet.isPrintGridlines() ).toBeTrue();
 	});
 
-	it( "can be removed",function() {
+	it( "can be removed", function(){
 		s.addPrintGridLines( xls );
 		s.addPrintGridLines( xlsx );
 		s.removePrintGridLines( xls );

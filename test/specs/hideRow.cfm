@@ -1,5 +1,5 @@
 <cfscript>
-describe( "hideRow",function(){
+describe( "hideRow", function(){
 
 	it( "can hide a row", function(){
 		var query = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a","b" ], [ "c","d" ] ] );

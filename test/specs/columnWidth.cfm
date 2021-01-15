@@ -11,7 +11,7 @@ describe( "columnWidth", function(){
 		s.addRow( sxlsx, data );
 	});
 
-	it( "can set and get column width", function() {
+	it( "can set and get column width", function(){
 		s.setColumnWidth( xls, 1, 10 );
 		expect( s.getColumnWidth( xls, 1 ) ).toBe( 10 );
 		s.setColumnWidth( xlsx, 1, 10 );

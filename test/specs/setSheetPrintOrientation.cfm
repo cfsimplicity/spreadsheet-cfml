@@ -1,12 +1,12 @@
 <cfscript>
-describe( "setSheetPrintOrientation",function(){
+describe( "setSheetPrintOrientation", function(){
 
 	beforeEach( function(){
 		variables.xls = s.new();
 		variables.xlsx = s.newXlsx();
 	});
 
-	it( "by default sets the active sheet to the specified orientation",function() {
+	it( "by default sets the active sheet to the specified orientation", function(){
 		makePublic( s, "getActiveSheet" );
 		var sheet = s.getActiveSheet( xls );
 		expect( sheet.getPrintSetup().getLandscape() ).toBeFalse();
@@ -23,7 +23,7 @@ describe( "setSheetPrintOrientation",function(){
 		expect( sheet.getPrintSetup().getLandscape() ).toBeFalse();
 	});
 
-	it( "sets the named sheet to the specified orientation",function() {
+	it( "sets the named sheet to the specified orientation", function(){
 		makePublic( s, "getSheetByName" );
 		s.createSheet( xls, "test" );
 		s.setSheetPrintOrientation( xls, "landscape", "test" );
@@ -36,7 +36,7 @@ describe( "setSheetPrintOrientation",function(){
 		expect( sheet.getPrintSetup().getLandscape() ).toBeTrue();
 	});
 
-	it( "sets the specified sheet number to the specified orientation",function() {
+	it( "sets the specified sheet number to the specified orientation", function(){
 		makePublic( s, "getSheetByNumber" );
 		s.createSheet( xls, "test" );
 		var sheet = s.getSheetByNumber( xls, 2 );
@@ -59,15 +59,15 @@ describe( "setSheetPrintOrientation",function(){
 		expect( sheet.getPrintSetup().getLandscape() ).toBeFalse();
 	});
 
-	describe( "setSheetPrintOrientation throws an exception if",function(){
+	describe( "setSheetPrintOrientation throws an exception if", function(){
 
-		it( "the mode is invalid",function() {
+		it( "the mode is invalid", function(){
 			expect( function(){
 				s.setSheetPrintOrientation( xls, "blah" );
 			}).toThrow( regex="Invalid mode" );
 		});
 
-		it( "the both sheet name and number are specified",function() {
+		it( "the both sheet name and number are specified", function(){
 			expect( function(){
 				s.setSheetPrintOrientation( xls, "landscape", "test", 1 );
 			}).toThrow( regex="Invalid arguments" );

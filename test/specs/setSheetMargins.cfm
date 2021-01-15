@@ -6,7 +6,7 @@ describe( "setSheetMargins", function(){
 		variables.xlsx = s.newXlsx();
 	});
 
-	it( "by default sets the active sheet margins", function() {
+	it( "by default sets the active sheet margins", function(){
 		makePublic( s, "getActiveSheet" );
 		var sheet = s.getActiveSheet( xls );
 		s.setSheetTopMargin( xls, 3 );
@@ -37,7 +37,7 @@ describe( "setSheetMargins", function(){
 		expect( sheet.getMargin( sheet.FooterMargin ) ).toBe( 3 );
 	});
 
-	it( "sets a margin of the named sheet", function() {
+	it( "sets a margin of the named sheet", function(){
 		makePublic( s, "getSheetByName" );
 		s.createSheet( xls, "test" );
 		s.setSheetTopMargin( xls, 3, "test" );
@@ -50,7 +50,7 @@ describe( "setSheetMargins", function(){
 		expect( sheet.getMargin( sheet.TopMargin ) ).toBe( 3 );
 	});
 
-	it( "sets a margin of the specified sheet number", function() {
+	it( "sets a margin of the specified sheet number", function(){
 		makePublic( s, "getSheetByNumber" );
 		s.createSheet( xls, "test" );
 		var sheet = s.getSheetByNumber( xls, 2 );
@@ -80,7 +80,7 @@ describe( "setSheetMargins", function(){
 
 	describe( "setting sheet margins throws an exception if", function(){
 
-		it( "the both sheet name and number are specified", function() {
+		it( "the both sheet name and number are specified", function(){
 			expect( function(){
 				s.setSheetTopMargin( xls, 3, "test", 1 );
 			}).toThrow( regex="Invalid arguments" );

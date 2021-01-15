@@ -7,67 +7,67 @@ describe( "addRow", function(){
 		variables.workbook = s.new();
 	});
 
-	it( "Appends a row with the minimum arguments", function() {
+	it( "Appends a row with the minimum arguments", function(){
 		s.addRow( workbook, data );
 		s.addRow( workbook, "c,d" );// should be inserted at row 2
-		expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
-		actual = s.sheetToQuery( workbook );
+		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Appends a row including commas with a custom delimiter", function() {
+	it( "Appends a row including commas with a custom delimiter", function(){
 		s.addRow( workbook=workbook, data="a,b|c,d", delimiter="|" );
-		expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a,b", "c,d" ] ] );
-		actual = s.sheetToQuery( workbook );
+		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a,b", "c,d" ] ] );
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Appends a row as an array with the minimum arguments", function() {
+	it( "Appends a row as an array with the minimum arguments", function(){
 		s.addRow( workbook, dataAsArray );
 		s.addRow( workbook, [ "c", "d" ] );// should be inserted at row 2
-		expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
-		actual = s.sheetToQuery( workbook );
+		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Inserts a row at a specifed position", function() {
+	it( "Inserts a row at a specifed position", function(){
 		s.addRow( workbook, data );
 		s.addRow( workbook, "e,f", 2, 2 );
 		s.addRow( workbook, "c,d", 2, 1 );
-		expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "a", "b", "" ], [ "c", "d", "" ], [ "", "e", "f" ] ] );
-		actual = s.sheetToQuery( workbook=workbook, includeBlankRows=true );
+		var expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "a", "b", "" ], [ "c", "d", "" ], [ "", "e", "f" ] ] );
+		var actual = s.sheetToQuery( workbook=workbook, includeBlankRows=true );
 		expect( actual ).toBe( expected );
 		//array data
-		workbook = s.new();
+		var workbook = s.new();
 		s.addRow( workbook, dataAsArray );
 		s.addRow( workbook, [ "e", "f" ], 2, 2 );
 		s.addRow( workbook, [ "c", "d" ], 2, 1 );
-		actual = s.sheetToQuery( workbook=workbook, includeBlankRows=true );
+		var actual = s.sheetToQuery( workbook=workbook, includeBlankRows=true );
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Replaces a row if insert is false", function() {
+	it( "Replaces a row if insert is false", function(){
 		s.addRow( workbook, data );
 		s.addRow( workbook=workbook, data=data, row=1, insert=false );
-		expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ] ] );
-		actual = s.sheetToQuery( workbook );
+		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ] ] );
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 		//array data
-		workbook = s.new();
+		var workbook = s.new();
 		s.addRow( workbook, dataAsArray );
 		s.addRow( workbook=workbook, data=dataAsArray, row=1, insert=false );
-		actual = s.sheetToQuery( workbook );
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Handles embedded commas in comma delimited list data", function() {
+	it( "Handles embedded commas in comma delimited list data", function(){
 		s.addRow( workbook=workbook, data="'a,b', 'c,d'" );
-		expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a,b", "c,d" ] ] );
-		actual = s.sheetToQuery( workbook );
+		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a,b", "c,d" ] ] );
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Adds numeric values correctly", function() {
+	it( "Adds numeric values correctly", function(){
 		var data = "1,1.1";
 		s.addRow( workbook, data );
 		expect( s.getCellValue( workbook, 1, 1 ) ).toBe( 1 );
@@ -75,7 +75,7 @@ describe( "addRow", function(){
 		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
 		expect( s.getCellType( workbook, 1, 2 ) ).toBe( "numeric" );
 		//array data
-		workbook = s.new();
+		var workbook = s.new();
 		var dataAsArray = [ 1, 1.1 ];
 		s.addRow( workbook, dataAsArray );
 		expect( s.getCellValue( workbook, 1, 1 ) ).toBe( 1 );
@@ -84,20 +84,20 @@ describe( "addRow", function(){
 		expect( s.getCellType( workbook, 1, 2 ) ).toBe( "numeric" );
 	});
 
-	it( "Adds boolean values as strings", function() {
+	it( "Adds boolean values as strings", function(){
 		var data = true;
 		s.addRow( workbook, data );
 		expect( s.getCellValue( workbook, 1, 1 ) ).toBe( true );
 		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
 		//array data
-		workbook = s.new();
+		var workbook = s.new();
 		var dataAsArray = [ true ];
 		s.addRow( workbook, dataAsArray );
 		expect( s.getCellValue( workbook, 1, 1 ) ).toBe( true );
 		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
 	});
 
-	it( "Adds date/time values correctly", function() {
+	it( "Adds date/time values correctly", function(){
 		var dateValue = CreateDate( 2015, 04, 12 );
 		var timeValue = CreateTime( 1, 0, 0 );
 		var dateTimeValue = CreateDateTime( 2015, 04, 12, 1, 0, 0 );
@@ -110,7 +110,7 @@ describe( "addRow", function(){
 		expect( s.getCellType( workbook, 1, 2 ) ).toBe( "numeric" );
 		expect( s.getCellType( workbook, 1, 3 ) ).toBe( "numeric" );
 		//array data
-		workbook = s.new();
+		var workbook = s.new();
 		var dateValue = CreateDate( 2015, 04, 12 );
 		var timeValue = CreateTime( 1, 0, 0 );
 		var dateTimeValue = CreateDateTime( 2015, 04, 12, 1, 0, 0 );
@@ -128,7 +128,7 @@ describe( "addRow", function(){
 		s.addRow( workbook, 0 );
 		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
 		//array data
-		workbook = s.new();
+		var workbook = s.new();
 		s.addRow( workbook, [ 0 ] );
 		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "numeric" );
 	});
@@ -137,7 +137,7 @@ describe( "addRow", function(){
 		s.addRow( workbook, "01" );
 		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
 		//array data
-		workbook = s.new();
+		var workbook = s.new();
 		s.addRow( workbook, [ "01" ] );
 		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );
 	});
@@ -155,7 +155,7 @@ describe( "addRow", function(){
 
 	describe( "addRow() data type overriding",function(){
 
-		it( "throws an error if invalid types are specified in the datatype struct", function() {
+		it( "throws an error if invalid types are specified in the datatype struct", function(){
 			expect( function(){
 				var data = [ "a", "b" ];
 				var datatypes = { numeric: [ 1 ], varchar: [ 2 ] };
@@ -163,7 +163,7 @@ describe( "addRow", function(){
 			}).toThrow( message="Invalid datatype(s)" );
 		});
 
-		it( "throws an error if columns to override are not specified as arrays in the datatype struct", function() {
+		it( "throws an error if columns to override are not specified as arrays in the datatype struct", function(){
 			expect( function(){
 				var data = [ "a", "b" ];
 				var datatypes = { numeric: "1", string: "2" };
@@ -190,7 +190,7 @@ describe( "addRow", function(){
 			expect( s.getCellType( workbook, 3, 2 ) ).toBe( "string" );
 		});
 
-		it( "Values fall back to the autodetected type if they don't match the overridden type", function() {
+		it( "Values fall back to the autodetected type if they don't match the overridden type", function(){
 			var datatypes = { numeric: [ 1, 2 ] };
 			var data = "01234,alpha";
 			s.addRow( workbook=workbook, data=data, datatypes=datatypes );
@@ -210,19 +210,19 @@ describe( "addRow", function(){
 
 	describe( "addRow throws an exception if", function(){
 
-		it( "row is zero or less", function() {
+		it( "row is zero or less", function(){
 			expect( function(){
 				s.addRow( workbook=workbook, data=data, row=0 );
 			}).toThrow( regex="Invalid row" );
 		});
 
-		it( "column is zero or less", function() {
+		it( "column is zero or less", function(){
 			expect( function(){
 				s.addRow( workbook=workbook, data=data, column=0 );
 			}).toThrow( regex="Invalid column" );
 		});
 
-		it( "insert is false and no row specified", function() {
+		it( "insert is false and no row specified", function(){
 			expect( function(){
 				s.addRow( workbook=workbook, data=data, insert=false );
 			}).toThrow( regex="Missing row" );

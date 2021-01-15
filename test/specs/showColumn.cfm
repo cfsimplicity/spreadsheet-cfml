@@ -1,5 +1,5 @@
 <cfscript>
-describe( "showColumn",function(){
+describe( "showColumn", function(){
 
 	it( "can show a column", function(){
 		var query = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a","b" ], [ "c","d" ] ] );

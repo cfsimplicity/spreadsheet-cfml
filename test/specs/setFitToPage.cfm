@@ -6,7 +6,7 @@ describe( "setFitToPage", function(){
 		variables.xlsx = s.newXlsx();
 	});
 
-	it( "sets the active sheet's print setup to fit everything in one page by default", function() {
+	it( "sets the active sheet's print setup to fit everything in one page by default", function(){
 		makePublic( s, "getActiveSheet" );
 		var sheet = s.getActiveSheet( xls );
 		s.setFitToPage( xls, false );
@@ -25,7 +25,7 @@ describe( "setFitToPage", function(){
 		expect( sheet.getPrintSetup().getFitHeight() ).toBe( 1 );
 	});
 
-	it( "allows the number of pages wide and high to be specified", function() {
+	it( "allows the number of pages wide and high to be specified", function(){
 		makePublic( s, "getActiveSheet" );
 		var sheet = s.getActiveSheet( xls );
 		s.setFitToPage( xls, true, 2, 0 );

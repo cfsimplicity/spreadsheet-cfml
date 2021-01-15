@@ -2,8 +2,8 @@
 describe( "formatCell", function(){
 
 	beforeEach( function(){
-		xls = s.new();
-		xlsx = s.newXlsx();
+		variables.xls = s.new();
+		variables.xlsx = s.newXlsx();
 		s.setCellValue( xls, "test", 1, 1 );
 		s.setCellValue( xlsx, "test", 1, 1 );
 	});
@@ -319,7 +319,7 @@ describe( "formatCell", function(){
 		expect( cellFormat.bottombordercolor ).toBe( triplet ); //style color
 	});
 
-	it( "Throws an exception if an invalid hex value is passed",function() {
+	it( "Throws an exception if an invalid hex value is passed", function(){
 		expect( function(){
 			var hex = "GGHHII";
 			var format = { color: hex, bottombordercolor: hex };

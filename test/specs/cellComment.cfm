@@ -5,8 +5,8 @@ describe( "cellComment", function(){
 		var xls = s.new();
 		s.addColumn( xls, "1" );
 		var theComment = {
-			author="cfsimplicity"
-			,comment="This is the comment in row 1 column 1"
+			author: "cfsimplicity"
+			,comment: "This is the comment in row 1 column 1"
 		};
 		var expected = Duplicate( theComment ).Append( { column: 1, row: 1 } );
 		s.setCellComment( xls, theComment, 1, 1 );

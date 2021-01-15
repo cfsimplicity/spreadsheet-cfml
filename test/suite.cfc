@@ -27,8 +27,9 @@ component extends="testbox.system.BaseSpec"{
 
 		var specs = DirectoryList( ExpandPath( "specs" ), false, "name", "*.cfm" );
 		// run every file in the tests folder
-		for( var file in specs )
+		for( var file in specs ){
 			include "specs/#file#";	
+		}
 
 	}
 
