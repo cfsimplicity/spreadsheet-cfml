@@ -1804,6 +1804,10 @@ component accessors="true"{
 		Throw( type="cfsimplicity.lucee.spreadsheet.invalidFile", message="Invalid spreadsheet file", detail=detail );
 	}
 
+	private void function throwOldExcelFormatException( required string path ){
+		Throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #arguments.path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
+	}
+
 	private boolean function isCsvOrTextFile( required string path ){
 		var contentType = FileGetMimeType( arguments.path ).ListLast( "/" );
 		return ListFindNoCase( "plain,csv", contentType );//Lucee=text/plain ACF=text/csv
@@ -1838,17 +1842,12 @@ component accessors="true"{
 				return loadClass( className ).create( file );
 			}
 		}
-		catch( org.apache.poi.openxml4j.exceptions.InvalidFormatException exception ){
-			handleInvalidSpreadsheetFile( arguments.path );
-		}
 		catch( org.apache.poi.hssf.OldExcelFormatException exception ){
-			Throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #arguments.path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
+			throwOldExcelFormatException( arguments.path );
 		}
 		catch( any exception ){
-			//For ACF which doesn't return the correct exception types
-			if( exception.message CONTAINS "Your InputStream was neither" ) handleInvalidSpreadsheetFile( arguments.path );
-			if( exception.message CONTAINS "spreadsheet seems to be Excel 5" )
-				Throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #arguments.path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
+			if( exception.message CONTAINS "unsupported file type" ) handleInvalidSpreadsheetFile( arguments.path );// from POI 5.x
+			if( exception.message CONTAINS "spreadsheet seems to be Excel 5" ) throwOldExcelFormatException( arguments.path );
 			rethrow;
 		}
 		finally{
