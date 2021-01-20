@@ -1,3 +1,8 @@
+## 2.14.0 - 20 January 2021
+
+- \#216 Upgrade POI to 5.0.0
+- \#217 In Lucee use OSGi to load java classes instead of JavaLoader 
+
 ## 2.13.0 - 11 December 2020
 
 - Enhancements

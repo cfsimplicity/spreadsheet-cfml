@@ -1,5 +1,5 @@
 <cfscript>
-describe( "addRows",function(){
+describe( "addRows", function(){
 
 	beforeEach( function(){
 		variables.data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
@@ -7,54 +7,54 @@ describe( "addRows",function(){
 		variables.workbook = s.new();
 	});
 
-	it( "Appends multiple rows from a query with the minimum arguments",function() {
+	it( "Appends multiple rows from a query with the minimum arguments",function(){
 		s.addRow( workbook, "x,y" );
 		s.addRows( workbook, data );
-		expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "x", "y" ], [ "a", "b" ], [ "c", "d" ] ] );
-		actual = s.sheetToQuery( workbook );
+		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "x", "y" ], [ "a", "b" ], [ "c", "d" ] ] );
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 	});
 
 	it( "Can accept data as an array instead of a query", function(){
 		var data = [ [ "x", "y" ], [ "a", "b" ], [ "c", "d" ] ];
 		s.addRows( workbook, data );
-		expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "x", "y" ], [ "a", "b" ], [ "c", "d" ] ] );
-		actual = s.sheetToQuery( workbook );
+		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "x", "y" ], [ "a", "b" ], [ "c", "d" ] ] );
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Does nothing if array data is empty",function() {
-		workbook = s.new();
+	it( "Does nothing if array data is empty",function(){
+		var workbook = s.new();
 		var emptyData = [];
 		s.addRows( workbook, emptyData );
-		expected = QueryNew( "" );
-		actual = s.sheetToQuery( workbook );
+		var expected = QueryNew( "" );
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Inserts multiple rows at a specifed position",function() {
+	it( "Inserts multiple rows at a specifed position",function(){
 		s.addRow( workbook, "e,f" );
 		s.addRows( workbook, data, 1, 2 );
-		expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "", "a", "b" ], [ "", "c", "d" ], [ "e", "f", "" ] ] );
-		actual = s.sheetToQuery( workbook=workbook, includeBlankRows=true );
+		var expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "", "a", "b" ], [ "", "c", "d" ], [ "e", "f", "" ] ] );
+		var actual = s.sheetToQuery( workbook=workbook, includeBlankRows=true );
 		expect( actual ).toBe( expected );
 		//array data
-		workbook = s.new();
+		var workbook = s.new();
 		s.addRow( workbook, "e,f" );
 		s.addRows( workbook, dataAsArray, 1, 2 );
 		actual = s.sheetToQuery( workbook=workbook, includeBlankRows=true );
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Replaces rows if insert is false",function() {
+	it( "Replaces rows if insert is false",function(){
 		s.addRow( workbook, "e,f" );
 		s.addRow( workbook, "g,h" );
 		s.addRows( workbook=workbook, data=data, row=1, insert=false );
-		expected = data;
-		actual = s.sheetToQuery( workbook );
+		var expected = data;
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 		//array data
-		workbook = s.new();
+		var workbook = s.new();
 		s.addRow( workbook, "e,f" );
 		s.addRow( workbook, "g,h" );
 		s.addRows( workbook=workbook, data=dataAsArray, row=1, insert=false );
@@ -62,11 +62,11 @@ describe( "addRows",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Adds numeric values correctly",function() {
+	it( "Adds numeric values correctly",function(){
 		var data = QueryNew( "column1,column2,column3", "Integer,BigInt,Double", [ [ 1, 1, 1.1 ] ] );
 		s.addRows( workbook, data );
-		expected = data;
-		actual = s.sheetToQuery( workbook );
+		var expected = data;
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 		expect( IsNumeric( s.getCellValue( workbook, 1, 1 ) ) ).tobeTrue();
 		expect( IsNumeric( s.getCellValue( workbook, 1, 2 ) ) ).tobeTrue();
@@ -75,7 +75,7 @@ describe( "addRows",function(){
 		expect( s.getCellType( workbook, 1, 2 ) ).toBe( "numeric" );
 		expect( s.getCellType( workbook, 1, 3 ) ).toBe( "numeric" );
 		//array data
-		workbook = s.new();
+		var workbook = s.new();
 		var dataAsArray = [ [ 1, 1, 1.1 ] ];
 		s.addRows( workbook, dataAsArray );
 		actual = s.sheetToQuery( workbook );
@@ -88,16 +88,16 @@ describe( "addRows",function(){
 		expect( s.getCellType( workbook, 1, 3 ) ).toBe( "numeric" );
 	});
 
-	it( "Adds boolean values correctly",function() {
+	it( "Adds boolean values correctly",function(){
 		var data = QueryNew( "column1", "Bit", [ [ true ] ] );
 		s.addRows( workbook, data );
-		expected = data;
-		actual = s.sheetToQuery( workbook );
+		var expected = data;
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 		expect( IsBoolean( s.getCellValue( workbook, 1, 1 ) ) ).toBeTrue();
 		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "boolean" );
 		//array data
-		workbook = s.new();
+		var workbook = s.new();
 		var dataAsArray = [ [ true ] ];
 		s.addRows( workbook, dataAsArray );
 		actual = s.sheetToQuery( workbook );
@@ -106,14 +106,14 @@ describe( "addRows",function(){
 		expect( s.getCellType( workbook, 1, 1 ) ).toBe( "string" );// don't set the cell type as boolean from an array
 	});
 
-	it( "Adds date/time values correctly",function() {
+	it( "Adds date/time values correctly",function(){
 		var dateValue = CreateDate( 2015, 04, 12 );
 		var timeValue = CreateTime( 1, 0, 0 );
 		var dateTimeValue = createDateTime( 2015, 04, 12, 1, 0, 0 );
-		var data = QueryNew( "column1,column2,column3", "Date,Time,Timestamp",[ [ dateValue, timeValue, dateTimeValue ] ] );
+		var data = QueryNew( "column1,column2,column3", "Date,Time,Timestamp", [ [ dateValue, timeValue, dateTimeValue ] ] );
 		s.addRows( workbook, data );
-		expected = data;
-		actual = s.sheetToQuery( workbook );
+		var expected = data;
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 		expect( IsDate( s.getCellValue( workbook, 1, 1 ) ) ).toBeTrue();
 		expect( IsDate( s.getCellValue( workbook, 1, 2 ) ) ).toBeTrue();
@@ -122,7 +122,7 @@ describe( "addRows",function(){
 		expect( s.getCellType( workbook, 1, 2 ) ).toBe( "numeric" );
 		expect( s.getCellType( workbook, 1, 3 ) ).toBe( "numeric" );
 		//array data
-		workbook = s.new();
+		var workbook = s.new();
 		var dateValue = CreateDate( 2015, 04, 12 );
 		var timeValue = CreateTime( 1, 0, 0 );
 		var dateTimeValue = CreateDateTime( 2015, 04, 12, 1, 0, 0 );
@@ -138,8 +138,8 @@ describe( "addRows",function(){
 		expect( s.getCellType( workbook, 1, 3 ) ).toBe( "numeric" );
 	});
 
-	it( "Formats time and timestamp values correctly when custom mask includes fractions of a second",function() {
-		dateFormats = {
+	it( "Formats time and timestamp values correctly when custom mask includes fractions of a second",function(){
+		var dateFormats = {
 			TIME: "hh:mm:ss.000"
 			,TIMESTAMP: "yyyy-mm-dd hh:mm:ss.000"
 		};
@@ -154,11 +154,11 @@ describe( "addRows",function(){
 		var dateTimeValue = CreateObject( "java", "java.util.Date" ).init( JavaCast( "long", 1428796800999 ) );
 		var data = QueryNew( "column1,column2", "Time,Timestamp", [ [ timeValue, dateTimeValue ] ] );
 		s.addRows( variables.workbook, data );
-		expectedTimeValue = data.column1[ 1 ].TimeFormat( "hh:nn:ss:l" );
-		expectedDateTimeValue = data.column2[ 1 ].DateTimeFormat( "yyyy-mm-dd hh:nn:ss:l" );
-		actual = s.sheetToQuery( workbook );
-		actualTimeValue = actual.column1[ 1 ];
-		actualDateTimeValue = actual.column2[ 1 ];
+		var expectedTimeValue = data.column1[ 1 ].TimeFormat( "hh:nn:ss:l" );
+		var expectedDateTimeValue = data.column2[ 1 ].DateTimeFormat( "yyyy-mm-dd hh:nn:ss:l" );
+		var actual = s.sheetToQuery( workbook );
+		var actualTimeValue = actual.column1[ 1 ];
+		var actualDateTimeValue = actual.column2[ 1 ];
 		//array data
 		var workbook = s.new();
 		var dataAsArray = [ [ timeValue, dateTimeValue ] ];
@@ -170,14 +170,14 @@ describe( "addRows",function(){
 		actualDateTimeValue = actual.column2[ 1 ];
 	});
 
-	it( "Adds zeros as zeros, not booleans",function(){
+	it( "Adds zeros as zeros, not booleans", function(){
 		var data = QueryNew( "column1", "Integer", [ [ 0 ] ] );
 		s.addRows( workbook, data );
-		expected = data;
-		actual = s.sheetToQuery( workbook );
+		var expected = data;
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 		//array data
-		workbook = s.new();
+		var workbook = s.new();
 		var dataAsArray = [ [ 0 ] ];
 		s.addRows( workbook, dataAsArray );
 		actual = s.sheetToQuery( workbook );
@@ -206,24 +206,24 @@ describe( "addRows",function(){
 		expect( s.getCellType( workbook, 5, 1 ) ).toBe( "string" );
 	});
 
-	it( "Adds strings with leading zeros as strings not numbers",function(){
+	it( "Adds strings with leading zeros as strings not numbers", function(){
 		var data = QueryNew( "column1", "VarChar", [ [ "01" ] ] );
 		s.addRows( workbook, data );
-		expected = data;
-		actual = s.sheetToQuery( workbook );
+		var expected = data;
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 		//array data
-		workbook = s.new();
+		var workbook = s.new();
 		var dataAsArray = [ [ "01" ] ];
 		s.addRows( workbook, dataAsArray );
 		actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Can include the query column names",function(){
-		expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "column1", "column2" ], [ "a","b" ], [ "c", "d" ] ] );
+	it( "Can include the query column names", function(){
+		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "column1", "column2" ], [ "a","b" ], [ "c", "d" ] ] );
 		s.addRows( workbook=workbook, data=data, includeQueryColumnNames=true );
-		actual = s.sheetToQuery( workbook );
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 		//test xlsx
 		var workbook = s.newXlsx();
@@ -232,32 +232,32 @@ describe( "addRows",function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Includes query columns in the same case and order as the original query", function() {
-		local.data = QueryNew( "Header2,Header1", "VarChar,VarChar", [ [ "b","a" ], [ "d","c" ] ] );
+	it( "Includes query columns in the same case and order as the original query", function(){
+		var data = QueryNew( "Header2,Header1", "VarChar,VarChar", [ [ "b","a" ], [ "d","c" ] ] );
 		s.addRows( workbook=workbook, data=local.data, includeQueryColumnNames=true );
 		expect( s.getCellValue( workbook, 1, 1 ) ).toBeWithCase( "Header2" );
 	});
 
-	it( "Can include the query column names starting at a specific row",function(){
+	it( "Can include the query column names starting at a specific row", function(){
 		s.addRow( workbook, "x,y" );
 		s.addRows( workbook=workbook, data=data, row=2, includeQueryColumnNames=true );
-		expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "x", "y" ], [ "column1", "column2" ], [ "a", "b" ], [ "c", "d" ] ] );
-		actual = s.sheetToQuery( workbook );
+		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "x", "y" ], [ "column1", "column2" ], [ "a", "b" ], [ "c", "d" ] ] );
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Can include the query column names starting at a specific column",function(){
+	it( "Can include the query column names starting at a specific column", function(){
 		s.addRows( workbook=workbook, data=data, column=2, includeQueryColumnNames=true );
-		expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "", "column1", "column2" ], [ "", "a", "b" ], [ "", "c", "d" ] ] );
-		actual = s.sheetToQuery( workbook );
+		var expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "", "column1", "column2" ], [ "", "a", "b" ], [ "", "c", "d" ] ] );
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Can include the query column names starting at a specific row and column",function(){
+	it( "Can include the query column names starting at a specific row and column", function(){
 		s.addRow( workbook, "x,y" );
 		s.addRows( workbook=workbook, data=data, row=2, column=2, includeQueryColumnNames=true );
-		expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "x", "y", "" ],[ "", "column1","column2" ], [ "", "a", "b" ], [ "", "c","d" ] ] );
-		actual = s.sheetToQuery( workbook );
+		var expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "x", "y", "" ],[ "", "column1","column2" ], [ "", "a", "b" ], [ "", "c","d" ] ] );
+		var actual = s.sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 	});
 
@@ -266,9 +266,9 @@ describe( "addRows",function(){
 		s.addRows( workbook=local.workbook, data=data, autoSizeColumns=true );
 	});
 
-	describe( "addRows() data type overriding",function(){
+	describe( "addRows() data type overriding", function(){
 
-		it( "throws an error if invalid types are specified in the datatype struct", function() {
+		it( "throws an error if invalid types are specified in the datatype struct", function(){
 			expect( function(){
 				var data = [ [ "a", "b" ] ];
 				var datatypes = { numeric: [ 1 ], varchar: [ 2 ] };
@@ -276,7 +276,7 @@ describe( "addRows",function(){
 			}).toThrow( message="Invalid datatype(s)" );
 		});
 
-		it( "throws an error if columns to override are not specified as arrays in the datatype struct", function() {
+		it( "throws an error if columns to override are not specified as arrays in the datatype struct", function(){
 			expect( function(){
 				var data = [ [ "a", "b" ] ];
 				var datatypes = { numeric: "1", string: "2" };
@@ -326,7 +326,7 @@ describe( "addRows",function(){
 			expect( s.getCellType( workbook, 3, 2 ) ).toBe( "numeric" );
 		});
 
-		it( "Values in array data fall back to the autodetected type if they don't match the overridden type", function() {
+		it( "Values in array data fall back to the autodetected type if they don't match the overridden type", function(){
 			var data = [ [ "01234", "alpha", "alpha", "alpha", "alpha" ] ];
 			var datatypes = { numeric: [ 1, 2 ], date: [ 3 ], time: [ 4 ], boolean: [ 5 ] };
 			s.addRows( workbook=workbook, data=data, datatypes=datatypes );
@@ -342,7 +342,7 @@ describe( "addRows",function(){
 			expect( s.getCellType( workbook, 1, 5 ) ).toBe( "string" );
 		});
 
-		it( "Values in query data fall back to the query column type if they don't match the overridden type", function() {
+		it( "Values in query data fall back to the query column type if they don't match the overridden type", function(){
 			var data = QueryNew( "Number,String,Date,Time,Boolean", "VarChar,VarChar,VarChar,VarChar,VarChar", [ [ "01234", "alpha", "alpha", "alpha" , "alpha"] ] );
 			var datatypes = { numeric: [ 1, 2 ], date: [ 3 ], time: [ 4 ], boolean: [ 5 ] };
 			s.addRows( workbook=workbook, data=data, datatypes=datatypes );
@@ -358,7 +358,7 @@ describe( "addRows",function(){
 			expect( s.getCellType( workbook, 1, 5 ) ).toBe( "string" );
 		});
 
-		it( "Query data values with NO type override, default to query column types", function() {
+		it( "Query data values with NO type override, default to query column types", function(){
 			var data = QueryNew( "Number,String", "VarChar,VarChar", [ [ 1234, "01234" ] ] );
 			var datatypes = { numeric: [ 2 ] };
 			s.addRows( workbook=workbook, data=data, datatypes=datatypes );
@@ -366,7 +366,7 @@ describe( "addRows",function(){
 			expect( s.getCellType( workbook, 1, 2 ) ).toBe( "numeric" );
 		});
 
-		it( "Values in query data fall back to the autodetected type if they don't match the overridden type and ignoreQueryColumnDataTypes is true", function() {
+		it( "Values in query data fall back to the autodetected type if they don't match the overridden type and ignoreQueryColumnDataTypes is true", function(){
 			var data = QueryNew( "Number,String,Date,Time,Boolean", "VarChar,VarChar,VarChar,VarChar,VarChar", [ [ "01234", "alpha", "alpha", "alpha" , "alpha"] ] );
 			var datatypes = { numeric: [ 1, 2 ], date: [ 3 ], time: [ 4 ], boolean: [ 5 ] };
 			s.addRows( workbook=workbook, data=data, ignoreQueryColumnDataTypes=true, datatypes=datatypes );
@@ -382,7 +382,7 @@ describe( "addRows",function(){
 			expect( s.getCellType( workbook, 1, 5 ) ).toBe( "string" );
 		});
 
-		it( "Query data values in columns with an override type of 'auto' will have their type auto-detected, regardless of the query column type", function() {
+		it( "Query data values in columns with an override type of 'auto' will have their type auto-detected, regardless of the query column type", function(){
 			var data = QueryNew( "One,Two", "VarChar,VarChar", [ [ "2020-08-24", "2020-08-24" ], [ "3.1", "3.1" ] ] );
 			var datatypes = { auto: [ 1 ] };
 			s.addRows( workbook=workbook, data=data, datatypes=datatypes );
@@ -394,10 +394,10 @@ describe( "addRows",function(){
 
 	});
 
-	describe( "addRows throws an exception if",function(){
+	describe( "addRows throws an exception if", function(){
 
 		/* Skip this test by default: can take a long time */
-		xit( "adding more than 65536 rows to a binary spreadsheet",function() {
+		xit( "adding more than 65536 rows to a binary spreadsheet",function(){
 			expect( function(){
 				var rows=[];
 				for( var i=1; i <= 65537; i++ ){
@@ -408,13 +408,13 @@ describe( "addRows",function(){
 			}).toThrow( regex="Too many rows" );
 		});
 
-		it( "the data is neither a query nor an array", function() {
+		it( "the data is neither a query nor an array", function(){
 			expect( function(){
 				s.addRows( workbook, "string,list" );
 			}).toThrow( message="Invalid data" );
 		});
 
-		it( "the data is an array which does not contain an array for each row", function() {
+		it( "the data is an array which does not contain an array for each row", function(){
 			expect( function(){
 				s.addRows( workbook, [ { col1: "a" }, { col2: "b" } ] );// array of structs
 			}).toThrow( message="Invalid data" );

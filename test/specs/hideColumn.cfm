@@ -1,8 +1,8 @@
 <cfscript>
-describe( "hideColumn",function(){
+describe( "hideColumn", function(){
 
 	it( "can hide a column", function(){
-		var query = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a","b" ], [ "c","d" ] ] );
+		var query = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
 		var xls = s.workbookFromQuery( query );
 		s.hideColumn( xls, 1 );
 		expect( s.isColumnHidden( xls, 1 ) ).toBeTrue();

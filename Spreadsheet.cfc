@@ -1,7 +1,9 @@
 component accessors="true"{
 
-	//static
-	property name="version" default="2.13.0" setter="false";
+	//"static"
+	property name="version" default="2.14.0" setter="false";
+	property name="osgiLibBundleVersion" default="5.0.0.1"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="osgiLibBundleSymbolicName" default="luceeSpreadsheet";
 	property name="exceptionType" default="cfsimplicity.lucee.spreadsheet" setter="false";
 	//commonly invoked POI class names
 	property name="HSSFWorkbookClassName" default="org.apache.poi.hssf.usermodel.HSSFWorkbook" setter="false";
@@ -19,15 +21,23 @@ component accessors="true"{
 	property name="cellUtil" getter="false" setter="false";
 	property name="dateUtil" getter="false" setter="false";
 	property name="dataFormatter" getter="false" setter="false";
+	//Lucee osgi loader
+	property name="osgiLoader";
 
 	function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader ){
 		detectEngineProperties();
-		this.setJavaLoaderName( "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#" );
 		this.setDateFormats( defaultDateFormats() );
 		if( arguments.KeyExists( "dateFormats" ) ) overrideDefaultDateFormats( arguments.dateFormats );
+		//Lucee defaults to osgi loading
+		if( !this.getIsACF() ){
+			this.setOsgiLoader( New osgiLoader() );
+			this.setRequiresJavaLoader( false );
+		}
+		if( arguments.KeyExists( "requiresJavaLoader" ) ) this.setRequiresJavaLoader( arguments.requiresJavaLoader );
+		if( !this.getRequiresJavaLoader() ) return this;
+		this.setJavaLoaderName( "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#" );
 		 // Option to use the dot path of an existing javaloader installation to save duplication
 		if( arguments.KeyExists( "javaLoaderDotPath" ) ) this.setJavaLoaderDotPath( arguments.javaLoaderDotPath );
-		if( arguments.KeyExists( "requiresJavaLoader" ) ) this.setRequiresJavaLoader( arguments.requiresJavaLoader );
 		return this;
 	}
 
@@ -59,6 +69,10 @@ component accessors="true"{
 		};
 	}
 
+	public void function flushOsgiBundle(){
+		this.getOsgiLoader().uninstallBundle( this.getOsgiLibBundleSymbolicName(), this.getOsgiLibBundleVersion() );
+	}
+
 	public struct function getEnvironment(){
 		return {
 			dateFormats: this.getDateFormats()
@@ -68,6 +82,7 @@ component accessors="true"{
 			,javaLoaderName: this.getJavaLoaderName()
 			,requiresJavaLoader: this.getRequiresJavaLoader()
 			,version: this.getVersion()
+			,osgiLibBundleVersion: this.getOsgiLibBundleVersion()
 		};
 	}
 
@@ -724,7 +739,7 @@ component accessors="true"{
 		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
 		if( IsNull( cell ) ) return;
 		cell.setCellStyle( defaultStyle );
-		cell.setCellType( cell.CellType.BLANK );
+		cell.setBlank();
 	}
 
 	public void function clearCellRange(
@@ -1057,12 +1072,8 @@ component accessors="true"{
 		var columnIndex = ( arguments.column -1 );
 		var rowObject = getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
 		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
-		var formatter = getDataFormatter();
-		if( cellIsOfType( cell, "FORMULA" ) ){
-			var formulaEvaluator = arguments.workbook.getCreationHelper().createFormulaEvaluator();
-			return formatter.formatCellValue( cell, formulaEvaluator );
-		}
-		return formatter.formatCellValue( cell );
+		if( cellIsOfType( cell, "FORMULA" ) ) return getCellFormulaValue( arguments.workbook, cell );
+		return getDataFormatter().formatCellValue( cell );
 	}
 
 	public numeric function getColumnCount( required workbook, sheetNameOrNumber ){
@@ -1713,25 +1724,33 @@ component accessors="true"{
 	}
 
 	private function loadClass( required string javaclass ){
-		if( !this.getRequiresJavaLoader() ){
-			// If not using JL, *the correct* POI jars must be in the class path and any older versions *removed*
-			try{
-				this.setJavaClassesLastLoadedVia( "The java class path" );
-				return CreateObject( "java", arguments.javaclass );
-			}
-			catch( any exception ){
-				this.setJavaClassesLastLoadedVia( "JavaLoader" );
-				return loadClassUsingJavaLoader( arguments.javaclass );
-			}
+		if( this.getRequiresJavaLoader() ) return loadClassUsingJavaLoader( arguments.javaclass );
+		if( !IsNull( this.getOsgiLoader() ) ) return loadClassUsingOsgi( arguments.javaclass );
+		// If ACF and not using JL, *the correct* POI jars must be in the class path and any older versions *removed*
+		try{
+			this.setJavaClassesLastLoadedVia( "The java class path" );
+			return CreateObject( "java", arguments.javaclass );
 		}
-		this.setJavaClassesLastLoadedVia( "JavaLoader" );
-		return loadClassUsingJavaLoader( arguments.javaclass );
+		catch( any exception ){
+			return loadClassUsingJavaLoader( arguments.javaclass );
+		}
 	}
 
 	private function loadClassUsingJavaLoader( required string javaclass ){
 		if( !server.KeyExists( this.getJavaLoaderName() ) )
 			server[ this.getJavaLoaderName() ] = CreateObject( "component", this.getJavaLoaderDotPath() ).init( loadPaths=getJarPaths(), loadColdFusionClassPath=false, trustedSource=true );
+		this.setJavaClassesLastLoadedVia( "JavaLoader" );
 		return server[ this.getJavaLoaderName() ].create( arguments.javaclass );
+	}
+
+	private function loadClassUsingOsgi( required string javaclass ){
+		this.setJavaClassesLastLoadedVia( "OSGi bundle" );
+		return this.getOsgiLoader().loadClass(
+			className: arguments.javaclass
+			,bundlePath: GetDirectoryFromPath( GetCurrentTemplatePath() ) & "/lib-osgi.jar"
+			,bundleSymbolicName: this.getOsgiLibBundleSymbolicName()
+			,bundleVersion: this.getOsgiLibBundleVersion()
+		);
 	}
 
 	/* Files */
@@ -1808,6 +1827,10 @@ component accessors="true"{
 		Throw( type="cfsimplicity.lucee.spreadsheet.invalidFile", message="Invalid spreadsheet file", detail=detail );
 	}
 
+	private void function throwOldExcelFormatException( required string path ){
+		Throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #arguments.path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
+	}
+
 	private boolean function isCsvOrTextFile( required string path ){
 		var contentType = FileGetMimeType( arguments.path ).ListLast( "/" );
 		return ListFindNoCase( "plain,csv", contentType );//Lucee=text/plain ACF=text/csv
@@ -1842,17 +1865,12 @@ component accessors="true"{
 				return loadClass( className ).create( file );
 			}
 		}
-		catch( org.apache.poi.openxml4j.exceptions.InvalidFormatException exception ){
-			handleInvalidSpreadsheetFile( arguments.path );
-		}
 		catch( org.apache.poi.hssf.OldExcelFormatException exception ){
-			Throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #arguments.path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
+			throwOldExcelFormatException( arguments.path );
 		}
 		catch( any exception ){
-			//For ACF which doesn't return the correct exception types
-			if( exception.message CONTAINS "Your InputStream was neither" ) handleInvalidSpreadsheetFile( arguments.path );
-			if( exception.message CONTAINS "spreadsheet seems to be Excel 5" )
-				Throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #arguments.path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
+			if( exception.message CONTAINS "unsupported file type" ) handleInvalidSpreadsheetFile( arguments.path );// from POI 5.x
+			if( exception.message CONTAINS "spreadsheet seems to be Excel 5" ) throwOldExcelFormatException( arguments.path );
 			rethrow;
 		}
 		finally{
@@ -2243,6 +2261,16 @@ component accessors="true"{
 		return getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).getCell( JavaCast( "int", columnIndex ) );
 	}
 
+	private any function getCellFormulaValue( required workbook, required cell ){
+		var formulaEvaluator = arguments.workbook.getCreationHelper().createFormulaEvaluator();
+		try{
+			return getDataFormatter().formatCellValue( arguments.cell, formulaEvaluator );
+		}
+		catch( any exception ){
+			Throw( type=this.getExceptionType(), message="Failed to run formula", detail="There is a problem with the formula in sheet #arguments.cell.getSheet().getSheetName()# row #( arguments.cell.getRowIndex() +1 )# column #( arguments.cell.getColumnIndex() +1 )#");
+		}
+	}
+
 	private any function getCellRangeAddressFromColumnAndRowIndices(
 		required numeric startRowIndex
 		,required numeric endRowIndex
@@ -2278,15 +2306,7 @@ component accessors="true"{
 			}
 			return arguments.cell.getNumericCellValue();
 		}
-		if( cellIsOfType( arguments.cell, "FORMULA" ) ){
-			var formulaEvaluator = arguments.workbook.getCreationHelper().createFormulaEvaluator();
-			try{
-				return getDataFormatter().formatCellValue( arguments.cell, formulaEvaluator );
-			}
-			catch( any exception ){
-				Throw( type=this.getExceptionType(), message="Failed to run formula", detail="There is a problem with the formula in sheet #arguments.cell.getSheet().getSheetName()# row #( arguments.cell.getRowIndex() +1 )# column #( arguments.cell.getColumnIndex() +1 )#");
-			}
-		}
+		if( cellIsOfType( arguments.cell, "FORMULA" ) ) return getCellFormulaValue( arguments.workbook, arguments.cell );
 		if( cellIsOfType( arguments.cell, "BOOLEAN" ) ) return arguments.cell.getBooleanCellValue();
 	 	if( cellIsOfType( arguments.cell, "BLANK" ) ) return "";
 		try{
@@ -2312,19 +2332,18 @@ component accessors="true"{
 		else if( !validCellTypes.FindNoCase( arguments.type ) )
 			Throw( type=this.getExceptionType(), message="Invalid data type: '#arguments.type#'", detail="The data type must be one of the following: #validCellTypes.ToList( ', ' )#." );
 		/* Note: To properly apply date/number formatting:
-			- cell type must be CELL_TYPE_NUMERIC
+			- cell type must be CELL_TYPE_NUMERIC (NB: POI5+ can't set cell types explicitly anymore: https://bz.apache.org/bugzilla/show_bug.cgi?id=63118 )
 			- cell value must be applied as a java.util.Date or java.lang.Double (NOT as a string)
 			- cell style must have a dataFormat (datetime values only)
  		*/
 		switch( arguments.type ){
 			case "numeric":
-				arguments.cell.setCellType( arguments.cell.CellType.NUMERIC );
 				arguments.cell.setCellValue( JavaCast( "double", Val( arguments.value ) ) );
 				return;
 			case "date": case "time":
 				//handle empty strings which can't be treated as dates
 				if( !Len( Trim( arguments.value ) ) ){
-					arguments.cell.setCellType( arguments.cell.CellType.BLANK ); //no need to set the value: it will be blank
+					arguments.cell.setBlank(); //no need to set the value: it will be blank
 					return;
 				}
 				var dateTimeValue = ParseDateTime( arguments.value );
@@ -2335,7 +2354,6 @@ component accessors="true"{
 				var dataFormat = arguments.workbook.getCreationHelper().createDataFormat();
 				//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
 				getCellUtil().setCellStyleProperty( arguments.cell, getCellUtil().DATA_FORMAT, dataFormat.getFormat( JavaCast( "string", cellFormat ) ) );
-				arguments.cell.setCellType( arguments.cell.CellType.NUMERIC );
 				/*  Excel uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling */
 				if( arguments.type == "time" || isTimeOnlyValue( dateTimeValue ) ){
 					dateTimeValue = dateTimeValue.Add( "d", 2 );//shift the epoch forward to match Excel's
@@ -2347,17 +2365,15 @@ component accessors="true"{
 			case "boolean":
 				//handle empty strings/nulls which can't be treated as booleans
 				if( !Len( Trim( arguments.value ) ) ){
-					arguments.cell.setCellType( arguments.cell.CellType.BLANK ); //no need to set the value: it will be blank
+					arguments.cell.setBlank(); //no need to set the value: it will be blank
 					return;
 				}
-				arguments.cell.setCellType( arguments.cell.CellType.BOOLEAN );
 				arguments.cell.setCellValue( JavaCast( "boolean", arguments.value ) );
 				return;
 			case "blank":
-				arguments.cell.setCellType( arguments.cell.CellType.BLANK ); //no need to set the value: it will be blank
+				arguments.cell.setBlank(); //no need to set the value: it will be blank
 				return;
 		}
-		arguments.cell.setCellType( arguments.cell.CellType.STRING );
 		arguments.cell.setCellValue( JavaCast( "string", arguments.value ) );
 	}
 

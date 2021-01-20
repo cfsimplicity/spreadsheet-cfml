@@ -17,7 +17,7 @@ describe( "cellStyle", function(){
 		expect( s.getWorkbookCellStylesTotal( xlsx ) ).toBe( 2 );
 	});
 
-	it( "can create a valid POI CellStyle object from a given format", function() {
+	it( "can create a valid POI CellStyle object from a given format", function(){
 		makePublic( s, "isValidCellStyleObject" );
 		expect( s.isValidCellStyleObject( xls, s.createCellStyle( xls, format ) ) ).toBeTrue();
 		expect( s.isValidCellStyleObject( xlsx, s.createCellStyle( xlsx, format ) ) ).toBeTrue();
@@ -28,8 +28,8 @@ describe( "cellStyle", function(){
 		s.addRows( xlsx, data );
 		expect( s.getWorkbookCellStylesTotal( xls ) ).toBe( 21 );
 		expect( s.getWorkbookCellStylesTotal( xlsx ) ).toBe( 1 );
-		xlsStyle = s.createCellStyle( xls, format );
-		xlsxStyle = s.createCellStyle( xlsx, format );
+		var xlsStyle = s.createCellStyle( xls, format );
+		var xlsxStyle = s.createCellStyle( xlsx, format );
 		s.formatCell( workbook=xls, row=1, column=1, cellStyle=xlsStyle );
 		s.formatCell( workbook=xls, row=1, column=2, cellStyle=xlsStyle );
 		s.formatCell( workbook=xlsx, row=1, column=1, cellStyle=xlsxStyle );
@@ -50,7 +50,7 @@ describe( "cellStyle", function(){
 
 	describe( "format functions throw an exception if", function(){
 		
-		it( "the cellStyle argument is present but invalid", function() {
+		it( "the cellStyle argument is present but invalid", function(){
 			expect( function(){
 				s.formatCell( workbook=xls, row=1, column=1, cellStyle="not a cellStyle object" );
 			}).toThrow( regex="Invalid argument*" );

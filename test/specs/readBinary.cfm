@@ -1,7 +1,7 @@
 <cfscript>
-describe( "readBinary",function(){
+describe( "readBinary", function(){
 
-	it( "Returns a binary object",function() {
+	it( "Returns a binary object", function(){
 		var workbook = s.new();
 		expect( IsBinary( s.readBinary( workbook ) ) ).toBeTrue();
 	});

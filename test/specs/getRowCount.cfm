@@ -1,11 +1,11 @@
 <cfscript>
-describe( "getRowCount",function(){
+describe( "getRowCount", function(){
 
 	beforeEach( function(){
 		variables.rowData = QueryNew( "column1,", "VarChar", [ [ "a" ], [ "c" ] ] );
 	});
 
-	it( "Can get the number of rows in the first sheet of an XLS binary workbook",function() {
+	it( "Can get the number of rows in the first sheet of an XLS binary workbook", function(){
 		var workbook = s.newXls();
 		expect( s.getRowCount( workbook ) ).toBe( 0 );// empty
 		s.addRow( workbook, "A1" );
@@ -14,7 +14,7 @@ describe( "getRowCount",function(){
 		expect( s.getRowCount( workbook ) ).toBe( 2 );
 	});
 
-	it( "Can get the number of rows in the first sheet of an XLSX workbook",function() {
+	it( "Can get the number of rows in the first sheet of an XLSX workbook", function(){
 		var workbook = s.newXlsx();
 		expect( s.getRowCount( workbook ) ).toBe( 0 );// empty
 		s.addRow( workbook, "A1" );
@@ -23,7 +23,7 @@ describe( "getRowCount",function(){
 		expect( s.getRowCount( workbook ) ).toBe( 2 );
 	});
 
-	it( "Will include empty/blank rows",function() {
+	it( "Will include empty/blank rows", function(){
 		var workbook = s.new();
 		s.addRow( workbook, "B1", 2 );
 		expect( s.getRowCount( workbook ) ).toBe( 2 );
@@ -31,7 +31,7 @@ describe( "getRowCount",function(){
 		expect( s.getRowCount( workbook ) ).toBe( 3 );
 	});
 
-	it( "Can get the number of rows of a sheet specified by number",function() {
+	it( "Can get the number of rows of a sheet specified by number", function(){
 		var workbook = s.new();
 		s.createSheet( workbook );//add a second sheet and switch to it
 		s.setActiveSheetNumber( workbook, 2 );
@@ -43,7 +43,7 @@ describe( "getRowCount",function(){
 		expect( s.getRowCount( workbook, 2 ) ).toBe( 2 );
 	});
 
-	it( "Can get the number of rows of a sheet specified by name",function() {
+	it( "Can get the number of rows of a sheet specified by name", function(){
 		var workbook = s.new();
 		s.createSheet( workbook,"test" );//add a second sheet and switch to it
 		s.setActiveSheetNumber( workbook, 2 );
@@ -56,9 +56,9 @@ describe( "getRowCount",function(){
 	});
 
 
-	describe( "getRowCount throws an exception if",function(){
+	describe( "getRowCount throws an exception if", function(){
 
-		it( "the sheet name or number doesn't exist",function() {
+		it( "the sheet name or number doesn't exist", function(){
 			expect( function(){
 				var workbook = s.new();
 				var result = s.getRowCount( workbook, 2 );

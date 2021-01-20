@@ -1,12 +1,12 @@
 <cfscript>
-describe( "autoSizeColumn", function() {
+describe( "autoSizeColumn", function(){
 
-	beforeEach( function() {
+	beforeEach( function(){
 		var data = QueryNew( "First,Last", "VarChar,VarChar", [ [ "a", "abracadabraabracadabra" ] ] );
 		variables.workbook = s.workbookFromQuery( data );
 	});
 
-	it( "Doesn't error when passing valid arguments", function() {
+	it( "Doesn't error when passing valid arguments", function(){
 		s.autoSizeColumn( workbook, 2 );
 	});
 
@@ -17,8 +17,8 @@ describe( "autoSizeColumn", function() {
 		s.autoSizeColumn( local.workbook, 2 );
 	});
 
-	it( "Throws a helpful exception if column argument is invalid", function() {
-		expect( function() {
+	it( "Throws a helpful exception if column argument is invalid", function(){
+		expect( function(){
 			s.autoSizeColumn( workbook, -1 );
 		}).toThrow( regex="Invalid column value" );
 	});
