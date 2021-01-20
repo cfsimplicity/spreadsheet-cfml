@@ -1,7 +1,9 @@
 component accessors="true"{
 
-	//static
+	//"static"
 	property name="version" default="2.13.0-develop" setter="false";
+	property name="osgiLibBundleVersion" default="5.0.0.1"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="osgiLibBundleSymbolicName" default="luceeSpreadsheet";
 	property name="exceptionType" default="cfsimplicity.lucee.spreadsheet" setter="false";
 	//commonly invoked POI class names
 	property name="HSSFWorkbookClassName" default="org.apache.poi.hssf.usermodel.HSSFWorkbook" setter="false";
@@ -19,15 +21,23 @@ component accessors="true"{
 	property name="cellUtil" getter="false" setter="false";
 	property name="dateUtil" getter="false" setter="false";
 	property name="dataFormatter" getter="false" setter="false";
+	//Lucee osgi loader
+	property name="osgiLoader";
 
 	function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader ){
 		detectEngineProperties();
-		this.setJavaLoaderName( "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#" );
 		this.setDateFormats( defaultDateFormats() );
 		if( arguments.KeyExists( "dateFormats" ) ) overrideDefaultDateFormats( arguments.dateFormats );
+		//Lucee defaults to osgi loading
+		if( !this.getIsACF() ){
+			this.setOsgiLoader( New osgiLoader() );
+			this.setRequiresJavaLoader( false );
+		}
+		if( arguments.KeyExists( "requiresJavaLoader" ) ) this.setRequiresJavaLoader( arguments.requiresJavaLoader );
+		if( !this.getRequiresJavaLoader() ) return this;
+		this.setJavaLoaderName( "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#" );
 		 // Option to use the dot path of an existing javaloader installation to save duplication
 		if( arguments.KeyExists( "javaLoaderDotPath" ) ) this.setJavaLoaderDotPath( arguments.javaLoaderDotPath );
-		if( arguments.KeyExists( "requiresJavaLoader" ) ) this.setRequiresJavaLoader( arguments.requiresJavaLoader );
 		return this;
 	}
 
@@ -59,6 +69,10 @@ component accessors="true"{
 		};
 	}
 
+	public void function flushOsgiBundle(){
+		this.getOsgiLoader().uninstallBundle( this.getOsgiLibBundleSymbolicName(), this.getOsgiLibBundleVersion() );
+	}
+
 	public struct function getEnvironment(){
 		return {
 			dateFormats: this.getDateFormats()
@@ -68,6 +82,7 @@ component accessors="true"{
 			,javaLoaderName: this.getJavaLoaderName()
 			,requiresJavaLoader: this.getRequiresJavaLoader()
 			,version: this.getVersion()
+			,osgiLibBundleVersion: this.getOsgiLibBundleVersion()
 		};
 	}
 
@@ -1709,25 +1724,33 @@ component accessors="true"{
 	}
 
 	private function loadClass( required string javaclass ){
-		if( !this.getRequiresJavaLoader() ){
-			// If not using JL, *the correct* POI jars must be in the class path and any older versions *removed*
-			try{
-				this.setJavaClassesLastLoadedVia( "The java class path" );
-				return CreateObject( "java", arguments.javaclass );
-			}
-			catch( any exception ){
-				this.setJavaClassesLastLoadedVia( "JavaLoader" );
-				return loadClassUsingJavaLoader( arguments.javaclass );
-			}
+		if( this.getRequiresJavaLoader() ) return loadClassUsingJavaLoader( arguments.javaclass );
+		if( !IsNull( this.getOsgiLoader() ) ) return loadClassUsingOsgi( arguments.javaclass );
+		// If ACF and not using JL, *the correct* POI jars must be in the class path and any older versions *removed*
+		try{
+			this.setJavaClassesLastLoadedVia( "The java class path" );
+			return CreateObject( "java", arguments.javaclass );
 		}
-		this.setJavaClassesLastLoadedVia( "JavaLoader" );
-		return loadClassUsingJavaLoader( arguments.javaclass );
+		catch( any exception ){
+			return loadClassUsingJavaLoader( arguments.javaclass );
+		}
 	}
 
 	private function loadClassUsingJavaLoader( required string javaclass ){
 		if( !server.KeyExists( this.getJavaLoaderName() ) )
 			server[ this.getJavaLoaderName() ] = CreateObject( "component", this.getJavaLoaderDotPath() ).init( loadPaths=getJarPaths(), loadColdFusionClassPath=false, trustedSource=true );
+		this.setJavaClassesLastLoadedVia( "JavaLoader" );
 		return server[ this.getJavaLoaderName() ].create( arguments.javaclass );
+	}
+
+	private function loadClassUsingOsgi( required string javaclass ){
+		this.setJavaClassesLastLoadedVia( "OSGi bundle" );
+		return this.getOsgiLoader().loadClass(
+			className: arguments.javaclass
+			,bundlePath: GetDirectoryFromPath( GetCurrentTemplatePath() ) & "/lib-osgi.jar"
+			,bundleSymbolicName: this.getOsgiLibBundleSymbolicName()
+			,bundleVersion: this.getOsgiLibBundleVersion()
+		);
 	}
 
 	/* Files */

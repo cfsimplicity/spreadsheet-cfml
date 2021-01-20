@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Lucee Spreadsheet Library Jars
+Bundle-SymbolicName: luceeSpreadsheet
+Bundle-Version: 5.0.0.1
+Bundle-ClassPath: commons-codec-1.15.jar,
+ commons-collections4-4.4.jar,
+ commons-compress-1.20.jar,
+ commons-csv-1.8.jar,
+ commons-io-2.8.0.jar,
+ commons-math3-3.6.1.jar,
+ poi-5.0.0.jar,
+ poi-ooxml-5.0.0.jar,
+ poi-ooxml-lite-5.0.0.jar,
+ SparseBitSet-1.2.jar,
+ xmlbeans-4.0.0.jar
+Export-Package: org.apache.poi.*,
+ org.openxmlformats.schemas.*,
+ com.microsoft.schemas.*,
+ org.w3.x2000.x09.xmldsig.*,
+ org.etsi.uri.x01903.v13.*,
+ org.apache.xmlbeans.*,
+ org.apache.commons.compress.*,
+ com.zaxxer.sparsebits.*,
+ com.graphbuilder.*,
+ org.apache.commons.csv.*

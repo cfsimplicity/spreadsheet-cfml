@@ -214,7 +214,7 @@ spreadsheet.formatColumn( workbook , { dataformat: "yyyy-mm-dd hh:mm:ss.000" }, 
 
 ### JavaLoader
 
-A bundled version of Mark Mandel's [JavaLoader](https://github.com/markmandel/JavaLoader) will be used by default to load the POI and other required java libraries.
+From version 2.14.0, Lucee loads the POI and other required java libraries using OSGi. This is not yet supported with Adobe ColdFusion which by default uses an included version of Mark Mandel's [JavaLoader](https://github.com/markmandel/JavaLoader). 
 
 For more details and options see: [Loading the POI java libraries](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/Loading-the-POI-java-libraries)
 
