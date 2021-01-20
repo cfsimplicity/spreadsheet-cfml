@@ -4,7 +4,7 @@ component{
     this.author = "Julian Halliwell";
     this.webURL = "https://github.com/cfsimplicity/lucee-spreadsheet";
     this.description = "Spreadsheet Library for Lucee";
-    this.version = "2.13.0";
+    this.version = "2.14.0";
     this.autoMapModels = false;
 
     function configure(){
