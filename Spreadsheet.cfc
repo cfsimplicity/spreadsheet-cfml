@@ -95,8 +95,15 @@ component accessors="true"{
 
 	/* check physical path of a specific class */
 	public void function dumpPathToClass( required string className ){
-		var classLoader = loadClass( arguments.className ).getClass().getClassLoader();
-		var path = classLoader.getResource( arguments.className.Replace( ".", "/", "all" ) & ".class" ).getPath();
+		if( IsNull( this.getOsgiLoader() ) ){
+			var classLoader = loadClass( arguments.className ).getClass().getClassLoader();
+			var path = classLoader.getResource( arguments.className.Replace( ".", "/", "all" ) & ".class" ).getPath();
+			WriteDump( path );
+			return;
+		}
+		var bundle = this.getOsgiLoader().getBundle( this.getOsgiLibBundleSymbolicName(), this.getOsgiLibBundleVersion() );
+		var poi = loadClass( "org.apache.poi.Version" );
+		var path = BundleInfo( poi ).location & "!" &  bundle.getResource( arguments.className.Replace( ".", "/", "all" ) & ".class" ).getPath();
 		WriteDump( path );
 	}
 
