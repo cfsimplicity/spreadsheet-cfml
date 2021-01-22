@@ -220,9 +220,9 @@ For more details and options see: [Loading the POI java libraries](https://githu
 
 ## CommandBox Installation
 
-You can also download this library through CommandBox.
+You can also download this library through CommandBox/Forgebox.
 ```
-box install cfsimplicity/lucee-spreadsheet
+box install lucee-spreadsheet
 ```
 It will download the files into a modules directory and can be used just the same as downloading the files manually.
 
