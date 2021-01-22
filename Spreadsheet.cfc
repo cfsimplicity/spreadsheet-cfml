@@ -28,6 +28,7 @@ component accessors="true"{
 		detectEngineProperties();
 		this.setDateFormats( defaultDateFormats() );
 		if( arguments.KeyExists( "dateFormats" ) ) overrideDefaultDateFormats( arguments.dateFormats );
+		this.setJavaLoaderName( "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#" );
 		//Lucee defaults to osgi loading
 		if( !this.getIsACF() ){
 			this.setOsgiLoader( New osgiLoader() );
@@ -35,7 +36,6 @@ component accessors="true"{
 		}
 		if( arguments.KeyExists( "requiresJavaLoader" ) ) this.setRequiresJavaLoader( arguments.requiresJavaLoader );
 		if( !this.getRequiresJavaLoader() ) return this;
-		this.setJavaLoaderName( "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#" );
 		 // Option to use the dot path of an existing javaloader installation to save duplication
 		if( arguments.KeyExists( "javaLoaderDotPath" ) ) this.setJavaLoaderDotPath( arguments.javaLoaderDotPath );
 		return this;
@@ -63,6 +63,10 @@ component accessors="true"{
 		this.setIsACF( ( server.coldfusion.productname IS "ColdFusion Server" ) );
 	}
 
+	public string function getPoiVersion(){
+		return loadClass( "org.apache.poi.Version" ).getVersion();
+	}
+
 	public void function flushPoiLoader(){
 		lock scope="server" timeout="10" {
 			StructDelete( server, this.getJavaLoaderName() );
@@ -82,6 +86,7 @@ component accessors="true"{
 			,javaLoaderName: this.getJavaLoaderName()
 			,requiresJavaLoader: this.getRequiresJavaLoader()
 			,version: this.getVersion()
+			,poiVersion: this.getPoiVersion()
 			,osgiLibBundleVersion: this.getOsgiLibBundleVersion()
 		};
 	}
