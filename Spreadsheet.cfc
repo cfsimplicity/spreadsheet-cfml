@@ -1274,6 +1274,31 @@ component accessors="true"{
 		return new( sheetName=arguments.sheetName, xmlFormat=true, streamingXml=true, streamingWindowSize=arguments.streamingWindowSize );
 	}
 
+	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter="," ){		
+		var data = [];
+		var columns = _QueryColumnArray( arguments.query );
+		if( arguments.includeHeaderRow ) data.Append( columns );
+		for( var row IN arguments.query ){
+			var rowValues = [];
+			for( var column IN columns ){
+				var cellValue = row[ column ];
+				if( isDateObject( cellValue ) ) cellValue = DateTimeFormat( cellValue, this.getDateFormats().DATETIME );
+				if( IsValid( "integer", cellValue ) ) cellValue = JavaCast( "string", cellValue );// prevent CSV writer converting 1 to 1.0
+				rowValues.Append( cellValue );
+			}
+			data.Append( rowValues );
+		}
+		var builder = newJavaStringBuilder();
+		if( delimiterIsTab( arguments.delimiter ) )
+			var csvFormat = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ];
+		else
+			var csvFormat = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "EXCEL" ) ]
+				.withDelimiter( JavaCast( "char", arguments.delimiter ) );
+		var csvPrinter = loadClass( "org.apache.commons.csv.CSVPrinter" ).init( builder, csvFormat );
+		csvPrinter.printRecords( data );
+		return builder.toString().Trim();
+	}
+
 	public any function read(
 		required string src
 		,string format
@@ -1705,8 +1730,7 @@ component accessors="true"{
 		,string password
 		,string algorithm="agile"
 	){
-		if( !arguments.overwrite AND FileExists( arguments.filepath ) )
-			Throw( type=this.getExceptionType(), message="File already exists", detail="The file path specified already exists. Use 'overwrite=true' if you wish to overwrite it." );
+		if( !arguments.overwrite AND FileExists( arguments.filepath ) ) throwFileExistsException( arguments.filepath );
 		var passwordProtect = ( arguments.KeyExists( "password" ) AND !arguments.password.Trim().IsEmpty() );
 		if( passwordProtect AND isBinaryFormat( arguments.workbook ) )
 			Throw( type=this.getExceptionType(), message="Whole file password protection is not supported for binary workbooks", detail="Password protection only works with XML ('xlsx') workbooks." );
@@ -1723,6 +1747,18 @@ component accessors="true"{
 			cleanUpStreamingXml( arguments.workbook );
 		}
 		if( passwordProtect ) encryptFile( arguments.filepath, arguments.password, arguments.algorithm );
+	}
+
+	public void function writeToCsv(
+		required workbook
+		,required string filepath
+		,boolean overwrite=false
+		,string delimiter=","
+	){
+		if( !arguments.overwrite AND FileExists( arguments.filepath ) ) throwFileExistsException( arguments.filepath );
+		var data = sheetToQuery( arguments.workbook );
+		var csv = queryToCsv( query=data, delimiter=arguments.delimiter );
+		FileWrite( arguments.filepath, csv );
 	}
 
 	/* END PUBLIC API */
@@ -1837,10 +1873,6 @@ component accessors="true"{
 		var detail = "The file #arguments.path# does not appear to be a binary or xml spreadsheet.";
 		if( isCsvOrTextFile( arguments.path ) ) detail &= " It may be a CSV file, in which case use 'csvToQuery()' to read it";
 		Throw( type="cfsimplicity.lucee.spreadsheet.invalidFile", message="Invalid spreadsheet file", detail=detail );
-	}
-
-	private void function throwOldExcelFormatException( required string path ){
-		Throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #arguments.path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
 	}
 
 	private boolean function isCsvOrTextFile( required string path ){
@@ -2430,21 +2462,6 @@ component accessors="true"{
 		return metadata;
 	}
 
-	private string function queryToCsv( required query query, numeric headerRow, boolean includeHeaderRow=false, string delimiter="," ){
-		var result = newJavaStringBuilder();
-		var crlf = Chr( 13 ) & Chr( 10 );
-		var columns = _QueryColumnArray( arguments.query );
-		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
-		if( generateHeaderRow ) result.Append( generateCsvRow( columns, arguments.delimiter ) );
-		for( var row in arguments.query ){
-			var rowValues = [];
-			for( var column in columns )
-				rowValues.Append( row[ column ] );
-			result.Append( crlf & generateCsvRow( rowValues, arguments.delimiter ) );
-		}
-		return result.toString().Trim();
-	}
-
 	private string function queryToHtml( required query query, numeric headerRow, boolean includeHeaderRow=false ){
 		var result = newJavaStringBuilder();
 		var columns = _QueryColumnArray( arguments.query );
@@ -2463,16 +2480,6 @@ component accessors="true"{
 		}
 		result.Append( "</tbody>" );
 		return result.toString();
-	}
-
-	private string function generateCsvRow( required array values, delimiter="," ){
-		var result = newJavaStringBuilder();
-		for( var value in arguments.values ){
-			if( isDateObject( value ) ) value = DateTimeFormat( value, this.getDateFormats().DATETIME );
-			value = Replace( value, '"', '""', "ALL" );//can't use member function in case its a non-string
-			result.Append( '#arguments.delimiter#"#value#"' );
-		}
-		return result.toString().substring( 1 );
 	}
 
 	private string function generateHtmlRow( required array values, boolean isHeader=false ){
@@ -3319,6 +3326,15 @@ component accessors="true"{
 		// restore the real names without ACF barfing on them
 		q.setColumnNames( arguments.columnNames );
 		return q;
+	}
+
+	/* Common exceptions */
+	private void function throwOldExcelFormatException( required string path ){
+		Throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #arguments.path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
+	}
+
+	private void function throwFileExistsException( required string path ){
+		Throw( type=this.getExceptionType(), message="File already exists", detail="The file path #arguments.path# already exists. Use 'overwrite=true' if you wish to overwrite it." );
 	}
 
 }

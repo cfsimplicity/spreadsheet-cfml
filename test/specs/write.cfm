@@ -66,7 +66,7 @@ describe( "write", function(){
 	describe( "write throws an exception if", function(){
 
 		it( "the path exists and overwrite is false", function(){
-			FileWrite( tempXlsPath, "test" );
+			FileWrite( tempXlsPath, "" );
 			var workbook = s.new();
 			expect( function(){
 				s.write( workbook, tempXlsPath, false );

@@ -13,6 +13,8 @@ component extends="testbox.system.BaseSpec"{
 		if( server.KeyExists( s.getJavaLoaderName() ) ) server.delete( s.getJavaLoaderName() );
 	  variables.tempXlsPath = ExpandPath( "temp.xls" );
 	  variables.tempXlsxPath = ExpandPath( "temp.xlsx" );
+	  variables.tempCsvPath = ExpandPath( "temp.csv" );
+	  variables.crlf = Chr( 13 ) & Chr( 10 );
 	}
 
 	function getTestFilePath( required string filename ){
