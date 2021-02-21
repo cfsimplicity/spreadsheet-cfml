@@ -3315,17 +3315,30 @@ component accessors="true"{
 	}
 
 	private query function _QueryNew( required array columnNames, required string columnTypeList, required array data ){
-		//ACF QueryNew() won't accept invalid variable names in the column name list (e.g. which names including commas), hence clunky workaround:
 		//NB: 'data' should not contain structs since they use the column name as key: always use array of row arrays instead
 		if( !this.getIsACF() ) return QueryNew( arguments.columnNames, arguments.columnTypeList, arguments.data );
+ 		if( !itemsContainAnInvalidVariableName( arguments.columnNames ) ) // Column names will be accepted and preserve case
+			return QueryNew( arguments.columnNames.ToList(), arguments.columnTypeList, arguments.data ); //ACF requires a list, not an array.
+		/*
+			ACF QueryNew() won't accept invalid variable names in the column name list (e.g. names including commas or spaces, or starting with a number).
+			The following workaround allows the original column names to be used BUT THEY WILL BE IN UPPERCASE
+		*/	
 		var totalColumns = arguments.columnNames.Len();
 		var tempColumnNames = [];
-		for( var i=1; i LTE totalColumns; i++ )
+		for( var i=1; i LTE totalColumns; i++ ){
 			tempColumnNames[ i ] = "column#i#";
+		}
 		var q = QueryNew( tempColumnNames.ToList(), arguments.columnTypeList, arguments.data );
-		// restore the real names without ACF barfing on them
+		// restore the real names without ACF barfing on them, but note they will be IN UPPER CASE! TODO: find a way of preserving case
 		q.setColumnNames( arguments.columnNames );
 		return q;
+	}
+
+	private boolean function itemsContainAnInvalidVariableName( required array items ){
+		for( var item IN arguments.items ){
+			if( !IsValid( "variableName", item ) ) return true;
+		}
+		return false;
 	}
 
 	/* Common exceptions */
