@@ -238,10 +238,10 @@ describe( "read", function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "can handle column names containing commas", function(){
-		var path = getTestFilePath( "commaInColumnHeader.xls" );
+	it( "can handle column names containing commas or spaces", function(){
+		var path = getTestFilePath( "commaAndSpaceInColumnHeaders.xls" );
 		var actual = s.read( src=path, format="query", headerRow=1 );
-		var columnNames = [ "name", "surname,comma" ];
+		var columnNames = [ "first name", "surname,comma" ];
 		if( s.getIsACF() ){
 			//ACF cannot handle invalid column names in QueryNew() list. Use workaround
 			var expected = QueryNew( "col1,col2", "", [ [ "Frumpo", "McNugget" ] ] );
