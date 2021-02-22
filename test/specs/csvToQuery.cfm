@@ -109,7 +109,7 @@ Frumpo,12345
 		');
 		};
 		if( s.getIsACF() ){
-			//ACF won't allow spaces in column names when creating queries programmatically. Use Java method to override:
+			//ACF won't allow spaces in column names when creating queries programmatically. Use setColumnNames() to override:
 			var expected = QueryNew( "column1,column2", "", [ [ "Frumpo", "12345" ] ] );
 			expected.setColumnNames( [ "Name", "Phone Number" ] );
 		}
@@ -119,18 +119,14 @@ Frumpo,12345
 		expect( actual ).toBe( expected ); 
 	});
 
-	it( "will preserve the case of header/column names UNLESS it is ACF and the column names contain invalid variable names", function(){
+	it( "will preserve the case of header/column names", function(){
 		var csv = 'Name,Phone#crlf#Frumpo McNugget,12345';
 		var actual = s.csvToQuery( csv=csv, firstRowIsHeader=true );
 		expect( actual.getColumnNames()[ 1 ] ).toBeWithCase( "Name" );
-		//invalid name
+		//invalid variable name
 		csv = '1st Name,Phone#crlf#Frumpo McNugget,12345';
 		actual = s.csvToQuery( csv=csv, firstRowIsHeader=true );
-		if( s.getIsACF() )
-			expect( actual.getColumnNames()[ 1 ] ).toBeWithCase( "1ST NAME" );
-		else
-			expect( actual.getColumnNames()[ 1 ] ).toBeWithCase( "1st Name" );
-		//writedump( actual.getColumnNames() );
+		expect( actual.getColumnNames()[ 1 ] ).toBeWithCase( "1st Name" );
 	});
 
 	describe( "delimiter handling", function(){

@@ -1294,8 +1294,9 @@ component accessors="true"{
 		else
 			var csvFormat = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "EXCEL" ) ]
 				.withDelimiter( JavaCast( "char", arguments.delimiter ) );
-		var csvPrinter = loadClass( "org.apache.commons.csv.CSVPrinter" ).init( builder, csvFormat );
-		csvPrinter.printRecords( data );
+		loadClass( "org.apache.commons.csv.CSVPrinter" )
+			.init( builder, csvFormat )
+			.printRecords( data );
 		return builder.toString().Trim();
 	}
 
@@ -3317,21 +3318,24 @@ component accessors="true"{
 	private query function _QueryNew( required array columnNames, required string columnTypeList, required array data ){
 		//NB: 'data' should not contain structs since they use the column name as key: always use array of row arrays instead
 		if( !this.getIsACF() ) return QueryNew( arguments.columnNames, arguments.columnTypeList, arguments.data );
- 		if( !itemsContainAnInvalidVariableName( arguments.columnNames ) ) // Column names will be accepted and preserve case
+ 		if( !itemsContainAnInvalidVariableName( arguments.columnNames ) ) // Column names will be accepted and case preserved
 			return QueryNew( arguments.columnNames.ToList(), arguments.columnTypeList, arguments.data ); //ACF requires a list, not an array.
 		/*
 			ACF QueryNew() won't accept invalid variable names in the column name list (e.g. names including commas or spaces, or starting with a number).
-			The following workaround allows the original column names to be used BUT THEY WILL BE IN UPPERCASE
-		*/	
+			The following workaround allows the original column names to be used
+		*/
+		// Create a query with safe column names
 		var totalColumns = arguments.columnNames.Len();
-		var tempColumnNames = [];
-		for( var i=1; i LTE totalColumns; i++ ){
-			tempColumnNames[ i ] = "column#i#";
+		var safeColumnNames = [];
+		for( var i=1; i <= totalColumns; i++ ){
+			safeColumnNames[ i ] = "C#i#";
 		}
-		var q = QueryNew( tempColumnNames.ToList(), arguments.columnTypeList, arguments.data );
-		// restore the real names without ACF barfing on them, but note they will be IN UPPER CASE! TODO: find a way of preserving case
-		q.setColumnNames( arguments.columnNames );
-		return q;
+		var query = QueryNew( safeColumnNames.ToList(), arguments.columnTypeList, arguments.data );
+		// serialise the new query and column names to JSON strings, and restore the original column names using string replace
+		var safeColumnNamesAsJson = SerializeJSON( safeColumnNames );
+		var originalColumnNamesAsJson = SerializeJSON( arguments.columnNames );
+		var queryAsJsonColumnsReplaced = SerializeJSON( query ).Replace( 'COLUMNS":' & safeColumnNamesAsJson, 'COLUMNS":' & originalColumnNamesAsJson );
+		return DeserializeJSON( queryAsJsonColumnsReplaced, false );
 	}
 
 	private boolean function itemsContainAnInvalidVariableName( required array items ){
