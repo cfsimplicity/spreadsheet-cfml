@@ -1,7 +1,7 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="2.14.0" setter="false";
+	property name="version" default="2.15.0" setter="false";
 	property name="osgiLibBundleVersion" default="5.0.0.1"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="luceeSpreadsheet";
 	property name="exceptionType" default="cfsimplicity.lucee.spreadsheet" setter="false";
@@ -13,7 +13,7 @@ component accessors="true"{
 	property name="dateFormats" type="struct";
 	property name="javaLoaderDotPath" default="javaLoader.JavaLoader";
 	property name="javaLoaderName";
-	property name="requiresJavaLoader" type="boolean" default="true";
+	property name="requiresJavaLoader" type="boolean" default="false";
 	//detected state
 	property name="isACF" type="boolean";
 	property name="javaClassesLastLoadedVia" default="Nothing loaded yet";
@@ -28,14 +28,14 @@ component accessors="true"{
 		detectEngineProperties();
 		this.setDateFormats( defaultDateFormats() );
 		if( arguments.KeyExists( "dateFormats" ) ) overrideDefaultDateFormats( arguments.dateFormats );
-		//Lucee defaults to osgi loading
-		if( !this.getIsACF() ){
-			this.setOsgiLoader( New osgiLoader() );
-			this.setRequiresJavaLoader( false );
-		}
+		this.setJavaLoaderName( "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#" );
+		if( this.getIsACF() )
+			this.setRequiresJavaLoader( true );
+		else
+			this.setOsgiLoader( New osgiLoader() ); //Lucee uses OSGi instead of JavaLoader
+		// JavaLoader requirement default can be overridden
 		if( arguments.KeyExists( "requiresJavaLoader" ) ) this.setRequiresJavaLoader( arguments.requiresJavaLoader );
 		if( !this.getRequiresJavaLoader() ) return this;
-		this.setJavaLoaderName( "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#" );
 		 // Option to use the dot path of an existing javaloader installation to save duplication
 		if( arguments.KeyExists( "javaLoaderDotPath" ) ) this.setJavaLoaderDotPath( arguments.javaLoaderDotPath );
 		return this;
@@ -60,7 +60,11 @@ component accessors="true"{
 	}
 
 	private void function detectEngineProperties(){
-		this.setIsACF( ( server.coldfusion.productname IS "ColdFusion Server" ) );
+		this.setIsACF( ( server.coldfusion.productname == "ColdFusion Server" ) );
+	}
+
+	public string function getPoiVersion(){
+		return loadClass( "org.apache.poi.Version" ).getVersion();
 	}
 
 	public void function flushPoiLoader(){
@@ -82,6 +86,7 @@ component accessors="true"{
 			,javaLoaderName: this.getJavaLoaderName()
 			,requiresJavaLoader: this.getRequiresJavaLoader()
 			,version: this.getVersion()
+			,poiVersion: this.getPoiVersion()
 			,osgiLibBundleVersion: this.getOsgiLibBundleVersion()
 		};
 	}
@@ -90,8 +95,15 @@ component accessors="true"{
 
 	/* check physical path of a specific class */
 	public void function dumpPathToClass( required string className ){
-		var classLoader = loadClass( arguments.className ).getClass().getClassLoader();
-		var path = classLoader.getResource( arguments.className.Replace( ".", "/", "all" ) & ".class" ).getPath();
+		if( IsNull( this.getOsgiLoader() ) ){
+			var classLoader = loadClass( arguments.className ).getClass().getClassLoader();
+			var path = classLoader.getResource( arguments.className.Replace( ".", "/", "all" ) & ".class" ).getPath();
+			WriteDump( path );
+			return;
+		}
+		var bundle = this.getOsgiLoader().getBundle( this.getOsgiLibBundleSymbolicName(), this.getOsgiLibBundleVersion() );
+		var poi = loadClass( "org.apache.poi.Version" );
+		var path = BundleInfo( poi ).location & "!" &  bundle.getResource( arguments.className.Replace( ".", "/", "all" ) & ".class" ).getPath();
 		WriteDump( path );
 	}
 
@@ -130,9 +142,9 @@ component accessors="true"{
 	){
 		var csvIsString = arguments.csv.Len();
 		var csvIsFile = arguments.filepath.Len();
-		if( !csvIsString AND !csvIsFile )
+		if( !csvIsString && !csvIsFile )
 			Throw( type=this.getExceptionType(), message="Missing required argument", detail="Please provide either a csv string (csv), or the path of a file containing one (filepath)." );
-		if( csvIsString AND csvIsFile )
+		if( csvIsString && csvIsFile )
 			Throw( type=this.getExceptionType(), message="Mutually exclusive arguments: 'csv' and 'filepath'", detail="Only one of either 'filepath' or 'csv' arguments may be provided." );
 		if(	csvIsFile ){
 			if( !FileExists( arguments.filepath ) )
@@ -170,8 +182,8 @@ component accessors="true"{
 		}
 		var columnList = [];
 		if( arguments.firstRowIsHeader ) var headerRow = rows[ 1 ];
-		for( var i=1; i LTE maxColumnCount; i++ ){
-			if( arguments.firstRowIsHeader AND !IsNull( headerRow[ i ] ) AND headerRow[ i ].Len() ){
+		for( var i=1; i <= maxColumnCount; i++ ){
+			if( arguments.firstRowIsHeader && !IsNull( headerRow[ i ] ) && headerRow[ i ].Len() ){
 				columnList.Append( JavaCast( "string", headerRow[ i ] ) );
 				continue;
 			}
@@ -317,7 +329,7 @@ component accessors="true"{
 		,boolean ignoreQueryColumnDataTypes=false
 		,struct datatypes
 	){
-		if( !arguments.xmlFormat AND ( ListLast( arguments.filepath, "." ) IS "xlsx" ) ) arguments.xmlFormat = true;
+		if( !arguments.xmlFormat && ( ListLast( arguments.filepath, "." ) == "xlsx" ) ) arguments.xmlFormat = true;
 		var workbookFromQueryArgs = {
 			data: arguments.data
 			,addHeaderRow: arguments.addHeaderRow
@@ -330,7 +342,7 @@ component accessors="true"{
 		if( arguments.KeyExists( "datatypes" ) ) workbookFromQueryArgs.datatypes = arguments.datatypes;
 		var workbook = workbookFromQuery( argumentCollection=workbookFromQueryArgs );
 		// force to .xlsx if appropriate
-		if( xmlFormat AND ( ListLast( arguments.filepath, "." ) IS "xls" ) ) arguments.filepath &= "x";
+		if( xmlFormat && ( ListLast( arguments.filepath, "." ) == "xls" ) ) arguments.filepath &= "x";
 		write( workbook=workbook, filepath=arguments.filepath, overwrite=arguments.overwrite );
 	}
 
@@ -370,7 +382,7 @@ component accessors="true"{
 		else {
 			row = sheet.getRow( rowNum );
 			/* if this row exists, find the next empty cell number. note: getLastCellNum() returns the cell index PLUS ONE or -1 if not found */
-			if( !IsNull( row ) AND row.getLastCellNum() GT 0 )
+			if( !IsNull( row ) && row.getLastCellNum() > 0 )
 				cellNum = row.getLastCellNum();
 			else
 				cellNum = 0;
@@ -379,13 +391,13 @@ component accessors="true"{
 		var columnData = IsArray( arguments.data )? arguments.data: ListToArray( arguments.data, arguments.delimiter );
 		for( var cellValue in columnData ){
 			/* if rowNum is greater than the last row of the sheet, need to create a new row  */
-			if( rowNum GT sheet.getLastRowNum() OR IsNull( sheet.getRow( rowNum ) ) )
+			if( rowNum > sheet.getLastRowNum() || IsNull( sheet.getRow( rowNum ) ) )
 				row = createRow( arguments.workbook, rowNum );
 			else
 				row = sheet.getRow( rowNum );
 			/* POI doesn't have any 'shift column' functionality akin to shiftRows() so inserts get interesting */
 			/* ** Note: row.getLastCellNum() returns the cell index PLUS ONE or -1 if not found */
-			if( arguments.insert AND ( cellNum LT row.getLastCellNum() ) ){
+			if( arguments.insert && ( cellNum < row.getLastCellNum() ) ){
 				/*  need to get the last populated column number in the row, figure out which cells are impacted, and shift the impacted cells to the right to make room for the new data */
 				lastCellNum = row.getLastCellNum();
 				for( var i = lastCellNum; i EQ cellNum; i-- ){
@@ -415,8 +427,8 @@ component accessors="true"{
 		,numeric topRow //top row visible in bottom pane
 	){
 		var sheet = getActiveSheet( arguments.workbook );
-		if( arguments.KeyExists( "leftmostColumn" ) AND !arguments.KeyExists( "topRow" ) ) arguments.topRow = arguments.freezeRow;
-		if( arguments.KeyExists( "topRow" ) AND !arguments.KeyExists( "leftmostColumn" ) ) arguments.leftmostColumn = arguments.freezeColumn;
+		if( arguments.KeyExists( "leftmostColumn" ) && !arguments.KeyExists( "topRow" ) ) arguments.topRow = arguments.freezeRow;
+		if( arguments.KeyExists( "topRow" ) && !arguments.KeyExists( "leftmostColumn" ) ) arguments.leftmostColumn = arguments.freezeColumn;
 		/* createFreezePane() operates on the logical row/column numbers as opposed to physical, so no need for n-1 stuff here */
 		if( !arguments.KeyExists( "leftmostColumn" ) ){
 			sheet.createFreezePane( JavaCast( "int", arguments.freezeColumn ), JavaCast( "int", arguments.freezeRow ) );
@@ -441,12 +453,12 @@ component accessors="true"{
 		/*
 			TODO: Should we allow for passing in of a boolean indicating whether or not an image resize should happen (only works on jpg and png)? Currently does not resize. If resize is performed, it does mess up passing in x/y coordinates for image positioning.
 		 */
-		if( !arguments.KeyExists( "filepath" ) AND !arguments.KeyExists( "imageData" ) )
+		if( !arguments.KeyExists( "filepath" ) && !arguments.KeyExists( "imageData" ) )
 			Throw( type=this.getExceptionType(), message="Invalid argument combination", detail="You must provide either a file path or an image object" );
-		if( arguments.KeyExists( "imageData" ) AND !arguments.KeyExists( "imageType" ) )
+		if( arguments.KeyExists( "imageData" ) && !arguments.KeyExists( "imageType" ) )
 			Throw( type=this.getExceptionType(), message="Invalid argument combination", detail="If you specify an image object, you must also provide the imageType argument" );
 		var numberOfAnchorElements = ListLen( arguments.anchor );
-		if( ( numberOfAnchorElements NEQ 4 ) AND ( numberOfAnchorElements NEQ 8 ) )
+		if( ( numberOfAnchorElements != 4 ) && ( numberOfAnchorElements != 8 ) )
 			Throw( type=this.getExceptionType(), message="Invalid anchor argument", detail="The anchor argument must be a comma-delimited list of integers with either 4 or 8 elements" );
 		//we'll need the image type int in all cases
 		if( arguments.KeyExists( "filepath" ) ){
@@ -528,7 +540,7 @@ component accessors="true"{
 	public void function addPageBreaks( required workbook, string rowBreaks="", string columnBreaks="" ){
 		arguments.rowBreaks = Trim( arguments.rowBreaks ); //Dont' use member function in case value is in fact numeric
 		arguments.columnBreaks = Trim( arguments.columnBreaks );
-		if( arguments.rowBreaks.IsEmpty() AND arguments.columnBreaks.IsEmpty() )
+		if( arguments.rowBreaks.IsEmpty() && arguments.columnBreaks.IsEmpty() )
 			Throw( type=this.getExceptionType(), message="Missing argument", detail="You must specify the rows and/or columns at which page breaks should be added." );
 		arguments.rowBreaks = arguments.rowBreaks.ListToArray();
 		arguments.columnBreaks = arguments.columnBreaks.ListToArray();
@@ -555,16 +567,16 @@ component accessors="true"{
 		,boolean autoSizeColumns=false
 		,struct datatypes
 	){
-		if( arguments.KeyExists( "row" ) AND ( arguments.row LTE 0 ) )
+		if( arguments.KeyExists( "row" ) && ( arguments.row <= 0 ) )
 			Throw( type=this.getExceptionType(), message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
-		if( arguments.KeyExists( "column" ) AND ( arguments.column LTE 0 ) )
+		if( arguments.KeyExists( "column" ) && ( arguments.column <= 0 ) )
 			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
-		if( !arguments.insert AND !arguments.KeyExists( "row") )
+		if( !arguments.insert && !arguments.KeyExists( "row") )
 			Throw( type=this.getExceptionType(), message="Missing row value", detail="To replace a row using 'insert', please specify the row to replace." );
 		checkDataTypesArgument( arguments );
 		var lastRow = getNextEmptyRow( arguments.workbook );
 		//If the requested row already exists...
-		if( arguments.KeyExists( "row" ) AND ( arguments.row LTE lastRow ) ){
+		if( arguments.KeyExists( "row" ) && ( arguments.row <= lastRow ) ){
 			if( arguments.insert )
 				shiftRows( arguments.workbook, arguments.row, lastRow, 1 );//shift the existing rows down (by one row)
 			else
@@ -609,7 +621,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid data argument", detail="Data passed as an array must be an array of arrays, one per row" );
 		var lastRow = getNextEmptyRow( arguments.workbook );
 		var insertAtRowIndex = arguments.KeyExists( "row" )? arguments.row -1: getNextEmptyRow( arguments.workbook );
-		if( arguments.KeyExists( "row" ) AND ( arguments.row LTE lastRow ) AND arguments.insert )
+		if( arguments.KeyExists( "row" ) && ( arguments.row <= lastRow ) && arguments.insert )
 			shiftRows( arguments.workbook, arguments.row, lastRow, totalRows );
 		var currentRowIndex = insertAtRowIndex;
 		if( dataIsQuery ){
@@ -656,7 +668,7 @@ component accessors="true"{
 							break;
 						default:
 							//NB don't use member function: won't work if numeric
-							if( IsSimpleValue( cellValue ) AND !Len( cellValue ) ) poiCellType = "blank";
+							if( IsSimpleValue( cellValue ) && !Len( cellValue ) ) poiCellType = "blank";
 					}
 					if( arguments.KeyExists( "datatypes" ) )
 	   				setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes, poiCellType );
@@ -669,7 +681,7 @@ component accessors="true"{
 			if( arguments.autoSizeColumns ){
 				var numberOfColumns = queryColumns.Len();
 				var thisColumn = arguments.column;
-				for( var i = thisColumn; i LTE numberOfColumns; i++ ){
+				for( var i = thisColumn; i <= numberOfColumns; i++ ){
 					autoSizeColumn( arguments.workbook, thisColumn );
 					thisColumn++;
 				}
@@ -715,7 +727,7 @@ component accessors="true"{
 	}
 
 	public void function autoSizeColumn( required workbook, required numeric column, boolean useMergedCells=false ){
-		if( arguments.column LTE 0 )
+		if( arguments.column <= 0 )
 			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
 		/* Adjusts the width of the specified column to fit the contents. For performance reasons, this should normally be called only once per column. */
 		var columnIndex = ( arguments.column -1 );
@@ -750,8 +762,8 @@ component accessors="true"{
 		,required numeric endColumn
 	){
 		/* Clears the specified cell range of all styles and values */
-		for( var rowNumber = arguments.startRow; rowNumber LTE arguments.endRow; rowNumber++ ){
-			for( var columnNumber = arguments.startColumn; columnNumber LTE arguments.endColumn; columnNumber++ ){
+		for( var rowNumber = arguments.startRow; rowNumber <= arguments.endRow; rowNumber++ ){
+			for( var columnNumber = arguments.startColumn; columnNumber <= arguments.endColumn; columnNumber++ ){
 				clearCell( arguments.workbook, rowNumber, columnNumber );
 			}
 		}
@@ -782,7 +794,7 @@ component accessors="true"{
 	}
 
 	public void function deleteColumn( required workbook,required numeric column ){
-		if( arguments.column LTE 0 )
+		if( arguments.column <= 0 )
 			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
 			/* POI doesn't have remove column functionality, so iterate over all the rows and remove the column indicated */
 		var rowIterator = getActiveSheet( arguments.workbook ).rowIterator();
@@ -804,17 +816,17 @@ component accessors="true"{
 				deleteColumn( arguments.workbook, thisRange.startAt );
 				continue;
 			}
-			for( var columnNumber = thisRange.startAt; columnNumber LTE thisRange.endAt; columnNumber++ )
+			for( var columnNumber = thisRange.startAt; columnNumber <= thisRange.endAt; columnNumber++ )
 				deleteColumn( arguments.workbook, columnNumber );
 		}
 	}
 
 	public void function deleteRow( required workbook, required numeric row ){
 		/* Deletes the data from a row. Does not physically delete the row. */
-		if( arguments.row LTE 0 )
+		if( arguments.row <= 0 )
 			Throw( type=this.getExceptionType(), message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
 		var rowToDelete = ( arguments.row -1 );
-		if( rowToDelete GTE getFirstRowNum( arguments.workbook ) AND rowToDelete LTE getLastRowNum( arguments.workbook ) ) //If this is a valid row, remove it
+		if( rowToDelete >= getFirstRowNum( arguments.workbook ) && rowToDelete <= getLastRowNum( arguments.workbook ) ) //If this is a valid row, remove it
 			getActiveSheet( arguments.workbook ).removeRow( getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowToDelete ) ) );
 	}
 
@@ -827,7 +839,7 @@ component accessors="true"{
 				deleteRow( arguments.workbook, thisRange.startAt );
 				continue;
 			}
-			for( var rowNumber = thisRange.startAt; rowNumber LTE thisRange.endAt; rowNumber++ )
+			for( var rowNumber = thisRange.startAt; rowNumber <= thisRange.endAt; rowNumber++ )
 				deleteRow( arguments.workbook, rowNumber );
 		}
 	}
@@ -861,8 +873,8 @@ component accessors="true"{
 	){
 		checkFormatArguments( argumentCollection=arguments );
 		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
-		for( var rowNumber = arguments.startRow; rowNumber LTE arguments.endRow; rowNumber++ ){
-			for( var columnNumber = arguments.startColumn; columnNumber LTE arguments.endColumn; columnNumber++ )
+		for( var rowNumber = arguments.startRow; rowNumber <= arguments.endRow; rowNumber++ ){
+			for( var columnNumber = arguments.startColumn; columnNumber <= arguments.endColumn; columnNumber++ )
 				formatCell( arguments.workbook, arguments.format, rowNumber, columnNumber, arguments.overwriteCurrentStyle, style );
 		}
 	}
@@ -875,7 +887,7 @@ component accessors="true"{
 		,any cellStyle
 	){
 		checkFormatArguments( argumentCollection=arguments );
-		if( arguments.column LT 1 )
+		if( arguments.column < 1 )
 			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The column value must be greater than 0" );
 		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
 		var rowIterator = getActiveSheet( arguments.workbook ).rowIterator();
@@ -903,7 +915,7 @@ component accessors="true"{
 				formatColumn( arguments.workbook, arguments.format, thisRange.startAt, arguments.overwriteCurrentStyle, style );
 				continue;
 			}
-			for( var columnNumber = thisRange.startAt; columnNumber LTE thisRange.endAt; columnNumber++ )
+			for( var columnNumber = thisRange.startAt; columnNumber <= thisRange.endAt; columnNumber++ )
 				formatColumn( arguments.workbook, arguments.format, columnNumber, arguments.overwriteCurrentStyle, style );
 		}
 	}
@@ -942,15 +954,15 @@ component accessors="true"{
 				formatRow( arguments.workbook, arguments.format, thisRange.startAt, arguments.overwriteCurrentStyle, style );
 				continue;
 			}
-			for( var rowNumber = thisRange.startAt; rowNumber LTE thisRange.endAt; rowNumber++ )
+			for( var rowNumber = thisRange.startAt; rowNumber <= thisRange.endAt; rowNumber++ )
 				formatRow( arguments.workbook, arguments.format, rowNumber, arguments.overwriteCurrentStyle, style );
 		}
 	}
 
 	public any function getCellComment( required workbook, numeric row, numeric column ){
-		if( arguments.KeyExists( "row" ) AND !arguments.KeyExists( "column" ) )
+		if( arguments.KeyExists( "row" ) && !arguments.KeyExists( "column" ) )
 			Throw( type=this.getExceptionType(), message="Invalid argument combination", detail="If you specify the row you must also specify the column" );
-		if( arguments.KeyExists( "column" ) AND !arguments.KeyExists( "row" ) )
+		if( arguments.KeyExists( "column" ) && !arguments.KeyExists( "row" ) )
 			Throw( type=this.getExceptionType(), message="Invalid argument combination", detail="If you specify the column you must also specify the row" );
 		if( arguments.KeyExists( "row" ) ){
 			var cell = getCellAt( arguments.workbook, arguments.row, arguments.column );
@@ -1023,7 +1035,7 @@ component accessors="true"{
 	}
 
 	public any function getCellFormula( required workbook, numeric row, numeric column ){
-		if( arguments.KeyExists( "row" ) AND arguments.KeyExists( "column" ) ){
+		if( arguments.KeyExists( "row" ) && arguments.KeyExists( "column" ) ){
 			if( cellExists( arguments.workbook, arguments.row, arguments.column ) ){
 				var cell = getCellAt( arguments.workbook, arguments.row, arguments.column );
 				if( cellIsOfType( cell, "FORMULA" ) )
@@ -1114,7 +1126,7 @@ component accessors="true"{
 
 	public numeric function getRowCount( required workbook, sheetNameOrNumber ){
 		if( arguments.KeyExists( "sheetNameOrNumber" ) ){
-			if( IsValid( "integer", arguments.sheetNameOrNumber ) AND IsNumeric( arguments.sheetNameOrNumber ) )
+			if( IsValid( "integer", arguments.sheetNameOrNumber ) && IsNumeric( arguments.sheetNameOrNumber ) )
 				setActiveSheetNumber( arguments.workbook, arguments.sheetNameOrNumber );
 			else
 				setActiveSheet( arguments.workbook, arguments.sheetNameOrNumber );
@@ -1163,7 +1175,7 @@ component accessors="true"{
 		info.sheets = workbook.getNumberOfSheets();
 		var sheetnames = [];
 		if( IsNumeric( info.sheets ) ){
-			for( var i = 1; i LTE info.sheets; i++ )
+			for( var i = 1; i <= info.sheets; i++ )
 				sheetnames.Append( workbook.getSheetName( JavaCast( "int", ( i -1 ) ) ) );
 			info.sheetnames = sheetnames.ToList();
 		}
@@ -1172,7 +1184,7 @@ component accessors="true"{
 	}
 
 	public boolean function isBinaryFormat( required workbook ){
-		return arguments.workbook.getClass().getCanonicalName() IS this.getHSSFWorkbookClassName();
+		return arguments.workbook.getClass().getCanonicalName() == this.getHSSFWorkbookClassName();
 	}
 
 	public boolean function isColumnHidden( required workbook, required numeric column ){
@@ -1197,7 +1209,7 @@ component accessors="true"{
 	}
 
 	public boolean function isSpreadsheetObject( required object ){
-		return isBinaryFormat( arguments.object ) OR isXmlFormat( arguments.object );
+		return isBinaryFormat( arguments.object ) || isXmlFormat( arguments.object );
 	}
 
 	public boolean function isXmlFormat( required workbook ){
@@ -1206,7 +1218,7 @@ component accessors="true"{
 	}
 
 	public boolean function isStreamingXmlFormat( required workbook ){
-		return arguments.workbook.getClass().getCanonicalName() IS this.getSXSSFWorkbookClassName();
+		return arguments.workbook.getClass().getCanonicalName() == this.getSXSSFWorkbookClassName();
 	}
 
 	public void function mergeCells(
@@ -1217,9 +1229,9 @@ component accessors="true"{
 		,required numeric endColumn
 		,boolean emptyInvisibleCells=false
 	){
-		if( arguments.startRow LT 1 OR arguments.startRow GT arguments.endRow )
+		if( arguments.startRow < 1 || arguments.startRow > arguments.endRow )
 			Throw( type=this.getExceptionType(), message="Invalid startRow or endRow", detail="Row values must be greater than 0 and the startRow cannot be greater than the endRow." );
-		if( arguments.startColumn LT 1 OR arguments.startColumn GT arguments.endColumn )
+		if( arguments.startColumn < 1 || arguments.startColumn > arguments.endColumn )
 			Throw( type=this.getExceptionType(), message="Invalid startColumn or endColumn", detail="Column values must be greater than 0 and the startColumn cannot be greater than the endColumn." );
 		var cellRangeAddress = getCellRangeAddressFromColumnAndRowIndices(
 			( arguments.startRow - 1 )
@@ -1262,6 +1274,32 @@ component accessors="true"{
 		return new( sheetName=arguments.sheetName, xmlFormat=true, streamingXml=true, streamingWindowSize=arguments.streamingWindowSize );
 	}
 
+	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter="," ){		
+		var data = [];
+		var columns = _QueryColumnArray( arguments.query );
+		if( arguments.includeHeaderRow ) data.Append( columns );
+		for( var row IN arguments.query ){
+			var rowValues = [];
+			for( var column IN columns ){
+				var cellValue = row[ column ];
+				if( isDateObject( cellValue ) ) cellValue = DateTimeFormat( cellValue, this.getDateFormats().DATETIME );
+				if( IsValid( "integer", cellValue ) ) cellValue = JavaCast( "string", cellValue );// prevent CSV writer converting 1 to 1.0
+				rowValues.Append( cellValue );
+			}
+			data.Append( rowValues );
+		}
+		var builder = newJavaStringBuilder();
+		if( delimiterIsTab( arguments.delimiter ) )
+			var csvFormat = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ];
+		else
+			var csvFormat = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "EXCEL" ) ]
+				.withDelimiter( JavaCast( "char", arguments.delimiter ) );
+		loadClass( "org.apache.commons.csv.CSVPrinter" )
+			.init( builder, csvFormat )
+			.printRecords( data );
+		return builder.toString().Trim();
+	}
+
 	public any function read(
 		required string src
 		,string format
@@ -1281,13 +1319,13 @@ component accessors="true"{
 	){
 		if( arguments.KeyExists( "query" ) )
 			Throw( type=this.getExceptionType(), message="Invalid argument 'query'.", detail="Just use format='query' to return a query object" );
-		if( arguments.KeyExists( "format" ) AND !ListFindNoCase( "query,html,csv", arguments.format ) )
+		if( arguments.KeyExists( "format" ) && !ListFindNoCase( "query,html,csv", arguments.format ) )
 			Throw( type=this.getExceptionType(), message="Invalid format", detail="Supported formats are: 'query', 'html' and 'csv'" );
-		if( arguments.KeyExists( "sheetName" ) AND arguments.KeyExists( "sheetNumber" ) )
+		if( arguments.KeyExists( "sheetName" ) && arguments.KeyExists( "sheetNumber" ) )
 			Throw( type=this.getExceptionType(), message="Cannot provide both sheetNumber and sheetName arguments", detail="Only one of either 'sheetNumber' or 'sheetName' arguments may be provided." );
 		if( !FileExists( arguments.src ) )
 			Throw( type=this.getExceptionType(), message="Non-existent file", detail="Cannot find the file #arguments.src#." );
-		var passwordProtected = ( arguments.KeyExists( "password") AND !arguments.password.Trim().IsEmpty() );
+		var passwordProtected = ( arguments.KeyExists( "password") && !arguments.password.Trim().IsEmpty() );
 		var workbook = passwordProtected? workbookFromFile( arguments.src, arguments.password ): workbookFromFile( arguments.src );
 		if( arguments.KeyExists( "sheetName" ) ) setActiveSheet( workbook=workbook, sheetName=arguments.sheetName );
 		if( !arguments.KeyExists( "format" ) ) return workbook;
@@ -1308,7 +1346,7 @@ component accessors="true"{
 		args.includeHiddenColumns = arguments.includeHiddenColumns;
 		args.includeRichTextFormatting = arguments.includeRichTextFormatting;
 		var generatedQuery = sheetToQuery( argumentCollection=args );
-		if( arguments.format IS "query" ) return generatedQuery;
+		if( arguments.format == "query" ) return generatedQuery;
 		var args = {
 			query: generatedQuery
 		};
@@ -1354,7 +1392,7 @@ component accessors="true"{
 		validateSheetNumber( arguments.workbook, arguments.sheetNumber );
 		var sheetIndex = ( arguments.sheetNumber -1 );
 		var foundAt = arguments.workbook.getSheetIndex( JavaCast( "string", arguments.sheetName ) );
-		if( ( foundAt GT 0 ) AND ( foundAt NEQ sheetIndex ) )
+		if( ( foundAt > 0 ) && ( foundAt != sheetIndex ) )
 			Throw( type=this.getExceptionType(), message="Invalid Sheet Name [#arguments.sheetName#]", detail="The workbook already contains a sheet named [#sheetName#]. Sheet names must be unique" );
 		arguments.workbook.setSheetName( JavaCast( "int", sheetIndex ), JavaCast( "string", arguments.sheetName ) );
 	}
@@ -1469,8 +1507,8 @@ component accessors="true"{
 		}
 		/* Horizontal alignment can be left, center, right, justify, or distributed. Note that the constants on the Java class are slightly different in some cases: 'center'=CENTERED 'justify'=JUSTIFIED */
 		if( workbookIsHSSF && arguments.comment.KeyExists( "horizontalAlignment" ) ){
-			if( arguments.comment.horizontalAlignment.UCase() IS "CENTER" ) arguments.comment.horizontalAlignment = "CENTERED";
-			if( arguments.comment.horizontalAlignment.UCase() IS "JUSTIFY" ) arguments.comment.horizontalAlignment = "JUSTIFIED";
+			if( arguments.comment.horizontalAlignment.UCase() == "CENTER" ) arguments.comment.horizontalAlignment = "CENTERED";
+			if( arguments.comment.horizontalAlignment.UCase() == "JUSTIFY" ) arguments.comment.horizontalAlignment = "JUSTIFIED";
 			commentObject.setHorizontalAlignment( JavaCast( "int", commentObject[ "HORIZONTAL_ALIGNMENT_" & arguments.comment.horizontalalignment.UCase() ] ) );
 		}
 		/* Vertical alignment can be top, center, bottom, justify, and distributed. Note that center and justify are DIFFERENT than the constants for horizontal alignment, which are CENTERED and JUSTIFIED. */
@@ -1619,23 +1657,23 @@ component accessors="true"{
 	public void function setSheetPrintOrientation( required workbook, required string mode, string sheetName, numeric sheetNumber ){
 		if( !ListFindNoCase( "landscape,portrait", arguments.mode ) )
 			Throw( type=this.getExceptionType(), message="Invalid mode argument", detail="#mode# is not a valid 'mode' argument. Use 'portrait' or 'landscape'" );
-		var setToLandscape = ( LCase( arguments.mode ) IS "landscape" );
+		var setToLandscape = ( LCase( arguments.mode ) == "landscape" );
 		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
 		sheet.getPrintSetup().setLandscape( JavaCast( "boolean", setToLandscape ) );
 	}
 
 	public void function shiftColumns( required workbook, required numeric start, numeric end=arguments.start, numeric offset=1 ){
-		if( arguments.start LTE 0 )
+		if( arguments.start <= 0 )
 			Throw( type=this.getExceptionType(), message="Invalid start value", detail="The start value must be greater than or equal to 1" );
-		if( arguments.KeyExists( "end" ) AND ( ( arguments.end LTE 0 ) OR ( arguments.end LT arguments.start ) ) )
+		if( arguments.KeyExists( "end" ) && ( ( arguments.end <= 0 ) || ( arguments.end < arguments.start ) ) )
 			Throw( type=this.getExceptionType(), message="Invalid end value", detail="The end value must be greater than or equal to the start value" );
 		var rowIterator = getActiveSheet( arguments.workbook ).rowIterator();
 		var startIndex = ( arguments.start -1 );
 		var endIndex = arguments.KeyExists( "end" )? ( arguments.end -1 ): startIndex;
 		while( rowIterator.hasNext() ){
 			var row = rowIterator.next();
-			if( arguments.offset GT 0 ){
-				for( var i = endIndex; i GTE startIndex; i-- ){
+			if( arguments.offset > 0 ){
+				for( var i = endIndex; i >= startIndex; i-- ){
 					var tempCell = row.getCell( JavaCast( "int", i ) );
 					var cell = createCell( row, i + arguments.offset );
 					if( !IsNull( tempCell ) ){
@@ -1645,7 +1683,7 @@ component accessors="true"{
 				}
 			}
 			else {
-				for( var i = startIndex; i LTE endIndex; i++ ){
+				for( var i = startIndex; i <= endIndex; i++ ){
 					var tempCell = row.getCell( JavaCast( "int", i ) );
 					var cell = createCell( row, i + arguments.offset );
 					if( !IsNull( tempCell ) ){
@@ -1658,15 +1696,15 @@ component accessors="true"{
 		// clean up any columns that need to be deleted after the shift
 		var numberColsShifted = ( ( endIndex-startIndex ) +1 );
 		var numberColsToDelete = Abs( arguments.offset );
-		if( numberColsToDelete GT numberColsShifted ) numberColsToDelete = numberColsShifted;
-		if( arguments.offset GT 0 ){
+		if( numberColsToDelete > numberColsShifted ) numberColsToDelete = numberColsShifted;
+		if( arguments.offset > 0 ){
 			var stopValue = ( ( startIndex + numberColsToDelete ) -1 );
-			for( var i = startIndex; i LTE stopValue; i++ )
+			for( var i = startIndex; i <= stopValue; i++ )
 				deleteColumn( workbook, ( i +1 ) );
 			return;
 		}
 		var stopValue = ( ( endIndex - numberColsToDelete ) +1 );
-		for( var i = endIndex; i GTE stopValue; i-- )
+		for( var i = endIndex; i >= stopValue; i-- )
 			deleteColumn( workbook, ( i +1 ) );
 	}
 
@@ -1693,10 +1731,9 @@ component accessors="true"{
 		,string password
 		,string algorithm="agile"
 	){
-		if( !arguments.overwrite AND FileExists( arguments.filepath ) )
-			Throw( type=this.getExceptionType(), message="File already exists", detail="The file path specified already exists. Use 'overwrite=true' if you wish to overwrite it." );
-		var passwordProtect = ( arguments.KeyExists( "password" ) AND !arguments.password.Trim().IsEmpty() );
-		if( passwordProtect AND isBinaryFormat( arguments.workbook ) )
+		if( !arguments.overwrite && FileExists( arguments.filepath ) ) throwFileExistsException( arguments.filepath );
+		var passwordProtect = ( arguments.KeyExists( "password" ) && !arguments.password.Trim().IsEmpty() );
+		if( passwordProtect && isBinaryFormat( arguments.workbook ) )
 			Throw( type=this.getExceptionType(), message="Whole file password protection is not supported for binary workbooks", detail="Password protection only works with XML ('xlsx') workbooks." );
 		try{
 			lock name="#arguments.filepath#" timeout=5{
@@ -1711,6 +1748,18 @@ component accessors="true"{
 			cleanUpStreamingXml( arguments.workbook );
 		}
 		if( passwordProtect ) encryptFile( arguments.filepath, arguments.password, arguments.algorithm );
+	}
+
+	public void function writeToCsv(
+		required workbook
+		,required string filepath
+		,boolean overwrite=false
+		,string delimiter=","
+	){
+		if( !arguments.overwrite && FileExists( arguments.filepath ) ) throwFileExistsException( arguments.filepath );
+		var data = sheetToQuery( arguments.workbook );
+		var csv = queryToCsv( query=data, delimiter=arguments.delimiter );
+		FileWrite( arguments.filepath, csv );
 	}
 
 	/* END PUBLIC API */
@@ -1827,10 +1876,6 @@ component accessors="true"{
 		Throw( type="cfsimplicity.lucee.spreadsheet.invalidFile", message="Invalid spreadsheet file", detail=detail );
 	}
 
-	private void function throwOldExcelFormatException( required string path ){
-		Throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #arguments.path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
-	}
-
 	private boolean function isCsvOrTextFile( required string path ){
 		var contentType = FileGetMimeType( arguments.path ).ListLast( "/" );
 		return ListFindNoCase( "plain,csv", contentType );//Lucee=text/plain ACF=text/csv
@@ -1888,7 +1933,7 @@ component accessors="true"{
 		/* Generates a unique sheet name (Sheet1, Sheet2, etecetera). */
 		var startNumber = ( arguments.workbook.getNumberOfSheets() +1 );
 		var maxRetry = ( startNumber +250 );
-		for( var sheetNumber = startNumber; sheetNumber LTE maxRetry; sheetNumber++ ){
+		for( var sheetNumber = startNumber; sheetNumber <= maxRetry; sheetNumber++ ){
 			var proposedName = "Sheet" & sheetNumber;
 			if( !sheetExists( arguments.workbook, proposedName ) ) return proposedName;
 		}
@@ -1910,8 +1955,8 @@ component accessors="true"{
 	}
 
 	private any function getSheetByNameOrNumber( required workbook, string sheetName, numeric sheetNumber ){
-		var sheetNameSupplied = ( arguments.KeyExists( "sheetName" ) AND Len( arguments.sheetName ) );
-		if( sheetNameSupplied AND arguments.KeyExists( "sheetNumber" ) )
+		var sheetNameSupplied = ( arguments.KeyExists( "sheetName" ) && Len( arguments.sheetName ) );
+		if( sheetNameSupplied && arguments.KeyExists( "sheetNumber" ) )
 			Throw( type=this.getExceptionType(), message="Invalid arguments", detail="Specify either a sheetName or sheetNumber, not both" );
 		if( sheetNameSupplied ) return getSheetByName( arguments.workbook, arguments.sheetName );
 		if( arguments.KeyExists( "sheetNumber" ) ) return getSheetByNumber( arguments.workbook, arguments.sheetNumber );
@@ -1938,13 +1983,13 @@ component accessors="true"{
 		if( arguments.KeyExists( "sheetName" ) )
 			arguments.sheetNumber = ( getSheetIndexFromName( arguments.workbook, arguments.sheetName ) +1 );
 			//the position is valid if it an integer between 1 and the total number of sheets in the workbook
-		if( arguments.sheetNumber AND ( arguments.sheetNumber EQ Round( arguments.sheetNumber ) ) AND ( arguments.sheetNumber LTE arguments.workbook.getNumberOfSheets() ) )
+		if( arguments.sheetNumber && ( arguments.sheetNumber EQ Round( arguments.sheetNumber ) ) && ( arguments.sheetNumber <= arguments.workbook.getNumberOfSheets() ) )
 			return true;
 		return false;
 	}
 
 	private boolean function sheetHasMergedRegions( required sheet ){
-		return ( arguments.sheet.getNumMergedRegions() GT 0 );
+		return ( arguments.sheet.getNumMergedRegions() > 0 );
 	}
 
 	private query function sheetToQuery(
@@ -1963,7 +2008,7 @@ component accessors="true"{
 	){
 		var sheet = {
 			includeHeaderRow: arguments.includeHeaderRow
-			,hasHeaderRow: ( arguments.KeyExists( "headerRow" ) AND Val( arguments.headerRow ) )
+			,hasHeaderRow: ( arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) )
 			,includeBlankRows: arguments.includeBlankRows
 			,columnNames: []
 			,columnRanges: []
@@ -1984,7 +2029,7 @@ component accessors="true"{
 		if( arguments.KeyExists( "rows" ) ){
 			var allRanges = extractRanges( arguments.rows );
 			for( var thisRange in allRanges ){
-				for( var rowNumber = thisRange.startAt; rowNumber LTE thisRange.endAt; rowNumber++ ){
+				for( var rowNumber = thisRange.startAt; rowNumber <= thisRange.endAt; rowNumber++ ){
 					var rowIndex = ( rowNumber -1 );
 					addRowToSheetData( arguments.workbook, sheet, rowIndex, arguments.includeRichTextFormatting );
 				}
@@ -1992,14 +2037,14 @@ component accessors="true"{
 		}
 		else {
 			var lastRowIndex = sheet.object.GetLastRowNum();// zero based
-			for( var rowIndex = 0; rowIndex LTE lastRowIndex; rowIndex++ )
+			for( var rowIndex = 0; rowIndex <= lastRowIndex; rowIndex++ )
 				addRowToSheetData( arguments.workbook, sheet, rowIndex, arguments.includeRichTextFormatting );
 		}
 		//generate the query columns
-		if( arguments.KeyExists( "columnNames" ) AND arguments.columnNames.Len() ){
+		if( arguments.KeyExists( "columnNames" ) && arguments.columnNames.Len() ){
 			arguments.columnNames = arguments.columnNames.ListToArray();
 			var specifiedColumnCount = arguments.columnNames.Len();
-			for( var i = 1; i LTE sheet.totalColumnCount; i++ ){
+			for( var i = 1; i <= sheet.totalColumnCount; i++ ){
 				// IsNull/IsDefined doesn't work.
 				var columnName = arguments.columnNames[ i ]?: "column" & i;
 				sheet.columnNames.Append( columnName );
@@ -2011,13 +2056,13 @@ component accessors="true"{
 			var i = 1;
 			for( var value in rowData ){
 				var columnName = "column" & i;
-				if( isString( value ) AND value.Len() ) columnName = value;
+				if( isString( value ) && value.Len() ) columnName = value;
 				sheet.columnNames.Append( columnName );
 				i++;
 			}
 		}
 		else {
-			for( var i=1; i LTE sheet.totalColumnCount; i++ )
+			for( var i=1; i <= sheet.totalColumnCount; i++ )
 				sheet.columnNames.Append( "column" & i );
 		}
 		var result = _QueryNew( sheet.columnNames, "", sheet.data );
@@ -2042,7 +2087,7 @@ component accessors="true"{
 
 	private void function validateSheetName( required string sheetName ){
 		var characterCount = Len( arguments.sheetName );
-		if( characterCount GT 31 )
+		if( characterCount > 31 )
 			Throw( type=this.getExceptionType(), message="Invalid sheet name", detail="The sheetname contains too many characters [#characterCount#]. The maximum is 31." );
 		var poiTool = loadClass( "org.apache.poi.ss.util.WorkbookUtil" );
 		try{
@@ -2058,9 +2103,9 @@ component accessors="true"{
 	}
 
 	private void function validateSheetNameOrNumberWasProvided(){
-		if( !arguments.KeyExists( "sheetName" ) AND !arguments.KeyExists( "sheetNumber" ) )
+		if( !arguments.KeyExists( "sheetName" ) && !arguments.KeyExists( "sheetNumber" ) )
 			Throw( type=this.getExceptionType(), message="Missing Required Argument", detail="Either sheetName or sheetNumber must be provided" );
-		if( arguments.KeyExists( "sheetName" ) AND arguments.KeyExists( "sheetNumber" ) )
+		if( arguments.KeyExists( "sheetName" ) && arguments.KeyExists( "sheetNumber" ) )
 			Throw( type=this.getExceptionType(), message="Too Many Arguments", detail="Only one argument is allowed. Specify either a sheetName or sheetNumber, not both" );
 	}
 
@@ -2072,7 +2117,7 @@ component accessors="true"{
 		,required numeric rowIndex
 		,boolean includeRichTextFormatting=false
 	){
-		if( ( arguments.rowIndex EQ arguments.sheet.headerRowIndex ) AND !arguments.sheet.includeHeaderRow )
+		if( ( arguments.rowIndex EQ arguments.sheet.headerRowIndex ) && !arguments.sheet.includeHeaderRow )
 			return;
 		var rowData = [];
 		var row = arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
@@ -2080,7 +2125,7 @@ component accessors="true"{
 			if( arguments.sheet.includeBlankRows ) arguments.sheet.data.Append( rowData );
 			return;
 		}
-		if( rowIsEmpty( row ) AND !arguments.sheet.includeBlankRows )
+		if( rowIsEmpty( row ) && !arguments.sheet.includeBlankRows )
 			return;
 		rowData = getRowData( arguments.workbook, row, arguments.sheet.columnRanges, arguments.includeRichTextFormatting );
 		arguments.sheet.data.Append( rowData );
@@ -2094,8 +2139,8 @@ component accessors="true"{
 		/* get existing row (if any)  */
 		var sheet = getActiveSheet( arguments.workbook );
 		var row = sheet.getRow( JavaCast( "int", arguments.rowNum ) );
-		if( arguments.overwrite AND !IsNull( row ) ) sheet.removeRow( row ); /* forcibly remove existing row and all cells  */
-		if( arguments.overwrite OR IsNull( sheet.getRow( JavaCast( "int", arguments.rowNum ) ) ) ){
+		if( arguments.overwrite && !IsNull( row ) ) sheet.removeRow( row ); /* forcibly remove existing row and all cells  */
+		if( arguments.overwrite || IsNull( sheet.getRow( JavaCast( "int", arguments.rowNum ) ) ) ){
 			try{
 				row = sheet.createRow( JavaCast( "int", arguments.rowNum ) );
 			}
@@ -2112,13 +2157,13 @@ component accessors="true"{
 	private numeric function getFirstRowNum( required workbook ){
 		var sheet = getActiveSheet( arguments.workbook );
 		var firstRow = sheet.getFirstRowNum();
-		if( firstRow EQ 0 AND sheet.getPhysicalNumberOfRows() EQ 0 ) return -1;
+		if( firstRow EQ 0 && sheet.getPhysicalNumberOfRows() EQ 0 ) return -1;
 		return firstRow;
 	}
 
 	private numeric function getLastRowNum( required workbook, sheet=getActiveSheet( arguments.workbook ) ){
 		var lastRow = arguments.sheet.getLastRowNum();
-		if( lastRow EQ 0 AND arguments.sheet.getPhysicalNumberOfRows() EQ 0 )
+		if( lastRow EQ 0 && arguments.sheet.getPhysicalNumberOfRows() EQ 0 )
 			return -1; //The sheet is empty. Return -1 instead of 0
 		return lastRow;
 	}
@@ -2137,7 +2182,7 @@ component accessors="true"{
 			arguments.columnRanges = [ columnRange ];
 		}
 		for( var thisRange in arguments.columnRanges ){
-			for( var i = thisRange.startAt; i LTE thisRange.endAt; i++ ){
+			for( var i = thisRange.startAt; i <= thisRange.endAt; i++ ){
 				var colIndex = ( i-1 );
 				var cell = arguments.row.GetCell( JavaCast( "int", colIndex ) );
 				if( IsNull( cell ) ){
@@ -2145,7 +2190,7 @@ component accessors="true"{
 					continue;
 				}
 				var cellValue = getCellValueAsType( arguments.workbook, cell );
-				if( arguments.includeRichTextFormatting AND cellIsOfType( cell, "STRING" ) )
+				if( arguments.includeRichTextFormatting && cellIsOfType( cell, "STRING" ) )
 					cellValue = richStringCellValueToHtml( arguments.workbook, cell,cellValue );
 				result.Append( cellValue );
 			}
@@ -2157,7 +2202,7 @@ component accessors="true"{
 		var elements = ListToArray( arguments.line, arguments.delimiter );
 		var potentialQuotes = 0;
 		arguments.line = ToString( arguments.line );
-		if( arguments.delimiter EQ "," AND arguments.handleEmbeddedCommas ) potentialQuotes = arguments.line.ReplaceAll( "[^']", "" ).length();
+		if( arguments.delimiter EQ "," && arguments.handleEmbeddedCommas ) potentialQuotes = arguments.line.ReplaceAll( "[^']", "" ).length();
 		if( potentialQuotes <= 1 ) return elements;
 		//For ACF compatibility, find any values enclosed in single quotes and treat them as a single element.
 		var currentValue = 0;
@@ -2166,31 +2211,31 @@ component accessors="true"{
 		var values = [];
 		var buffer = newJavaStringBuilder();
 		var maxElements = ArrayLen( elements );
-		for( var i = 1; i LTE maxElements; i++ ) {
+		for( var i = 1; i <= maxElements; i++ ) {
 		  currentValue = Trim( elements[ i ] );
 		  nextValue = i < maxElements ? elements[ i + 1 ] : "";
 		  var isComplete = false;
-		  var hasLeadingQuote = ( currentValue.Left( 1 ) IS "'" );
-		  var hasTrailingQuote = ( currentValue.Right( 1 ) IS "'" );
+		  var hasLeadingQuote = ( currentValue.Left( 1 ) == "'" );
+		  var hasTrailingQuote = ( currentValue.Right( 1 ) == "'" );
 		  var isFinalElement = ( i == maxElements );
 		  if( hasLeadingQuote ) isEmbeddedValue = true;
-		  if( isEmbeddedValue AND hasTrailingQuote ) isComplete = true;
+		  if( isEmbeddedValue && hasTrailingQuote ) isComplete = true;
 		  /* We are finished with this value if:
 			  * no quotes were found OR
 			  * it is the final value OR
 			  * the next value is embedded in quotes
 		  */
-		  if( !isEmbeddedValue || isFinalElement || ( nextValue.Left( 1 ) IS "'" ) ) isComplete = true;
+		  if( !isEmbeddedValue || isFinalElement || ( nextValue.Left( 1 ) == "'" ) ) isComplete = true;
 		  if( isEmbeddedValue || isComplete ){
 			  // if this a partial value, append the delimiter
-			  if( isEmbeddedValue AND buffer.length() GT 0 ) buffer.Append( "," );
+			  if( isEmbeddedValue && buffer.length() > 0 ) buffer.Append( "," );
 			  buffer.Append( elements[ i ] );
 		  }
 		  if( isComplete ){
 			  var finalValue = buffer.toString();
 			  var startAt = finalValue.indexOf( "'" );
 			  var endAt = finalValue.lastIndexOf( "'" );
-			  if( isEmbeddedValue AND startAt GTE 0 AND endAt GT startAt ) finalValue = finalValue.substring( ( startAt +1 ), endAt );
+			  if( isEmbeddedValue && startAt >= 0 && endAt > startAt ) finalValue = finalValue.substring( ( startAt +1 ), endAt );
 			  values.Append( finalValue );
 			  buffer.setLength( 0 );
 			  isEmbeddedValue = false;
@@ -2200,7 +2245,7 @@ component accessors="true"{
 	}
 
 	private boolean function rowIsEmpty( required row ){
-		for( var i = arguments.row.getFirstCellNum(); i LT arguments.row.getLastCellNum(); i++ ){
+		for( var i = arguments.row.getFirstCellNum(); i < arguments.row.getLastCellNum(); i++ ){
 	    var cell = arguments.row.getCell( i );
 	    if( !IsNull( cell ) && !cellIsOfType( cell, "BLANK" ) ) return false;
 	  }
@@ -2212,7 +2257,7 @@ component accessors="true"{
 	private numeric function columnCountFromRanges( required array ranges ){
 		var result = 0;
 		for( var thisRange in arguments.ranges ){
-			for( var i = thisRange.startAt; i LTE thisRange.endAt; i++ )
+			for( var i = thisRange.startAt; i <= thisRange.endAt; i++ )
 				result++;
 		}
 		return result;
@@ -2237,7 +2282,7 @@ component accessors="true"{
 		var rowIndex = ( arguments.rowNumber -1 );
 		var columnIndex = ( arguments.columnNumber -1 );
 		var checkRow = getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
-		return !IsNull( checkRow ) AND !IsNull( checkRow.getCell( JavaCast( "int", columnIndex ) ) );
+		return !IsNull( checkRow ) && !IsNull( checkRow.getCell( JavaCast( "int", columnIndex ) ) );
 	}
 
 	private boolean function cellIsOfType( required cell, required string type ){
@@ -2248,8 +2293,8 @@ component accessors="true"{
 	private any function createCell( required row, numeric cellNum=arguments.row.getLastCellNum(), overwrite=true ){
 		/* get existing cell (if any)  */
 		var cell = arguments.row.getCell( JavaCast( "int", arguments.cellNum ) );
-		if( arguments.overwrite AND !IsNull( cell ) ) arguments.row.removeCell( cell );/* forcibly remove the existing cell  */
-		if( arguments.overwrite OR IsNull( cell ) ) cell = arguments.row.createCell( JavaCast( "int", arguments.cellNum ) );/* create a brand new cell  */
+		if( arguments.overwrite && !IsNull( cell ) ) arguments.row.removeCell( cell );/* forcibly remove the existing cell  */
+		if( arguments.overwrite || IsNull( cell ) ) cell = arguments.row.createCell( JavaCast( "int", arguments.cellNum ) );/* create a brand new cell  */
 		return cell;
 	}
 
@@ -2380,7 +2425,7 @@ component accessors="true"{
 	/* Query data */
 	private query function deleteHiddenColumnsFromQuery( required sheet, required query result ){
 		var startIndex = ( arguments.sheet.totalColumnCount -1 );
-		for( var colIndex = startIndex; colIndex GTE 0; colIndex-- ){
+		for( var colIndex = startIndex; colIndex >= 0; colIndex-- ){
 			if( !arguments.sheet.object.isColumnHidden( JavaCast( "int", colIndex ) ) )
 				continue;
 			var columnNumber = ( colIndex +1 );
@@ -2418,21 +2463,6 @@ component accessors="true"{
 		return metadata;
 	}
 
-	private string function queryToCsv( required query query, numeric headerRow, boolean includeHeaderRow=false, string delimiter="," ){
-		var result = newJavaStringBuilder();
-		var crlf = Chr( 13 ) & Chr( 10 );
-		var columns = _QueryColumnArray( arguments.query );
-		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
-		if( generateHeaderRow ) result.Append( generateCsvRow( columns, arguments.delimiter ) );
-		for( var row in arguments.query ){
-			var rowValues = [];
-			for( var column in columns )
-				rowValues.Append( row[ column ] );
-			result.Append( crlf & generateCsvRow( rowValues, arguments.delimiter ) );
-		}
-		return result.toString().Trim();
-	}
-
 	private string function queryToHtml( required query query, numeric headerRow, boolean includeHeaderRow=false ){
 		var result = newJavaStringBuilder();
 		var columns = _QueryColumnArray( arguments.query );
@@ -2451,16 +2481,6 @@ component accessors="true"{
 		}
 		result.Append( "</tbody>" );
 		return result.toString();
-	}
-
-	private string function generateCsvRow( required array values, delimiter="," ){
-		var result = newJavaStringBuilder();
-		for( var value in arguments.values ){
-			if( isDateObject( value ) ) value = DateTimeFormat( value, this.getDateFormats().DATETIME );
-			value = Replace( value, '"', '""', "ALL" );//can't use member function in case its a non-string
-			result.Append( '#arguments.delimiter#"#value#"' );
-		}
-		return result.toString().substring( 1 );
 	}
 
 	private string function generateHtmlRow( required array values, boolean isHeader=false ){
@@ -2528,7 +2548,7 @@ component accessors="true"{
 	}
 
 	private boolean function isString( required input ){
-		return arguments.input.getClass().getName() IS "java.lang.String";
+		return arguments.input.getClass().getName() == "java.lang.String";
 	}
 
 	/* Data type overriding */
@@ -2616,7 +2636,7 @@ component accessors="true"{
 	}
 
 	private boolean function isDateObject( required input ){
-		return arguments.input.getClass().getName() IS "java.util.Date";
+		return arguments.input.getClass().getName() == "java.util.Date";
 	}
 
 	private boolean function isDateOnlyValue( required date value ){
@@ -2759,7 +2779,7 @@ component accessors="true"{
 
 	private void function doFillMergedCellsWithVisibleValue( required workbook, required sheet ){
 		if( !sheetHasMergedRegions( arguments.sheet ) ) return;
-		for( var regionIndex = 0; regionIndex LT arguments.sheet.getNumMergedRegions(); regionIndex++ ){
+		for( var regionIndex = 0; regionIndex < arguments.sheet.getNumMergedRegions(); regionIndex++ ){
 			var region = arguments.sheet.getMergedRegion( regionIndex );
 			var regionStartRowNumber = ( region.getFirstRow() +1 );
 			var regionEndRowNumber = ( region.getLastRow() +1 );
@@ -2822,7 +2842,7 @@ component accessors="true"{
 				break;
 				case "fillpattern":
 				 //CF 9 docs list "nofill" as opposed to "no_fill"
-					if( settingValue IS "nofill" ) settingValue = "NO_FILL";
+					if( settingValue == "nofill" ) settingValue = "NO_FILL";
 					var fillpattern = cellStyle.getFillPattern()[ JavaCast( "string", UCase( settingValue ) ) ];
 					cellStyle.setFillPattern( fillpattern );
 				break;
@@ -2955,7 +2975,7 @@ component accessors="true"{
 		var result = newJavaStringBuilder();
 		result.Append( initialHtml );
 		var endOfCellValuePosition = arguments.cellValue.Len();
-		for( var runIndex = 0; runIndex LT totalRuns; runIndex++ ){
+		for( var runIndex = 0; runIndex < totalRuns; runIndex++ ){
 			var run = {};
 			run.index = runIndex;
 			run.number = ( runIndex +1 );
@@ -2989,7 +3009,7 @@ component accessors="true"{
 		/* italic */
 		if( arguments.baseFont.getItalic() ) cssStyles.Append( fontStyleToCss( "italic", true ) );
 		/* underline/strike */
-		if( arguments.baseFont.getStrikeout() OR arguments.baseFont.getUnderline() ){
+		if( arguments.baseFont.getStrikeout() || arguments.baseFont.getUnderline() ){
 			var decorationValue	=	[];
 			if( arguments.baseFont.getStrikeout() ) decorationValue.Append( "line-through" );
 			if( arguments.baseFont.getUnderline() ) decorationValue.Append( "underline" );
@@ -3017,7 +3037,7 @@ component accessors="true"{
 	}
 
 	private boolean function fontColorIsBlack( required fontColor ){
-		return ( arguments.fontColor IS 8 ) OR ( arguments.fontColor IS 32767 );
+		return ( arguments.fontColor == 8 ) || ( arguments.fontColor == 32767 );
 	}
 
 	private string function fontStyleToCss( required string styleType, required any styleValue, workbook ){
@@ -3079,23 +3099,23 @@ component accessors="true"{
 		if( Compare( arguments.runFont.getBold(), arguments.baseFont.getBold() ) )
 			cssStyles.Append( fontStyleToCss( "bold", arguments.runFont.getBold() ) );
 		/* color */
-		if( Compare( arguments.runFont.getColor(), arguments.baseFont.getColor() ) AND !fontColorIsBlack( arguments.runFont.getColor() ) )
+		if( Compare( arguments.runFont.getColor(), arguments.baseFont.getColor() ) && !fontColorIsBlack( arguments.runFont.getColor() ) )
 			cssStyles.Append( fontStyleToCss( "color", arguments.runFont.getColor(), arguments.workbook ) );
 		/* italic */
 		if( Compare( arguments.runFont.getItalic(), arguments.baseFont.getItalic() ) )
 			cssStyles.Append( fontStyleToCss( "italic", arguments.runFont.getItalic() ) );
 		/* underline/strike */
-		if( Compare( arguments.runFont.getStrikeout(), arguments.baseFont.getStrikeout() ) OR Compare( arguments.runFont.getUnderline(), arguments.baseFont.getUnderline() ) ){
+		if( Compare( arguments.runFont.getStrikeout(), arguments.baseFont.getStrikeout() ) || Compare( arguments.runFont.getUnderline(), arguments.baseFont.getUnderline() ) ){
 			var decorationValue	=	[];
-			if( !arguments.baseFont.getStrikeout() AND arguments.runFont.getStrikeout() )
+			if( !arguments.baseFont.getStrikeout() && arguments.runFont.getStrikeout() )
 				decorationValue.Append( "line-through" );
-			if( !arguments.baseFont.getUnderline() AND arguments.runFont.getUnderline() )
+			if( !arguments.baseFont.getUnderline() && arguments.runFont.getUnderline() )
 				decorationValue.Append( "underline" );
 			//if either or both are in the base format, and either or both are NOT in the run format, set the decoration to none.
 			if(
-					( arguments.baseFont.getUnderline() OR arguments.baseFont.getStrikeout() )
-					AND
-					( !arguments.runFont.getUnderline() OR !arguments.runFont.getUnderline() )
+					( arguments.baseFont.getUnderline() || arguments.baseFont.getStrikeout() )
+					&&
+					( !arguments.runFont.getUnderline() || !arguments.runFont.getUnderline() )
 				){
 				cssStyles.Append( fontStyleToCss( "decoration", "none" ) );
 			}
@@ -3110,7 +3130,7 @@ component accessors="true"{
 	private array function convertSignedRGBToPositiveTriplet( required any signedRGB ){
 		// When signed, values of 128+ are negative: convert then to positive values
 		var result = [];
-		for( var i=1; i LTE 3; i++ ){
+		for( var i=1; i <= 3; i++ ){
 			result.Append( ( arguments.signedRGB[ i ] < 0 )? ( arguments.signedRGB[ i ] + 256 ): arguments.signedRGB[ i ] );
 		}
 		return result;
@@ -3194,7 +3214,7 @@ component accessors="true"{
 		/* Returns a struct containing RGB values from java.awt.Color for the color name passed in */
 		var findColor = arguments.colorName.Trim().UCase();
 		var color = CreateObject( "Java", "java.awt.Color" );
-		if( IsNull( color[ findColor ] ) OR !IsInstanceOf( color[ findColor ], "java.awt.Color" ) )//don't use member functions on color
+		if( IsNull( color[ findColor ] ) || !IsInstanceOf( color[ findColor ], "java.awt.Color" ) )//don't use member functions on color
 			Throw( type=this.getExceptionType(), message="Invalid color", detail="The color provided (#arguments.colorName#) is not valid." );
 		color = color[ findColor ];
 		var colorRGB = {
@@ -3228,7 +3248,7 @@ component accessors="true"{
 				break;
 		}
 		 // HSSF will return an empty string rather than a null if the color doesn't exist
-		if( IsNull( colorObject ) OR IsSimpleValue( colorObject) ) return "";
+		if( IsNull( colorObject ) || IsSimpleValue( colorObject) ) return "";
 		rgbTriplet = isXlsx? convertSignedRGBToPositiveTriplet( colorObject.getRGB() ): colorObject.getTriplet();
 		return ArrayToList( rgbTriplet );
 	}
@@ -3296,17 +3316,42 @@ component accessors="true"{
 	}
 
 	private query function _QueryNew( required array columnNames, required string columnTypeList, required array data ){
-		//ACF QueryNew() won't accept invalid variable names in the column name list (e.g. which names including commas), hence clunky workaround:
 		//NB: 'data' should not contain structs since they use the column name as key: always use array of row arrays instead
 		if( !this.getIsACF() ) return QueryNew( arguments.columnNames, arguments.columnTypeList, arguments.data );
+ 		if( !itemsContainAnInvalidVariableName( arguments.columnNames ) ) // Column names will be accepted and case preserved
+			return QueryNew( arguments.columnNames.ToList(), arguments.columnTypeList, arguments.data ); //ACF requires a list, not an array.
+		/*
+			ACF QueryNew() won't accept invalid variable names in the column name list (e.g. names including commas or spaces, or starting with a number).
+			The following workaround allows the original column names to be used
+		*/
+		// Create a query with safe column names
 		var totalColumns = arguments.columnNames.Len();
-		var tempColumnNames = [];
-		for( var i=1; i LTE totalColumns; i++ )
-			tempColumnNames[ i ] = "column#i#";
-		var q = QueryNew( tempColumnNames.ToList(), arguments.columnTypeList, arguments.data );
-		// restore the real names without ACF barfing on them
-		q.setColumnNames( arguments.columnNames );
-		return q;
+		var safeColumnNames = [];
+		for( var i=1; i <= totalColumns; i++ ){
+			safeColumnNames[ i ] = "C#i#";
+		}
+		var query = QueryNew( safeColumnNames.ToList(), arguments.columnTypeList, arguments.data );
+		// serialise the new query and column names to JSON strings, and restore the original column names using string replace
+		var safeColumnNamesAsJson = SerializeJSON( safeColumnNames );
+		var originalColumnNamesAsJson = SerializeJSON( arguments.columnNames );
+		var queryAsJsonColumnsReplaced = SerializeJSON( query ).Replace( 'COLUMNS":' & safeColumnNamesAsJson, 'COLUMNS":' & originalColumnNamesAsJson );
+		return DeserializeJSON( queryAsJsonColumnsReplaced, false );
+	}
+
+	private boolean function itemsContainAnInvalidVariableName( required array items ){
+		for( var item IN arguments.items ){
+			if( !IsValid( "variableName", item ) ) return true;
+		}
+		return false;
+	}
+
+	/* Common exceptions */
+	private void function throwOldExcelFormatException( required string path ){
+		Throw( type="cfsimplicity.lucee.spreadsheet.OldExcelFormatException", message="Invalid spreadsheet format", detail="The file #arguments.path# was saved in a format that is too old. Please save it as an 'Excel 97/2000/XP' file or later." );
+	}
+
+	private void function throwFileExistsException( required string path ){
+		Throw( type=this.getExceptionType(), message="File already exists", detail="The file path #arguments.path# already exists. Use 'overwrite=true' if you wish to overwrite it." );
 	}
 
 }

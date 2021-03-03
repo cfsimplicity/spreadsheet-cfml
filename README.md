@@ -123,6 +123,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [getCellType](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellType)
 * [getColumnWidth](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getColumnWidth)
 * [getColumnWidthInPixels](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getColumnWidthInPixels)
+* [getPOIVersion](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getPOIVersion)
 * [getPresetColorNames](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getPresetColorNames)
 * [getRowCount](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getRowCount)
 * [hideColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/hideColumn)
@@ -149,6 +150,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [setSheetPrintOrientation](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setSheetPrintOrientation)
 * [showColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/showColumn)
 * [showRow](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/showRow)
+* [writeToCsv](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/writeToCsv)
 
 ### Additional Convenience methods
 
@@ -160,6 +162,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [newStreamingXlsx](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/newStreamingXlsx)
 * [newXls](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/newXls)
 * [newXlsx](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/newXlsx)
+* [queryToCsv](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/queryToCsv)
 * [workbookFromCsv](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/workbookFromCsv)
 * [workbookFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/workbookFromQuery)
 * [writeFileFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/writeFileFromQuery)
@@ -220,9 +223,9 @@ For more details and options see: [Loading the POI java libraries](https://githu
 
 ## CommandBox Installation
 
-You can also download this library through CommandBox.
+You can also download this library through CommandBox/Forgebox.
 ```
-box install cfsimplicity/lucee-spreadsheet
+box install lucee-spreadsheet
 ```
 It will download the files into a modules directory and can be used just the same as downloading the files manually.
 

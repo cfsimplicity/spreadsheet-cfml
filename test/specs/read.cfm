@@ -238,13 +238,18 @@ describe( "read", function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "can handle column names containing commas", function(){
-		var path = getTestFilePath( "commaInColumnHeader.xls" );
+	it( "can handle column names containing commas or spaces", function(){
+		var path = getTestFilePath( "commaAndSpaceInColumnHeaders.xls" );
 		var actual = s.read( src=path, format="query", headerRow=1 );
-		//ACF cannot handle invalid column names in QueryNew() list. Use workaround
-		var expected = QueryNew( "col1,col2", "", [ [ "Frumpo", "McNugget" ] ] );
-		//Testbox can't compare the full query because of the problem with QueryNew(), just check the column names
-		expected.setColumnNames( [ "name", "surname,comma" ] );
+		var columnNames = [ "first name", "surname,comma" ];
+		if( s.getIsACF() ){
+			//ACF cannot handle invalid column names in QueryNew() list. Use workaround
+			var expected = QueryNew( "col1,col2", "", [ [ "Frumpo", "McNugget" ] ] );
+			expected.setColumnNames( columnNames );
+		}
+		else
+			var expected = QueryNew( columnNames, "", [ [ "Frumpo", "McNugget" ] ] );
+		//Testbox can't compare the full query, just check the column names
 		expect( actual.getColumnNames() ).toBe( expected.getColumnNames() );
 	});
 
@@ -263,11 +268,10 @@ describe( "read", function(){
 
 	it( "Can return a CSV string from an Excel file", function(){
 		var path = getTestFilePath( "test.xls" );
-		var crlf = Chr( 13 ) & Chr( 10 );
-		var expected = '"a","b"#crlf#"1","2015-04-01 00:00:00"#crlf#"2015-04-01 01:01:01","2"';
+		var expected = 'a,b#crlf#1,2015-04-01 00:00:00#crlf#2015-04-01 01:01:01,2';
 		var actual = s.read( src=path,format="csv" );
 		expect( actual ).toBe( expected );
-		expected = '"a","b"#crlf#"a","b"#crlf#"1","2015-04-01 00:00:00"#crlf#"2015-04-01 01:01:01","2"';
+		expected = 'a,b#crlf#a,b#crlf#1,2015-04-01 00:00:00#crlf#2015-04-01 01:01:01,2';
 		actual = s.read( src=path, format="csv", headerRow=1, includeHeaderRow=true );
 		expect( actual ).toBe( expected );
 	});
@@ -284,8 +288,7 @@ describe( "read", function(){
 
 	it( "Accepts a custom delimiter when generating CSV", function(){
 		var path = getTestFilePath( "test.xls" );
-		var crlf = Chr( 13 ) & Chr( 10 );
-		var expected = '"a"|"b"#crlf#"1"|"2015-04-01 00:00:00"#crlf#"2015-04-01 01:01:01"|"2"';
+		var expected = 'a|b#crlf#1|2015-04-01 00:00:00#crlf#2015-04-01 01:01:01|2';
 		var actual = s.read( src=path, format="csv", csvDelimiter="|" );
 		expect( actual ).toBe( expected );
 	});
