@@ -400,7 +400,7 @@ component accessors="true"{
 			if( arguments.insert && ( cellNum < row.getLastCellNum() ) ){
 				/*  need to get the last populated column number in the row, figure out which cells are impacted, and shift the impacted cells to the right to make room for the new data */
 				lastCellNum = row.getLastCellNum();
-				for( var i = lastCellNum; i EQ cellNum; i-- ){
+				for( var i = lastCellNum; i == cellNum; i-- ){
 					oldCell = row.getCell( JavaCast( "int", i -1 ) );
 					if( !IsNull( oldCell ) ){
 						cell = createCell( row, i );
@@ -502,13 +502,13 @@ component accessors="true"{
 				? "org.apache.poi.xssf.usermodel.XSSFClientAnchor"
 				: "org.apache.poi.hssf.usermodel.HSSFClientAnchor";
 		var theAnchor = loadClass( clientAnchorClass ).init();
-		if( numberOfAnchorElements EQ 4 ){
+		if( numberOfAnchorElements == 4 ){
 			theAnchor.setRow1( JavaCast( "int", ListFirst( arguments.anchor ) -1 ) );
 			theAnchor.setCol1( JavaCast( "int", ListGetAt( arguments.anchor, 2 ) -1 ) );
 			theAnchor.setRow2( JavaCast( "int", ListGetAt( arguments.anchor, 3 ) -1 ) );
 			theAnchor.setCol2( JavaCast( "int", ListLast( arguments.anchor ) -1 ) );
 		}
-		else if( numberOfAnchorElements EQ 8 ){
+		else if( numberOfAnchorElements == 8 ){
 			theAnchor.setDx1( JavaCast( "int", ListFirst( arguments.anchor ) ) );
 			theAnchor.setDy1( JavaCast( "int", ListGetAt( arguments.anchor, 2 ) ) );
 			theAnchor.setDx2( JavaCast( "int", ListGetAt( arguments.anchor, 3 ) ) );
@@ -811,7 +811,7 @@ component accessors="true"{
 		/* Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. */
 		var allRanges = extractRanges( arguments.range );
 		for( var thisRange in allRanges ){
-			if( thisRange.startAt EQ thisRange.endAt ){
+			if( thisRange.startAt == thisRange.endAt ){
 				/* Just one row */
 				deleteColumn( arguments.workbook, thisRange.startAt );
 				continue;
@@ -834,7 +834,7 @@ component accessors="true"{
 		/* Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. */
 		var allRanges = extractRanges( arguments.range );
 		for( var thisRange in allRanges ){
-			if( thisRange.startAt EQ thisRange.endAt ){
+			if( thisRange.startAt == thisRange.endAt ){
 				/* Just one row */
 				deleteRow( arguments.workbook, thisRange.startAt );
 				continue;
@@ -910,7 +910,7 @@ component accessors="true"{
 		var allRanges = extractRanges( arguments.range );
 		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
 		for( var thisRange in allRanges ){
-			if( thisRange.startAt EQ thisRange.endAt ){
+			if( thisRange.startAt == thisRange.endAt ){
 				/* Just one column */
 				formatColumn( arguments.workbook, arguments.format, thisRange.startAt, arguments.overwriteCurrentStyle, style );
 				continue;
@@ -949,7 +949,7 @@ component accessors="true"{
 		var allRanges = extractRanges( arguments.range );
 		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
 		for( var thisRange in allRanges ){
-			if( thisRange.startAt EQ thisRange.endAt ){
+			if( thisRange.startAt == thisRange.endAt ){
 				/* Just one row */
 				formatRow( arguments.workbook, arguments.format, thisRange.startAt, arguments.overwriteCurrentStyle, style );
 				continue;
@@ -1983,7 +1983,7 @@ component accessors="true"{
 		if( arguments.KeyExists( "sheetName" ) )
 			arguments.sheetNumber = ( getSheetIndexFromName( arguments.workbook, arguments.sheetName ) +1 );
 			//the position is valid if it an integer between 1 and the total number of sheets in the workbook
-		if( arguments.sheetNumber && ( arguments.sheetNumber EQ Round( arguments.sheetNumber ) ) && ( arguments.sheetNumber <= arguments.workbook.getNumberOfSheets() ) )
+		if( arguments.sheetNumber && ( arguments.sheetNumber == Round( arguments.sheetNumber ) ) && ( arguments.sheetNumber <= arguments.workbook.getNumberOfSheets() ) )
 			return true;
 		return false;
 	}
@@ -2068,7 +2068,7 @@ component accessors="true"{
 		var result = _QueryNew( sheet.columnNames, "", sheet.data );
 		if( !arguments.includeHiddenColumns ){
 			result = deleteHiddenColumnsFromQuery( sheet, result );
-			if( sheet.totalColumnCount EQ 0 ) return QueryNew( "" );// all columns were hidden: return a blank query.
+			if( sheet.totalColumnCount == 0 ) return QueryNew( "" );// all columns were hidden: return a blank query.
 		}
 		return result;
 	}
@@ -2117,7 +2117,7 @@ component accessors="true"{
 		,required numeric rowIndex
 		,boolean includeRichTextFormatting=false
 	){
-		if( ( arguments.rowIndex EQ arguments.sheet.headerRowIndex ) && !arguments.sheet.includeHeaderRow )
+		if( ( arguments.rowIndex == arguments.sheet.headerRowIndex ) && !arguments.sheet.includeHeaderRow )
 			return;
 		var rowData = [];
 		var row = arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
@@ -2157,13 +2157,13 @@ component accessors="true"{
 	private numeric function getFirstRowNum( required workbook ){
 		var sheet = getActiveSheet( arguments.workbook );
 		var firstRow = sheet.getFirstRowNum();
-		if( firstRow EQ 0 && sheet.getPhysicalNumberOfRows() EQ 0 ) return -1;
+		if( ( firstRow == 0 ) && ( sheet.getPhysicalNumberOfRows() == 0 ) ) return -1;
 		return firstRow;
 	}
 
 	private numeric function getLastRowNum( required workbook, sheet=getActiveSheet( arguments.workbook ) ){
 		var lastRow = arguments.sheet.getLastRowNum();
-		if( lastRow EQ 0 && arguments.sheet.getPhysicalNumberOfRows() EQ 0 )
+		if( ( lastRow == 0 ) && ( arguments.sheet.getPhysicalNumberOfRows() == 0 ) )
 			return -1; //The sheet is empty. Return -1 instead of 0
 		return lastRow;
 	}
@@ -2202,7 +2202,7 @@ component accessors="true"{
 		var elements = ListToArray( arguments.line, arguments.delimiter );
 		var potentialQuotes = 0;
 		arguments.line = ToString( arguments.line );
-		if( arguments.delimiter EQ "," && arguments.handleEmbeddedCommas ) potentialQuotes = arguments.line.ReplaceAll( "[^']", "" ).length();
+		if( ( arguments.delimiter == "," ) && arguments.handleEmbeddedCommas ) potentialQuotes = arguments.line.ReplaceAll( "[^']", "" ).length();
 		if( potentialQuotes <= 1 ) return elements;
 		//For ACF compatibility, find any values enclosed in single quotes and treat them as a single element.
 		var currentValue = 0;
@@ -2741,7 +2741,7 @@ component accessors="true"{
 			,category: documentProperties.getCategory()?:""
 			,comments: coreProperties.getComments()?:""
 			,creationDate: coreProperties.getCreateDateTime()?:""
-			,lastEdited: ( coreProperties.getEditTime() EQ 0 )? "": CreateObject( "java", "java.util.Date" ).init( coreProperties.getEditTime() )
+			,lastEdited: ( coreProperties.getEditTime() == 0 )? "": CreateObject( "java", "java.util.Date" ).init( coreProperties.getEditTime() )
 			,subject: coreProperties.getSubject()?:""
 			,title: coreProperties.getTitle()?:""
 			,lastAuthor: coreProperties.getLastAuthor()?:""
@@ -2966,8 +2966,7 @@ component accessors="true"{
 		var richTextValue = arguments.cell.getRichStringCellValue();
 		var totalRuns = richTextValue.numFormattingRuns();
 		var baseFont = arguments.cell.getCellStyle().getFont( arguments.workbook );
-		if( totalRuns EQ 0  )
-			return baseFontToHtml( arguments.workbook, arguments.cellValue, baseFont );
+		if( totalRuns == 0  ) return baseFontToHtml( arguments.workbook, arguments.cellValue, baseFont );
 		// Runs never start at the beginning: the string before the first run is always in the baseFont format
 		var startOfFirstRun = richTextValue.getIndexOfFormattingRun( 0 );
 		var initialContents = arguments.cellValue.Mid( 1, startOfFirstRun );//before the first run
@@ -2981,7 +2980,7 @@ component accessors="true"{
 			run.number = ( runIndex +1 );
 			run.font = arguments.workbook.getFontAt( richTextValue.getFontOfFormattingRun( runIndex ) );
 			run.css = runFontToHtml( arguments.workbook, baseFont, run.font );
-			run.isLast = ( run.number EQ totalRuns );
+			run.isLast = ( run.number == totalRuns );
 			run.startPosition = ( richTextValue.getIndexOfFormattingRun( runIndex ) +1 );
 			run.endPosition = run.isLast? endOfCellValuePosition: richTextValue.getIndexOfFormattingRun( ( runIndex +1 ) );
 			run.length = ( ( run.endPosition +1 ) -run.startPosition );
