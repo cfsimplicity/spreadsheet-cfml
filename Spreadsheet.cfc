@@ -1282,7 +1282,7 @@ component accessors="true"{
 			var rowValues = [];
 			for( var column IN columns ){
 				var cellValue = row[ column ];
-				if( isDateObject( cellValue ) ) cellValue = DateTimeFormat( cellValue, this.getDateFormats().DATETIME );
+				if( isDateObject( cellValue ) || _IsDate( cellValue ) ) cellValue = DateTimeFormat( cellValue, this.getDateFormats().DATETIME );
 				if( IsValid( "integer", cellValue ) ) cellValue = JavaCast( "string", cellValue );// prevent CSV writer converting 1 to 1.0
 				rowValues.Append( cellValue );
 			}
@@ -1316,6 +1316,7 @@ component accessors="true"{
 		,boolean includeRichTextFormatting=false
 		,string password
 		,string csvDelimiter=","
+		,any queryColumnTypes //'auto', list of types, or struct of column names/types mapping. Null means no types are specified.
 	){
 		if( arguments.KeyExists( "query" ) )
 			Throw( type=this.getExceptionType(), message="Invalid argument 'query'.", detail="Just use format='query' to return a query object" );
@@ -1341,15 +1342,18 @@ component accessors="true"{
 		if( arguments.KeyExists( "rows" ) ) args.rows = arguments.rows;
 		if( arguments.KeyExists( "columns" ) ) args.columns = arguments.columns;
 		if( arguments.KeyExists( "columnNames" ) ) args.columnNames = arguments.columnNames;
+		if( ( arguments.format == "query" ) && arguments.KeyExists( "queryColumnTypes" ) ){
+			if( IsStruct( arguments.queryColumnTypes ) && !arguments.KeyExists( "headerRow" ) && !arguments.KeyExists( "columnNames" ) )
+				Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also specify the 'headerRow' or provide 'columnNames'" );
+			args.queryColumnTypes = arguments.queryColumnTypes;
+		}
 		args.includeBlankRows = arguments.includeBlankRows;
 		args.fillMergedCellsWithVisibleValue = arguments.fillMergedCellsWithVisibleValue;
 		args.includeHiddenColumns = arguments.includeHiddenColumns;
 		args.includeRichTextFormatting = arguments.includeRichTextFormatting;
 		var generatedQuery = sheetToQuery( argumentCollection=args );
 		if( arguments.format == "query" ) return generatedQuery;
-		var args = {
-			query: generatedQuery
-		};
+		var args = { query: generatedQuery };
 		if( arguments.KeyExists( "headerRow" ) ){
 			args.headerRow = arguments.headerRow;
 			args.includeHeaderRow = arguments.includeHeaderRow;
@@ -2005,6 +2009,7 @@ component accessors="true"{
 		,string rows //range
 		,string columns //range
 		,string columnNames
+		,any queryColumnTypes=""
 	){
 		var sheet = {
 			includeHeaderRow: arguments.includeHeaderRow
@@ -2024,7 +2029,7 @@ component accessors="true"{
 			arguments.sheetNumber = ( getSheetIndexFromName( arguments.workbook, arguments.sheetName ) +1 );
 		}
 		sheet.object = getSheetByNumber( arguments.workbook, arguments.sheetNumber );
-		if( arguments.fillMergedCellsWithVisibleValue ) doFillMergedCellsWithVisibleValue( arguments.workbook,sheet.object );
+		if( arguments.fillMergedCellsWithVisibleValue ) doFillMergedCellsWithVisibleValue( arguments.workbook, sheet.object );
 		sheet.data = [];
 		if( arguments.KeyExists( "rows" ) ){
 			var allRanges = extractRanges( arguments.rows );
@@ -2040,8 +2045,11 @@ component accessors="true"{
 			for( var rowIndex = 0; rowIndex <= lastRowIndex; rowIndex++ )
 				addRowToSheetData( arguments.workbook, sheet, rowIndex, arguments.includeRichTextFormatting );
 		}
+		if( IsSimpleValue( arguments.queryColumnTypes ) && arguments.queryColumnTypes == "auto" )
+			arguments.queryColumnTypes = detectQueryColumnTypesFromSheetData( sheet );
 		//generate the query columns
 		if( arguments.KeyExists( "columnNames" ) && arguments.columnNames.Len() ){
+			// Use provided column names
 			arguments.columnNames = arguments.columnNames.ListToArray();
 			var specifiedColumnCount = arguments.columnNames.Len();
 			for( var i = 1; i <= sheet.totalColumnCount; i++ ){
@@ -2051,6 +2059,7 @@ component accessors="true"{
 			}
 		}
 		else if( sheet.hasHeaderRow ){
+			// use specified header row values as column names
 			var headerRowObject = sheet.object.getRow( JavaCast( "int", sheet.headerRowIndex ) );
 			var rowData = getRowData( arguments.workbook, headerRowObject, sheet.columnRanges );
 			var i = 1;
@@ -2065,7 +2074,10 @@ component accessors="true"{
 			for( var i=1; i <= sheet.totalColumnCount; i++ )
 				sheet.columnNames.Append( "column" & i );
 		}
-		var result = _QueryNew( sheet.columnNames, "", sheet.data );
+		//NB: after column names/headers generated
+		if( IsStruct( arguments.queryColumnTypes ) )
+			arguments.queryColumnTypes = getQueryColumnTypesListFromStruct( arguments.queryColumnTypes, sheet.columnNames );
+		var result = _QueryNew( sheet.columnNames, arguments.queryColumnTypes, sheet.data );
 		if( !arguments.includeHiddenColumns ){
 			result = deleteHiddenColumnsFromQuery( sheet, result );
 			if( sheet.totalColumnCount == 0 ) return QueryNew( "" );// all columns were hidden: return a blank query.
@@ -2436,6 +2448,45 @@ component accessors="true"{
 		return arguments.result;
 	}
 
+	private string function detectQueryColumnTypesFromSheetData( required struct sheet ){
+		var columnCount = arguments.sheet.totalColumnCount;
+		var types = [];
+		cfloop( from=1, to=columnCount, index="local.colNum" ){
+			types[ colNum ] = "";
+			for( var row in arguments.sheet.data ){
+				if( row.IsEmpty() || ( row.Len() < colNum ) ) continue;//next column (ACF: empty values are sometimes just missing from the array??)
+				var value = row[ colNum ];
+				var detectedType = detectValueDataType( value );
+				if( detectedType == "blank" ) continue;//next column
+				var mappedType = "VARCHAR";
+				switch( detectedType ){
+					case "numeric":
+						mappedType = "DOUBLE";
+						break;// from switch only
+					case "date":
+						mappedType = "TIMESTAMP";
+						break;
+				}
+				if( types[ colNum ].Len() && mappedType != types[ colNum ] ){
+					//mixed types
+					types[ colNum ] = "VARCHAR";
+					break;//stop processing row
+				}
+				types[ colNum ] = mappedType;
+			}
+			if( types[ colNum ].IsEmpty() ) types[ colNum ] = "VARCHAR";
+		}
+		return types.ToList();
+	}
+
+	private string function getQueryColumnTypesListFromStruct( required struct types, required array sheetColumnNames ){
+		var result = [];
+		for( var columnName IN arguments.sheetColumnNames ){
+			result.Append( arguments.types.KeyExists( columnName )? arguments.types[ columnName ]: "VARCHAR" );
+		}
+		return result.ToList();
+	}
+
 	private array function getQueryColumnTypeToCellTypeMappings( required query query ){
 		/* extract the query columns and data types  */
 		var metadata = GetMetaData( arguments.query );
@@ -2488,7 +2539,7 @@ component accessors="true"{
 		result.Append( "<tr>" );
 		var columnTag = arguments.isHeader? "th": "td";
 		for( var value in arguments.values ){
-			if( isDateObject( value ) ) value = DateTimeFormat( value, this.getDateFormats().DATETIME );
+			if( isDateObject( value ) || _IsDate( value ) ) value = DateTimeFormat( value, this.getDateFormats().DATETIME );
 			result.Append( "<#columnTag#>#value#</#columnTag#>" );
 		}
 		result.Append( "</tr>" );
@@ -3334,8 +3385,14 @@ component accessors="true"{
 		var safeColumnNamesAsJson = SerializeJSON( safeColumnNames );
 		var originalColumnNamesAsJson = SerializeJSON( arguments.columnNames );
 		var queryAsJsonColumnsReplaced = SerializeJSON( query ).Replace( 'COLUMNS":' & safeColumnNamesAsJson, 'COLUMNS":' & originalColumnNamesAsJson );
-		return DeserializeJSON( queryAsJsonColumnsReplaced, false );
+		query = DeserializeJSON( queryAsJsonColumnsReplaced, false );
+		if( arguments.columnTypeList.IsEmpty() ) return query;
+		// restore the column types which will have been lost in serialization. Method is ACF ONLY!
+		query.getMetaData().setColumnTypeNames( arguments.columnTypeList.ListToArray() );
+		return query;
 	}
+
+	/* General utilities */
 
 	private boolean function itemsContainAnInvalidVariableName( required array items ){
 		for( var item IN arguments.items ){
