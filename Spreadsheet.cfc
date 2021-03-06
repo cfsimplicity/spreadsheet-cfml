@@ -625,7 +625,7 @@ component accessors="true"{
 			shiftRows( arguments.workbook, arguments.row, lastRow, totalRows );
 		var currentRowIndex = insertAtRowIndex;
 		if( dataIsQuery ){
-			var queryColumns = getQueryColumnFormats( arguments.data );
+			var queryColumns = getQueryColumnTypeToCellTypeMappings( arguments.data );
 			var cellIndex = ( arguments.column -1 );
 			if( arguments.includeQueryColumnNames ){
 				var columnNames = _QueryColumnArray( arguments.data );
@@ -2436,7 +2436,7 @@ component accessors="true"{
 		return arguments.result;
 	}
 
-	private array function getQueryColumnFormats( required query query ){
+	private array function getQueryColumnTypeToCellTypeMappings( required query query ){
 		/* extract the query columns and data types  */
 		var metadata = GetMetaData( arguments.query );
 		/* assign default formats based on the data type of each column */
