@@ -2548,7 +2548,7 @@ component accessors="true"{
 	}
 
 	private boolean function isString( required input ){
-		return arguments.input.getClass().getName() == "java.lang.String";
+		return IsInstanceOf( arguments.input, "java.lang.String" );
 	}
 
 	/* Data type overriding */
@@ -2636,7 +2636,7 @@ component accessors="true"{
 	}
 
 	private boolean function isDateObject( required input ){
-		return arguments.input.getClass().getName() == "java.util.Date";
+		return IsInstanceOf( arguments.input, "java.util.Date" );
 	}
 
 	private boolean function isDateOnlyValue( required date value ){
