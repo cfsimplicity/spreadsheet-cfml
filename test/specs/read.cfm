@@ -342,7 +342,87 @@ describe( "read", function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "allows the query column types to be manually set using list", function(){
+		var workbook = s.new();
+		s.addRow( workbook, [ 1, 1.1, "string", CreateTime( 1, 0, 0 ) ] );
+		s.write( workbook, tempXlsPath, true );
+		var q = s.read( src=tempXlsPath, format="query", queryColumnTypes="Integer,Double,VarChar,Time" );
+		var columns = GetMetaData( q );
+		expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
+		expect( columns[ 2 ].typeName ).toBe( "DOUBLE" );
+		expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
+		expect( columns[ 4 ].typeName ).toBe( "TIME" );
+	});
+
+	describe( "query column type setting", function(){
+
+		it( "allows the query column types to be manually set where the column order isn't known, but the header row values are", function(){
+			var workbook = s.new();
+			s.addRows( workbook, [ [ "integer", "double", "string column", "time" ], [ 1, 1.1, "text", CreateTime( 1, 0, 0 ) ] ] );
+			s.write( workbook, tempXlsPath, true );
+			var columnTypes = { "string column": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
+			var q = s.read( src=tempXlsPath, format="query", queryColumnTypes=columnTypes, headerRow=1 );
+			var columns = GetMetaData( q );
+			expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
+			expect( columns[ 2 ].typeName ).toBe( "DOUBLE" );
+			expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 4 ].typeName ).toBe( "TIME" );
+		});
+
+		it( "allows the query column types to be manually set where the column order isn't known, but the column names are", function(){
+			var workbook = s.new();
+			s.addRows( workbook, [ [ 1, 1.1, "text", CreateTime( 1, 0, 0 ) ] ] );
+			s.write( workbook, tempXlsPath, true );
+			var columnNames = "integer,double,string column,time";
+			var columnTypes = { "string": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
+			var q = s.read( src=tempXlsPath, format="query", queryColumnTypes=columnTypes, columnNames=columnNames );
+			var columns = GetMetaData( q );
+			expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
+			expect( columns[ 2 ].typeName ).toBe( "DOUBLE" );
+			expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 4 ].typeName ).toBe( "TIME" );
+		});
+
+		it( "allows the query column types to be automatically set", function(){
+			var workbook = s.new();
+			s.addRow( workbook, [ 1, 1.1, "string", Now() ] );
+			s.write( workbook, tempXlsPath, true );
+			var q = s.read( src=tempXlsPath, format="query", queryColumnTypes="auto" );
+			var columns = GetMetaData( q );
+			expect( columns[ 1 ].typeName ).toBe( "DOUBLE" );
+			expect( columns[ 2 ].typeName ).toBe( "DOUBLE" );
+			expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 4 ].typeName ).toBe( "TIMESTAMP" );
+		});
+
+		it( "automatic detecting of query column types ignores blank cells", function(){
+			var workbook = s.new();
+			var data = [
+				[ "", "", "", "" ],
+				[ "", 2, "test", Now() ],
+				[ 1, 1.1, "string", Now() ],
+				[ 1, "", "", "" ]
+			];
+			s.addRows( workbook, data );
+			s.write( workbook, tempXlsPath, true );
+			var q = s.read( src=tempXlsPath, format="query", queryColumnTypes="auto" );
+			var columns = GetMetaData( q );
+			expect( columns[ 1 ].typeName ).toBe( "DOUBLE" );
+			expect( columns[ 2 ].typeName ).toBe( "DOUBLE" );
+			expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 4 ].typeName ).toBe( "TIMESTAMP" );
+		});
+
+	});
+
 	describe( "read throws an exception if", function(){
+
+		it( "queryColumnTypes is specified as a 'columnName/type' struct, but headerRow and columnNames arguments are missing", function(){
+			expect( function(){
+				var columnTypes = { col1: "Integer" };
+				s.read( src=getTestFilePath( "test.xlsx" ), format="query", queryColumnTypes=columnTypes );
+			}).toThrow( regex="Invalid argument" );
+		});
 
 		it( "a formula can't be evaluated", function(){
 			expect( function(){

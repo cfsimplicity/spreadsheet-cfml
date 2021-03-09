@@ -1,3 +1,8 @@
+## 2.16.0 - 9 March 2021
+
+- Enhancements
+	- \#225 Allow query column types to be specified or auto-detected when reading a spreadsheet into a query
+
 ## 2.15.0 - 3 March 2021
 
 - Enhancements

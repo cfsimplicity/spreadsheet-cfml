@@ -1,7 +1,7 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="2.15.0" setter="false";
+	property name="version" default="2.16.0" setter="false";
 	property name="osgiLibBundleVersion" default="5.0.0.1"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="luceeSpreadsheet";
 	property name="exceptionType" default="cfsimplicity.lucee.spreadsheet" setter="false";
@@ -400,7 +400,7 @@ component accessors="true"{
 			if( arguments.insert && ( cellNum < row.getLastCellNum() ) ){
 				/*  need to get the last populated column number in the row, figure out which cells are impacted, and shift the impacted cells to the right to make room for the new data */
 				lastCellNum = row.getLastCellNum();
-				for( var i = lastCellNum; i EQ cellNum; i-- ){
+				for( var i = lastCellNum; i == cellNum; i-- ){
 					oldCell = row.getCell( JavaCast( "int", i -1 ) );
 					if( !IsNull( oldCell ) ){
 						cell = createCell( row, i );
@@ -502,13 +502,13 @@ component accessors="true"{
 				? "org.apache.poi.xssf.usermodel.XSSFClientAnchor"
 				: "org.apache.poi.hssf.usermodel.HSSFClientAnchor";
 		var theAnchor = loadClass( clientAnchorClass ).init();
-		if( numberOfAnchorElements EQ 4 ){
+		if( numberOfAnchorElements == 4 ){
 			theAnchor.setRow1( JavaCast( "int", ListFirst( arguments.anchor ) -1 ) );
 			theAnchor.setCol1( JavaCast( "int", ListGetAt( arguments.anchor, 2 ) -1 ) );
 			theAnchor.setRow2( JavaCast( "int", ListGetAt( arguments.anchor, 3 ) -1 ) );
 			theAnchor.setCol2( JavaCast( "int", ListLast( arguments.anchor ) -1 ) );
 		}
-		else if( numberOfAnchorElements EQ 8 ){
+		else if( numberOfAnchorElements == 8 ){
 			theAnchor.setDx1( JavaCast( "int", ListFirst( arguments.anchor ) ) );
 			theAnchor.setDy1( JavaCast( "int", ListGetAt( arguments.anchor, 2 ) ) );
 			theAnchor.setDx2( JavaCast( "int", ListGetAt( arguments.anchor, 3 ) ) );
@@ -625,7 +625,7 @@ component accessors="true"{
 			shiftRows( arguments.workbook, arguments.row, lastRow, totalRows );
 		var currentRowIndex = insertAtRowIndex;
 		if( dataIsQuery ){
-			var queryColumns = getQueryColumnFormats( arguments.data );
+			var queryColumns = getQueryColumnTypeToCellTypeMappings( arguments.data );
 			var cellIndex = ( arguments.column -1 );
 			if( arguments.includeQueryColumnNames ){
 				var columnNames = _QueryColumnArray( arguments.data );
@@ -811,7 +811,7 @@ component accessors="true"{
 		/* Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. */
 		var allRanges = extractRanges( arguments.range );
 		for( var thisRange in allRanges ){
-			if( thisRange.startAt EQ thisRange.endAt ){
+			if( thisRange.startAt == thisRange.endAt ){
 				/* Just one row */
 				deleteColumn( arguments.workbook, thisRange.startAt );
 				continue;
@@ -834,7 +834,7 @@ component accessors="true"{
 		/* Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. */
 		var allRanges = extractRanges( arguments.range );
 		for( var thisRange in allRanges ){
-			if( thisRange.startAt EQ thisRange.endAt ){
+			if( thisRange.startAt == thisRange.endAt ){
 				/* Just one row */
 				deleteRow( arguments.workbook, thisRange.startAt );
 				continue;
@@ -910,7 +910,7 @@ component accessors="true"{
 		var allRanges = extractRanges( arguments.range );
 		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
 		for( var thisRange in allRanges ){
-			if( thisRange.startAt EQ thisRange.endAt ){
+			if( thisRange.startAt == thisRange.endAt ){
 				/* Just one column */
 				formatColumn( arguments.workbook, arguments.format, thisRange.startAt, arguments.overwriteCurrentStyle, style );
 				continue;
@@ -949,7 +949,7 @@ component accessors="true"{
 		var allRanges = extractRanges( arguments.range );
 		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
 		for( var thisRange in allRanges ){
-			if( thisRange.startAt EQ thisRange.endAt ){
+			if( thisRange.startAt == thisRange.endAt ){
 				/* Just one row */
 				formatRow( arguments.workbook, arguments.format, thisRange.startAt, arguments.overwriteCurrentStyle, style );
 				continue;
@@ -1282,7 +1282,7 @@ component accessors="true"{
 			var rowValues = [];
 			for( var column IN columns ){
 				var cellValue = row[ column ];
-				if( isDateObject( cellValue ) ) cellValue = DateTimeFormat( cellValue, this.getDateFormats().DATETIME );
+				if( isDateObject( cellValue ) || _IsDate( cellValue ) ) cellValue = DateTimeFormat( cellValue, this.getDateFormats().DATETIME );
 				if( IsValid( "integer", cellValue ) ) cellValue = JavaCast( "string", cellValue );// prevent CSV writer converting 1 to 1.0
 				rowValues.Append( cellValue );
 			}
@@ -1316,6 +1316,7 @@ component accessors="true"{
 		,boolean includeRichTextFormatting=false
 		,string password
 		,string csvDelimiter=","
+		,any queryColumnTypes //'auto', list of types, or struct of column names/types mapping. Null means no types are specified.
 	){
 		if( arguments.KeyExists( "query" ) )
 			Throw( type=this.getExceptionType(), message="Invalid argument 'query'.", detail="Just use format='query' to return a query object" );
@@ -1341,15 +1342,18 @@ component accessors="true"{
 		if( arguments.KeyExists( "rows" ) ) args.rows = arguments.rows;
 		if( arguments.KeyExists( "columns" ) ) args.columns = arguments.columns;
 		if( arguments.KeyExists( "columnNames" ) ) args.columnNames = arguments.columnNames;
+		if( ( arguments.format == "query" ) && arguments.KeyExists( "queryColumnTypes" ) ){
+			if( IsStruct( arguments.queryColumnTypes ) && !arguments.KeyExists( "headerRow" ) && !arguments.KeyExists( "columnNames" ) )
+				Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also specify the 'headerRow' or provide 'columnNames'" );
+			args.queryColumnTypes = arguments.queryColumnTypes;
+		}
 		args.includeBlankRows = arguments.includeBlankRows;
 		args.fillMergedCellsWithVisibleValue = arguments.fillMergedCellsWithVisibleValue;
 		args.includeHiddenColumns = arguments.includeHiddenColumns;
 		args.includeRichTextFormatting = arguments.includeRichTextFormatting;
 		var generatedQuery = sheetToQuery( argumentCollection=args );
 		if( arguments.format == "query" ) return generatedQuery;
-		var args = {
-			query: generatedQuery
-		};
+		var args = { query: generatedQuery };
 		if( arguments.KeyExists( "headerRow" ) ){
 			args.headerRow = arguments.headerRow;
 			args.includeHeaderRow = arguments.includeHeaderRow;
@@ -1983,7 +1987,7 @@ component accessors="true"{
 		if( arguments.KeyExists( "sheetName" ) )
 			arguments.sheetNumber = ( getSheetIndexFromName( arguments.workbook, arguments.sheetName ) +1 );
 			//the position is valid if it an integer between 1 and the total number of sheets in the workbook
-		if( arguments.sheetNumber && ( arguments.sheetNumber EQ Round( arguments.sheetNumber ) ) && ( arguments.sheetNumber <= arguments.workbook.getNumberOfSheets() ) )
+		if( arguments.sheetNumber && ( arguments.sheetNumber == Round( arguments.sheetNumber ) ) && ( arguments.sheetNumber <= arguments.workbook.getNumberOfSheets() ) )
 			return true;
 		return false;
 	}
@@ -2005,6 +2009,7 @@ component accessors="true"{
 		,string rows //range
 		,string columns //range
 		,string columnNames
+		,any queryColumnTypes=""
 	){
 		var sheet = {
 			includeHeaderRow: arguments.includeHeaderRow
@@ -2024,7 +2029,7 @@ component accessors="true"{
 			arguments.sheetNumber = ( getSheetIndexFromName( arguments.workbook, arguments.sheetName ) +1 );
 		}
 		sheet.object = getSheetByNumber( arguments.workbook, arguments.sheetNumber );
-		if( arguments.fillMergedCellsWithVisibleValue ) doFillMergedCellsWithVisibleValue( arguments.workbook,sheet.object );
+		if( arguments.fillMergedCellsWithVisibleValue ) doFillMergedCellsWithVisibleValue( arguments.workbook, sheet.object );
 		sheet.data = [];
 		if( arguments.KeyExists( "rows" ) ){
 			var allRanges = extractRanges( arguments.rows );
@@ -2040,8 +2045,11 @@ component accessors="true"{
 			for( var rowIndex = 0; rowIndex <= lastRowIndex; rowIndex++ )
 				addRowToSheetData( arguments.workbook, sheet, rowIndex, arguments.includeRichTextFormatting );
 		}
+		if( IsSimpleValue( arguments.queryColumnTypes ) && arguments.queryColumnTypes == "auto" )
+			arguments.queryColumnTypes = detectQueryColumnTypesFromSheetData( sheet );
 		//generate the query columns
 		if( arguments.KeyExists( "columnNames" ) && arguments.columnNames.Len() ){
+			// Use provided column names
 			arguments.columnNames = arguments.columnNames.ListToArray();
 			var specifiedColumnCount = arguments.columnNames.Len();
 			for( var i = 1; i <= sheet.totalColumnCount; i++ ){
@@ -2051,6 +2059,7 @@ component accessors="true"{
 			}
 		}
 		else if( sheet.hasHeaderRow ){
+			// use specified header row values as column names
 			var headerRowObject = sheet.object.getRow( JavaCast( "int", sheet.headerRowIndex ) );
 			var rowData = getRowData( arguments.workbook, headerRowObject, sheet.columnRanges );
 			var i = 1;
@@ -2065,10 +2074,13 @@ component accessors="true"{
 			for( var i=1; i <= sheet.totalColumnCount; i++ )
 				sheet.columnNames.Append( "column" & i );
 		}
-		var result = _QueryNew( sheet.columnNames, "", sheet.data );
+		//NB: after column names/headers generated
+		if( IsStruct( arguments.queryColumnTypes ) )
+			arguments.queryColumnTypes = getQueryColumnTypesListFromStruct( arguments.queryColumnTypes, sheet.columnNames );
+		var result = _QueryNew( sheet.columnNames, arguments.queryColumnTypes, sheet.data );
 		if( !arguments.includeHiddenColumns ){
 			result = deleteHiddenColumnsFromQuery( sheet, result );
-			if( sheet.totalColumnCount EQ 0 ) return QueryNew( "" );// all columns were hidden: return a blank query.
+			if( sheet.totalColumnCount == 0 ) return QueryNew( "" );// all columns were hidden: return a blank query.
 		}
 		return result;
 	}
@@ -2117,7 +2129,7 @@ component accessors="true"{
 		,required numeric rowIndex
 		,boolean includeRichTextFormatting=false
 	){
-		if( ( arguments.rowIndex EQ arguments.sheet.headerRowIndex ) && !arguments.sheet.includeHeaderRow )
+		if( ( arguments.rowIndex == arguments.sheet.headerRowIndex ) && !arguments.sheet.includeHeaderRow )
 			return;
 		var rowData = [];
 		var row = arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
@@ -2157,13 +2169,13 @@ component accessors="true"{
 	private numeric function getFirstRowNum( required workbook ){
 		var sheet = getActiveSheet( arguments.workbook );
 		var firstRow = sheet.getFirstRowNum();
-		if( firstRow EQ 0 && sheet.getPhysicalNumberOfRows() EQ 0 ) return -1;
+		if( ( firstRow == 0 ) && ( sheet.getPhysicalNumberOfRows() == 0 ) ) return -1;
 		return firstRow;
 	}
 
 	private numeric function getLastRowNum( required workbook, sheet=getActiveSheet( arguments.workbook ) ){
 		var lastRow = arguments.sheet.getLastRowNum();
-		if( lastRow EQ 0 && arguments.sheet.getPhysicalNumberOfRows() EQ 0 )
+		if( ( lastRow == 0 ) && ( arguments.sheet.getPhysicalNumberOfRows() == 0 ) )
 			return -1; //The sheet is empty. Return -1 instead of 0
 		return lastRow;
 	}
@@ -2202,7 +2214,7 @@ component accessors="true"{
 		var elements = ListToArray( arguments.line, arguments.delimiter );
 		var potentialQuotes = 0;
 		arguments.line = ToString( arguments.line );
-		if( arguments.delimiter EQ "," && arguments.handleEmbeddedCommas ) potentialQuotes = arguments.line.ReplaceAll( "[^']", "" ).length();
+		if( ( arguments.delimiter == "," ) && arguments.handleEmbeddedCommas ) potentialQuotes = arguments.line.ReplaceAll( "[^']", "" ).length();
 		if( potentialQuotes <= 1 ) return elements;
 		//For ACF compatibility, find any values enclosed in single quotes and treat them as a single element.
 		var currentValue = 0;
@@ -2436,7 +2448,46 @@ component accessors="true"{
 		return arguments.result;
 	}
 
-	private array function getQueryColumnFormats( required query query ){
+	private string function detectQueryColumnTypesFromSheetData( required struct sheet ){
+		var columnCount = arguments.sheet.totalColumnCount;
+		var types = [];
+		cfloop( from=1, to=columnCount, index="local.colNum" ){
+			types[ colNum ] = "";
+			for( var row in arguments.sheet.data ){
+				if( row.IsEmpty() || ( row.Len() < colNum ) ) continue;//next column (ACF: empty values are sometimes just missing from the array??)
+				var value = row[ colNum ];
+				var detectedType = detectValueDataType( value );
+				if( detectedType == "blank" ) continue;//next column
+				var mappedType = "VARCHAR";
+				switch( detectedType ){
+					case "numeric":
+						mappedType = "DOUBLE";
+						break;// from switch only
+					case "date":
+						mappedType = "TIMESTAMP";
+						break;
+				}
+				if( types[ colNum ].Len() && mappedType != types[ colNum ] ){
+					//mixed types
+					types[ colNum ] = "VARCHAR";
+					break;//stop processing row
+				}
+				types[ colNum ] = mappedType;
+			}
+			if( types[ colNum ].IsEmpty() ) types[ colNum ] = "VARCHAR";
+		}
+		return types.ToList();
+	}
+
+	private string function getQueryColumnTypesListFromStruct( required struct types, required array sheetColumnNames ){
+		var result = [];
+		for( var columnName IN arguments.sheetColumnNames ){
+			result.Append( arguments.types.KeyExists( columnName )? arguments.types[ columnName ]: "VARCHAR" );
+		}
+		return result.ToList();
+	}
+
+	private array function getQueryColumnTypeToCellTypeMappings( required query query ){
 		/* extract the query columns and data types  */
 		var metadata = GetMetaData( arguments.query );
 		/* assign default formats based on the data type of each column */
@@ -2488,7 +2539,7 @@ component accessors="true"{
 		result.Append( "<tr>" );
 		var columnTag = arguments.isHeader? "th": "td";
 		for( var value in arguments.values ){
-			if( isDateObject( value ) ) value = DateTimeFormat( value, this.getDateFormats().DATETIME );
+			if( isDateObject( value ) || _IsDate( value ) ) value = DateTimeFormat( value, this.getDateFormats().DATETIME );
 			result.Append( "<#columnTag#>#value#</#columnTag#>" );
 		}
 		result.Append( "</tr>" );
@@ -2548,7 +2599,7 @@ component accessors="true"{
 	}
 
 	private boolean function isString( required input ){
-		return arguments.input.getClass().getName() == "java.lang.String";
+		return IsInstanceOf( arguments.input, "java.lang.String" );
 	}
 
 	/* Data type overriding */
@@ -2636,7 +2687,7 @@ component accessors="true"{
 	}
 
 	private boolean function isDateObject( required input ){
-		return arguments.input.getClass().getName() == "java.util.Date";
+		return IsInstanceOf( arguments.input, "java.util.Date" );
 	}
 
 	private boolean function isDateOnlyValue( required date value ){
@@ -2741,7 +2792,7 @@ component accessors="true"{
 			,category: documentProperties.getCategory()?:""
 			,comments: coreProperties.getComments()?:""
 			,creationDate: coreProperties.getCreateDateTime()?:""
-			,lastEdited: ( coreProperties.getEditTime() EQ 0 )? "": CreateObject( "java", "java.util.Date" ).init( coreProperties.getEditTime() )
+			,lastEdited: ( coreProperties.getEditTime() == 0 )? "": CreateObject( "java", "java.util.Date" ).init( coreProperties.getEditTime() )
 			,subject: coreProperties.getSubject()?:""
 			,title: coreProperties.getTitle()?:""
 			,lastAuthor: coreProperties.getLastAuthor()?:""
@@ -2966,8 +3017,7 @@ component accessors="true"{
 		var richTextValue = arguments.cell.getRichStringCellValue();
 		var totalRuns = richTextValue.numFormattingRuns();
 		var baseFont = arguments.cell.getCellStyle().getFont( arguments.workbook );
-		if( totalRuns EQ 0  )
-			return baseFontToHtml( arguments.workbook, arguments.cellValue, baseFont );
+		if( totalRuns == 0  ) return baseFontToHtml( arguments.workbook, arguments.cellValue, baseFont );
 		// Runs never start at the beginning: the string before the first run is always in the baseFont format
 		var startOfFirstRun = richTextValue.getIndexOfFormattingRun( 0 );
 		var initialContents = arguments.cellValue.Mid( 1, startOfFirstRun );//before the first run
@@ -2981,7 +3031,7 @@ component accessors="true"{
 			run.number = ( runIndex +1 );
 			run.font = arguments.workbook.getFontAt( richTextValue.getFontOfFormattingRun( runIndex ) );
 			run.css = runFontToHtml( arguments.workbook, baseFont, run.font );
-			run.isLast = ( run.number EQ totalRuns );
+			run.isLast = ( run.number == totalRuns );
 			run.startPosition = ( richTextValue.getIndexOfFormattingRun( runIndex ) +1 );
 			run.endPosition = run.isLast? endOfCellValuePosition: richTextValue.getIndexOfFormattingRun( ( runIndex +1 ) );
 			run.length = ( ( run.endPosition +1 ) -run.startPosition );
@@ -3335,8 +3385,14 @@ component accessors="true"{
 		var safeColumnNamesAsJson = SerializeJSON( safeColumnNames );
 		var originalColumnNamesAsJson = SerializeJSON( arguments.columnNames );
 		var queryAsJsonColumnsReplaced = SerializeJSON( query ).Replace( 'COLUMNS":' & safeColumnNamesAsJson, 'COLUMNS":' & originalColumnNamesAsJson );
-		return DeserializeJSON( queryAsJsonColumnsReplaced, false );
+		query = DeserializeJSON( queryAsJsonColumnsReplaced, false );
+		if( arguments.columnTypeList.IsEmpty() ) return query;
+		// restore the column types which will have been lost in serialization. Method is ACF ONLY!
+		query.getMetaData().setColumnTypeNames( arguments.columnTypeList.ListToArray() );
+		return query;
 	}
+
+	/* General utilities */
 
 	private boolean function itemsContainAnInvalidVariableName( required array items ){
 		for( var item IN arguments.items ){
