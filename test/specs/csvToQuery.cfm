@@ -6,11 +6,7 @@ describe( "csvToQuery", function(){
 	});
 
 	it( "converts a basic comma delimited, double quote qualified csv string to a query", function(){
-		savecontent variable="local.csv"{
-			WriteOutput( '
-"Frumpo McNugget",12345
-		');
-		};
+		var csv = '"Frumpo McNugget",12345';
 		var actual = s.csvToQuery( csv );
 		expect( actual ).toBe( basicExpectedQuery ); 
 	});
@@ -32,82 +28,49 @@ describe( "csvToQuery", function(){
 	});
 
 	it( "can handle an embedded delimiter", function(){
-		savecontent variable="local.csv"{
-			WriteOutput( '
-"McNugget,Frumpo",12345
-			');
-		};
+		var csv = '"McNugget,Frumpo",12345';
 		var expected = QueryNew( "column1,column2", "", [ [ "McNugget,Frumpo", "12345" ] ] );
 		var actual = s.csvToQuery( csv );
 		expect( actual ).toBe( expected ); 
 	});
 
 	it( "can handle an embedded double-quote", function(){
-		savecontent variable="local.csv"{
-			WriteOutput( '
-"Frumpo ""Frumpie"" McNugget",12345
-		');
-		};
+		var csv = '"Frumpo ""Frumpie"" McNugget",12345';
 		var expected = QueryNew( "column1,column2", "", [ [ "Frumpo ""Frumpie"" McNugget", "12345" ] ] );
 		var actual = s.csvToQuery( csv );
 		expect( actual ).toBe( expected ); 
 	});
 
 	it( "can handle an embedded line break", function(){
-		savecontent variable="local.csv"{
-			WriteOutput( '
-"A line#Chr( 10 )#break",12345
-		');
-		};
+		var csv = '"A line#Chr( 10 )#break",12345';
 		var expected = QueryNew( "column1,column2", "", [ [ "A line#Chr( 10 )#break", "12345" ] ] );
 		var actual = s.csvToQuery( csv );
 		expect( actual ).toBe( expected ); 
 	});
 
 	it( "can handle an embedded line break when there are surrounding spaces", function(){
-		savecontent variable="local.csv"{
-			WriteOutput( '
-A space precedes the next field value, "A line#Chr( 10 )#break"
-		');
-		};
+		var csv = 'A space precedes the next field value, "A line#Chr( 10 )#break"';
 		var expected = QueryNew( "column1,column2", "", [ [ "A space precedes the next field value", "A line#Chr( 10 )#break" ] ] );
 		var actual = s.csvToQuery( csv );
 		expect( actual ).toBe( expected ); 
 	});
 
 	it( "can handle empty cells", function(){
-		savecontent variable="local.csv"{
-			WriteOutput( '
-Frumpo,McNugget
-Susi
-Susi,
-,Sorglos
-		');
-		};
+		var csv = 'Frumpo,McNugget#crlf#Susi#crlf#Susi,#crlf#,Sorglos#crlf#		';
 		var expected = QueryNew( "column1,column2", "", [ [ "Frumpo", "McNugget" ], [ "Susi", "" ], [ "Susi", "" ], [ "", "Sorglos" ] ] );
 		var actual = s.csvToQuery( csv );
 		expect( actual ).toBe( expected ); 
 	});
 
 	it( "can treat the first line as the column names", function(){
-		savecontent variable="local.csv"{
-			WriteOutput( '
-Name,Phone
-Frumpo,12345
-		');
-		};
+		var csv = 'Name,Phone#crlf#Frumpo,12345';
 		var expected = QueryNew( "Name,Phone", "", [ [ "Frumpo", "12345" ] ] );
 		var actual = s.csvToQuery( csv=csv, firstRowIsHeader=true );
 		expect( actual ).toBe( expected ); 
 	});
 
 	it( "can handle spaces in header/column names", function(){
-		savecontent variable="local.csv"{
-			WriteOutput( '
-Name,Phone Number
-Frumpo,12345
-		');
-		};
+		var csv = 'Name,Phone Number#crlf#Frumpo,12345';
 		if( s.getIsACF() ){
 			//ACF won't allow spaces in column names when creating queries programmatically. Use setColumnNames() to override:
 			var expected = QueryNew( "column1,column2", "", [ [ "Frumpo", "12345" ] ] );
@@ -132,11 +95,7 @@ Frumpo,12345
 	describe( "delimiter handling", function(){
 
 		it( "can accept an alternative delimiter", function(){
-			savecontent variable="local.csv"{
-				WriteOutput( '
-"Frumpo McNugget"|12345
-				');
-			};
+			var csv = '"Frumpo McNugget"|12345';
 			//named args
 			var actual = s.csvToQuery( csv=csv, delimiter="|" );
 			expect( actual ).toBe( basicExpectedQuery );
@@ -146,16 +105,57 @@ Frumpo,12345
 		});
 
 		it( "has special handling for tab delimited data", function(){
-			savecontent variable="local.csv"{
-				WriteOutput( '
-"Frumpo McNugget"#Chr( 9 )#12345
-				');
-			};
+			var csv = '"Frumpo McNugget"#Chr( 9 )#12345';
 			var validTabValues = [ "#Chr( 9 )#", "\t", "tab", "TAB" ];
 			for( var value in validTabValues ){
 				var actual = s.csvToQuery( csv=csv, delimiter="#value#" );
 				expect( actual ).toBe( basicExpectedQuery );
 			}
+		});
+
+	});
+
+	describe( "query column type setting", function(){
+
+		it( "allows the query column types to be manually set using a list", function(){
+			var csv = '1,1.1,"string",#CreateTime( 1, 0, 0 )#';
+			var q = s.csvToQuery( csv=csv, queryColumnTypes="Integer,Double,VarChar,Time" );
+			var columns = GetMetaData( q );
+			expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
+			expect( columns[ 2 ].typeName ).toBe( "DOUBLE" );
+			expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 4 ].typeName ).toBe( "TIME" );
+		});
+
+		it( "allows the query column types to be manually set where the column order isn't known, but the header row values are", function(){
+			var csv = 'integer,double,"string column",time#crlf#1,1.1,string,12:00';
+			var columnTypes = { "string column": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
+			var q = s.csvToQuery( csv=csv, queryColumnTypes="Integer,Double,VarChar,Time", firstRowIsHeader=true );
+			var columns = GetMetaData( q );
+			expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
+			expect( columns[ 2 ].typeName ).toBe( "DOUBLE" );
+			expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 4 ].typeName ).toBe( "TIME" );
+		});
+
+		it( "allows the query column types to be automatically set", function(){
+			var csv = '1,1.1,"string",2021-03-10 12:00:00';
+			var q = s.csvToQuery( csv=csv, queryColumnTypes="auto" );
+			var columns = GetMetaData( q );
+			expect( columns[ 1 ].typeName ).toBe( "DOUBLE" );
+			expect( columns[ 2 ].typeName ).toBe( "DOUBLE" );
+			expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 4 ].typeName ).toBe( "TIMESTAMP" );
+		});
+
+		it( "automatic detecting of query column types ignores blank cells", function(){
+			var csv = ',,,#crlf#,2,test,2021-03-10 12:00:00#crlf#1,1.1,string,2021-03-10 12:00:00#crlf#1,,,';
+			var q = s.csvToQuery( csv=csv, queryColumnTypes="auto" );
+			var columns = GetMetaData( q );
+			expect( columns[ 1 ].typeName ).toBe( "DOUBLE" );
+			expect( columns[ 2 ].typeName ).toBe( "DOUBLE" );
+			expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 4 ].typeName ).toBe( "TIMESTAMP" );
 		});
 
 	});
@@ -188,6 +188,14 @@ Frumpo,12345
 			expect( function(){
 				s.csvToQuery( filepath=path );
 			}).toThrow( regex="Invalid csv file" );
+		});
+
+		it( "queryColumnTypes is specified as a 'columnName/type' struct, but firstRowIsHeader is not set to true", function(){
+			expect( function(){
+				// using 'var' keyword here causes ACF2021 to throw exception
+				local.columnTypes = { col1: "Integer" };
+				local.q = s.csvToQuery( csv="1", queryColumnTypes=columnTypes );
+			}).toThrow( regex="Invalid argument" );
 		});
 
 	});

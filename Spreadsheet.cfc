@@ -133,12 +133,13 @@ component accessors="true"{
 		return binary;
 	}
 
-	public function csvToQuery(
+	public query function csvToQuery(
 		string csv=""
 		,string filepath=""
 		,boolean firstRowIsHeader=false
 		,boolean trim=true
 		,string delimiter
+		,any queryColumnTypes="" //'auto', list of types, or struct of column names/types mapping
 	){
 		var csvIsString = arguments.csv.Len();
 		var csvIsFile = arguments.filepath.Len();
@@ -153,6 +154,8 @@ component accessors="true"{
 				Throw( type=this.getExceptionType(), message="Invalid csv file", detail="#arguments.filepath# does not appear to be a text/csv file" );
 			arguments.csv = FileRead( arguments.filepath );
 		}
+		if( IsStruct( arguments.queryColumnTypes ) && !arguments.firstRowIsHeader )
+				Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct the 'firstRowIsHeader' argument must be true" );
 		if( arguments.trim ) arguments.csv = arguments.csv.Trim();
 		if( arguments.KeyExists( "delimiter" ) ){
 			if( delimiterIsTab( arguments.delimiter ) )
@@ -167,7 +170,7 @@ component accessors="true"{
 			var format = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
 		var parsed = loadClass( "org.apache.commons.csv.CSVParser" ).parse( arguments.csv, format );
 		var records = parsed.getRecords();
-		var rows = [];
+		var data = [];
 		var maxColumnCount = 0;
 		for( var record in records ){
 			var row = [];
@@ -178,19 +181,24 @@ component accessors="true"{
 				maxColumnCount = Max( maxColumnCount, columnNumber );
 				row.Append( iterator.next() );
 			}
-			rows.Append( row );
+			data.Append( row );
 		}
-		var columnList = [];
-		if( arguments.firstRowIsHeader ) var headerRow = rows[ 1 ];
+		var columnNames = [];
+		if( arguments.firstRowIsHeader ) var headerRow = data[ 1 ];
 		for( var i=1; i <= maxColumnCount; i++ ){
 			if( arguments.firstRowIsHeader && !IsNull( headerRow[ i ] ) && headerRow[ i ].Len() ){
-				columnList.Append( JavaCast( "string", headerRow[ i ] ) );
+				columnNames.Append( headerRow[ i ] );
 				continue;
 			}
-			columnList.Append( "column#i#" );
+			columnNames.Append( "column#i#" );
 		}
-		if( arguments.firstRowIsHeader ) rows.DeleteAt( 1 );
-		return _QueryNew( columnList, "", rows );
+		if( arguments.firstRowIsHeader ) data.DeleteAt( 1 );
+		//NB: after column names/headers generated
+		if( IsStruct( arguments.queryColumnTypes ) )
+			arguments.queryColumnTypes = getQueryColumnTypesListFromStruct( arguments.queryColumnTypes, columnNames );
+		else if( IsSimpleValue( arguments.queryColumnTypes ) && arguments.queryColumnTypes == "auto" )
+			arguments.queryColumnTypes = detectQueryColumnTypesFromData( data, maxColumnCount );
+		return _QueryNew( columnNames, arguments.queryColumnTypes, data );
 	}
 
 	public void function download( required workbook, required string filename, string contentType ){
@@ -2045,8 +2053,6 @@ component accessors="true"{
 			for( var rowIndex = 0; rowIndex <= lastRowIndex; rowIndex++ )
 				addRowToSheetData( arguments.workbook, sheet, rowIndex, arguments.includeRichTextFormatting );
 		}
-		if( IsSimpleValue( arguments.queryColumnTypes ) && arguments.queryColumnTypes == "auto" )
-			arguments.queryColumnTypes = detectQueryColumnTypesFromSheetData( sheet );
 		//generate the query columns
 		if( arguments.KeyExists( "columnNames" ) && arguments.columnNames.Len() ){
 			// Use provided column names
@@ -2077,6 +2083,8 @@ component accessors="true"{
 		//NB: after column names/headers generated
 		if( IsStruct( arguments.queryColumnTypes ) )
 			arguments.queryColumnTypes = getQueryColumnTypesListFromStruct( arguments.queryColumnTypes, sheet.columnNames );
+		else if( IsSimpleValue( arguments.queryColumnTypes ) && arguments.queryColumnTypes == "auto" )
+			arguments.queryColumnTypes = detectQueryColumnTypesFromData( sheet.data, sheet.totalColumnCount );
 		var result = _QueryNew( sheet.columnNames, arguments.queryColumnTypes, sheet.data );
 		if( !arguments.includeHiddenColumns ){
 			result = deleteHiddenColumnsFromQuery( sheet, result );
@@ -2448,12 +2456,11 @@ component accessors="true"{
 		return arguments.result;
 	}
 
-	private string function detectQueryColumnTypesFromSheetData( required struct sheet ){
-		var columnCount = arguments.sheet.totalColumnCount;
+	private string function detectQueryColumnTypesFromData( required array data, required numeric columnCount ){
 		var types = [];
-		cfloop( from=1, to=columnCount, index="local.colNum" ){
+		cfloop( from=1, to=arguments.columnCount, index="local.colNum" ){
 			types[ colNum ] = "";
-			for( var row in arguments.sheet.data ){
+			for( var row in arguments.data ){
 				if( row.IsEmpty() || ( row.Len() < colNum ) ) continue;//next column (ACF: empty values are sometimes just missing from the array??)
 				var value = row[ colNum ];
 				var detectedType = detectValueDataType( value );
