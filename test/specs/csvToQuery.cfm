@@ -115,6 +115,26 @@ describe( "csvToQuery", function(){
 
 	});
 
+	describe( "query column name setting", function(){
+
+		it( "Allows column names to be specified as an array when reading a csv into a query", function(){
+			var csv = '"Frumpo McNugget",12345';
+			var columnNames = [ "name", "phone number" ];
+			var q = s.csvToQuery( csv=csv, queryColumnNames=columnNames, firstRowIsHeader=true );
+			expect( q.getColumnNames()[ 1 ] ).toBe( columnNames[ 1 ] );
+			expect( q.getColumnNames()[ 2 ] ).toBe( columnNames[ 2 ] );
+		});
+
+		it( "ColumnNames argument overrides firstRowIsHeader: none of the header row values will be used", function(){
+			var csv = 'header1,header2#crlf#"Frumpo McNugget",12345';
+			var columnNames = [ "name", "phone number" ];
+			var q = s.csvToQuery( csv=csv, queryColumnNames=columnNames );
+			expect( q.getColumnNames()[ 1 ] ).toBe( columnNames[ 1 ] );
+			expect( q.getColumnNames()[ 2 ] ).toBe( columnNames[ 2 ] );
+		});
+
+	});
+
 	describe( "query column type setting", function(){
 
 		it( "allows the query column types to be manually set using a list", function(){
@@ -131,6 +151,18 @@ describe( "csvToQuery", function(){
 			var csv = 'integer,double,"string column",time#crlf#1,1.1,string,12:00';
 			var columnTypes = { "string column": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
 			var q = s.csvToQuery( csv=csv, queryColumnTypes="Integer,Double,VarChar,Time", firstRowIsHeader=true );
+			var columns = GetMetaData( q );
+			expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
+			expect( columns[ 2 ].typeName ).toBe( "DOUBLE" );
+			expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 4 ].typeName ).toBe( "TIME" );
+		});
+
+		it( "allows the query column types to be manually set where the column order isn't known, but the column names are", function(){
+			var csv = '1,1.1,"string",#CreateTime( 1, 0, 0 )#';
+			var columnNames = [ "integer", "double", "string column", "time" ];
+			var columnTypes = { "string": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
+			var q = s.csvToQuery( csv=csv, queryColumnTypes=columnTypes, queryColumnNames=columnNames );
 			var columns = GetMetaData( q );
 			expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
 			expect( columns[ 2 ].typeName ).toBe( "DOUBLE" );
@@ -190,7 +222,7 @@ describe( "csvToQuery", function(){
 			}).toThrow( regex="Invalid csv file" );
 		});
 
-		it( "queryColumnTypes is specified as a 'columnName/type' struct, but firstRowIsHeader is not set to true", function(){
+		it( "queryColumnTypes is specified as a 'columnName/type' struct, but firstRowIsHeader is not set to true AND columnNames are not provided", function(){
 			expect( function(){
 				// using 'var' keyword here causes ACF2021 to throw exception
 				local.columnTypes = { col1: "Integer" };

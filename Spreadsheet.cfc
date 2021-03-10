@@ -139,6 +139,7 @@ component accessors="true"{
 		,boolean firstRowIsHeader=false
 		,boolean trim=true
 		,string delimiter
+		,array queryColumnNames
 		,any queryColumnTypes="" //'auto', list of types, or struct of column names/types mapping
 	){
 		var csvIsString = arguments.csv.Len();
@@ -154,8 +155,8 @@ component accessors="true"{
 				Throw( type=this.getExceptionType(), message="Invalid csv file", detail="#arguments.filepath# does not appear to be a text/csv file" );
 			arguments.csv = FileRead( arguments.filepath );
 		}
-		if( IsStruct( arguments.queryColumnTypes ) && !arguments.firstRowIsHeader )
-				Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct the 'firstRowIsHeader' argument must be true" );
+		if( IsStruct( arguments.queryColumnTypes ) && !arguments.firstRowIsHeader && !arguments.KeyExists( "queryColumnNames" )  )
+				Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
 		if( arguments.trim ) arguments.csv = arguments.csv.Trim();
 		if( arguments.KeyExists( "delimiter" ) ){
 			if( delimiterIsTab( arguments.delimiter ) )
@@ -183,16 +184,20 @@ component accessors="true"{
 			}
 			data.Append( row );
 		}
-		var columnNames = [];
-		if( arguments.firstRowIsHeader ) var headerRow = data[ 1 ];
-		for( var i=1; i <= maxColumnCount; i++ ){
-			if( arguments.firstRowIsHeader && !IsNull( headerRow[ i ] ) && headerRow[ i ].Len() ){
-				columnNames.Append( headerRow[ i ] );
-				continue;
+		if( arguments.KeyExists( "queryColumnNames" ) && arguments.queryColumnNames.Len() )
+			var columnNames = arguments.queryColumnNames;
+		else {
+			var columnNames = [];
+			if( arguments.firstRowIsHeader ) var headerRow = data[ 1 ];
+			for( var i=1; i <= maxColumnCount; i++ ){
+				if( arguments.firstRowIsHeader && !IsNull( headerRow[ i ] ) && headerRow[ i ].Len() ){
+					columnNames.Append( headerRow[ i ] );
+					continue;
+				}
+				columnNames.Append( "column#i#" );
 			}
-			columnNames.Append( "column#i#" );
+			if( arguments.firstRowIsHeader ) data.DeleteAt( 1 );
 		}
-		if( arguments.firstRowIsHeader ) data.DeleteAt( 1 );
 		//NB: after column names/headers generated
 		if( IsStruct( arguments.queryColumnTypes ) )
 			arguments.queryColumnTypes = getQueryColumnTypesListFromStruct( arguments.queryColumnTypes, columnNames );
@@ -2054,16 +2059,8 @@ component accessors="true"{
 				addRowToSheetData( arguments.workbook, sheet, rowIndex, arguments.includeRichTextFormatting );
 		}
 		//generate the query columns
-		if( arguments.KeyExists( "columnNames" ) && arguments.columnNames.Len() ){
-			// Use provided column names
-			arguments.columnNames = arguments.columnNames.ListToArray();
-			var specifiedColumnCount = arguments.columnNames.Len();
-			for( var i = 1; i <= sheet.totalColumnCount; i++ ){
-				// IsNull/IsDefined doesn't work.
-				var columnName = arguments.columnNames[ i ]?: "column" & i;
-				sheet.columnNames.Append( columnName );
-			}
-		}
+		if( arguments.KeyExists( "columnNames" ) && arguments.columnNames.Len() )
+			sheet.columnNames = arguments.columnNames.ListToArray();
 		else if( sheet.hasHeaderRow ){
 			// use specified header row values as column names
 			var headerRowObject = sheet.object.getRow( JavaCast( "int", sheet.headerRowIndex ) );
