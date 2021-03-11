@@ -422,6 +422,18 @@ describe( "read", function(){
 			expect( columns[ 4 ].typeName ).toBe( "TIMESTAMP" );
 		});
 
+		it( "allows a default type to be set for all query columns", function(){
+			var workbook = s.new();
+			s.addRow( workbook, [ 1, 1.1, "string", Now() ] );
+			s.write( workbook, tempXlsPath, true );
+			var q = s.read( src=tempXlsPath, format="query", queryColumnTypes="VARCHAR" );
+			var columns = GetMetaData( q );
+			expect( columns[ 1 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 2 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 4 ].typeName ).toBe( "VARCHAR" );
+		});
+
 	});
 
 	describe( "read throws an exception if", function(){

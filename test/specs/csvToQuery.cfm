@@ -190,6 +190,16 @@ describe( "csvToQuery", function(){
 			expect( columns[ 4 ].typeName ).toBe( "TIMESTAMP" );
 		});
 
+		it( "allows a default type to be set for all query columns", function(){
+			var csv = '1,1.1,"string",#CreateTime( 1, 0, 0 )#';
+			var q = s.csvToQuery( csv=csv, queryColumnTypes="VARCHAR" );
+			var columns = GetMetaData( q );
+			expect( columns[ 1 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 2 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 4 ].typeName ).toBe( "VARCHAR" );
+		});
+
 	});
 
 	describe( "csvToQuery throws an exception if", function(){

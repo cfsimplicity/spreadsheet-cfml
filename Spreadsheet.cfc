@@ -140,7 +140,7 @@ component accessors="true"{
 		,boolean trim=true
 		,string delimiter
 		,array queryColumnNames
-		,any queryColumnTypes="" //'auto', list of types, or struct of column names/types mapping
+		,any queryColumnTypes="" //'auto', single default type e.g. 'VARCHAR', or list of types, or struct of column names/types mapping. Empty means no types are specified.
 	){
 		var csvIsString = arguments.csv.Len();
 		var csvIsFile = arguments.filepath.Len();
@@ -198,11 +198,7 @@ component accessors="true"{
 			}
 			if( arguments.firstRowIsHeader ) data.DeleteAt( 1 );
 		}
-		//NB: after column names/headers generated
-		if( IsStruct( arguments.queryColumnTypes ) )
-			arguments.queryColumnTypes = getQueryColumnTypesListFromStruct( arguments.queryColumnTypes, columnNames );
-		else if( IsSimpleValue( arguments.queryColumnTypes ) && arguments.queryColumnTypes == "auto" )
-			arguments.queryColumnTypes = detectQueryColumnTypesFromData( data, maxColumnCount );
+		arguments.queryColumnTypes = parseQueryColumnTypesArgument( arguments.queryColumnTypes, columnNames, maxColumnCount, data );
 		return _QueryNew( columnNames, arguments.queryColumnTypes, data );
 	}
 
@@ -2025,7 +2021,7 @@ component accessors="true"{
 		,string rows //range
 		,string columns //range
 		,any columnNames //list or array
-		,any queryColumnTypes=""
+		,any queryColumnTypes="" //'auto', single default type e.g. 'VARCHAR', or list of types, or struct of column names/types mapping. Empty means no types are specified.
 	){
 		var sheet = {
 			includeHeaderRow: arguments.includeHeaderRow
@@ -2080,11 +2076,7 @@ component accessors="true"{
 			for( var i=1; i <= sheet.totalColumnCount; i++ )
 				sheet.columnNames.Append( "column" & i );
 		}
-		//NB: after column names/headers generated
-		if( IsStruct( arguments.queryColumnTypes ) )
-			arguments.queryColumnTypes = getQueryColumnTypesListFromStruct( arguments.queryColumnTypes, sheet.columnNames );
-		else if( IsSimpleValue( arguments.queryColumnTypes ) && arguments.queryColumnTypes == "auto" )
-			arguments.queryColumnTypes = detectQueryColumnTypesFromData( sheet.data, sheet.totalColumnCount );
+		arguments.queryColumnTypes = parseQueryColumnTypesArgument( arguments.queryColumnTypes, sheet.columnNames, sheet.totalColumnCount, sheet.data );
 		var result = _QueryNew( sheet.columnNames, arguments.queryColumnTypes, sheet.data );
 		if( !arguments.includeHiddenColumns ){
 			result = deleteHiddenColumnsFromQuery( sheet, result );
@@ -2551,6 +2543,24 @@ component accessors="true"{
 		}
 		result.Append( "</tr>" );
 		return result.toString();
+	}
+
+	private string function parseQueryColumnTypesArgument(
+		required any queryColumnTypes
+		,required array columnNames
+		,required numeric columnCount
+		,required array data
+	){
+		if( IsStruct( arguments.queryColumnTypes ) )
+			return getQueryColumnTypesListFromStruct( arguments.queryColumnTypes, arguments.columnNames );
+		if( arguments.queryColumnTypes == "auto" )
+			return detectQueryColumnTypesFromData( arguments.data, arguments.columnCount );
+		if( ListLen( arguments.queryColumnTypes ) == 1 ){
+			//single type: use as default for all
+			var columnType = arguments.queryColumnTypes;
+			return RepeatString( "#columnType#,", arguments.columnCount-1 ) & columnType;
+		}
+		return arguments.queryColumnTypes;
 	}
 
 	/* Ranges */
