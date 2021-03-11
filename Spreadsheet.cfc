@@ -1354,7 +1354,10 @@ component accessors="true"{
 		}
 		if( arguments.KeyExists( "rows" ) ) args.rows = arguments.rows;
 		if( arguments.KeyExists( "columns" ) ) args.columns = arguments.columns;
-		if( arguments.KeyExists( "columnNames" ) ) args.columnNames = arguments.columnNames;
+		if( arguments.KeyExists( "columnNames" ) )
+			args.columnNames = arguments.columnNames; // columnNames is what cfspreadsheet action="read" uses
+		else if( arguments.KeyExists( "queryColumnNames" ) )
+			args.columnNames = arguments.queryColumnNames;// accept better alias `queryColumnNames` to match csvToQuery
 		if( ( arguments.format == "query" ) && arguments.KeyExists( "queryColumnTypes" ) ){
 			if( IsStruct( arguments.queryColumnTypes ) && !arguments.KeyExists( "headerRow" ) && !arguments.KeyExists( "columnNames" ) )
 				Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also specify the 'headerRow' or provide 'columnNames'" );
