@@ -1317,7 +1317,7 @@ component accessors="true"{
 		required string src
 		,string format
 		,string columns
-		,string columnNames
+		,any columnNames //list or array
 		,numeric headerRow
 		,string rows
 		,string sheetName
@@ -2021,7 +2021,7 @@ component accessors="true"{
 		,boolean includeRichTextFormatting=false
 		,string rows //range
 		,string columns //range
-		,string columnNames
+		,any columnNames //list or array
 		,any queryColumnTypes=""
 	){
 		var sheet = {
@@ -2060,7 +2060,7 @@ component accessors="true"{
 		}
 		//generate the query columns
 		if( arguments.KeyExists( "columnNames" ) && arguments.columnNames.Len() )
-			sheet.columnNames = arguments.columnNames.ListToArray();
+			sheet.columnNames = IsArray( arguments.columnNames )? arguments.columnNames: arguments.columnNames.ListToArray();
 		else if( sheet.hasHeaderRow ){
 			// use specified header row values as column names
 			var headerRowObject = sheet.object.getRow( JavaCast( "int", sheet.headerRowIndex ) );

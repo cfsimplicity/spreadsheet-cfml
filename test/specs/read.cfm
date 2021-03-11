@@ -221,6 +221,16 @@ describe( "read", function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Allows column names to be specified as an array when reading a sheet into a query", function(){
+		var path = getTestFilePath( "test.xls" );
+		actual = s.read( src=path, format="query", columnNames=[ "One", "Two" ] );
+		expected = QuerySim( "One,Two
+			a|b
+			1|#ParseDateTime( '2015-04-01 00:00:00' )#
+			#ParseDateTime( '2015-04-01 01:01:01' )#|2");
+		expect( actual ).toBe( expected );
+	});
+
 	it( "ColumnNames list overrides headerRow: none of the header row values will be used", function(){
 		var path = getTestFilePath( "test.xls" );
 		var actual = s.read( src=path, format="query", columnNames="One,Two", headerRow=1 );
