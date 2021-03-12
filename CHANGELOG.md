@@ -1,3 +1,11 @@
+## 2.17.0 - 12 March 2021
+
+- Enhancements
+	- \#229 Allow read() and csvToQuery() to accept a default queryColumnType
+	- \#228 Allow read() to accept columnNames as an array as well as a list
+	- \#227 Allow column names to be specified when using csvToQuery()
+	- \#226 Allow query column types to be specified or auto-detected when using csvToQuery()
+
 ## 2.16.0 - 9 March 2021
 
 - Enhancements
