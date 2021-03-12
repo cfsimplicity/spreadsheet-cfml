@@ -460,7 +460,7 @@ component accessors="true"{
 		,required string anchor
 	){
 		/*
-			TODO: Should we allow for passing in of a boolean indicating whether or not an image resize should happen (only works on jpg and png)? Currently does not resize. If resize is performed, it does mess up passing in x/y coordinates for image positioning.
+			 (legacy note from spreadsheet extension) TODO: Should we allow for passing in of a boolean indicating whether or not an image resize should happen (only works on jpg and png)? Currently does not resize. If resize is performed, it does mess up passing in x/y coordinates for image positioning.
 		 */
 		if( !arguments.KeyExists( "filepath" ) && !arguments.KeyExists( "imageData" ) )
 			Throw( type=this.getExceptionType(), message="Invalid argument combination", detail="You must provide either a file path or an image object" );
@@ -527,10 +527,10 @@ component accessors="true"{
 			theAnchor.setRow2( JavaCast( "int", ListGetAt( arguments.anchor, 7 ) -1 ) );
 			theAnchor.setCol2( JavaCast( "int", ListLast( arguments.anchor ) -1 ) );
 		}
-		/* TODO: need to look into createDrawingPatriarch() vs. getDrawingPatriarch() since create will kill any existing images. getDrawingPatriarch() throws  a null pointer exception when an attempt is made to add a second image to the spreadsheet  */
+		/* (legacy note from spreadsheet extension) TODO: need to look into createDrawingPatriarch() vs. getDrawingPatriarch() since create will kill any existing images. getDrawingPatriarch() throws  a null pointer exception when an attempt is made to add a second image to the spreadsheet  */
 		var drawingPatriarch = getActiveSheet( arguments.workbook ).createDrawingPatriarch();
 		var picture = drawingPatriarch.createPicture( theAnchor, imageIndex );
-		/* Disabling this for now--maybe let people pass in a boolean indicating whether or not they want the image resized?
+		/*  (legacy note from spreadsheet extension) Disabling this for now--maybe let people pass in a boolean indicating whether or not they want the image resized?
 		 if this is a png or jpg, resize the picture to its original size (this doesn't work for formats other than jpg and png)
 			<cfif imgTypeIndex eq getWorkbook().PICTURE_TYPE_JPEG or imgTypeIndex eq getWorkbook().PICTURE_TYPE_PNG>
 				<cfset picture.resize() />

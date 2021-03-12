@@ -2,12 +2,7 @@
 describe( "workbookFromCsv", function(){
 
 	beforeEach( function(){
-		savecontent variable="variables.csv"{
-			WriteOutput( '
-column1,column2
-"Frumpo McNugget",12345
-		');
-		};
+		variables.csv = 'column1,column2#crlf#"Frumpo McNugget",12345';
 		variables.basicExpectedQuery = QueryNew( "column1,column2", "", [ [ "Frumpo McNugget", "12345" ] ] );
 	});
 
