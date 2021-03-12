@@ -1,7 +1,7 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="2.16.0" setter="false";
+	property name="version" default="2.17.0" setter="false";
 	property name="osgiLibBundleVersion" default="5.0.0.1"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="luceeSpreadsheet";
 	property name="exceptionType" default="cfsimplicity.lucee.spreadsheet" setter="false";
@@ -133,12 +133,14 @@ component accessors="true"{
 		return binary;
 	}
 
-	public function csvToQuery(
+	public query function csvToQuery(
 		string csv=""
 		,string filepath=""
 		,boolean firstRowIsHeader=false
 		,boolean trim=true
 		,string delimiter
+		,array queryColumnNames
+		,any queryColumnTypes="" //'auto', single default type e.g. 'VARCHAR', or list of types, or struct of column names/types mapping. Empty means no types are specified.
 	){
 		var csvIsString = arguments.csv.Len();
 		var csvIsFile = arguments.filepath.Len();
@@ -153,6 +155,8 @@ component accessors="true"{
 				Throw( type=this.getExceptionType(), message="Invalid csv file", detail="#arguments.filepath# does not appear to be a text/csv file" );
 			arguments.csv = FileRead( arguments.filepath );
 		}
+		if( IsStruct( arguments.queryColumnTypes ) && !arguments.firstRowIsHeader && !arguments.KeyExists( "queryColumnNames" )  )
+				Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
 		if( arguments.trim ) arguments.csv = arguments.csv.Trim();
 		if( arguments.KeyExists( "delimiter" ) ){
 			if( delimiterIsTab( arguments.delimiter ) )
@@ -167,7 +171,7 @@ component accessors="true"{
 			var format = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
 		var parsed = loadClass( "org.apache.commons.csv.CSVParser" ).parse( arguments.csv, format );
 		var records = parsed.getRecords();
-		var rows = [];
+		var data = [];
 		var maxColumnCount = 0;
 		for( var record in records ){
 			var row = [];
@@ -178,19 +182,24 @@ component accessors="true"{
 				maxColumnCount = Max( maxColumnCount, columnNumber );
 				row.Append( iterator.next() );
 			}
-			rows.Append( row );
+			data.Append( row );
 		}
-		var columnList = [];
-		if( arguments.firstRowIsHeader ) var headerRow = rows[ 1 ];
-		for( var i=1; i <= maxColumnCount; i++ ){
-			if( arguments.firstRowIsHeader && !IsNull( headerRow[ i ] ) && headerRow[ i ].Len() ){
-				columnList.Append( JavaCast( "string", headerRow[ i ] ) );
-				continue;
+		if( arguments.KeyExists( "queryColumnNames" ) && arguments.queryColumnNames.Len() )
+			var columnNames = arguments.queryColumnNames;
+		else {
+			var columnNames = [];
+			if( arguments.firstRowIsHeader ) var headerRow = data[ 1 ];
+			for( var i=1; i <= maxColumnCount; i++ ){
+				if( arguments.firstRowIsHeader && !IsNull( headerRow[ i ] ) && headerRow[ i ].Len() ){
+					columnNames.Append( headerRow[ i ] );
+					continue;
+				}
+				columnNames.Append( "column#i#" );
 			}
-			columnList.Append( "column#i#" );
+			if( arguments.firstRowIsHeader ) data.DeleteAt( 1 );
 		}
-		if( arguments.firstRowIsHeader ) rows.DeleteAt( 1 );
-		return _QueryNew( columnList, "", rows );
+		arguments.queryColumnTypes = parseQueryColumnTypesArgument( arguments.queryColumnTypes, columnNames, maxColumnCount, data );
+		return _QueryNew( columnNames, arguments.queryColumnTypes, data );
 	}
 
 	public void function download( required workbook, required string filename, string contentType ){
@@ -451,7 +460,7 @@ component accessors="true"{
 		,required string anchor
 	){
 		/*
-			TODO: Should we allow for passing in of a boolean indicating whether or not an image resize should happen (only works on jpg and png)? Currently does not resize. If resize is performed, it does mess up passing in x/y coordinates for image positioning.
+			 (legacy note from spreadsheet extension) TODO: Should we allow for passing in of a boolean indicating whether or not an image resize should happen (only works on jpg and png)? Currently does not resize. If resize is performed, it does mess up passing in x/y coordinates for image positioning.
 		 */
 		if( !arguments.KeyExists( "filepath" ) && !arguments.KeyExists( "imageData" ) )
 			Throw( type=this.getExceptionType(), message="Invalid argument combination", detail="You must provide either a file path or an image object" );
@@ -518,10 +527,10 @@ component accessors="true"{
 			theAnchor.setRow2( JavaCast( "int", ListGetAt( arguments.anchor, 7 ) -1 ) );
 			theAnchor.setCol2( JavaCast( "int", ListLast( arguments.anchor ) -1 ) );
 		}
-		/* TODO: need to look into createDrawingPatriarch() vs. getDrawingPatriarch() since create will kill any existing images. getDrawingPatriarch() throws  a null pointer exception when an attempt is made to add a second image to the spreadsheet  */
+		/* (legacy note from spreadsheet extension) TODO: need to look into createDrawingPatriarch() vs. getDrawingPatriarch() since create will kill any existing images. getDrawingPatriarch() throws  a null pointer exception when an attempt is made to add a second image to the spreadsheet  */
 		var drawingPatriarch = getActiveSheet( arguments.workbook ).createDrawingPatriarch();
 		var picture = drawingPatriarch.createPicture( theAnchor, imageIndex );
-		/* Disabling this for now--maybe let people pass in a boolean indicating whether or not they want the image resized?
+		/*  (legacy note from spreadsheet extension) Disabling this for now--maybe let people pass in a boolean indicating whether or not they want the image resized?
 		 if this is a png or jpg, resize the picture to its original size (this doesn't work for formats other than jpg and png)
 			<cfif imgTypeIndex eq getWorkbook().PICTURE_TYPE_JPEG or imgTypeIndex eq getWorkbook().PICTURE_TYPE_PNG>
 				<cfset picture.resize() />
@@ -1304,7 +1313,7 @@ component accessors="true"{
 		required string src
 		,string format
 		,string columns
-		,string columnNames
+		,any columnNames //list or array
 		,numeric headerRow
 		,string rows
 		,string sheetName
@@ -1341,7 +1350,10 @@ component accessors="true"{
 		}
 		if( arguments.KeyExists( "rows" ) ) args.rows = arguments.rows;
 		if( arguments.KeyExists( "columns" ) ) args.columns = arguments.columns;
-		if( arguments.KeyExists( "columnNames" ) ) args.columnNames = arguments.columnNames;
+		if( arguments.KeyExists( "columnNames" ) )
+			args.columnNames = arguments.columnNames; // columnNames is what cfspreadsheet action="read" uses
+		else if( arguments.KeyExists( "queryColumnNames" ) )
+			args.columnNames = arguments.queryColumnNames;// accept better alias `queryColumnNames` to match csvToQuery
 		if( ( arguments.format == "query" ) && arguments.KeyExists( "queryColumnTypes" ) ){
 			if( IsStruct( arguments.queryColumnTypes ) && !arguments.KeyExists( "headerRow" ) && !arguments.KeyExists( "columnNames" ) )
 				Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also specify the 'headerRow' or provide 'columnNames'" );
@@ -2008,8 +2020,8 @@ component accessors="true"{
 		,boolean includeRichTextFormatting=false
 		,string rows //range
 		,string columns //range
-		,string columnNames
-		,any queryColumnTypes=""
+		,any columnNames //list or array
+		,any queryColumnTypes="" //'auto', single default type e.g. 'VARCHAR', or list of types, or struct of column names/types mapping. Empty means no types are specified.
 	){
 		var sheet = {
 			includeHeaderRow: arguments.includeHeaderRow
@@ -2045,19 +2057,9 @@ component accessors="true"{
 			for( var rowIndex = 0; rowIndex <= lastRowIndex; rowIndex++ )
 				addRowToSheetData( arguments.workbook, sheet, rowIndex, arguments.includeRichTextFormatting );
 		}
-		if( IsSimpleValue( arguments.queryColumnTypes ) && arguments.queryColumnTypes == "auto" )
-			arguments.queryColumnTypes = detectQueryColumnTypesFromSheetData( sheet );
 		//generate the query columns
-		if( arguments.KeyExists( "columnNames" ) && arguments.columnNames.Len() ){
-			// Use provided column names
-			arguments.columnNames = arguments.columnNames.ListToArray();
-			var specifiedColumnCount = arguments.columnNames.Len();
-			for( var i = 1; i <= sheet.totalColumnCount; i++ ){
-				// IsNull/IsDefined doesn't work.
-				var columnName = arguments.columnNames[ i ]?: "column" & i;
-				sheet.columnNames.Append( columnName );
-			}
-		}
+		if( arguments.KeyExists( "columnNames" ) && arguments.columnNames.Len() )
+			sheet.columnNames = IsArray( arguments.columnNames )? arguments.columnNames: arguments.columnNames.ListToArray();
 		else if( sheet.hasHeaderRow ){
 			// use specified header row values as column names
 			var headerRowObject = sheet.object.getRow( JavaCast( "int", sheet.headerRowIndex ) );
@@ -2074,9 +2076,7 @@ component accessors="true"{
 			for( var i=1; i <= sheet.totalColumnCount; i++ )
 				sheet.columnNames.Append( "column" & i );
 		}
-		//NB: after column names/headers generated
-		if( IsStruct( arguments.queryColumnTypes ) )
-			arguments.queryColumnTypes = getQueryColumnTypesListFromStruct( arguments.queryColumnTypes, sheet.columnNames );
+		arguments.queryColumnTypes = parseQueryColumnTypesArgument( arguments.queryColumnTypes, sheet.columnNames, sheet.totalColumnCount, sheet.data );
 		var result = _QueryNew( sheet.columnNames, arguments.queryColumnTypes, sheet.data );
 		if( !arguments.includeHiddenColumns ){
 			result = deleteHiddenColumnsFromQuery( sheet, result );
@@ -2448,12 +2448,11 @@ component accessors="true"{
 		return arguments.result;
 	}
 
-	private string function detectQueryColumnTypesFromSheetData( required struct sheet ){
-		var columnCount = arguments.sheet.totalColumnCount;
+	private string function detectQueryColumnTypesFromData( required array data, required numeric columnCount ){
 		var types = [];
-		cfloop( from=1, to=columnCount, index="local.colNum" ){
+		cfloop( from=1, to=arguments.columnCount, index="local.colNum" ){
 			types[ colNum ] = "";
-			for( var row in arguments.sheet.data ){
+			for( var row in arguments.data ){
 				if( row.IsEmpty() || ( row.Len() < colNum ) ) continue;//next column (ACF: empty values are sometimes just missing from the array??)
 				var value = row[ colNum ];
 				var detectedType = detectValueDataType( value );
@@ -2544,6 +2543,24 @@ component accessors="true"{
 		}
 		result.Append( "</tr>" );
 		return result.toString();
+	}
+
+	private string function parseQueryColumnTypesArgument(
+		required any queryColumnTypes
+		,required array columnNames
+		,required numeric columnCount
+		,required array data
+	){
+		if( IsStruct( arguments.queryColumnTypes ) )
+			return getQueryColumnTypesListFromStruct( arguments.queryColumnTypes, arguments.columnNames );
+		if( arguments.queryColumnTypes == "auto" )
+			return detectQueryColumnTypesFromData( arguments.data, arguments.columnCount );
+		if( ListLen( arguments.queryColumnTypes ) == 1 ){
+			//single type: use as default for all
+			var columnType = arguments.queryColumnTypes;
+			return RepeatString( "#columnType#,", arguments.columnCount-1 ) & columnType;
+		}
+		return arguments.queryColumnTypes;
 	}
 
 	/* Ranges */
