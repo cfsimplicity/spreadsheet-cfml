@@ -753,8 +753,7 @@ component accessors="true"{
 	public void function clearCell( required workbook, required numeric row, required numeric column ){
 		/* Clears the specified cell of all styles and values */
 		var defaultStyle = arguments.workbook.getCellStyleAt( JavaCast( "short", 0 ) );
-		var rowIndex = ( arguments.row -1 );
-		var rowObject = getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
+		var rowObject = getRowFromActiveSheet( arguments.workbook, arguments.row );
 		if( IsNull( rowObject ) ) return;
 		var columnIndex = ( arguments.column -1 );
 		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
@@ -836,7 +835,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
 		var rowToDelete = ( arguments.row -1 );
 		if( rowToDelete >= getFirstRowNum( arguments.workbook ) && rowToDelete <= getLastRowNum( arguments.workbook ) ) //If this is a valid row, remove it
-			getActiveSheet( arguments.workbook ).removeRow( getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowToDelete ) ) );
+			getActiveSheet( arguments.workbook ).removeRow( getRowFromActiveSheet( arguments.workbook, arguments.row ) );
 	}
 
 	public void function deleteRows( required workbook, required string range ){
@@ -937,8 +936,7 @@ component accessors="true"{
 		,any cellStyle
 	){
 		checkFormatArguments( argumentCollection=arguments );
-		var rowIndex = ( arguments.row -1 );
-		var theRow = getActiveSheet( arguments.workbook ).getRow( rowIndex );
+		var theRow = getRowFromActiveSheet( arguments.workbook, arguments.row );
 		if( IsNull( theRow ) ) return;
 		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
 		var cellIterator = theRow.cellIterator();
@@ -1077,21 +1075,17 @@ component accessors="true"{
 	}
 
 	public string function getCellType( required workbook, required numeric row, required numeric column ){
-		if( !cellExists( arguments.workbook, arguments.row, arguments.column ) )
-			return "";
-		var rowIndex = ( arguments.row -1 );
+		if( !cellExists( arguments.workbook, arguments.row, arguments.column ) ) return "";
+		var rowObject = getRowFromActiveSheet( arguments.workbook, arguments.row );
 		var columnIndex = ( arguments.column -1 );
-		var rowObject = getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
 		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
 		return cell.getCellType().toString();
 	}
 
 	public any function getCellValue( required workbook, required numeric row, required numeric column ){
-		if( !cellExists( arguments.workbook, arguments.row, arguments.column ) )
-			return "";
-		var rowIndex = ( arguments.row -1 );
+		if( !cellExists( arguments.workbook, arguments.row, arguments.column ) ) return "";
+		var rowObject = getRowFromActiveSheet( arguments.workbook, arguments.row );
 		var columnIndex = ( arguments.column -1 );
-		var rowObject = getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
 		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
 		if( cellIsOfType( cell, "FORMULA" ) ) return getCellFormulaValue( arguments.workbook, cell );
 		return getDataFormatter().formatCellValue( cell );
@@ -1201,8 +1195,7 @@ component accessors="true"{
 	}
 
 	public boolean function isRowHidden( required workbook, required numeric row ){
-		var rowIndex = ( arguments.row - 1 );
-		return getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).getZeroHeight();
+		return getRowFromActiveSheet( arguments.workbook, arguments.row ).getZeroHeight();
 	}
 
 	public boolean function isSpreadsheetFile( required string path ){
@@ -1280,7 +1273,12 @@ component accessors="true"{
 	}
 
 	public any function newStreamingXlsx( string sheetName="Sheet1", numeric streamingWindowSize=100 ){
-		return new( sheetName=arguments.sheetName, xmlFormat=true, streamingXml=true, streamingWindowSize=arguments.streamingWindowSize );
+		return new(
+			sheetName=arguments.sheetName
+			,xmlFormat=true
+			,streamingXml=true
+			,streamingWindowSize=arguments.streamingWindowSize
+		);
 	}
 
 	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter="," ){		
@@ -1636,8 +1634,7 @@ component accessors="true"{
 	}
 
 	public void function setRowHeight( required workbook, required numeric row, required numeric height ){
-		var rowIndex = ( arguments.row -1 );
-		getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).setHeightInPoints( JavaCast( "int", arguments.height ) );
+		getRowFromActiveSheet( arguments.workbook, arguments.row ).setHeightInPoints( JavaCast( "int", arguments.height ) );
 	}
 
 	public void function setSheetTopMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
@@ -1907,12 +1904,10 @@ component accessors="true"{
 	){
 		validateSheetName( arguments.sheetName );
 		if( !arguments.xmlFormat ) return loadClass( this.getHSSFWorkbookClassName() ).init();
-		if( arguments.streamingXml ){
-			if( ( !IsValid( "integer", arguments.streamingWindowSize ) || arguments.streamingWindowSize < 1 ) )
-				Throw( type=this.getExceptionType(), message="Invalid 'streamingWindowSize' argument", detail="'streamingWindowSize' must be an integer value greater than 1" );
-			return loadClass( this.getSXSSFWorkbookClassName() ).init( JavaCast( "int", streamingWindowSize ) );
-		}
-		return loadClass( this.getXSSFWorkbookClassName() ).init();
+		if( !arguments.streamingXml ) return loadClass( this.getXSSFWorkbookClassName() ).init();
+		if( !IsValid( "integer", arguments.streamingWindowSize ) || ( arguments.streamingWindowSize < 1 ) )
+			Throw( type=this.getExceptionType(), message="Invalid 'streamingWindowSize' argument", detail="'streamingWindowSize' must be an integer value greater than 1" );
+		return loadClass( this.getSXSSFWorkbookClassName() ).init( JavaCast( "int", arguments.streamingWindowSize ) );
 	}
 
 	private any function workbookFromFile( required string path, string password ){
@@ -2210,6 +2205,11 @@ component accessors="true"{
 		return result;
 	}
 
+	private any function getRowFromActiveSheet( required workbook, required numeric rowNumber ){
+		var rowIndex = ( arguments.rowNumber-1 );
+		return getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
+	}
+
 	private array function parseListDataToArray( required string line, required string delimiter, boolean handleEmbeddedCommas=true ){
 		var elements = ListToArray( arguments.line, arguments.delimiter );
 		var potentialQuotes = 0;
@@ -2291,9 +2291,8 @@ component accessors="true"{
 	/* Cells */
 
 	private boolean function cellExists( required workbook, required numeric rowNumber, required numeric columnNumber ){
-		var rowIndex = ( arguments.rowNumber -1 );
+		var checkRow = getRowFromActiveSheet( arguments.workbook, arguments.rowNumber );
 		var columnIndex = ( arguments.columnNumber -1 );
-		var checkRow = getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
 		return !IsNull( checkRow ) && !IsNull( checkRow.getCell( JavaCast( "int", columnIndex ) ) );
 	}
 
@@ -2313,9 +2312,8 @@ component accessors="true"{
 	private any function getCellAt( required workbook, required numeric rowNumber, required numeric columnNumber ){
 		if( !cellExists( argumentCollection=arguments ) )
 			Throw( type=this.getExceptionType(), message="Invalid cell", detail="The requested cell [#arguments.rowNumber#,#arguments.columnNumber#] does not exist in the active sheet" );
-		var rowIndex = ( arguments.rowNumber -1 );
 		var columnIndex = ( arguments.columnNumber -1 );
-		return getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).getCell( JavaCast( "int", columnIndex ) );
+		return getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).getCell( JavaCast( "int", columnIndex ) );
 	}
 
 	private any function getCellFormulaValue( required workbook, required cell ){
@@ -2862,9 +2860,8 @@ component accessors="true"{
 		getActiveSheet( arguments.workbook ).setColumnHidden( JavaCast( "int", arguments.columnNumber-1 ), JavaCast( "boolean", arguments.state ) );
 	}
 
-	private void function toggleRowHidden( required workbook, required numeric row, required boolean state ){
-		var rowIndex = ( arguments.row -1 );
-		getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).setZeroHeight( JavaCast( "boolean", arguments.state ) );
+	private void function toggleRowHidden( required workbook, required numeric rowNumber, required boolean state ){
+		getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).setZeroHeight( JavaCast( "boolean", arguments.state ) );
 	}
 
 	/* Formatting */
