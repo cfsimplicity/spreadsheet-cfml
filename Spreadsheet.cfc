@@ -2,8 +2,8 @@ component accessors="true"{
 
 	//"static"
 	property name="version" default="2.17.0-develop" setter="false";
-	property name="osgiLibBundleVersion" default="5.0.0.1"; //first 3 octets = POI version; increment 4th with other jar updates
-	property name="osgiLibBundleSymbolicName" default="luceeSpreadsheet";
+	property name="osgiLibBundleVersion" default="5.0.0.1" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="osgiLibBundleSymbolicName" default="luceeSpreadsheet" setter="false";
 	property name="exceptionType" default="cfsimplicity.lucee.spreadsheet" setter="false";
 	//commonly invoked POI class names
 	property name="HSSFWorkbookClassName" default="org.apache.poi.hssf.usermodel.HSSFWorkbook" setter="false";
