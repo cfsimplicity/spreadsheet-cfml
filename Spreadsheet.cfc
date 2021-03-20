@@ -1913,24 +1913,25 @@ component accessors="true"{
 	private any function workbookFromFile( required string path, string password ){
 		// works with both xls and xlsx
 		// see https://stackoverflow.com/a/46149469 for why FileInputStream is preferable to File
-		try{
-			lock name="#arguments.path#" timeout=5 {
-				var className = "org.apache.poi.ss.usermodel.WorkbookFactory";
+		// 20210322 using File doesn't seem to improve memory usage anyway.
+		lock name="#arguments.path#" timeout=5 {
+			try{
+				var factory = loadClass( "org.apache.poi.ss.usermodel.WorkbookFactory" );
 				var file = CreateObject( "java", "java.io.FileInputStream" ).init( arguments.path );
-				if( arguments.KeyExists( "password" ) ) return loadClass( className ).create( file, arguments.password );
-				return loadClass( className ).create( file );
+				if( arguments.KeyExists( "password" ) ) return factory.create( file, arguments.password );
+				return factory.create( file );
 			}
-		}
-		catch( org.apache.poi.hssf.OldExcelFormatException exception ){
-			throwOldExcelFormatException( arguments.path );
-		}
-		catch( any exception ){
-			if( exception.message CONTAINS "unsupported file type" ) handleInvalidSpreadsheetFile( arguments.path );// from POI 5.x
-			if( exception.message CONTAINS "spreadsheet seems to be Excel 5" ) throwOldExcelFormatException( arguments.path );
-			rethrow;
-		}
-		finally{
-			if( local.KeyExists( "file" ) ) file.close();
+			catch( org.apache.poi.hssf.OldExcelFormatException exception ){
+				throwOldExcelFormatException( arguments.path );
+			}
+			catch( any exception ){
+				if( exception.message CONTAINS "unsupported file type" ) handleInvalidSpreadsheetFile( arguments.path );// from POI 5.x
+				if( exception.message CONTAINS "spreadsheet seems to be Excel 5" ) throwOldExcelFormatException( arguments.path );
+				rethrow;
+			}
+			finally{
+				if( local.KeyExists( "file" ) ) file.close();
+			}
 		}
 	}
 
