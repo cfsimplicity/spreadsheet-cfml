@@ -135,6 +135,8 @@ You will probably want to place the spreadsheet library files in a central locat
 * [removeSheetNumber](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/removeSheetNumber)
 * [setCellRangeValue](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setCellRangeValue)
 * [setFitToPage](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setFitToPage)
+* [setFooterImage](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setFooterImage)
+* [setHeaderImage](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setHeaderImage)
 * [setReadOnly](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setReadOnly)
 * [setRepeatingColumns](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setRepeatingColumns)
 * [setRepeatingRows](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setRepeatingRows)
@@ -239,7 +241,7 @@ The automated tests require [TestBox 2.1](https://github.com/Ortus-Solutions/Tes
 
 ## Credits
 
-The code was originally adapted from the work of [TeamCfAdvance](https://github.com/teamcfadvance/). Ben Nadel's [POI Utility](https://github.com/bennadel/POIUtility.cfc) was also used as a basis for parts of the `read` functionality.
+The code was originally adapted from the work of [TeamCfAdvance](https://github.com/teamcfadvance/). Ben Nadel's [POI Utility](https://github.com/bennadel/POIUtility.cfc) was also used as a basis for parts of the `read` functionality. Header/Footer image functionality is based on code by [Axel Richter](https://stackoverflow.com/users/3915431/axel-richter).
 
 [JavaLoader](https://github.com/markmandel/JavaLoader) is by Mark Mandel.
 

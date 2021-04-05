@@ -2,7 +2,7 @@ component accessors="true"{
 
 	//"static"
 	property name="version" default="2.17.0-develop" setter="false";
-	property name="osgiLibBundleVersion" default="5.0.0.1" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="osgiLibBundleVersion" default="5.0.0.2" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="luceeSpreadsheet" setter="false";
 	property name="exceptionType" default="cfsimplicity.lucee.spreadsheet" setter="false";
 	//commonly invoked POI class names
@@ -459,54 +459,18 @@ component accessors="true"{
 		,string imageType
 		,required string anchor
 	){
-		/*
-			 (legacy note from spreadsheet extension) TODO: Should we allow for passing in of a boolean indicating whether or not an image resize should happen (only works on jpg and png)? Currently does not resize. If resize is performed, it does mess up passing in x/y coordinates for image positioning.
-		 */
-		if( !arguments.KeyExists( "filepath" ) && !arguments.KeyExists( "imageData" ) )
-			Throw( type=this.getExceptionType(), message="Invalid argument combination", detail="You must provide either a file path or an image object" );
-		if( arguments.KeyExists( "imageData" ) && !arguments.KeyExists( "imageType" ) )
-			Throw( type=this.getExceptionType(), message="Invalid argument combination", detail="If you specify an image object, you must also provide the imageType argument" );
 		var numberOfAnchorElements = ListLen( arguments.anchor );
 		if( ( numberOfAnchorElements != 4 ) && ( numberOfAnchorElements != 8 ) )
 			Throw( type=this.getExceptionType(), message="Invalid anchor argument", detail="The anchor argument must be a comma-delimited list of integers with either 4 or 8 elements" );
-		//we'll need the image type int in all cases
-		if( arguments.KeyExists( "filepath" ) ){
-			if( !FileExists( arguments.filepath ) )
-				Throw( type=this.getExceptionType(), message="Non-existent file", detail="The specified file does not exist." );
-			try{
-				arguments.imageType = ListLast( FileGetMimeType( arguments.filepath ), "/" );
-			}
-			catch( any exception ){
-				Throw( type=this.getExceptionType(), message="Could Not Determine Image Type", detail="An image type could not be determined from the filepath provided" );
-			}
-		}
-		else if( !arguments.KeyExists( "imageType" ) )
-			Throw( type=this.getExceptionType(), message="Could Not Determine Image Type", detail="An image type could not be determined from the filepath or imagetype provided" );
-		arguments.imageType	=	arguments.imageType.UCase();
-		switch( arguments.imageType ){
-			case "DIB": case "EMF": case "JPEG": case "PICT": case "PNG": case "WMF":
-				var imageTypeIndex = arguments.workbook[ "PICTURE_TYPE_" & arguments.imageType ];
-			break;
-			case "JPG":
-				var imageTypeIndex = arguments.workbook.PICTURE_TYPE_JPEG;
-			break;
-			default:
-				Throw( type=this.getExceptionType(), message="Invalid Image Type", detail="Valid image types are DIB, EMF, JPG, JPEG, PICT, PNG, and WMF" );
-		}
-		if( arguments.KeyExists( "filepath" ) ){
-			try{
-				var inputStream = CreateObject( "java", "java.io.FileInputStream" ).init( JavaCast( "string", arguments.filepath ) );
-				var ioUtils = loadClass( "org.apache.poi.util.IOUtils" );
-				var bytes = ioUtils.toByteArray( inputStream );
-			}
-			finally{
-				if( local.KeyExists( "inputStream" ) )
-					inputStream.close();
-			}
-		}
-		else
-			var bytes = ToBinary( arguments.imageData );
-		var imageIndex = arguments.workbook.addPicture( bytes, JavaCast( "int", imageTypeIndex ) );
+		var args = {
+			workbook: arguments.workbook
+			,anchor: arguments.anchor
+		};
+		if( arguments.KeyExists( "image" ) ) args.image = arguments.image;//new alias instead of filepath/imageData
+		if( arguments.KeyExists( "filepath" ) ) args.image = arguments.filepath;
+		if( arguments.KeyExists( "imageData" ) ) args.image = arguments.imageData;
+		if( arguments.KeyExists( "imageType" ) ) args.imageType = arguments.imageType;
+		var imageIndex = addImageToWorkbook( argumentCollection=args );
 		var clientAnchorClass = isXmlFormat( arguments.workbook )
 				? "org.apache.poi.xssf.usermodel.XSSFClientAnchor"
 				: "org.apache.poi.hssf.usermodel.HSSFClientAnchor";
@@ -1199,8 +1163,7 @@ component accessors="true"{
 	}
 
 	public boolean function isSpreadsheetFile( required string path ){
-		if( !FileExists( arguments.path ) )
-			Throw( type=this.getExceptionType(), message="Non-existent file", detail="Cannot find the file #arguments.path#." );
+		if( !FileExists( arguments.path ) ) throwNonExistentFileException( arguments.path );
 		try{
 			var workbook = workbookFromFile( arguments.path );
 		}
@@ -1331,8 +1294,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid format", detail="Supported formats are: 'query', 'html' and 'csv'" );
 		if( arguments.KeyExists( "sheetName" ) && arguments.KeyExists( "sheetNumber" ) )
 			Throw( type=this.getExceptionType(), message="Cannot provide both sheetNumber and sheetName arguments", detail="Only one of either 'sheetNumber' or 'sheetName' arguments may be provided." );
-		if( !FileExists( arguments.src ) )
-			Throw( type=this.getExceptionType(), message="Non-existent file", detail="Cannot find the file #arguments.src#." );
+		if( !FileExists( arguments.src ) ) throwNonExistentFileException( arguments.src );
 		var passwordProtected = ( arguments.KeyExists( "password") && !arguments.password.Trim().IsEmpty() );
 		var workbook = passwordProtected? workbookFromFile( arguments.src, arguments.password ): workbookFromFile( arguments.src );
 		if( arguments.KeyExists( "sheetName" ) ) setActiveSheet( workbook=workbook, sheetName=arguments.sheetName );
@@ -1592,10 +1554,19 @@ component accessors="true"{
 		,string centerFooter=""
 		,string rightFooter=""
 	){
-		var footer = getActiveSheet( arguments.workbook ).getFooter();
-		if( !arguments.centerFooter.IsEmpty() ) footer.setCenter( JavaCast( "string", arguments.centerFooter ) );
-		if( !arguments.leftFooter.IsEmpty() ) footer.setleft( JavaCast( "string", arguments.leftFooter ) );
-		if( !arguments.rightFooter.IsEmpty() ) footer.setright( JavaCast( "string", arguments.rightFooter ) );
+		var footer = getActiveSheetFooter( arguments.workbook );
+		if( arguments.centerFooter.Len() ) footer.setCenter( JavaCast( "string", arguments.centerFooter ) );
+		if( arguments.leftFooter.Len() ) footer.setleft( JavaCast( "string", arguments.leftFooter ) );
+		if( arguments.rightFooter.Len() ) footer.setright( JavaCast( "string", arguments.rightFooter ) );
+	}
+
+	public void function setFooterImage(
+		required workbook
+		,required string position // left|center|right
+		,required any image
+		,string imageType
+	){
+		setHeaderOrFooterImage( argumentCollection=arguments, isHeader=false );
 	}
 
 	public void function setHeader(
@@ -1604,10 +1575,19 @@ component accessors="true"{
 		,string centerHeader=""
 		,string rightHeader=""
 	){
-		var header = getActiveSheet( arguments.workbook ).getHeader();
-		if( !arguments.centerHeader.IsEmpty() ) header.setCenter( JavaCast( "string", arguments.centerHeader ) );
-		if( !arguments.leftHeader.IsEmpty() ) header.setleft( JavaCast( "string", arguments.leftHeader ) );
-		if( !arguments.rightHeader.IsEmpty() ) header.setright( JavaCast( "string", arguments.rightHeader ) );
+		var header = getActiveSheetHeader( arguments.workbook );
+		if( arguments.centerHeader.Len() ) header.setCenter( JavaCast( "string", arguments.centerHeader ) );
+		if( arguments.leftHeader.Len() ) header.setleft( JavaCast( "string", arguments.leftHeader ) );
+		if( arguments.rightHeader.Len() ) header.setright( JavaCast( "string", arguments.rightHeader ) );
+	}
+
+	public void function setHeaderImage(
+		required workbook
+		,required string position // left|center|right
+		,required any image
+		,string imageType
+	){
+		setHeaderOrFooterImage( argumentCollection=arguments );
 	}
 
 	public void function setReadOnly( required workbook, required string password ){
@@ -1883,6 +1863,15 @@ component accessors="true"{
 		return result;
 	}
 
+	private string function getFileContentTypeFromPath( required string path ){
+		try{
+			return FileGetMimeType( arguments.path ).ListLast( "/" );
+		}
+		catch( any exception ){
+			return "unknown";
+		}
+	}
+
 	private void function handleInvalidSpreadsheetFile( required string path ){
 		var detail = "The file #arguments.path# does not appear to be a binary or xml spreadsheet.";
 		if( isCsvOrTextFile( arguments.path ) ) detail &= " It may be a CSV file, in which case use 'csvToQuery()' to read it";
@@ -1890,8 +1879,151 @@ component accessors="true"{
 	}
 
 	private boolean function isCsvOrTextFile( required string path ){
-		var contentType = FileGetMimeType( arguments.path ).ListLast( "/" );
+		var contentType = getFileContentTypeFromPath( arguments.path );
 		return ListFindNoCase( "plain,csv", contentType );//Lucee=text/plain ACF=text/csv
+	}
+
+	/* Images */
+
+	private numeric function addImageToWorkbook(
+		required workbook
+		,required any image //path or object
+		,string imageType
+	){
+		/* TODO image objects don't always work, depending on how they're created: POI accepts it but the image is not displayed (broken) */
+		var imageArgumentIsObject = IsImage( arguments.image );
+		if( imageArgumentIsObject && !arguments.KeyExists( "imageType" ) )
+			Throw( type=this.getExceptionType(), message="Invalid argument combination", detail="If you specify an image object, you must also provide the imageType argument" );
+		var imageArgumentIsFile = ( !imageArgumentIsObject && IsSimpleValue( arguments.image ) && FileExists( arguments.image ) );
+		if( !imageArgumentIsObject && IsSimpleValue( arguments.image ) && !imageArgumentIsFile )
+			throwNonExistentFileException( arguments.image );
+		if( !imageArgumentIsObject && !imageArgumentIsFile )
+			Throw( type=this.getExceptionType(), message="Invalid image", detail="You must provide either a file path or an image object" );
+		if( imageArgumentIsFile ){
+			arguments.imageType = getFileContentTypeFromPath( arguments.image );
+			if( arguments.imageType == "unknown" ) throwUnknownImageTypeException();
+		}
+		var imageTypeIndex = getImageTypeIndex( arguments.workbook, arguments.imageType );
+		var bytes = imageArgumentIsFile? FileReadBinary( arguments.image ): ToBinary( ToBase64( arguments.image ) );
+		return arguments.workbook.addPicture( bytes, JavaCast( "int", imageTypeIndex ) );// returns 1-based integer index
+	}
+
+	private numeric function getImageTypeIndex( required workbook, required string imageType ){
+		switch( arguments.imageType ){
+			case "DIB": case "EMF": case "JPEG": case "PICT": case "PNG": case "WMF":
+				return arguments.workbook[ "PICTURE_TYPE_" & arguments.imageType.UCase() ];
+			case "JPG":
+				return arguments.workbook.PICTURE_TYPE_JPEG;
+		}
+		Throw( type=this.getExceptionType(), message="Invalid Image Type", detail="Valid image types are DIB, EMF, JPG, JPEG, PICT, PNG, and WMF" );
+	}
+
+	/* Header/Footer images */
+
+	//see https://stackoverflow.com/questions/51077404/apache-poi-adding-watermark-in-excel-workbook/51103756#51103756
+	private void function setHeaderOrFooterImage(
+		required workbook
+		,required string position // left|center|right
+		,required any image
+		,string imageType
+		,boolean isHeader=true //false = footer
+	){
+		var headerType = arguments.isHeader? "Header": "Footer";
+		if( !isXmlFormat( arguments.workbook ) )
+			Throw( type=this.getExceptionType(), message="Invalid spreadsheet type", detail="#headerType# images can only be added to XLSX spreadsheets." );
+		var imageIndex = addImageToWorkbook( argumentCollection=arguments );
+		var sheet = getActiveSheet( arguments.workbook );
+		var headerObject = arguments.isHeader? sheet.getHeader(): sheet.getFooter();
+		var headerTypeInitialLetter = headerType.Left( 1 ); // "H" or "F"
+		var headerImagePartName = "/xl/drawings/vmlDrawing1.vml";
+		switch( arguments.position ){
+			case "left": case "l":
+				headerObject.setLeft( "&G" ); //&G means Graphic
+				var vmlPosition = "L#headerTypeInitialLetter#";
+				break;
+			case "center": case "c": case "centre":
+				headerObject.setCenter( "&G" );
+				var vmlPosition = "C#headerTypeInitialLetter#";
+				break;
+			case "right": case "r":
+				headerObject.setRight( "&G" );
+				var vmlPosition = "R#headerTypeInitialLetter#";
+				break;
+			default: Throw( type=this.getExceptionType(), message="Invalid #headerType.LCase()# position", detail="The 'position' argument '#arguments.position#' is invalid. Use 'left', 'center' or 'right'" );
+		}
+		// check for existing header/footer images
+		var existingRelation = getExistingHeaderFooterImageRelation( sheet, headerImagePartName );
+		var sheetHasExistingHeaderFooterImages = local.KeyExists( "existingRelation" );
+		if( sheetHasExistingHeaderFooterImages ){
+			var part = existingRelation.getPackagePart();
+			try{
+				var headerImageXML = existingRelation.getXml();//Works OK if workbook not previously saved with header/footer images
+			}
+			catch( any exception ){
+				if( exception.message.Find( "XSSFVMLDrawing.getXml()" ) )
+					// ...but won't work if file has been previously saved with a header/footer image
+					Throw( type=this.getExceptionType(), message="Spreadsheet contains an existing header or footer", detail="Header/footer images can't currently be added to spreadsheets read from disk that already have them." );
+					/*
+						TODO why won't this work? This is how to get the existing xml, but it won't save back modified to the vmlDrawing1.vml part for some reason
+						headerImageXML = sheet.getRelations()[ i ].getDocument().xmlText();
+					*/
+				else
+					rethrow;
+			}
+		}
+		else{
+			var OPCPackage = workbook.getPackage();
+			var partName = loadClass( "org.apache.poi.openxml4j.opc.PackagingURIHelper" ).createPartName( headerImagePartName );
+			var part = OPCPackage.createPart( partName, "application/vnd.openxmlformats-officedocument.vmlDrawing" );
+			var headerImageXML = getNewHeaderImageXML();
+		}
+		var headerImageVml = loadClass( "luceeSpreadsheet.HeaderImageVML" ).init( part );
+		//create the relation to the picture
+		var pictureData = arguments.workbook.getAllPictures().get( imageIndex );
+		var xssfImageRelation = loadClass( "org.apache.poi.xssf.usermodel.XSSFRelation" ).IMAGES;
+		var pictureRelationID = headerImageVml.addRelation( JavaCast( "null", 0 ), xssfImageRelation, pictureData ).getRelationship().getId();
+		//get image dimension
+		try{
+			var imageInputStream = CreateObject( "java", "java.io.ByteArrayInputStream" ).init( pictureData.getData() );
+			var imageUtils = loadClass( "org.apache.poi.ss.util.ImageUtils" );
+			var imageDimension = imageUtils.getImageDimension( imageInputStream, pictureData.getPictureType() );
+		}
+		catch( any exception ){
+			rethrow;
+		}
+		finally{
+			imageInputStream.close();
+		}
+		var newShapeElement = createNewHeaderImageVMLShape( pictureRelationID, vmlPosition, imageDimension );
+		headerImageXML = headerImageXML.ReReplaceNoCase( "(<\/[\w:]*xml>)", newShapeElement & "\1" );
+		headerImageVml.setXml( headerImageXML );
+	  //create the sheet/vml relation
+	  var xssfVmlRelation = loadClass( "org.apache.poi.xssf.usermodel.XSSFRelation" ).VML_DRAWINGS;
+  	var sheetVmlRelationID = sheet.addRelation( JavaCast( "null", 0 ), xssfVmlRelation, headerImageVml ).getRelationship().getId();
+  	//create the <legacyDrawingHF r:id="..."/> in /xl/worksheets/sheetN.xml
+  	if( !sheetHasExistingHeaderFooterImages ) sheet.getCTWorksheet().addNewLegacyDrawingHF().setId( sheetVmlRelationID );
+	}
+
+	private any function getExistingHeaderFooterImageRelation( required sheet, required string headerImagePartName ){
+		var totalExistingRelations = arguments.sheet.getRelations().Len();
+		if( totalExistingRelations == 0 ) return;
+		cfloop( from=1, to=totalExistingRelations, index="local.i" ){
+			var relation = arguments.sheet.getRelations()[ i ];
+			if( relation.getPackagePart().getPartName().getName() == arguments.headerImagePartName ) return relation;
+		}	
+	}
+
+	private string function createNewHeaderImageVMLShape( required string pictureRelationID, required string vmlPosition, required imageDimension ){
+		return Trim( '
+			<v:shape id="#arguments.vmlPosition#" o:spid="_x0000_s1025" type="##_x0000_t75" style="position:absolute;margin:0;width:#arguments.imageDimension.getWidth()#pt;height:#arguments.imageDimension.getHeight()#pt;">
+				<v:imagedata o:relid="#pictureRelationID#" o:title="#pictureRelationID#" />
+				<o:lock v:ext="edit" rotation="t" />
+			</v:shape>
+		' ).REReplace( ">\s+<", "><", "ALL" );
+	}
+
+	private string function getNewHeaderImageXML(){
+		return '<xml xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><o:shapelayout v:ext="edit"><o:idmap v:ext="edit" data="1" /></o:shapelayout><v:shapetype id="_x0000_t75" coordsize="21600,21600" o:spt="75" o:preferrelative="t" path="m@4@5l@4@11@9@11@9@5xe" filled="f" stroked="f"><v:stroke joinstyle="miter" /><v:formulas><v:f eqn="if lineDrawn pixelLineWidth 0" /><v:f eqn="sum @0 1 0" /><v:f eqn="sum 0 0 @1" /><v:f eqn="prod @2 1 2" /><v:f eqn="prod @3 21600 pixelWidth" /><v:f eqn="prod @3 21600 pixelHeight" /><v:f eqn="sum @0 0 1" /><v:f eqn="prod @6 1 2" /><v:f eqn="prod @7 21600 pixelWidth" /><v:f eqn="sum @8 21600 0" /><v:f eqn="prod @7 21600 pixelHeight" /><v:f eqn="sum @10 21600 0" /></v:formulas><v:path o:extrusionok="f" gradientshapeok="t" o:connecttype="rect" /><o:lock v:ext="edit" aspectratio="t" /></v:shapetype></xml>';
 	}
 
 	/* Workbooks */
@@ -1955,6 +2087,14 @@ component accessors="true"{
 
 	private any function getActiveSheet( required workbook ){
 		return arguments.workbook.getSheetAt( JavaCast( "int", arguments.workbook.getActiveSheetIndex() ) );
+	}
+
+	private any function getActiveSheetFooter( required workbook ){
+		return getActiveSheet( arguments.workbook ).getFooter();
+	}
+
+	private any function getActiveSheetHeader( required workbook ){
+		return getActiveSheet( arguments.workbook ).getHeader();
 	}
 
 	private any function getActiveSheetName( required workbook ){
@@ -3423,6 +3563,14 @@ component accessors="true"{
 
 	private void function throwFileExistsException( required string path ){
 		Throw( type=this.getExceptionType(), message="File already exists", detail="The file path #arguments.path# already exists. Use 'overwrite=true' if you wish to overwrite it." );
+	}
+
+	private void function throwNonExistentFileException( required string path ){
+		Throw( type=this.getExceptionType(), message="Non-existent file", detail="Cannot find the file #arguments.path#." );
+	}
+
+	private void function throwUnknownImageTypeException(){
+		Throw( type=this.getExceptionType(), message="Could not determine image type", detail="An image type could not be determined from the image provided" );
 	}
 
 }
