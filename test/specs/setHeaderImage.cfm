@@ -49,6 +49,13 @@ describe( "setHeaderImage", function(){
 			}).toThrow( message="Invalid header position" );
 		});
 
+		it( "the spreadsheet already has a header or footer image", function(){
+			expect( function(){
+				var wb = s.read( getTestFilePath( "hasHeaderImage.xlsx" ) );
+				s.setHeaderImage( wb, "left", getTestFilePath( "test.png" ) );
+			}).toThrow( message="Spreadsheet contains existing header or footer" );
+		});
+
 	});	
 
 });
