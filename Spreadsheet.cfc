@@ -1517,6 +1517,22 @@ component accessors="true"{
 		if( arguments.KeyExists( "type" ) ) args.type = arguments.type;
 		setCellValueAsType( argumentCollection=args );
 	}
+	
+	public void function setCellHyperlink(
+		required workbook
+		,required string link
+		,required string label
+		,required numeric row
+		,required numeric column
+	){
+		//Automatically create the cell if it does not exist, instead of throwing an error
+		var cell = initializeCell( arguments.workbook, arguments.row, arguments.column );
+		HyperlinkType = loadClass( "org.apache.poi.common.usermodel.HyperlinkType" );
+		link = arguments.workbook.getCreationHelper().createHyperlink(HyperlinkType.URL);
+		link.setAddress( JavaCast( "string", arguments.link ) );
+		link.setLabel( JavaCast( "string", arguments.label ) );
+		cell.setHyperlink( JavaCast( "org.apache.poi.xssf.usermodel.XSSFHyperlink", link ) );
+	}
 
 	public void function setCellRangeValue(
 		required workbook
