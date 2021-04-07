@@ -1038,6 +1038,11 @@ component accessors="true"{
 		return formulas;
 	}
 
+	public string function getCellHyperLink( required workbook, required numeric row, required numeric column ){
+		var cell = initializeCell( arguments.workbook, arguments.row, arguments.column );
+		return cell.getHyperLink()?.getAddress()?:"";
+	}
+
 	public string function getCellType( required workbook, required numeric row, required numeric column ){
 		if( !cellExists( arguments.workbook, arguments.row, arguments.column ) ) return "";
 		var rowObject = getRowFromActiveSheet( arguments.workbook, arguments.row );
@@ -1506,32 +1511,31 @@ component accessors="true"{
 		var cell = initializeCell( arguments.workbook, arguments.row, arguments.column );
 		cell.setCellFormula( JavaCast( "string", arguments.formula ) );
 	}
-
-	public void function setCellValue( required workbook, required value, required numeric row, required numeric column, string type ){
-		//Automatically create the cell if it does not exist, instead of throwing an error
-		var args = {
-			workbook: arguments.workbook
-			,cell: initializeCell( arguments.workbook, arguments.row, arguments.column )
-			,value: arguments.value
-		};
-		if( arguments.KeyExists( "type" ) ) args.type = arguments.type;
-		setCellValueAsType( argumentCollection=args );
-	}
 	
 	public void function setCellHyperlink(
 		required workbook
 		,required string link
-		,required string label
 		,required numeric row
 		,required numeric column
+		,any cellValue
+		,string type="URL"
+		,struct format={ color: "BLUE", underline: true }
+		,string tooltip //xlsx only, maybe MS Excel full version only
 	){
-		//Automatically create the cell if it does not exist, instead of throwing an error
+		arguments.type = arguments.type.UCase();
+		var validTypes = [ "URL", "EMAIL", "FILE", "DOCUMENT" ];
+		if( !validTypes.Find( arguments.type ) )
+			Throw( type=this.getExceptionType(), message="Invalid type parameter: '#arguments.type#'", detail="The type must be one of the following: #validTypes.ToList( ', ' )#." );
+		if( arguments.KeyExists( "tooltip" ) && !isXmlFormat( arguments.workbook ) )
+			Throw( type=this.getExceptionType(), message="Invalid spreadsheet type", detail="Hyperlink tooltips can only be added to XLSX spreadsheets." );
 		var cell = initializeCell( arguments.workbook, arguments.row, arguments.column );
-		HyperlinkType = loadClass( "org.apache.poi.common.usermodel.HyperlinkType" );
-		link = arguments.workbook.getCreationHelper().createHyperlink(HyperlinkType.URL);
-		link.setAddress( JavaCast( "string", arguments.link ) );
-		link.setLabel( JavaCast( "string", arguments.label ) );
-		cell.setHyperlink( JavaCast( "org.apache.poi.xssf.usermodel.XSSFHyperlink", link ) );
+		var hyperlinkType = loadClass( "org.apache.poi.common.usermodel.HyperlinkType" );
+		var hyperLink = arguments.workbook.getCreationHelper().createHyperlink( hyperlinkType[ arguments.type ] );
+		hyperLink.setAddress( JavaCast( "string", arguments.link ) );
+		if( arguments.KeyExists( "tooltip" ) ) hyperLink.setTooltip( JavaCast( "string", arguments.tooltip ) );
+		cell.setHyperlink( hyperLink );
+		if( arguments.KeyExists( "cellValue" ) ) setCellValueAsType( arguments.workbook, cell, arguments.cellValue );
+		if( !arguments.format.IsEmpty() ) formatCell( arguments.workbook, arguments.format, arguments.row, arguments.column );
 	}
 
 	public void function setCellRangeValue(
@@ -1546,6 +1550,17 @@ component accessors="true"{
 			for( var columnNumber = arguments.endColumn; columnNumber >= arguments.startColumn; columnNumber-- )
 				setCellValue( arguments.workbook, arguments.value, rowNumber, columnNumber );
 		}
+	}
+
+	public void function setCellValue( required workbook, required value, required numeric row, required numeric column, string type ){
+		//Automatically create the cell if it does not exist, instead of throwing an error
+		var args = {
+			workbook: arguments.workbook
+			,cell: initializeCell( arguments.workbook, arguments.row, arguments.column )
+			,value: arguments.value
+		};
+		if( arguments.KeyExists( "type" ) ) args.type = arguments.type;
+		setCellValueAsType( argumentCollection=args );
 	}
 
 	public void function setColumnWidth( required workbook, required numeric column, required numeric width ){
