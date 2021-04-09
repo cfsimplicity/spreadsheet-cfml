@@ -16,7 +16,6 @@ Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of 
 - Fixes various outstanding bugs/omissions.
 - No dependency on Lucee within the included jar files.
 - Also works with Adobe ColdFusion (see below).
-- Written entirely in CFML script.
 
 ### Downsides
 
