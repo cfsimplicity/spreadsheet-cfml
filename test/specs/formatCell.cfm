@@ -351,6 +351,7 @@ describe( "formatCell", function(){
 		expect( cellFormat.font ).toBe( "Helvetica" );
 		var format = { font: "Courier New" };
 		var cellFormat = setAndGetFormat( xls, format, false );
+		expect( cellFormat.font ).toBe( "Courier New" );
 		expect( cellFormat.fontsize ).toBe( 24 );
 	});
 
