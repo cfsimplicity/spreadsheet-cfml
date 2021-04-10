@@ -828,11 +828,15 @@ component accessors="true"{
 	){
 		checkFormatArguments( argumentCollection=arguments );
 		var cell = initializeCell( arguments.workbook, arguments.row, arguments.column );
-		if( arguments.overwriteCurrentStyle )
-			var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
-		else
-			var style = buildCellStyle( arguments.workbook, arguments.format, cell.getCellStyle() );
-		cell.setCellStyle( style );
+		if( arguments.KeyExists( "cellStyle" ) ){
+			cell.setCellStyle( arguments.cellStyle );
+			return;
+		}
+		if( arguments.overwriteCurrentStyle ){
+			cell.setCellStyle( buildCellStyle( arguments.workbook, arguments.format ) );
+			return;
+		}
+		cell.setCellStyle( buildCellStyle( arguments.workbook, arguments.format, cell.getCellStyle() ) );
 	}
 
 	public void function formatCellRange(
@@ -3186,6 +3190,8 @@ component accessors="true"{
 	}
 
 	private void function checkFormatArguments( required workbook ){
+		if( arguments.KeyExists( "cellStyle" ) && ( !arguments.overwriteCurrentStyle?:true ) )
+			Throw( type=this.getExceptionType(), message="Invalid arguments", detail="If you supply a 'cellStyle' the 'overwriteCurrentStyle' cannot be false" );
 		if( arguments.KeyExists( "cellStyle" ) && !isValidCellStyleObject( arguments.workbook, arguments.cellStyle ) )
 			Throw( type=this.getExceptionType(), message="Invalid argument", detail="The 'cellStyle' argument is not a valid POI cellStyle object" );
 	}

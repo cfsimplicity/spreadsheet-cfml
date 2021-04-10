@@ -309,16 +309,6 @@ describe( "formatCell", function(){
 		expect( cellFormat.bottombordercolor ).toBe( triplet ); //style color
 	});
 
-	it( "Throws an exception if an invalid hex value is passed", function(){
-		workbooks.Each( function( wb ){
-			expect( function(){
-				var hex = "GGHHII";
-				var format = { color: hex, bottombordercolor: hex };
-				var cellFormat = setAndGetFormat( wb, format );
-			}).toThrow( regex="Invalid color" );
-		});
-	});
-
 	it( "can preserve the existing font properties and not affect other cells", function(){
 		workbooks.Each( function( wb ){
 			var cellA2originalFormat = s.getCellFormat( wb, 2, 1 );
@@ -348,6 +338,38 @@ describe( "formatCell", function(){
 			expect( cellFormat.font ).toBe( "Courier New" );
 			expect( cellFormat.fontsize ).toBe( 24 );
 		});
+	});
+
+	it( "allows styles to be set using a pre-built cellStyle object", function(){
+		workbooks.Each( function( wb ){
+			expect( s.getCellFormat( wb, 1, 1 ).bold ).toBeFalse();
+			var cellStyle = s.createCellStyle( wb, { bold: true } );
+			s.formatCell( workbook=wb, row=1, column=1, cellStyle=cellStyle );
+			expect( s.getCellFormat( wb, 1, 1 ).bold ).toBeTrue();
+		});
+	});
+
+	describe( "formatCell throws an exception if", function(){
+
+		it( "an invalid hex value is passed", function(){
+			workbooks.Each( function( wb ){
+				expect( function(){
+					var hex = "GGHHII";
+					var format = { color: hex, bottombordercolor: hex };
+					var cellFormat = setAndGetFormat( wb, format );
+				}).toThrow( regex="Invalid color" );
+			});
+		});
+
+		it( "an invalid hex value is passed", function(){
+			workbooks.Each( function( wb ){
+				expect( function(){
+					var cellStyle = s.createCellStyle( wb, { bold: true } );
+					s.formatCell( workbook=wb, row=1, column=1, cellStyle=cellStyle, overwriteCurrentStyle=false );
+				}).toThrow( regex="Invalid arguments" );
+			});
+		});
+
 	});
 
 });	
