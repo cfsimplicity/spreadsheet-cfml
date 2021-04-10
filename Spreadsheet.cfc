@@ -470,6 +470,8 @@ component accessors="true"{
 		if( arguments.KeyExists( "filepath" ) ) args.image = arguments.filepath;
 		if( arguments.KeyExists( "imageData" ) ) args.image = arguments.imageData;
 		if( arguments.KeyExists( "imageType" ) ) args.imageType = arguments.imageType;
+		if( !args.KeyExists( "image" ) )
+			Throw( type=this.getExceptionType(), message="Missing image path or object", detail="Please supply either the 'filepath' or 'imageData' argument" );
 		var imageIndex = addImageToWorkbook( argumentCollection=args );
 		var clientAnchorClass = isXmlFormat( arguments.workbook )
 				? "org.apache.poi.xssf.usermodel.XSSFClientAnchor"
