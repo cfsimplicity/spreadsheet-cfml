@@ -40,20 +40,20 @@ describe( "setFooterImage", function(){
 		it( "the workbook is not XLSX", function(){
 			expect( function(){
 				s.setFooterImage( s.newXls(), "left", getTestFilePath( "test.png" ) );
-			}).toThrow( message="Invalid spreadsheet type" );
+			}).toThrow( regex="Invalid spreadsheet type" );
 		});
 
 		it( "the position argument is invalid", function(){
 			expect( function(){
-				s.setFooterImage( s.newXls(), "wrong", getTestFilePath( "test.png" ) );
-			}).toThrow( message="Invalid footer position" );
+				s.setFooterImage( s.newXlsx(), "wrong", getTestFilePath( "test.png" ) );
+			}).toThrow( regex="Invalid footer position" );
 		});
 
 		it( "the spreadsheet already has a header or footer image", function(){
 			expect( function(){
 				var wb = s.read( getTestFilePath( "hasHeaderImage.xlsx" ) );
 				s.setFooterImage( wb, "left", getTestFilePath( "test.png" ) );
-			}).toThrow( message="Spreadsheet contains existing header or footer" );
+			}).toThrow( regex="Spreadsheet contains an existing header or footer" );
 		});
 
 	});	

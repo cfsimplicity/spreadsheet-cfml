@@ -2,23 +2,27 @@
 describe( "setActiveSheetNumber", function(){
 
 	beforeEach( function(){
-		variables.workbook = s.new();
+		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 	});
 
 	it( "Sets the specified sheet number to be active", function(){
-		s.createSheet( workbook, "test" );
 		makePublic( s,"getActiveSheetName" );
-		s.setActiveSheetNumber( workbook, 2 );
-		expect( s.getActiveSheetName( workbook ) ).toBe( "test" );
+		workbooks.Each( function( wb ){
+			s.createSheet( wb, "test" );
+			s.setActiveSheetNumber( wb, 2 );
+			expect( s.getActiveSheetName( wb ) ).toBe( "test" );
+		});
 	});
 
 
 	describe( "setActiveSheetNumber throws an exception if", function(){
 
 		it( "the sheet number doesn't exist", function(){
-			expect( function(){
-				s.setActiveSheetNumber( workbook, 20 );
-			}).toThrow( regex="Invalid sheet" );
+			workbooks.Each( function( wb ){
+				expect( function(){
+					s.setActiveSheetNumber( wb, 20 );
+				}).toThrow( regex="Invalid sheet" );
+			});
 		});
 
 	});	

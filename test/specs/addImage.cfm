@@ -14,27 +14,33 @@ describe( "addImage", function(){
 	describe( "throws an exception if", function(){
 
 		beforeEach( function(){
-			variables.workbook = s.newXls();
+			variables.workbooks = [ s.newXls(), s.newXlsx() ];
 		});
 
 		it( "no image is provided", function(){
-			expect( function(){
-				s.addImage( workbook=workbook, anchor="1,1,2,2" );
-			}).toThrow( message="Invalid argument combination" );
+			workbooks.Each( function( wb ) {
+				expect( function(){
+					s.addImage( workbook=wb, anchor="1,1,2,2" );
+				}).toThrow( regex="Missing image path or object" );
+			});
 		});
 
 		it( "imageData is provided with no imageType", function(){
-			expect( function(){
-				var imageData = ImageRead( getTestFilePath( "test.png" ) );
-				s.addImage( workbook=workbook, imageData=imageData, anchor="1,1,2,2" );
-			}).toThrow( message="Invalid argument combination" );
+			workbooks.Each( function( wb ) {
+				expect( function(){
+					var imageData = ImageRead( getTestFilePath( "test.png" ) );
+					s.addImage( workbook=wb, imageData=imageData, anchor="1,1,2,2" );
+				}).toThrow( regex="Invalid argument combination" );
+			});
 		});
 
 		it( "imageData is not a coldfusion image object", function(){
-			expect( function(){
-				var imageData = "I'm not an image";
-				s.addImage( workbook=workbook, imageData=imageData, imageType="png", anchor="1,1,2,2" );
-			}).toThrow( message="Invalid imageData" );
+			workbooks.Each( function( wb ) {
+				expect( function(){
+					var imageData = {};
+					s.addImage( workbook=wb, imageData=imageData, imageType="png", anchor="1,1,2,2" );
+				}).toThrow( regex="Invalid image" );
+			});
 		});
 
 	});	

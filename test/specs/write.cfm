@@ -70,7 +70,7 @@ describe( "write", function(){
 			var workbook = s.new();
 			expect( function(){
 				s.write( workbook, tempXlsPath, false );
-			}).toThrow( message="File already exists" );
+			}).toThrow( regex="File already exists" );
 		});
 
 	});	

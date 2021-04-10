@@ -2,24 +2,28 @@
 describe( "deleteRow", function(){
 
 	beforeEach( function(){
-		variables.workbook = s.new();
+		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 	});
 
 	it( "Deletes the data in a specified row", function(){
-		s.addRow( workbook, "a,b" );
-		s.addRow( workbook, "c,d" );
-		s.deleteRow( workbook, 1 );
 		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "", "" ], [ "c", "d" ] ] );
-		var actual = s.sheetToQuery( workbook=workbook, includeBlankRows=true );
-		expect( actual ).toBe( expected );
+		workbooks.Each( function( wb ){
+			s.addRow( wb, "a,b" );
+			s.addRow( wb, "c,d" );
+			s.deleteRow( wb, 1 );
+			var actual = s.sheetToQuery( workbook=wb, includeBlankRows=true );
+			expect( actual ).toBe( expected );
+		});
 	});
 
 	describe( "deleteRow throws an exception if", function(){
 
 		it( "row is zero or less", function(){
-			expect( function(){
-				s.deleteRow( workbook=workbook, row=0 );
-			}).toThrow( regex="Invalid row" );
+			workbooks.Each( function( wb ){
+				expect( function(){
+					s.deleteRow( workbook=wb, row=0 );
+				}).toThrow( regex="Invalid row" );
+			});
 		});
 
 	});
