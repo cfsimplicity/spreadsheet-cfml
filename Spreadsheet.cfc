@@ -1993,7 +1993,7 @@ component accessors="true"{
 				var headerImageXML = existingRelation.getXml();//Works OK if workbook not previously saved with header/footer images
 			}
 			catch( any exception ){
-				if( exception.message.Find( "XSSFVMLDrawing.getXml()" ) )
+				if( exception.message.Find( "getXml" ) )
 					// ...but won't work if file has been previously saved with a header/footer image
 					Throw( type=this.getExceptionType(), message="Spreadsheet contains an existing header or footer", detail="Header/footer images can't currently be added to spreadsheets read from disk that already have them." );
 					/*
