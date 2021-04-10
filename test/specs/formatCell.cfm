@@ -4,7 +4,7 @@ describe( "formatCell", function(){
 	beforeEach( function(){
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( function( wb ){
-			s.setCellValue( wb, "test", 1, 1 );
+			s.addColumn( wb, [ "a1", "a2" ] );
 		});
 	});
 
@@ -319,11 +319,12 @@ describe( "formatCell", function(){
 		});
 	});
 
-
-	it( "can preserve the existing font properties when setting bold, color, font name, font size, italic, strikeout and underline", function(){
+	it( "can preserve the existing font properties and not affect other cells", function(){
 		workbooks.Each( function( wb ){
+			var cellA2originalFormat = s.getCellFormat( wb, 2, 1 );
 			var format = { font: "Helvetica" };
-			setAndGetFormat( wb, format );
+			setAndGetFormat( wb, format, false );
+			expect( s.getCellFormat( wb, 2, 1 ).font ).toBe( cellA2originalFormat.font );//should be unchanged
 			format = { bold: true };
 			var cellFormat = setAndGetFormat( wb, format, false );
 			expect( cellFormat.font ).toBe( "Helvetica" );

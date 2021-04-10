@@ -8,24 +8,10 @@ describe( "formatColumn", function(){
 		s.formatColumn( workbook, format, 1 );
 	});
 
-	it( "can preserve the existing font properties when setting bold, color, font name, font size, italic, strikeout and underline", function(){
-		variables.workbooks = [ s.newXls(), s.newXlsx() ];
-		workbooks.Each( function( wb ){
-			s.addColumn( wb, "a,b" );
-			var format = { font: "Helvetica" };
-			s.formatColumn( workbook=wb, format=format, column=1 );
-			//test
-			format = { bold: true };
-			s.formatColumn( workbook=wb, format=format, column=1, overwriteCurrentStyle=false );
-			var cellFormat = s.getCellFormat( wb, 1, 1 );
-			expect( cellFormat.font ).toBe( "Helvetica" );
-			//other properties already tested in formatCell
-		});
-	});
-
 	describe( "formatColumn throws an exception if", function(){
 
 		it( "the column is 0 or below", function(){
+			var workbooks = [ s.newXls(), s.newXlsx() ];
 			workbooks.Each( function( wb ){
 				expect( function(){
 					var format = { italic="true" };

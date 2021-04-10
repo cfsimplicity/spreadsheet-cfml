@@ -3041,7 +3041,8 @@ component accessors="true"{
 	/* Formatting */
 
 	private any function buildCellStyle( required workbook, required struct format, existingStyle ){
-		var cellStyle = arguments.existingStyle?: arguments.workbook.createCellStyle();
+		var cellStyle = arguments.workbook.createCellStyle();
+		if( arguments.KeyExists( "existingStyle" ) ) cellStyle.cloneStyleFrom( arguments.existingStyle );
 		var font = 0;
 		for( var setting in arguments.format ){
 			var settingValue = arguments.format[ setting ];

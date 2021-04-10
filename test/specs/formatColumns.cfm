@@ -11,7 +11,7 @@ describe( "formatColumns", function(){
 	describe( "formatColumns throws an exception if ", function(){
 
 		it( "the range is invalid", function(){
-			variables.workbooks = [ s.newXls(), s.newXlsx() ];
+			var workbooks = [ s.newXls(), s.newXlsx() ];
 			workbooks.Each( function( wb ){
 				expect( function(){
 					format = { font: "Courier" };
