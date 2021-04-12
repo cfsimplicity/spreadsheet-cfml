@@ -381,7 +381,7 @@ component accessors="true"{
 		var row = 0;
 		var cell = 0;
 		var oldCell = 0;
-		var rowNum = ( arguments.startRow?:false )? ( arguments.startRow -1 ): 0;
+		var rowNum = ( isNull(arguments.startRow) ? false : arguments.startRow )? ( arguments.startRow -1 ): 0;
 		var cellNum = 0;
 		var lastCellNum = 0;
 		var cellValue = 0;
@@ -850,7 +850,7 @@ component accessors="true"{
 		,any cellStyle
 	){
 		checkFormatArguments( argumentCollection=arguments );
-		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
+		var style = isNull(arguments.cellStyle) ? buildCellStyle( arguments.workbook, arguments.format ) : arguments.cellStyle;
 		for( var rowNumber = arguments.startRow; rowNumber <= arguments.endRow; rowNumber++ ){
 			for( var columnNumber = arguments.startColumn; columnNumber <= arguments.endColumn; columnNumber++ )
 				formatCell( arguments.workbook, arguments.format, rowNumber, columnNumber, arguments.overwriteCurrentStyle, style );
@@ -867,7 +867,7 @@ component accessors="true"{
 		checkFormatArguments( argumentCollection=arguments );
 		if( arguments.column < 1 )
 			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The column value must be greater than 0" );
-		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
+		var style = isNull(arguments.cellStyle) ? buildCellStyle( arguments.workbook, arguments.format ) : arguments.cellStyle;
 		var rowIterator = getActiveSheet( arguments.workbook ).rowIterator();
 		var columnNumber = arguments.column;
 		while( rowIterator.hasNext() ){
@@ -886,7 +886,7 @@ component accessors="true"{
 		checkFormatArguments( argumentCollection=arguments );
 		/* Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. */
 		var allRanges = extractRanges( arguments.range );
-		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
+		var style = isNull(arguments.cellStyle) ? buildCellStyle( arguments.workbook, arguments.format ) : arguments.cellStyle;
 		for( var thisRange in allRanges ){
 			if( thisRange.startAt == thisRange.endAt ){
 				/* Just one column */
@@ -908,7 +908,7 @@ component accessors="true"{
 		checkFormatArguments( argumentCollection=arguments );
 		var theRow = getRowFromActiveSheet( arguments.workbook, arguments.row );
 		if( IsNull( theRow ) ) return;
-		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
+		var style = isNull(arguments.cellStyle) ? buildCellStyle( arguments.workbook, arguments.format) : arguments.cellStyle;
 		var cellIterator = theRow.cellIterator();
 		while( cellIterator.hasNext() )
 			formatCell( arguments.workbook, arguments.format, arguments.row, ( cellIterator.next().getColumnIndex() +1 ), arguments.overwriteCurrentStyle, style );
@@ -924,7 +924,7 @@ component accessors="true"{
 		checkFormatArguments( argumentCollection=arguments );
 		/* Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen. */
 		var allRanges = extractRanges( arguments.range );
-		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
+		var style = isNull(arguments.cellStyle) ? buildCellStyle( arguments.workbook, arguments.format) : arguments.cellStyle;
 		for( var thisRange in allRanges ){
 			if( thisRange.startAt == thisRange.endAt ){
 				/* Just one row */
@@ -3045,7 +3045,7 @@ component accessors="true"{
 	/* Formatting */
 
 	private any function buildCellStyle( required workbook, required struct format, existingStyle ){
-		var cellStyle = arguments.workbook.createCellStyle();
+		var cellStyle = isNull(arguments.existingStyle) ? arguments.workbook.createCellStyle() : arguments.existingStyle;
 		if( arguments.KeyExists( "existingStyle" ) ) cellStyle.cloneStyleFrom( arguments.existingStyle );
 		var font = 0;
 		for( var setting in arguments.format ){
