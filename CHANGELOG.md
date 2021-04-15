@@ -1,10 +1,11 @@
-## 2.18.0 - 15 April 2021
+## 2.18.1 - 15 April 2021
 
 - Enhancements
 	- \#231 Add setCellHyperLink() and getCellHyperLink()
 	- \#101 Add setHeaderImage() and setFooterImage()
 
 - Fixes
+	- \#235 Fix missing semi-colon in setActiveSheetNameOrNumber()
 	- \#233 Using "overwriteCurrentStyle=false" and a pre-built cellStyle with formatting functions causes the cellStyle to be ignored
 	- \#232 Using "overwriteCurrentStyle=false" with formatting functions causes default cell style to be changed
 

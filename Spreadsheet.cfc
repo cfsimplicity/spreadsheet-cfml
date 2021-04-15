@@ -1,7 +1,7 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="2.18.0-develop" setter="false";
+	property name="version" default="2.18.1" setter="false";
 	property name="osgiLibBundleVersion" default="5.0.0.2" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="luceeSpreadsheet" setter="false";
 	property name="exceptionType" default="cfsimplicity.lucee.spreadsheet" setter="false";
@@ -2157,7 +2157,7 @@ component accessors="true"{
 			setActiveSheetNumber( arguments.workbook, sheetNumber );
 			return;
 		}
-		var sheetName = arguments.sheetNameOrNumber
+		var sheetName = arguments.sheetNameOrNumber;
 		setActiveSheet( arguments.workbook, sheetName );
 	}
 
