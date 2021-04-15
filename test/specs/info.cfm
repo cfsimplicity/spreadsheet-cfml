@@ -23,41 +23,24 @@ describe( "info", function(){
 		};
 		variables.infoToBeReturned = Duplicate( infoToAdd );
 		StructAppend( infoToBeReturned, additional );
+		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 	});
 
 	it( "Adds and can get back info from a binary xls", function(){
-		var workbook = s.new();
-		s.addInfo( workbook, infoToAdd );
-		var expected = infoToBeReturned;
-		var actual = s.info( workbook );
-		actual.creationDate = DateFormat( Now(), "yyyymmdd" );// Doesn't return this value so mock
-		expect( actual ).toBe( expected );
-	});
-
-	it( "Adds and can get back info from an xml xlsx", function(){
-		var workbook = s.newXlsx();
-		s.addInfo( workbook, infoToAdd );
-		infoToBeReturned.spreadSheetType = "Excel (2007)";
-		expected = infoToBeReturned;
-		var actual = s.info( workbook );
-		actual.creationDate = DateFormat( actual.creationDate, "yyyymmdd" ); // Doesn't return this value so mock
-		expect( actual ).toBe( expected );
-	});
-
-	it( "Adds and can get back info from a streaming xlsx", function(){
-		var workbook = s.newStreamingXlsx();
-		s.addInfo( workbook, infoToAdd );
-		infoToBeReturned.spreadSheetType = "Excel (2007)";
-		var expected = infoToBeReturned;
-		var actual = s.info( workbook );
-		actual.creationDate = DateFormat( actual.creationDate, "yyyymmdd" ); // Doesn't return this value so mock
-		expect( actual ).toBe( expected );
+		workbooks.Each( function( wb ){
+			s.addInfo( wb, infoToAdd );
+			if( s.isXmlFormat( wb ) ) infoToBeReturned.spreadSheetType = "Excel (2007)";
+			var expected = infoToBeReturned;
+			var actual = s.info( wb );
+			actual.creationDate = DateFormat( Now(), "yyyymmdd" );// Doesn't return this value so mock
+			expect( actual ).toBe( expected );
+		});
 	});
 
 	it( "Handles missing lastAuthor value in an xlsx", function(){
 		infoToAdd.delete( "lastAuthor" );
 		infoToBeReturned.delete( "lastAuthor" );
-		var workbook = s.newXlsx();
+		var workbook = workbooks[ 2 ];
 		s.addInfo( workbook, infoToAdd );
 		infoToBeReturned.spreadSheetType = "Excel (2007)";
 		var expected = infoToBeReturned;
@@ -67,13 +50,16 @@ describe( "info", function(){
 	});
 
 	it( "Can accept a file path instead of a workbook", function(){
-		var workbook = s.new();
-		s.addInfo( workbook, infoToAdd );
-		s.write( workbook, tempXlsPath, true );
-		var expected = infoToBeReturned;
-		var actual = s.info( tempXlsPath );
-		actual.creationDate = DateFormat( Now(), "yyyymmdd" );// Doesn't return this value so mock
-		expect( actual ).toBe( expected );
+		workbooks.Each( function( wb ){
+			if( s.isXmlFormat( wb ) ) infoToBeReturned.spreadSheetType = "Excel (2007)";
+			var tempPath = s.isXmlFormat( wb )? tempXlsxPath: tempXlsPath;
+			s.addInfo( wb, infoToAdd );
+			s.write( wb, tempPath, true );
+			var expected = infoToBeReturned;
+			var actual = s.info( tempPath );
+			actual.creationDate = DateFormat( Now(), "yyyymmdd" );// Doesn't return this value so mock
+			expect( actual ).toBe( expected );
+		});
 	});
 
 	afterEach( function(){

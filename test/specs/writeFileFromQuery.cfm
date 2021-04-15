@@ -13,14 +13,14 @@ describe( "writeFileFromQuery", function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Writes an OOXML file if extension is .xlsx", function(){
+	it( "Writes an XLSX file if extension is .xlsx", function(){
 		var path = tempXlsxPath;
 		s.writeFileFromQuery( query, path, true );
 		var workbook	=	s.read( path );
 		expect( workbook.getClass().name ).toBe( "org.apache.poi.xssf.usermodel.XSSFWorkbook" );
 	});
 
-	it( "Writes an OOXML file if extension is .xls but xmlFormat is true", function(){
+	it( "Writes an XLSX file if extension is .xls but xmlFormat is true", function(){
 		var convertedPath = tempXlsPath & "x";
 		s.writeFileFromQuery( data=query, filepath=tempXlsPath, overwrite=true, xmlFormat=true );
 		var workbook	=	s.read( convertedPath );

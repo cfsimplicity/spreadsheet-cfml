@@ -1,17 +1,49 @@
 <cfscript>
 describe( "addImage", function(){
 
-	it( "Doesn't error when adding an image to a binary spreadsheet", function(){
+	it( "Doesn't error when adding an image to a spreadsheet", function(){
 		var imagePath = getTestFilePath( "test.png" );
-		var workbook = s.newXls();
-		s.addImage( workbook=workbook, filepath=imagePath, anchor="1,1,2,2" );
+		var workbooks = [ s.newXls(), s.newXlsx() ];
+		workbooks.Each( function( wb ) {
+			s.addImage( workbook=wb, filepath=imagePath, anchor="1,1,2,2" );
+			var imageData = ImageNew( "", 10, 10, "rgb", "blue" );
+			s.addImage( workbook=wb, imageData=imageData, imageType="png", anchor="1,2,2,3" );
+		});
 	});
 
-	it( "Doesn't error when adding an image to an XML spreadsheet", function(){
-		var imagePath = getTestFilePath( "test.png" );
-		var workbook = s.newXlsx();
-		s.addImage( workbook=workbook, filepath=imagePath, anchor="1,1,2,2" );
-	});
+	describe( "throws an exception if", function(){
+
+		beforeEach( function(){
+			variables.workbooks = [ s.newXls(), s.newXlsx() ];
+		});
+
+		it( "no image is provided", function(){
+			workbooks.Each( function( wb ) {
+				expect( function(){
+					s.addImage( workbook=wb, anchor="1,1,2,2" );
+				}).toThrow( regex="Missing image path or object" );
+			});
+		});
+
+		it( "imageData is provided with no imageType", function(){
+			workbooks.Each( function( wb ) {
+				expect( function(){
+					var imageData = ImageRead( getTestFilePath( "test.png" ) );
+					s.addImage( workbook=wb, imageData=imageData, anchor="1,1,2,2" );
+				}).toThrow( regex="Invalid argument combination" );
+			});
+		});
+
+		it( "imageData is not a coldfusion image object", function(){
+			workbooks.Each( function( wb ) {
+				expect( function(){
+					var imageData = {};
+					s.addImage( workbook=wb, imageData=imageData, imageType="png", anchor="1,1,2,2" );
+				}).toThrow( regex="Invalid image" );
+			});
+		});
+
+	});	
 
 });	
 </cfscript>

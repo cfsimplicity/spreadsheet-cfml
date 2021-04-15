@@ -23,43 +23,44 @@ describe( "dateFormats customisability",function(){
 	});
 
 	it( "allows the format of date and time values to be customised", function() {
+		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 		//Dates
-		variables.workbook = s.new();
 		var dateValue =  CreateDate( 2019, 04, 12 );
 		var timeValue = CreateTime( 1, 5, 5 );
 		var timestampValue = CreateDateTime(  2019, 04, 12, 1, 5, 5 );
+		workbooks.Each( function( wb ){
+			s.setCellValue( wb, dateValue, 1, 1 );
+			var expected = DateFormat( dateValue, "yyyy-mm-dd" );
+			var actual = s.getCellValue( wb, 1, 1 );
+			expect( actual ).toBe( expected );
+			//Times
+			s.setCellValue( wb, timeValue, 1, 1 );
+			expected = TimeFormat( timeValue, "hh:mm:ss" );
+			actual = s.getCellValue( wb, 1, 1 );
+			expect( actual ).toBe( expected );
+			//timestamps
+			s.setCellValue( wb, timestampValue, 1, 1 );
+			expected = DateTimeFormat( timestampValue, "yyyy-mm-dd hh:nn:ss" );
+			actual = s.getCellValue( wb, 1, 1 );
+			expect( actual ).toBe( expected );
 
-		s.setCellValue( workbook, dateValue, 1, 1 );
-		var expected = DateFormat( dateValue, "yyyy-mm-dd" );
-		var actual = s.getCellValue( workbook, 1, 1 );
-		expect( actual ).toBe( expected );
-		//Times
-		s.setCellValue( workbook, timeValue, 1, 1 );
-		expected = TimeFormat( timeValue, "hh:mm:ss" );
-		actual = s.getCellValue( workbook, 1, 1 );
-		expect( actual ).toBe( expected );
-		//timestamps
-		s.setCellValue( workbook, timestampValue, 1, 1 );
-		expected = DateTimeFormat( timestampValue, "yyyy-mm-dd hh:nn:ss" );
-		actual = s.getCellValue( workbook, 1, 1 );
-		expect( actual ).toBe( expected );
-
-		// custom date format
-		local.s = newSpreadsheetInstance( dateFormats={ DATE="mm/dd/yyyy" } );
-		s.setCellValue( workbook, dateValue, 1, 1 );
-		expected = DateFormat( dateValue, "mm/dd/yyyy" );
-		actual = s.getCellValue( workbook, 1, 1 );
-		expect( actual ).toBe( expected );
-		//custom time format
-		local.s = newSpreadsheetInstance( dateFormats={ TIME="h:m:s" } );
-		s.setCellValue( workbook, timeValue, 1, 1 );
-		expected = TimeFormat( timeValue, "h:m:s" );
-		actual = s.getCellValue( workbook, 1, 1 );
-		//custom timestamp format
-		local.s = newSpreadsheetInstance( dateFormats={ TIMESTAMP="mm/dd/yyyy h:m:s" } );
-		s.setCellValue( workbook, timestampValue, 1, 1 );
-		expected = DateTimeFormat( timestampValue, "mm/dd/yyyy h:n:s" );
-		actual = s.getCellValue( workbook, 1, 1 );
+			// custom date format
+			local.s = newSpreadsheetInstance( dateFormats={ DATE="mm/dd/yyyy" } );
+			s.setCellValue( wb, dateValue, 1, 1 );
+			expected = DateFormat( dateValue, "mm/dd/yyyy" );
+			actual = s.getCellValue( wb, 1, 1 );
+			expect( actual ).toBe( expected );
+			//custom time format
+			local.s = newSpreadsheetInstance( dateFormats={ TIME="h:m:s" } );
+			s.setCellValue( wb, timeValue, 1, 1 );
+			expected = TimeFormat( timeValue, "h:m:s" );
+			actual = s.getCellValue( wb, 1, 1 );
+			//custom timestamp format
+			local.s = newSpreadsheetInstance( dateFormats={ TIMESTAMP="mm/dd/yyyy h:m:s" } );
+			s.setCellValue( wb, timestampValue, 1, 1 );
+			expected = DateTimeFormat( timestampValue, "mm/dd/yyyy h:n:s" );
+			actual = s.getCellValue( wb, 1, 1 );
+		});
 	});
 
 	it( "Uses the overridden DATETIME format mask when generating CSV and HTML",function() {
@@ -82,7 +83,6 @@ describe( "dateFormats customisability",function(){
 		});
 
 	});	
-
 
 });	
 </cfscript>

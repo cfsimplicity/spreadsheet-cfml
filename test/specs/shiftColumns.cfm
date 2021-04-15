@@ -2,31 +2,35 @@
 describe( "shiftColumns", function(){
 
 	beforeEach( function(){
-		variables.workbook = s.new();
+		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 	});
 
 	it( "Shifts columns right if offset is positive", function(){
-		s.addColumn( workbook, "a,b" );
-		s.addColumn( workbook, "c,d" );
-		s.shiftColumns( workbook, 1, 1, 1 );
-		var expected = querySim( "column1,column2
-			|a
-			|b
-		");
-		var actual = s.sheetToQuery( workbook=workbook, includeBlankRows=true );
-		expect( actual ).toBe( expected );
+		workbooks.Each( function( wb ){
+			s.addColumn( wb, "a,b" );
+			s.addColumn( wb, "c,d" );
+			s.shiftColumns( wb, 1, 1, 1 );
+			var expected = querySim( "column1,column2
+				|a
+				|b
+			");
+			var actual = s.sheetToQuery( workbook=wb, includeBlankRows=true );
+			expect( actual ).toBe( expected );
+		});
 	});
 
 	it( "Shifts columns left if offset is negative", function(){
-		s.addColumn( workbook, "a,b" );
-		s.addColumn( workbook, "c,d" );
-		s.addColumn( workbook, "e,f" );
-		s.shiftColumns( workbook, 2, 2, -1 );
-		var expected = querySim( "column1,column2,column3
-			c||e
-			d||f");
-		var actual = s.sheetToQuery( workbook=workbook, includeBlankRows=true );
-		expect( actual ).toBe( expected );
+		workbooks.Each( function( wb ){
+			s.addColumn( wb, "a,b" );
+			s.addColumn( wb, "c,d" );
+			s.addColumn( wb, "e,f" );
+			s.shiftColumns( wb, 2, 2, -1 );
+			var expected = querySim( "column1,column2,column3
+				c||e
+				d||f");
+			var actual = s.sheetToQuery( workbook=wb, includeBlankRows=true );
+			expect( actual ).toBe( expected );
+		});
 	});
 
 });	

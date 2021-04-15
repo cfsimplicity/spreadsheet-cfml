@@ -11,21 +11,17 @@ Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of 
 ### Benefits
 
 - No installation required, either at the server or individual web context level.
-- `read()` method offers all the features of the `<cfspreadsheet action="read">` tag in script in addition to the basic options of `SpreadsheetRead()`.
-- Offers a number of additional functions and options (see below)
+- `read()` method offers all the features of the `<cfspreadsheet action="read">` tag in script.
+- Offers many additional functions and options (see below).
 - Fixes various outstanding bugs/omissions.
 - No dependency on Lucee within the included jar files.
-- Invoking the library doesn't create a workbook instance (a.k.a. *Spreadsheet Object*), meaning:
-  - a blank workbook isn't created unnecessarily when reading an existing spreadsheet
-  - the library can be stored as a singleton in application scope
-- Also works with Adobe ColdFusion (see below)
-- Written entirely in CFML script.
+- Also works with Adobe ColdFusion (see below).
 
 ### Downsides
 
 - Existing code needs adapting to invoke the library. Existing CFML spreadsheet functions and the `<cfspreadsheet>` tag won't work with it.
 
-### Adobe ColdFusion
+## Adobe ColdFusion
 
 Although primarily intended for Lucee, the library can be run under ColdFusion 2016 or higher. This may be useful where you want to your codebase to be cross-compatible between the two engines.
 
@@ -38,6 +34,21 @@ Although primarily intended for Lucee, the library can be run under ColdFusion 2
 If you are running Java 6 and 7, Lucee 4.5 or ACF11, please use [version 1.x.](https://github.com/cfsimplicity/lucee-spreadsheet/tags)
 
 ## Usage
+
+The following are the essential files/folders you will need depending on which engine you are using:
+
+#### Lucee
+```
+lib-osgi.jar
+osgiLoader.cfc
+Spreadsheet.cfc
+```
+#### Adobe ColdFusion
+```
+javaLoader/
+lib/
+Spreadsheet.cfc
+```
 
 Note that this is not a Lucee extension, so **does not need to be installed**. To use it, simply copy the files/folders to a location where `Spreadsheet.cfc` can be called by your application code.
 
@@ -120,6 +131,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [createCellStyle](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/createCellStyle)
 * [getCellComments](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellComments)
 * [getCellFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellFormat)
+* [getCellHyperLink](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellHyperLink)
 * [getCellType](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellType)
 * [getColumnWidth](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getColumnWidth)
 * [getColumnWidthInPixels](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getColumnWidthInPixels)
@@ -136,8 +148,11 @@ You will probably want to place the spreadsheet library files in a central locat
 * [removePrintGridlines](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/removePrintGridlines)
 * [renameSheet](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/renameSheet)
 * [removeSheetNumber](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/removeSheetNumber)
+* [setCellHyperLink](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setCellHyperLink)
 * [setCellRangeValue](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setCellRangeValue)
 * [setFitToPage](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setFitToPage)
+* [setFooterImage](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setFooterImage)
+* [setHeaderImage](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setHeaderImage)
 * [setReadOnly](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setReadOnly)
 * [setRepeatingColumns](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setRepeatingColumns)
 * [setRepeatingRows](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setRepeatingRows)
@@ -185,6 +200,8 @@ The `read()` method also features the following additional options not available
 * `includeHiddenColumns`
 * `includeRichTextFormatting`
 * `password` to open encrypted spreadsheets
+* `csvDelimiter`
+* `queryColumnTypes`
 
 [Full documentation of read()](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/read)
 
@@ -240,7 +257,7 @@ The automated tests require [TestBox 2.1](https://github.com/Ortus-Solutions/Tes
 
 ## Credits
 
-The code was originally adapted from the work of [TeamCfAdvance](https://github.com/teamcfadvance/). Ben Nadel's [POI Utility](https://github.com/bennadel/POIUtility.cfc) was also used as a basis for parts of the `read` functionality.
+The code was originally adapted from the work of [TeamCfAdvance](https://github.com/teamcfadvance/). Ben Nadel's [POI Utility](https://github.com/bennadel/POIUtility.cfc) was also used as a basis for parts of the `read` functionality. Header/Footer image functionality is based on code by [Axel Richter](https://stackoverflow.com/users/3915431/axel-richter).
 
 [JavaLoader](https://github.com/markmandel/JavaLoader) is by Mark Mandel.
 

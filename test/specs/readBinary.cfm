@@ -2,8 +2,10 @@
 describe( "readBinary", function(){
 
 	it( "Returns a binary object", function(){
-		var workbook = s.new();
-		expect( IsBinary( s.readBinary( workbook ) ) ).toBeTrue();
+		var workbooks = [ s.newXls(), s.newXlsx() ];
+		workbooks.Each( function( wb ){
+			expect( IsBinary( s.readBinary( wb ) ) ).toBeTrue();
+		});
 	});
 
 });	

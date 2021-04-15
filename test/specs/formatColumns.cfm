@@ -11,11 +11,13 @@ describe( "formatColumns", function(){
 	describe( "formatColumns throws an exception if ", function(){
 
 		it( "the range is invalid", function(){
-			expect( function(){
-				workbook = s.new();
-				format = { font: "Courier" };
-				s.formatColumns( workbook, format, "a-b" );
-			}).toThrow( regex="Invalid range" );
+			var workbooks = [ s.newXls(), s.newXlsx() ];
+			workbooks.Each( function( wb ){
+				expect( function(){
+					format = { font: "Courier" };
+					s.formatColumns( wb, format, "a-b" );
+				}).toThrow( regex="Invalid range" );
+			});
 		});
 
 	});

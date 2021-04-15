@@ -1,9 +1,9 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="2.17.0" setter="false";
-	property name="osgiLibBundleVersion" default="5.0.0.1"; //first 3 octets = POI version; increment 4th with other jar updates
-	property name="osgiLibBundleSymbolicName" default="luceeSpreadsheet";
+	property name="version" default="2.18.0" setter="false";
+	property name="osgiLibBundleVersion" default="5.0.0.2" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="osgiLibBundleSymbolicName" default="luceeSpreadsheet" setter="false";
 	property name="exceptionType" default="cfsimplicity.lucee.spreadsheet" setter="false";
 	//commonly invoked POI class names
 	property name="HSSFWorkbookClassName" default="org.apache.poi.hssf.usermodel.HSSFWorkbook" setter="false";
@@ -149,24 +149,15 @@ component accessors="true"{
 		if( csvIsString && csvIsFile )
 			Throw( type=this.getExceptionType(), message="Mutually exclusive arguments: 'csv' and 'filepath'", detail="Only one of either 'filepath' or 'csv' arguments may be provided." );
 		if(	csvIsFile ){
-			if( !FileExists( arguments.filepath ) )
-				Throw( type=this.getExceptionType(), message="Non-existant file", detail="Cannot find a file at #arguments.filepath#" );
-			if( !isCsvOrTextFile( arguments.filepath ) )
-				Throw( type=this.getExceptionType(), message="Invalid csv file", detail="#arguments.filepath# does not appear to be a text/csv file" );
+			throwErrorIFfileNotExists( arguments.filepath );
+			throwErrorIFnotCsvOrTextFile( arguments.filepath );
 			arguments.csv = FileRead( arguments.filepath );
 		}
 		if( IsStruct( arguments.queryColumnTypes ) && !arguments.firstRowIsHeader && !arguments.KeyExists( "queryColumnNames" )  )
-				Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
+			Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
 		if( arguments.trim ) arguments.csv = arguments.csv.Trim();
-		if( arguments.KeyExists( "delimiter" ) ){
-			if( delimiterIsTab( arguments.delimiter ) )
-				var format = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ];
-			else {
-				var format = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ]
-					.withDelimiter( JavaCast( "char", arguments.delimiter ) )
-					.withIgnoreSurroundingSpaces();//stop spaces between fields causing problems with embedded lines
-			}
-		}
+		if( arguments.KeyExists( "delimiter" ) )
+			var format = getCsvFormatForDelimiter( arguments.delimiter );
 		else
 			var format = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
 		var parsed = loadClass( "org.apache.commons.csv.CSVParser" ).parse( arguments.csv, format );
@@ -186,7 +177,7 @@ component accessors="true"{
 		}
 		if( arguments.KeyExists( "queryColumnNames" ) && arguments.queryColumnNames.Len() )
 			var columnNames = arguments.queryColumnNames;
-		else {
+		else{
 			var columnNames = [];
 			if( arguments.firstRowIsHeader ) var headerRow = data[ 1 ];
 			for( var i=1; i <= maxColumnCount; i++ ){
@@ -317,8 +308,7 @@ component accessors="true"{
 		if( arguments.addHeaderRow ){
 			var columns = _QueryColumnArray( arguments.data );
 			addRow( workbook, columns );
-			if( arguments.boldHeaderRow )
-				formatRow( workbook, { bold: true }, 1 );
+			if( arguments.boldHeaderRow ) formatRow( workbook, { bold: true }, 1 );
 			addRowsArgs.row = 2;
 			addRowsArgs.column = 1;
 		}
@@ -388,7 +378,7 @@ component accessors="true"{
 		var sheet = getActiveSheet( arguments.workbook );
 		if( arguments.KeyExists( "startColumn" ) )
 			cellNum = ( arguments.startColumn -1 );
-		else {
+		else{
 			row = sheet.getRow( rowNum );
 			/* if this row exists, find the next empty cell number. note: getLastCellNum() returns the cell index PLUS ONE or -1 if not found */
 			if( !IsNull( row ) && row.getLastCellNum() > 0 )
@@ -459,54 +449,20 @@ component accessors="true"{
 		,string imageType
 		,required string anchor
 	){
-		/*
-			 (legacy note from spreadsheet extension) TODO: Should we allow for passing in of a boolean indicating whether or not an image resize should happen (only works on jpg and png)? Currently does not resize. If resize is performed, it does mess up passing in x/y coordinates for image positioning.
-		 */
-		if( !arguments.KeyExists( "filepath" ) && !arguments.KeyExists( "imageData" ) )
-			Throw( type=this.getExceptionType(), message="Invalid argument combination", detail="You must provide either a file path or an image object" );
-		if( arguments.KeyExists( "imageData" ) && !arguments.KeyExists( "imageType" ) )
-			Throw( type=this.getExceptionType(), message="Invalid argument combination", detail="If you specify an image object, you must also provide the imageType argument" );
 		var numberOfAnchorElements = ListLen( arguments.anchor );
 		if( ( numberOfAnchorElements != 4 ) && ( numberOfAnchorElements != 8 ) )
 			Throw( type=this.getExceptionType(), message="Invalid anchor argument", detail="The anchor argument must be a comma-delimited list of integers with either 4 or 8 elements" );
-		//we'll need the image type int in all cases
-		if( arguments.KeyExists( "filepath" ) ){
-			if( !FileExists( arguments.filepath ) )
-				Throw( type=this.getExceptionType(), message="Non-existent file", detail="The specified file does not exist." );
-			try{
-				arguments.imageType = ListLast( FileGetMimeType( arguments.filepath ), "/" );
-			}
-			catch( any exception ){
-				Throw( type=this.getExceptionType(), message="Could Not Determine Image Type", detail="An image type could not be determined from the filepath provided" );
-			}
-		}
-		else if( !arguments.KeyExists( "imageType" ) )
-			Throw( type=this.getExceptionType(), message="Could Not Determine Image Type", detail="An image type could not be determined from the filepath or imagetype provided" );
-		arguments.imageType	=	arguments.imageType.UCase();
-		switch( arguments.imageType ){
-			case "DIB": case "EMF": case "JPEG": case "PICT": case "PNG": case "WMF":
-				var imageTypeIndex = arguments.workbook[ "PICTURE_TYPE_" & arguments.imageType ];
-			break;
-			case "JPG":
-				var imageTypeIndex = arguments.workbook.PICTURE_TYPE_JPEG;
-			break;
-			default:
-				Throw( type=this.getExceptionType(), message="Invalid Image Type", detail="Valid image types are DIB, EMF, JPG, JPEG, PICT, PNG, and WMF" );
-		}
-		if( arguments.KeyExists( "filepath" ) ){
-			try{
-				var inputStream = CreateObject( "java", "java.io.FileInputStream" ).init( JavaCast( "string", arguments.filepath ) );
-				var ioUtils = loadClass( "org.apache.poi.util.IOUtils" );
-				var bytes = ioUtils.toByteArray( inputStream );
-			}
-			finally{
-				if( local.KeyExists( "inputStream" ) )
-					inputStream.close();
-			}
-		}
-		else
-			var bytes = ToBinary( arguments.imageData );
-		var imageIndex = arguments.workbook.addPicture( bytes, JavaCast( "int", imageTypeIndex ) );
+		var args = {
+			workbook: arguments.workbook
+			,anchor: arguments.anchor
+		};
+		if( arguments.KeyExists( "image" ) ) args.image = arguments.image;//new alias instead of filepath/imageData
+		if( arguments.KeyExists( "filepath" ) ) args.image = arguments.filepath;
+		if( arguments.KeyExists( "imageData" ) ) args.image = arguments.imageData;
+		if( arguments.KeyExists( "imageType" ) ) args.imageType = arguments.imageType;
+		if( !args.KeyExists( "image" ) )
+			Throw( type=this.getExceptionType(), message="Missing image path or object", detail="Please supply either the 'filepath' or 'imageData' argument" );
+		var imageIndex = addImageToWorkbook( argumentCollection=args );
 		var clientAnchorClass = isXmlFormat( arguments.workbook )
 				? "org.apache.poi.xssf.usermodel.XSSFClientAnchor"
 				: "org.apache.poi.hssf.usermodel.HSSFClientAnchor";
@@ -753,8 +709,7 @@ component accessors="true"{
 	public void function clearCell( required workbook, required numeric row, required numeric column ){
 		/* Clears the specified cell of all styles and values */
 		var defaultStyle = arguments.workbook.getCellStyleAt( JavaCast( "short", 0 ) );
-		var rowIndex = ( arguments.row -1 );
-		var rowObject = getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
+		var rowObject = getRowFromActiveSheet( arguments.workbook, arguments.row );
 		if( IsNull( rowObject ) ) return;
 		var columnIndex = ( arguments.column -1 );
 		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
@@ -810,8 +765,7 @@ component accessors="true"{
 		while( rowIterator.hasNext() ){
 			var row = rowIterator.next();
 			var cell = row.getCell( JavaCast( "int", ( arguments.column -1 ) ) );
-			if( IsNull( cell ) )
-				continue;
+			if( IsNull( cell ) ) continue;
 			row.removeCell( cell );
 		}
 	}
@@ -836,7 +790,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
 		var rowToDelete = ( arguments.row -1 );
 		if( rowToDelete >= getFirstRowNum( arguments.workbook ) && rowToDelete <= getLastRowNum( arguments.workbook ) ) //If this is a valid row, remove it
-			getActiveSheet( arguments.workbook ).removeRow( getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowToDelete ) ) );
+			getActiveSheet( arguments.workbook ).removeRow( getRowFromActiveSheet( arguments.workbook, arguments.row ) );
 	}
 
 	public void function deleteRows( required workbook, required string range ){
@@ -863,11 +817,15 @@ component accessors="true"{
 	){
 		checkFormatArguments( argumentCollection=arguments );
 		var cell = initializeCell( arguments.workbook, arguments.row, arguments.column );
-		if( arguments.overwriteCurrentStyle )
-			var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
-		else
-			var style = buildCellStyle( arguments.workbook, arguments.format, cell.getCellStyle() );
-		cell.setCellStyle( style );
+		if( arguments.KeyExists( "cellStyle" ) ){
+			cell.setCellStyle( arguments.cellStyle );
+			return;
+		}
+		if( arguments.overwriteCurrentStyle ){
+			cell.setCellStyle( buildCellStyle( arguments.workbook, arguments.format ) );
+			return;
+		}
+		cell.setCellStyle( buildCellStyle( arguments.workbook, arguments.format, cell.getCellStyle() ) );
 	}
 
 	public void function formatCellRange(
@@ -937,8 +895,7 @@ component accessors="true"{
 		,any cellStyle
 	){
 		checkFormatArguments( argumentCollection=arguments );
-		var rowIndex = ( arguments.row -1 );
-		var theRow = getActiveSheet( arguments.workbook ).getRow( rowIndex );
+		var theRow = getRowFromActiveSheet( arguments.workbook, arguments.row );
 		if( IsNull( theRow ) ) return;
 		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
 		var cellIterator = theRow.cellIterator();
@@ -1044,66 +1001,39 @@ component accessors="true"{
 	}
 
 	public any function getCellFormula( required workbook, numeric row, numeric column ){
-		if( arguments.KeyExists( "row" ) && arguments.KeyExists( "column" ) ){
-			if( cellExists( arguments.workbook, arguments.row, arguments.column ) ){
-				var cell = getCellAt( arguments.workbook, arguments.row, arguments.column );
-				if( cellIsOfType( cell, "FORMULA" ) )
-					return cell.getCellFormula();
-				return "";
-			}
-		}
-		//no row and column provided so return an array of structs containing formulas for the entire sheet
-		var rowIterator = getActiveSheet( arguments.workbook ).rowIterator();
-		var formulas = [];
-		while( rowIterator.hasNext() ){
-			var cellIterator = rowIterator.next().cellIterator();
-			while( cellIterator.hasNext() ){
-				var cell = cellIterator.next();
-				var formulaStruct = {
-					row: ( cell.getRowIndex() + 1 )
-					,column: ( cell.getColumnIndex() + 1 )
-				};
-				try{
-					formulaStruct.formula = cell.getCellFormula();
-				}
-				catch( any exception ){
-					formulaStruct.formula = "";
-				}
-				if( formulaStruct.formula.Len() )
-					formulas.Append( formulaStruct );
-			}
-		}
-		return formulas;
+		if( !arguments.KeyExists( "row" ) || !arguments.KeyExists( "column" ) )
+			return getAllSheetFormulas( arguments.workbook );
+		if( !cellExists( arguments.workbook, arguments.row, arguments.column ) )
+			Throw( type=this.getExceptionType(), message="Non-existent cell", detail="There is no cell at row #arguments.row#, column #arguments.column#." );
+		var cell = getCellAt( arguments.workbook, arguments.row, arguments.column );
+		if( cellIsOfType( cell, "FORMULA" ) ) return cell.getCellFormula();
+		return "";
+	}
+
+	public string function getCellHyperLink( required workbook, required numeric row, required numeric column ){
+		var cell = initializeCell( arguments.workbook, arguments.row, arguments.column );
+		return cell.getHyperLink()?.getAddress()?:"";
 	}
 
 	public string function getCellType( required workbook, required numeric row, required numeric column ){
-		if( !cellExists( arguments.workbook, arguments.row, arguments.column ) )
-			return "";
-		var rowIndex = ( arguments.row -1 );
+		if( !cellExists( arguments.workbook, arguments.row, arguments.column ) ) return "";
+		var rowObject = getRowFromActiveSheet( arguments.workbook, arguments.row );
 		var columnIndex = ( arguments.column -1 );
-		var rowObject = getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
 		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
 		return cell.getCellType().toString();
 	}
 
 	public any function getCellValue( required workbook, required numeric row, required numeric column ){
-		if( !cellExists( arguments.workbook, arguments.row, arguments.column ) )
-			return "";
-		var rowIndex = ( arguments.row -1 );
+		if( !cellExists( arguments.workbook, arguments.row, arguments.column ) ) return "";
+		var rowObject = getRowFromActiveSheet( arguments.workbook, arguments.row );
 		var columnIndex = ( arguments.column -1 );
-		var rowObject = getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
 		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
 		if( cellIsOfType( cell, "FORMULA" ) ) return getCellFormulaValue( arguments.workbook, cell );
 		return getDataFormatter().formatCellValue( cell );
 	}
 
 	public numeric function getColumnCount( required workbook, sheetNameOrNumber ){
-		if( arguments.KeyExists( "sheetNameOrNumber" ) ){
-			if( IsValid( "integer", arguments.sheetNameOrNumber ) AND IsNumeric( arguments.sheetNameOrNumber ) )
-				setActiveSheetNumber( arguments.workbook, arguments.sheetNameOrNumber );
-			else
-				setActiveSheet( arguments.workbook, arguments.sheetNameOrNumber );
-		}
+		if( arguments.KeyExists( "sheetNameOrNumber" ) ) setActiveSheetNameOrNumber( argumentCollection=arguments );
 		var sheet = getActiveSheet( arguments.workbook );
 		var rowIterator = sheet.rowIterator();
 		var result = 0;
@@ -1134,12 +1064,7 @@ component accessors="true"{
 	}
 
 	public numeric function getRowCount( required workbook, sheetNameOrNumber ){
-		if( arguments.KeyExists( "sheetNameOrNumber" ) ){
-			if( IsValid( "integer", arguments.sheetNameOrNumber ) && IsNumeric( arguments.sheetNameOrNumber ) )
-				setActiveSheetNumber( arguments.workbook, arguments.sheetNameOrNumber );
-			else
-				setActiveSheet( arguments.workbook, arguments.sheetNameOrNumber );
-		}
+		if( arguments.KeyExists( "sheetNameOrNumber" ) ) setActiveSheetNameOrNumber( argumentCollection=arguments );
 		var sheet = getActiveSheet( arguments.workbook );
 		var lastRowIndex = getLastRowNum( arguments.workbook, sheet );
 		// empty
@@ -1201,13 +1126,11 @@ component accessors="true"{
 	}
 
 	public boolean function isRowHidden( required workbook, required numeric row ){
-		var rowIndex = ( arguments.row - 1 );
-		return getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).getZeroHeight();
+		return getRowFromActiveSheet( arguments.workbook, arguments.row ).getZeroHeight();
 	}
 
 	public boolean function isSpreadsheetFile( required string path ){
-		if( !FileExists( arguments.path ) )
-			Throw( type=this.getExceptionType(), message="Non-existent file", detail="Cannot find the file #arguments.path#." );
+		throwErrorIFfileNotExists( arguments.path );
 		try{
 			var workbook = workbookFromFile( arguments.path );
 		}
@@ -1280,7 +1203,12 @@ component accessors="true"{
 	}
 
 	public any function newStreamingXlsx( string sheetName="Sheet1", numeric streamingWindowSize=100 ){
-		return new( sheetName=arguments.sheetName, xmlFormat=true, streamingXml=true, streamingWindowSize=arguments.streamingWindowSize );
+		return new(
+			sheetName=arguments.sheetName
+			,xmlFormat=true
+			,streamingXml=true
+			,streamingWindowSize=arguments.streamingWindowSize
+		);
 	}
 
 	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter="," ){		
@@ -1333,15 +1261,12 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid format", detail="Supported formats are: 'query', 'html' and 'csv'" );
 		if( arguments.KeyExists( "sheetName" ) && arguments.KeyExists( "sheetNumber" ) )
 			Throw( type=this.getExceptionType(), message="Cannot provide both sheetNumber and sheetName arguments", detail="Only one of either 'sheetNumber' or 'sheetName' arguments may be provided." );
-		if( !FileExists( arguments.src ) )
-			Throw( type=this.getExceptionType(), message="Non-existent file", detail="Cannot find the file #arguments.src#." );
+		throwErrorIFfileNotExists( arguments.src );
 		var passwordProtected = ( arguments.KeyExists( "password") && !arguments.password.Trim().IsEmpty() );
 		var workbook = passwordProtected? workbookFromFile( arguments.src, arguments.password ): workbookFromFile( arguments.src );
 		if( arguments.KeyExists( "sheetName" ) ) setActiveSheet( workbook=workbook, sheetName=arguments.sheetName );
 		if( !arguments.KeyExists( "format" ) ) return workbook;
-		var args = {
-			workbook: workbook
-		};
+		var args = { workbook: workbook };
 		if( arguments.KeyExists( "sheetName" ) ) args.sheetName = arguments.sheetName;
 		if( arguments.KeyExists( "sheetNumber" ) ) args.sheetNumber = arguments.sheetNumber;
 		if( arguments.KeyExists( "headerRow" ) ){
@@ -1355,8 +1280,7 @@ component accessors="true"{
 		else if( arguments.KeyExists( "queryColumnNames" ) )
 			args.columnNames = arguments.queryColumnNames;// accept better alias `queryColumnNames` to match csvToQuery
 		if( ( arguments.format == "query" ) && arguments.KeyExists( "queryColumnTypes" ) ){
-			if( IsStruct( arguments.queryColumnTypes ) && !arguments.KeyExists( "headerRow" ) && !arguments.KeyExists( "columnNames" ) )
-				Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also specify the 'headerRow' or provide 'columnNames'" );
+			throwErrorIFinvalidQueryColumnTypesArgument( argumentCollection=arguments );
 			args.queryColumnTypes = arguments.queryColumnTypes;
 		}
 		args.includeBlankRows = arguments.includeBlankRows;
@@ -1546,16 +1470,31 @@ component accessors="true"{
 		var cell = initializeCell( arguments.workbook, arguments.row, arguments.column );
 		cell.setCellFormula( JavaCast( "string", arguments.formula ) );
 	}
-
-	public void function setCellValue( required workbook, required value, required numeric row, required numeric column, string type ){
-		//Automatically create the cell if it does not exist, instead of throwing an error
-		var args = {
-			workbook: arguments.workbook
-			,cell: initializeCell( arguments.workbook, arguments.row, arguments.column )
-			,value: arguments.value
-		};
-		if( arguments.KeyExists( "type" ) ) args.type = arguments.type;
-		setCellValueAsType( argumentCollection=args );
+	
+	public void function setCellHyperlink(
+		required workbook
+		,required string link
+		,required numeric row
+		,required numeric column
+		,any cellValue
+		,string type="URL"
+		,struct format={ color: "BLUE", underline: true }
+		,string tooltip //xlsx only, maybe MS Excel full version only
+	){
+		arguments.type = arguments.type.UCase();
+		var validTypes = [ "URL", "EMAIL", "FILE", "DOCUMENT" ];
+		if( !validTypes.Find( arguments.type ) )
+			Throw( type=this.getExceptionType(), message="Invalid type parameter: '#arguments.type#'", detail="The type must be one of the following: #validTypes.ToList( ', ' )#." );
+		if( arguments.KeyExists( "tooltip" ) && !isXmlFormat( arguments.workbook ) )
+			Throw( type=this.getExceptionType(), message="Invalid spreadsheet type", detail="Hyperlink tooltips can only be added to XLSX spreadsheets." );
+		var cell = initializeCell( arguments.workbook, arguments.row, arguments.column );
+		var hyperlinkType = loadClass( "org.apache.poi.common.usermodel.HyperlinkType" );
+		var hyperLink = arguments.workbook.getCreationHelper().createHyperlink( hyperlinkType[ arguments.type ] );
+		hyperLink.setAddress( JavaCast( "string", arguments.link ) );
+		if( arguments.KeyExists( "tooltip" ) ) hyperLink.setTooltip( JavaCast( "string", arguments.tooltip ) );
+		cell.setHyperlink( hyperLink );
+		if( arguments.KeyExists( "cellValue" ) ) setCellValueAsType( arguments.workbook, cell, arguments.cellValue );
+		if( !arguments.format.IsEmpty() ) formatCell( arguments.workbook, arguments.format, arguments.row, arguments.column );
 	}
 
 	public void function setCellRangeValue(
@@ -1570,6 +1509,17 @@ component accessors="true"{
 			for( var columnNumber = arguments.endColumn; columnNumber >= arguments.startColumn; columnNumber-- )
 				setCellValue( arguments.workbook, arguments.value, rowNumber, columnNumber );
 		}
+	}
+
+	public void function setCellValue( required workbook, required value, required numeric row, required numeric column, string type ){
+		//Automatically create the cell if it does not exist, instead of throwing an error
+		var args = {
+			workbook: arguments.workbook
+			,cell: initializeCell( arguments.workbook, arguments.row, arguments.column )
+			,value: arguments.value
+		};
+		if( arguments.KeyExists( "type" ) ) args.type = arguments.type;
+		setCellValueAsType( argumentCollection=args );
 	}
 
 	public void function setColumnWidth( required workbook, required numeric column, required numeric width ){
@@ -1594,10 +1544,19 @@ component accessors="true"{
 		,string centerFooter=""
 		,string rightFooter=""
 	){
-		var footer = getActiveSheet( arguments.workbook ).getFooter();
-		if( !arguments.centerFooter.IsEmpty() ) footer.setCenter( JavaCast( "string", arguments.centerFooter ) );
-		if( !arguments.leftFooter.IsEmpty() ) footer.setleft( JavaCast( "string", arguments.leftFooter ) );
-		if( !arguments.rightFooter.IsEmpty() ) footer.setright( JavaCast( "string", arguments.rightFooter ) );
+		var footer = getActiveSheetFooter( arguments.workbook );
+		if( arguments.centerFooter.Len() ) footer.setCenter( JavaCast( "string", arguments.centerFooter ) );
+		if( arguments.leftFooter.Len() ) footer.setleft( JavaCast( "string", arguments.leftFooter ) );
+		if( arguments.rightFooter.Len() ) footer.setright( JavaCast( "string", arguments.rightFooter ) );
+	}
+
+	public void function setFooterImage(
+		required workbook
+		,required string position // left|center|right
+		,required any image
+		,string imageType
+	){
+		setHeaderOrFooterImage( argumentCollection=arguments, isHeader=false );
 	}
 
 	public void function setHeader(
@@ -1606,10 +1565,19 @@ component accessors="true"{
 		,string centerHeader=""
 		,string rightHeader=""
 	){
-		var header = getActiveSheet( arguments.workbook ).getHeader();
-		if( !arguments.centerHeader.IsEmpty() ) header.setCenter( JavaCast( "string", arguments.centerHeader ) );
-		if( !arguments.leftHeader.IsEmpty() ) header.setleft( JavaCast( "string", arguments.leftHeader ) );
-		if( !arguments.rightHeader.IsEmpty() ) header.setright( JavaCast( "string", arguments.rightHeader ) );
+		var header = getActiveSheetHeader( arguments.workbook );
+		if( arguments.centerHeader.Len() ) header.setCenter( JavaCast( "string", arguments.centerHeader ) );
+		if( arguments.leftHeader.Len() ) header.setleft( JavaCast( "string", arguments.leftHeader ) );
+		if( arguments.rightHeader.Len() ) header.setright( JavaCast( "string", arguments.rightHeader ) );
+	}
+
+	public void function setHeaderImage(
+		required workbook
+		,required string position // left|center|right
+		,required any image
+		,string imageType
+	){
+		setHeaderOrFooterImage( argumentCollection=arguments );
 	}
 
 	public void function setReadOnly( required workbook, required string password ){
@@ -1636,8 +1604,7 @@ component accessors="true"{
 	}
 
 	public void function setRowHeight( required workbook, required numeric row, required numeric height ){
-		var rowIndex = ( arguments.row -1 );
-		getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).setHeightInPoints( JavaCast( "int", arguments.height ) );
+		getRowFromActiveSheet( arguments.workbook, arguments.row ).setHeightInPoints( JavaCast( "int", arguments.height ) );
 	}
 
 	public void function setSheetTopMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
@@ -1698,7 +1665,7 @@ component accessors="true"{
 					}
 				}
 			}
-			else {
+			else{
 				for( var i = startIndex; i <= endIndex; i++ ){
 					var tempCell = row.getCell( JavaCast( "int", i ) );
 					var cell = createCell( row, i + arguments.offset );
@@ -1826,7 +1793,7 @@ component accessors="true"{
 	}
 
 	private void function encryptFile( required string filepath, required string password, required string algorithm ){
-		/* See http://poi.apache.org/encryption.html */
+		/* See https://poi.apache.org/encryption.html */
 		/* NB: Not all spreadsheet programs support this type of encryption */
 		// set up the encryptor with the chosen algo
 		lock name="#arguments.filepath#" timeout=5 {
@@ -1886,6 +1853,15 @@ component accessors="true"{
 		return result;
 	}
 
+	private string function getFileContentTypeFromPath( required string path ){
+		try{
+			return FileGetMimeType( arguments.path ).ListLast( "/" );
+		}
+		catch( any exception ){
+			return "unknown";
+		}
+	}
+
 	private void function handleInvalidSpreadsheetFile( required string path ){
 		var detail = "The file #arguments.path# does not appear to be a binary or xml spreadsheet.";
 		if( isCsvOrTextFile( arguments.path ) ) detail &= " It may be a CSV file, in which case use 'csvToQuery()' to read it";
@@ -1893,8 +1869,159 @@ component accessors="true"{
 	}
 
 	private boolean function isCsvOrTextFile( required string path ){
-		var contentType = FileGetMimeType( arguments.path ).ListLast( "/" );
+		var contentType = getFileContentTypeFromPath( arguments.path );
 		return ListFindNoCase( "plain,csv", contentType );//Lucee=text/plain ACF=text/csv
+	}
+
+	private void function throwErrorIFfileNotExists( required string path ){
+		if( !FileExists( arguments.path ) ) throwNonExistentFileException( arguments.path );
+	}
+
+	private void function throwErrorIFnotCsvOrTextFile( required string path ){
+		if( !isCsvOrTextFile( arguments.path ) ) Throw( type=this.getExceptionType(), message="Invalid csv file", detail="#arguments.path# does not appear to be a text/csv file" );
+	}
+
+	/* Images */
+
+	private numeric function addImageToWorkbook(
+		required workbook
+		,required any image //path or object
+		,string imageType
+	){
+		/* TODO image objects don't always work, depending on how they're created: POI accepts it but the image is not displayed (broken) */
+		var imageArgumentIsObject = IsImage( arguments.image );
+		if( imageArgumentIsObject && !arguments.KeyExists( "imageType" ) )
+			Throw( type=this.getExceptionType(), message="Invalid argument combination", detail="If you specify an image object, you must also provide the imageType argument" );
+		var imageArgumentIsFile = ( !imageArgumentIsObject && IsSimpleValue( arguments.image ) && FileExists( arguments.image ) );
+		if( !imageArgumentIsObject && IsSimpleValue( arguments.image ) && !imageArgumentIsFile )
+			throwNonExistentFileException( arguments.image );
+		if( !imageArgumentIsObject && !imageArgumentIsFile )
+			Throw( type=this.getExceptionType(), message="Invalid image", detail="You must provide either a file path or an image object" );
+		if( imageArgumentIsFile ){
+			arguments.imageType = getFileContentTypeFromPath( arguments.image );
+			if( arguments.imageType == "unknown" ) throwUnknownImageTypeException();
+		}
+		var imageTypeIndex = getImageTypeIndex( arguments.workbook, arguments.imageType );
+		var bytes = imageArgumentIsFile? FileReadBinary( arguments.image ): ToBinary( ToBase64( arguments.image ) );
+		return arguments.workbook.addPicture( bytes, JavaCast( "int", imageTypeIndex ) );// returns 1-based integer index
+	}
+
+	private numeric function getImageTypeIndex( required workbook, required string imageType ){
+		switch( arguments.imageType ){
+			case "DIB": case "EMF": case "JPEG": case "PICT": case "PNG": case "WMF":
+				return arguments.workbook[ "PICTURE_TYPE_" & arguments.imageType.UCase() ];
+			case "JPG":
+				return arguments.workbook.PICTURE_TYPE_JPEG;
+		}
+		Throw( type=this.getExceptionType(), message="Invalid Image Type", detail="Valid image types are DIB, EMF, JPG, JPEG, PICT, PNG, and WMF" );
+	}
+
+	/* Header/Footer images */
+
+	//see https://stackoverflow.com/questions/51077404/apache-poi-adding-watermark-in-excel-workbook/51103756#51103756
+	private void function setHeaderOrFooterImage(
+		required workbook
+		,required string position // left|center|right
+		,required any image
+		,string imageType
+		,boolean isHeader=true //false = footer
+	){
+		var headerType = arguments.isHeader? "Header": "Footer";
+		if( !isXmlFormat( arguments.workbook ) )
+			Throw( type=this.getExceptionType(), message="Invalid spreadsheet type", detail="#headerType# images can only be added to XLSX spreadsheets." );
+		var imageIndex = addImageToWorkbook( argumentCollection=arguments );
+		var sheet = getActiveSheet( arguments.workbook );
+		var headerObject = arguments.isHeader? sheet.getHeader(): sheet.getFooter();
+		var headerTypeInitialLetter = headerType.Left( 1 ); // "H" or "F"
+		var headerImagePartName = "/xl/drawings/vmlDrawing1.vml";
+		switch( arguments.position ){
+			case "left": case "l":
+				headerObject.setLeft( "&G" ); //&G means Graphic
+				var vmlPosition = "L#headerTypeInitialLetter#";
+				break;
+			case "center": case "c": case "centre":
+				headerObject.setCenter( "&G" );
+				var vmlPosition = "C#headerTypeInitialLetter#";
+				break;
+			case "right": case "r":
+				headerObject.setRight( "&G" );
+				var vmlPosition = "R#headerTypeInitialLetter#";
+				break;
+			default: Throw( type=this.getExceptionType(), message="Invalid #headerType.LCase()# position", detail="The 'position' argument '#arguments.position#' is invalid. Use 'left', 'center' or 'right'" );
+		}
+		// check for existing header/footer images
+		var existingRelation = getExistingHeaderFooterImageRelation( sheet, headerImagePartName );
+		var sheetHasExistingHeaderFooterImages = local.KeyExists( "existingRelation" );
+		if( sheetHasExistingHeaderFooterImages ){
+			var part = existingRelation.getPackagePart();
+			try{
+				var headerImageXML = existingRelation.getXml();//Works OK if workbook not previously saved with header/footer images
+			}
+			catch( any exception ){
+				if( exception.message.Find( "getXml" ) )
+					// ...but won't work if file has been previously saved with a header/footer image
+					Throw( type=this.getExceptionType(), message="Spreadsheet contains an existing header or footer", detail="Header/footer images can't currently be added to spreadsheets read from disk that already have them." );
+					/*
+						TODO why won't this work? This is how to get the existing xml, but it won't save back modified to the vmlDrawing1.vml part for some reason
+						headerImageXML = sheet.getRelations()[ i ].getDocument().xmlText();
+					*/
+				else
+					rethrow;
+			}
+		}
+		else{
+			var OPCPackage = workbook.getPackage();
+			var partName = loadClass( "org.apache.poi.openxml4j.opc.PackagingURIHelper" ).createPartName( headerImagePartName );
+			var part = OPCPackage.createPart( partName, "application/vnd.openxmlformats-officedocument.vmlDrawing" );
+			var headerImageXML = getNewHeaderImageXML();
+		}
+		var headerImageVml = loadClass( "luceeSpreadsheet.HeaderImageVML" ).init( part );
+		//create the relation to the picture
+		var pictureData = arguments.workbook.getAllPictures().get( imageIndex );
+		var xssfImageRelation = loadClass( "org.apache.poi.xssf.usermodel.XSSFRelation" ).IMAGES;
+		var pictureRelationID = headerImageVml.addRelation( JavaCast( "null", 0 ), xssfImageRelation, pictureData ).getRelationship().getId();
+		//get image dimension
+		try{
+			var imageInputStream = CreateObject( "java", "java.io.ByteArrayInputStream" ).init( pictureData.getData() );
+			var imageUtils = loadClass( "org.apache.poi.ss.util.ImageUtils" );
+			var imageDimension = imageUtils.getImageDimension( imageInputStream, pictureData.getPictureType() );
+		}
+		catch( any exception ){
+			rethrow;
+		}
+		finally{
+			imageInputStream.close();
+		}
+		var newShapeElement = createNewHeaderImageVMLShape( pictureRelationID, vmlPosition, imageDimension );
+		headerImageXML = headerImageXML.ReReplaceNoCase( "(<\/[\w:]*xml>)", newShapeElement & "\1" );
+		headerImageVml.setXml( headerImageXML );
+	  //create the sheet/vml relation
+	  var xssfVmlRelation = loadClass( "org.apache.poi.xssf.usermodel.XSSFRelation" ).VML_DRAWINGS;
+  	var sheetVmlRelationID = sheet.addRelation( JavaCast( "null", 0 ), xssfVmlRelation, headerImageVml ).getRelationship().getId();
+  	//create the <legacyDrawingHF r:id="..."/> in /xl/worksheets/sheetN.xml
+  	if( !sheetHasExistingHeaderFooterImages ) sheet.getCTWorksheet().addNewLegacyDrawingHF().setId( sheetVmlRelationID );
+	}
+
+	private any function getExistingHeaderFooterImageRelation( required sheet, required string headerImagePartName ){
+		var totalExistingRelations = arguments.sheet.getRelations().Len();
+		if( totalExistingRelations == 0 ) return;
+		cfloop( from=1, to=totalExistingRelations, index="local.i" ){
+			var relation = arguments.sheet.getRelations()[ i ];
+			if( relation.getPackagePart().getPartName().getName() == arguments.headerImagePartName ) return relation;
+		}	
+	}
+
+	private string function createNewHeaderImageVMLShape( required string pictureRelationID, required string vmlPosition, required imageDimension ){
+		return Trim( '
+			<v:shape id="#arguments.vmlPosition#" o:spid="_x0000_s1025" type="##_x0000_t75" style="position:absolute;margin:0;width:#arguments.imageDimension.getWidth()#pt;height:#arguments.imageDimension.getHeight()#pt;">
+				<v:imagedata o:relid="#pictureRelationID#" o:title="#pictureRelationID#" />
+				<o:lock v:ext="edit" rotation="t" />
+			</v:shape>
+		' ).REReplace( ">\s+<", "><", "ALL" );
+	}
+
+	private string function getNewHeaderImageXML(){
+		return '<xml xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><o:shapelayout v:ext="edit"><o:idmap v:ext="edit" data="1" /></o:shapelayout><v:shapetype id="_x0000_t75" coordsize="21600,21600" o:spt="75" o:preferrelative="t" path="m@4@5l@4@11@9@11@9@5xe" filled="f" stroked="f"><v:stroke joinstyle="miter" /><v:formulas><v:f eqn="if lineDrawn pixelLineWidth 0" /><v:f eqn="sum @0 1 0" /><v:f eqn="sum 0 0 @1" /><v:f eqn="prod @2 1 2" /><v:f eqn="prod @3 21600 pixelWidth" /><v:f eqn="prod @3 21600 pixelHeight" /><v:f eqn="sum @0 0 1" /><v:f eqn="prod @6 1 2" /><v:f eqn="prod @7 21600 pixelWidth" /><v:f eqn="sum @8 21600 0" /><v:f eqn="prod @7 21600 pixelHeight" /><v:f eqn="sum @10 21600 0" /></v:formulas><v:path o:extrusionok="f" gradientshapeok="t" o:connecttype="rect" /><o:lock v:ext="edit" aspectratio="t" /></v:shapetype></xml>';
 	}
 
 	/* Workbooks */
@@ -1907,35 +2034,34 @@ component accessors="true"{
 	){
 		validateSheetName( arguments.sheetName );
 		if( !arguments.xmlFormat ) return loadClass( this.getHSSFWorkbookClassName() ).init();
-		if( arguments.streamingXml ){
-			if( ( !IsValid( "integer", arguments.streamingWindowSize ) || arguments.streamingWindowSize < 1 ) )
-				Throw( type=this.getExceptionType(), message="Invalid 'streamingWindowSize' argument", detail="'streamingWindowSize' must be an integer value greater than 1" );
-			return loadClass( this.getSXSSFWorkbookClassName() ).init( JavaCast( "int", streamingWindowSize ) );
-		}
-		return loadClass( this.getXSSFWorkbookClassName() ).init();
+		if( !arguments.streamingXml ) return loadClass( this.getXSSFWorkbookClassName() ).init();
+		if( !IsValid( "integer", arguments.streamingWindowSize ) || ( arguments.streamingWindowSize < 1 ) )
+			Throw( type=this.getExceptionType(), message="Invalid 'streamingWindowSize' argument", detail="'streamingWindowSize' must be an integer value greater than 1" );
+		return loadClass( this.getSXSSFWorkbookClassName() ).init( JavaCast( "int", arguments.streamingWindowSize ) );
 	}
 
 	private any function workbookFromFile( required string path, string password ){
 		// works with both xls and xlsx
 		// see https://stackoverflow.com/a/46149469 for why FileInputStream is preferable to File
-		try{
-			lock name="#arguments.path#" timeout=5 {
-				var className = "org.apache.poi.ss.usermodel.WorkbookFactory";
+		// 20210322 using File doesn't seem to improve memory usage anyway.
+		lock name="#arguments.path#" timeout=5 {
+			try{
+				var factory = loadClass( "org.apache.poi.ss.usermodel.WorkbookFactory" );
 				var file = CreateObject( "java", "java.io.FileInputStream" ).init( arguments.path );
-				if( arguments.KeyExists( "password" ) ) return loadClass( className ).create( file, arguments.password );
-				return loadClass( className ).create( file );
+				if( arguments.KeyExists( "password" ) ) return factory.create( file, arguments.password );
+				return factory.create( file );
 			}
-		}
-		catch( org.apache.poi.hssf.OldExcelFormatException exception ){
-			throwOldExcelFormatException( arguments.path );
-		}
-		catch( any exception ){
-			if( exception.message CONTAINS "unsupported file type" ) handleInvalidSpreadsheetFile( arguments.path );// from POI 5.x
-			if( exception.message CONTAINS "spreadsheet seems to be Excel 5" ) throwOldExcelFormatException( arguments.path );
-			rethrow;
-		}
-		finally{
-			if( local.KeyExists( "file" ) ) file.close();
+			catch( org.apache.poi.hssf.OldExcelFormatException exception ){
+				throwOldExcelFormatException( arguments.path );
+			}
+			catch( any exception ){
+				if( exception.message CONTAINS "unsupported file type" ) handleInvalidSpreadsheetFile( arguments.path );// from POI 5.x
+				if( exception.message CONTAINS "spreadsheet seems to be Excel 5" ) throwOldExcelFormatException( arguments.path );
+				rethrow;
+			}
+			finally{
+				if( local.KeyExists( "file" ) ) file.close();
+			}
 		}
 	}
 
@@ -1961,8 +2087,39 @@ component accessors="true"{
 		return arguments.workbook.getSheetAt( JavaCast( "int", arguments.workbook.getActiveSheetIndex() ) );
 	}
 
+	private any function getActiveSheetFooter( required workbook ){
+		return getActiveSheet( arguments.workbook ).getFooter();
+	}
+
+	private any function getActiveSheetHeader( required workbook ){
+		return getActiveSheet( arguments.workbook ).getHeader();
+	}
+
 	private any function getActiveSheetName( required workbook ){
 		return getActiveSheet( arguments.workbook ).getSheetName();
+	}
+
+	private array function getAllSheetFormulas( required workbook ){
+		var rowIterator = getActiveSheet( arguments.workbook ).rowIterator();
+		var formulas = [];
+		while( rowIterator.hasNext() ){
+			var cellIterator = rowIterator.next().cellIterator();
+			while( cellIterator.hasNext() ){
+				var cell = cellIterator.next();
+				var formulaStruct = {
+					row: ( cell.getRowIndex() + 1 )
+					,column: ( cell.getColumnIndex() + 1 )
+				};
+				try{
+					formulaStruct.formula = cell.getCellFormula();
+				}
+				catch( any exception ){
+					formulaStruct.formula = "";
+				}
+				if( formulaStruct.formula.Len() ) formulas.Append( formulaStruct );
+			}
+		}
+		return formulas;
 	}
 
 	private any function getSheetByName( required workbook, required string sheetName ){
@@ -1992,6 +2149,16 @@ component accessors="true"{
 
 	private void function moveSheet( required workbook, required string sheetName, required string moveToIndex ){
 		arguments.workbook.setSheetOrder( JavaCast( "String", arguments.sheetName ), JavaCast( "int", arguments.moveToIndex ) );
+	}
+
+	private void function setActiveSheetNameOrNumber( required workbook, required sheetNameOrNumber ){
+		if( IsValid( "integer", arguments.sheetNameOrNumber ) && IsNumeric( arguments.sheetNameOrNumber ) ){
+			var sheetNumber = arguments.sheetNameOrNumber;
+			setActiveSheetNumber( arguments.workbook, sheetNumber );
+			return;
+		}
+		var sheetName = arguments.sheetNameOrNumber
+		setActiveSheet( arguments.workbook, sheetName );
 	}
 
 	private boolean function sheetExists( required workbook, string sheetName, numeric sheetNumber ){
@@ -2052,7 +2219,7 @@ component accessors="true"{
 				}
 			}
 		}
-		else {
+		else{
 			var lastRowIndex = sheet.object.GetLastRowNum();// zero based
 			for( var rowIndex = 0; rowIndex <= lastRowIndex; rowIndex++ )
 				addRowToSheetData( arguments.workbook, sheet, rowIndex, arguments.includeRichTextFormatting );
@@ -2072,7 +2239,7 @@ component accessors="true"{
 				i++;
 			}
 		}
-		else {
+		else{
 			for( var i=1; i <= sheet.totalColumnCount; i++ )
 				sheet.columnNames.Append( "column" & i );
 		}
@@ -2129,16 +2296,14 @@ component accessors="true"{
 		,required numeric rowIndex
 		,boolean includeRichTextFormatting=false
 	){
-		if( ( arguments.rowIndex == arguments.sheet.headerRowIndex ) && !arguments.sheet.includeHeaderRow )
-			return;
+		if( ( arguments.rowIndex == arguments.sheet.headerRowIndex ) && !arguments.sheet.includeHeaderRow ) return;
 		var rowData = [];
 		var row = arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
 		if( IsNull( row ) ){
 			if( arguments.sheet.includeBlankRows ) arguments.sheet.data.Append( rowData );
 			return;
 		}
-		if( rowIsEmpty( row ) && !arguments.sheet.includeBlankRows )
-			return;
+		if( rowIsEmpty( row ) && !arguments.sheet.includeBlankRows ) return;
 		rowData = getRowData( arguments.workbook, row, arguments.sheet.columnRanges, arguments.includeRichTextFormatting );
 		arguments.sheet.data.Append( rowData );
 		if( !arguments.sheet.columnRanges.Len() ){
@@ -2175,8 +2340,7 @@ component accessors="true"{
 
 	private numeric function getLastRowNum( required workbook, sheet=getActiveSheet( arguments.workbook ) ){
 		var lastRow = arguments.sheet.getLastRowNum();
-		if( ( lastRow == 0 ) && ( arguments.sheet.getPhysicalNumberOfRows() == 0 ) )
-			return -1; //The sheet is empty. Return -1 instead of 0
+		if( ( lastRow == 0 ) && ( arguments.sheet.getPhysicalNumberOfRows() == 0 ) ) return -1; //The sheet is empty. Return -1 instead of 0
 		return lastRow;
 	}
 
@@ -2208,6 +2372,11 @@ component accessors="true"{
 			}
 		}
 		return result;
+	}
+
+	private any function getRowFromActiveSheet( required workbook, required numeric rowNumber ){
+		var rowIndex = ( arguments.rowNumber-1 );
+		return getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
 	}
 
 	private array function parseListDataToArray( required string line, required string delimiter, boolean handleEmbeddedCommas=true ){
@@ -2291,9 +2460,8 @@ component accessors="true"{
 	/* Cells */
 
 	private boolean function cellExists( required workbook, required numeric rowNumber, required numeric columnNumber ){
-		var rowIndex = ( arguments.rowNumber -1 );
+		var checkRow = getRowFromActiveSheet( arguments.workbook, arguments.rowNumber );
 		var columnIndex = ( arguments.columnNumber -1 );
-		var checkRow = getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
 		return !IsNull( checkRow ) && !IsNull( checkRow.getCell( JavaCast( "int", columnIndex ) ) );
 	}
 
@@ -2313,9 +2481,8 @@ component accessors="true"{
 	private any function getCellAt( required workbook, required numeric rowNumber, required numeric columnNumber ){
 		if( !cellExists( argumentCollection=arguments ) )
 			Throw( type=this.getExceptionType(), message="Invalid cell", detail="The requested cell [#arguments.rowNumber#,#arguments.columnNumber#] does not exist in the active sheet" );
-		var rowIndex = ( arguments.rowNumber -1 );
 		var columnIndex = ( arguments.columnNumber -1 );
-		return getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).getCell( JavaCast( "int", columnIndex ) );
+		return getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).getCell( JavaCast( "int", columnIndex ) );
 	}
 
 	private any function getCellFormulaValue( required workbook, required cell ){
@@ -2551,16 +2718,19 @@ component accessors="true"{
 		,required numeric columnCount
 		,required array data
 	){
-		if( IsStruct( arguments.queryColumnTypes ) )
-			return getQueryColumnTypesListFromStruct( arguments.queryColumnTypes, arguments.columnNames );
-		if( arguments.queryColumnTypes == "auto" )
-			return detectQueryColumnTypesFromData( arguments.data, arguments.columnCount );
+		if( IsStruct( arguments.queryColumnTypes ) ) return getQueryColumnTypesListFromStruct( arguments.queryColumnTypes, arguments.columnNames );
+		if( arguments.queryColumnTypes == "auto" ) return detectQueryColumnTypesFromData( arguments.data, arguments.columnCount );
 		if( ListLen( arguments.queryColumnTypes ) == 1 ){
 			//single type: use as default for all
 			var columnType = arguments.queryColumnTypes;
 			return RepeatString( "#columnType#,", arguments.columnCount-1 ) & columnType;
 		}
 		return arguments.queryColumnTypes;
+	}
+
+	private void function throwErrorIFinvalidQueryColumnTypesArgument( required queryColumnTypes ){
+		if( IsStruct( arguments.queryColumnTypes ) && !arguments.KeyExists( "headerRow" ) && !arguments.KeyExists( "columnNames" ) )
+			Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also specify the 'headerRow' or provide 'columnNames'" );
 	}
 
 	/* Ranges */
@@ -2717,10 +2887,17 @@ component accessors="true"{
 		return ( Year( arguments.value ) == "1899" );
 	}
 
-	/* Strings */
+	/* CSV/Delimiters */
 
 	private boolean function delimiterIsTab( required string delimiter ){
 		return ArrayFindNoCase( [ "#Chr( 9 )#", "\t", "tab" ], arguments.delimiter );//CF2016 doesn't support [].FindNoCase( needle )
+	}
+
+	private any function getCsvFormatForDelimiter( required string delimiter ){
+		if( delimiterIsTab( arguments.delimiter ) ) return loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ];
+		return loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ]
+			.withDelimiter( JavaCast( "char", arguments.delimiter ) )
+			.withIgnoreSurroundingSpaces();//stop spaces between fields causing problems with embedded lines
 	}
 
 	/* Info */
@@ -2862,15 +3039,15 @@ component accessors="true"{
 		getActiveSheet( arguments.workbook ).setColumnHidden( JavaCast( "int", arguments.columnNumber-1 ), JavaCast( "boolean", arguments.state ) );
 	}
 
-	private void function toggleRowHidden( required workbook, required numeric row, required boolean state ){
-		var rowIndex = ( arguments.row -1 );
-		getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) ).setZeroHeight( JavaCast( "boolean", arguments.state ) );
+	private void function toggleRowHidden( required workbook, required numeric rowNumber, required boolean state ){
+		getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).setZeroHeight( JavaCast( "boolean", arguments.state ) );
 	}
 
 	/* Formatting */
 
 	private any function buildCellStyle( required workbook, required struct format, existingStyle ){
-		var cellStyle = arguments.existingStyle?: arguments.workbook.createCellStyle();
+		var cellStyle = arguments.workbook.createCellStyle();
+		if( arguments.KeyExists( "existingStyle" ) ) cellStyle.cloneStyleFrom( arguments.existingStyle );
 		var font = 0;
 		for( var setting in arguments.format ){
 			var settingValue = arguments.format[ setting ];
@@ -3013,7 +3190,9 @@ component accessors="true"{
 		return ( arguments.object.getClass().getCanonicalName() == "org.apache.poi.xssf.usermodel.XSSFCellStyle" );
 	}
 
-	private void function checkFormatArguments( required workbook ){
+	private void function checkFormatArguments( required workbook, boolean overwriteCurrentStyle=true ){
+		if( arguments.KeyExists( "cellStyle" ) && !arguments.overwriteCurrentStyle )
+			Throw( type=this.getExceptionType(), message="Invalid arguments", detail="If you supply a 'cellStyle' the 'overwriteCurrentStyle' cannot be false" );
 		if( arguments.KeyExists( "cellStyle" ) && !isValidCellStyleObject( arguments.workbook, arguments.cellStyle ) )
 			Throw( type=this.getExceptionType(), message="Invalid argument", detail="The 'cellStyle' argument is not a valid POI cellStyle object" );
 	}
@@ -3237,12 +3416,8 @@ component accessors="true"{
 		/* if colorValue is hex it will be converted to RGB */
 		/* if colorValue is an RGB Triplet eg. "255,255,255" then the exact color object is returned for xlsx, or the nearest color's index if xls */
 		var isRGB = ListLen( arguments.colorValue ) == 3;
-		if( !isRGB ){
-			if( isHexColor( arguments.colorValue ) )
-				arguments.colorValue = hexToRGB( arguments.colorValue );
-			else
-				return getColorIndex( arguments.colorValue );
-		}
+		if( !isRGB && !isHexColor( arguments.colorValue ) ) return getColorIndex( arguments.colorValue );
+		if( !isRGB && isHexColor( arguments.colorValue ) ) arguments.colorValue = hexToRGB( arguments.colorValue );
 		var rgb = ListToArray( arguments.colorValue );
 		if( isXmlFormat( arguments.workbook ) ){
 			var rgbBytes = [
@@ -3425,6 +3600,14 @@ component accessors="true"{
 
 	private void function throwFileExistsException( required string path ){
 		Throw( type=this.getExceptionType(), message="File already exists", detail="The file path #arguments.path# already exists. Use 'overwrite=true' if you wish to overwrite it." );
+	}
+
+	private void function throwNonExistentFileException( required string path ){
+		Throw( type=this.getExceptionType(), message="Non-existent file", detail="Cannot find the file #arguments.path#." );
+	}
+
+	private void function throwUnknownImageTypeException(){
+		Throw( type=this.getExceptionType(), message="Could not determine image type", detail="An image type could not be determined from the image provided" );
 	}
 
 }

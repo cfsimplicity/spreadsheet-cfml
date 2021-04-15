@@ -1,23 +1,29 @@
 <cfscript>
 describe( "renameSheet", function(){
 
+	beforeEach( function(){
+		variables.workbooks = [ s.newXls(), s.newXlsx() ];
+	});
+
 	it( "Renames the specified sheet", function(){
-		var workbook = s.new();
-		s.renameSheet( workbook, "test", 1 );
-		makePublic( s, "sheetExists" );
-		expect( s.sheetExists( workbook, "test" ) ).toBeTrue();
+		workbooks.Each( function( wb ){
+			s.renameSheet( wb, "test", 1 );
+			makePublic( s, "sheetExists" );
+			expect( s.sheetExists( wb, "test" ) ).toBeTrue();
+		});
 	});
 
 
 	describe( "renameSheet throws an exception if", function(){
 
 		it( "the new sheet name already exists", function(){
-			expect( function(){
-				var workbook = s.new();
-				s.createSheet( workbook, "test" );
-				s.createSheet( workbook, "test2" );
-				s.renameSheet( workbook, "test2", 2 );
-			}).toThrow( regex="Invalid Sheet Name" );
+			workbooks.Each( function( wb ){
+				expect( function(){
+					s.createSheet( wb, "test" );
+					s.createSheet( wb, "test2" );
+					s.renameSheet( wb, "test2", 2 );
+				}).toThrow( regex="Invalid Sheet Name" );
+			});
 		});
 
 	});	

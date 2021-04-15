@@ -2,46 +2,58 @@
 describe( "createSheet", function(){
 
 	beforeEach( function(){
-		variables.workbook = s.new();
+		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 	});
 
 	it( "Creates a new sheet with a unique name if name not specified", function(){
-		s.createSheet( workbook );
-		expect( workbook.getNumberOfSheets() ).toBe( 2 );
+		workbooks.Each( function( wb ){
+			s.createSheet( wb );
+			expect( wb.getNumberOfSheets() ).toBe( 2 );
+		});
 	});
 
 	it( "Creates a new sheet with the specified name", function(){
-		s.createSheet( workbook,"test" );
 		makePublic( s, "sheetExists" );
-		expect( s.sheetExists( workbook=workbook, sheetName="test" ) ).toBeTrue();
+		workbooks.Each( function( wb ){
+			s.createSheet( wb,"test" );
+			expect( s.sheetExists( workbook=wb, sheetName="test" ) ).toBeTrue();
+		});
 	});
 
 	it( "Overwrites an existing sheet with the same name if overwrite is true", function(){
-		s.createSheet( workbook, "test" );
-		s.createSheet( workbook, "test", true );
-		expect( workbook.getNumberOfSheets() ).toBe( 2 );
+		workbooks.Each( function( wb ){
+			s.createSheet( wb, "test" );
+			s.createSheet( wb, "test", true );
+			expect( wb.getNumberOfSheets() ).toBe( 2 );
+		});
 	});
 
 	describe( "createSheet throws an exception if", function(){
 
 		it( "the sheet name contains more than 31 characters", function(){
-			expect( function(){
-				var filename = repeatString( "a", 32 );
-				s.createSheet( workbook, filename );
-			}).toThrow( regex="too many" );
+			var filename = repeatString( "a", 32 );
+			workbooks.Each( function( wb ){
+				expect( function(){
+					s.createSheet( wb, filename );
+				}).toThrow( regex="too many" );
+			});
 		});
 
 		it( "the sheet name contains invalid characters", function(){
-			expect( function(){
-				s.createSheet( workbook, "[]?*\/:" );
-			}).toThrow( regex="Invalid characters" );
+			workbooks.Each( function( wb ){
+				expect( function(){
+					s.createSheet( wb, "[]?*\/:" );
+				}).toThrow( regex="Invalid characters" );
+			});
 		});
 
 		it( "a sheet exists with the specified name and overwrite is false", function(){
-			expect( function(){
-				s.createSheet( workbook, "test" );
-				s.createSheet( workbook, "test" );
-			}).toThrow( regex="already exists" );
+			workbooks.Each( function( wb ){
+				expect( function(){
+					s.createSheet( wb, "test" );
+					s.createSheet( wb, "test" );
+				}).toThrow( regex="already exists" );
+			});
 		});
 
 	});	

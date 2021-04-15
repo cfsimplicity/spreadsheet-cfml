@@ -470,7 +470,7 @@ describe( "read", function(){
 
 		it( "the file doesn't exist", function(){
 			expect( function(){
-				var path = getTestFilePath( "nonexistant.xls" );
+				var path = getTestFilePath( "nonexistent.xls" );
 				s.read( src=path );
 			}).toThrow( regex="Non-existent file" );
 		});
@@ -478,7 +478,7 @@ describe( "read", function(){
 		it( "the sheet name doesn't exist", function(){
 			expect( function(){
 				var path = getTestFilePath( "test.xls" );
-				s.read( src=path, format="query", sheetName="nonexistant" );
+				s.read( src=path, format="query", sheetName="nonexistent" );
 			}).toThrow( regex="Invalid sheet" );
 		});
 
