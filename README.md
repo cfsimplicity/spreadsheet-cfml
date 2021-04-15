@@ -21,7 +21,7 @@ Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of 
 
 - Existing code needs adapting to invoke the library. Existing CFML spreadsheet functions and the `<cfspreadsheet>` tag won't work with it.
 
-### Adobe ColdFusion
+## Adobe ColdFusion
 
 Although primarily intended for Lucee, the library can be run under ColdFusion 2016 or higher. This may be useful where you want to your codebase to be cross-compatible between the two engines.
 
@@ -34,6 +34,21 @@ Although primarily intended for Lucee, the library can be run under ColdFusion 2
 If you are running Java 6 and 7, Lucee 4.5 or ACF11, please use [version 1.x.](https://github.com/cfsimplicity/lucee-spreadsheet/tags)
 
 ## Usage
+
+The following are the essential files/folders you will need depending on which engine you are using:
+
+#### Lucee
+```
+lib-osgi.jar
+osgiLoader.cfc
+Spreadsheet.cfc
+```
+#### Adobe ColdFusion
+```
+javaLoader/
+lib/
+Spreadsheet.cfc
+```
 
 Note that this is not a Lucee extension, so **does not need to be installed**. To use it, simply copy the files/folders to a location where `Spreadsheet.cfc` can be called by your application code.
 
