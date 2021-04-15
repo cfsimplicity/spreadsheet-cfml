@@ -30,5 +30,17 @@ describe( "cellFormula", function(){
 		});
 	});
 
+	describe( "getCellFormula throws an exception if", function(){
+
+		it( "a non-existent cell is specified", function(){
+			workbooks.Each( function( wb ){
+				expect( function(){
+					s.getCellFormula( wb, 10, 10 );
+				}).toThrow( regex="Non-existent cell" );
+			});
+		});
+
+	});
+
 });	
 </cfscript>

@@ -219,10 +219,10 @@ describe( "csvToQuery", function(){
 			}).toThrow( regex="Mutually exclusive arguments" );
 		});
 
-		it( "a non-existant file is passed", function(){
+		it( "a non-existent file is passed", function(){
 			expect( function(){
 				s.csvToQuery( filepath=ExpandPath( "missing.csv" ) );
-			}).toThrow( regex="Non-existant file" );
+			}).toThrow( regex="Non-existent file" );
 		});
 
 		it( "a non text/csv file is passed", function(){

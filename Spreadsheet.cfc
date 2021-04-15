@@ -149,24 +149,15 @@ component accessors="true"{
 		if( csvIsString && csvIsFile )
 			Throw( type=this.getExceptionType(), message="Mutually exclusive arguments: 'csv' and 'filepath'", detail="Only one of either 'filepath' or 'csv' arguments may be provided." );
 		if(	csvIsFile ){
-			if( !FileExists( arguments.filepath ) )
-				Throw( type=this.getExceptionType(), message="Non-existant file", detail="Cannot find a file at #arguments.filepath#" );
-			if( !isCsvOrTextFile( arguments.filepath ) )
-				Throw( type=this.getExceptionType(), message="Invalid csv file", detail="#arguments.filepath# does not appear to be a text/csv file" );
+			throwErrorIFfileNotExists( arguments.filepath );
+			throwErrorIFnotCsvOrTextFile( arguments.filepath );
 			arguments.csv = FileRead( arguments.filepath );
 		}
 		if( IsStruct( arguments.queryColumnTypes ) && !arguments.firstRowIsHeader && !arguments.KeyExists( "queryColumnNames" )  )
-				Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
+			Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
 		if( arguments.trim ) arguments.csv = arguments.csv.Trim();
-		if( arguments.KeyExists( "delimiter" ) ){
-			if( delimiterIsTab( arguments.delimiter ) )
-				var format = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ];
-			else {
-				var format = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ]
-					.withDelimiter( JavaCast( "char", arguments.delimiter ) )
-					.withIgnoreSurroundingSpaces();//stop spaces between fields causing problems with embedded lines
-			}
-		}
+		if( arguments.KeyExists( "delimiter" ) )
+			var format = getCsvFormatForDelimiter( arguments.delimiter );
 		else
 			var format = loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
 		var parsed = loadClass( "org.apache.commons.csv.CSVParser" ).parse( arguments.csv, format );
@@ -186,7 +177,7 @@ component accessors="true"{
 		}
 		if( arguments.KeyExists( "queryColumnNames" ) && arguments.queryColumnNames.Len() )
 			var columnNames = arguments.queryColumnNames;
-		else {
+		else{
 			var columnNames = [];
 			if( arguments.firstRowIsHeader ) var headerRow = data[ 1 ];
 			for( var i=1; i <= maxColumnCount; i++ ){
@@ -317,8 +308,7 @@ component accessors="true"{
 		if( arguments.addHeaderRow ){
 			var columns = _QueryColumnArray( arguments.data );
 			addRow( workbook, columns );
-			if( arguments.boldHeaderRow )
-				formatRow( workbook, { bold: true }, 1 );
+			if( arguments.boldHeaderRow ) formatRow( workbook, { bold: true }, 1 );
 			addRowsArgs.row = 2;
 			addRowsArgs.column = 1;
 		}
@@ -388,7 +378,7 @@ component accessors="true"{
 		var sheet = getActiveSheet( arguments.workbook );
 		if( arguments.KeyExists( "startColumn" ) )
 			cellNum = ( arguments.startColumn -1 );
-		else {
+		else{
 			row = sheet.getRow( rowNum );
 			/* if this row exists, find the next empty cell number. note: getLastCellNum() returns the cell index PLUS ONE or -1 if not found */
 			if( !IsNull( row ) && row.getLastCellNum() > 0 )
@@ -775,8 +765,7 @@ component accessors="true"{
 		while( rowIterator.hasNext() ){
 			var row = rowIterator.next();
 			var cell = row.getCell( JavaCast( "int", ( arguments.column -1 ) ) );
-			if( IsNull( cell ) )
-				continue;
+			if( IsNull( cell ) ) continue;
 			row.removeCell( cell );
 		}
 	}
@@ -1012,36 +1001,13 @@ component accessors="true"{
 	}
 
 	public any function getCellFormula( required workbook, numeric row, numeric column ){
-		if( arguments.KeyExists( "row" ) && arguments.KeyExists( "column" ) ){
-			if( cellExists( arguments.workbook, arguments.row, arguments.column ) ){
-				var cell = getCellAt( arguments.workbook, arguments.row, arguments.column );
-				if( cellIsOfType( cell, "FORMULA" ) )
-					return cell.getCellFormula();
-				return "";
-			}
-		}
-		//no row and column provided so return an array of structs containing formulas for the entire sheet
-		var rowIterator = getActiveSheet( arguments.workbook ).rowIterator();
-		var formulas = [];
-		while( rowIterator.hasNext() ){
-			var cellIterator = rowIterator.next().cellIterator();
-			while( cellIterator.hasNext() ){
-				var cell = cellIterator.next();
-				var formulaStruct = {
-					row: ( cell.getRowIndex() + 1 )
-					,column: ( cell.getColumnIndex() + 1 )
-				};
-				try{
-					formulaStruct.formula = cell.getCellFormula();
-				}
-				catch( any exception ){
-					formulaStruct.formula = "";
-				}
-				if( formulaStruct.formula.Len() )
-					formulas.Append( formulaStruct );
-			}
-		}
-		return formulas;
+		if( !arguments.KeyExists( "row" ) || !arguments.KeyExists( "column" ) )
+			return getAllSheetFormulas( arguments.workbook );
+		if( !cellExists( arguments.workbook, arguments.row, arguments.column ) )
+			Throw( type=this.getExceptionType(), message="Non-existent cell", detail="There is no cell at row #arguments.row#, column #arguments.column#." );
+		var cell = getCellAt( arguments.workbook, arguments.row, arguments.column );
+		if( cellIsOfType( cell, "FORMULA" ) ) return cell.getCellFormula();
+		return "";
 	}
 
 	public string function getCellHyperLink( required workbook, required numeric row, required numeric column ){
@@ -1067,12 +1033,7 @@ component accessors="true"{
 	}
 
 	public numeric function getColumnCount( required workbook, sheetNameOrNumber ){
-		if( arguments.KeyExists( "sheetNameOrNumber" ) ){
-			if( IsValid( "integer", arguments.sheetNameOrNumber ) AND IsNumeric( arguments.sheetNameOrNumber ) )
-				setActiveSheetNumber( arguments.workbook, arguments.sheetNameOrNumber );
-			else
-				setActiveSheet( arguments.workbook, arguments.sheetNameOrNumber );
-		}
+		if( arguments.KeyExists( "sheetNameOrNumber" ) ) setActiveSheetNameOrNumber( argumentCollection=arguments );
 		var sheet = getActiveSheet( arguments.workbook );
 		var rowIterator = sheet.rowIterator();
 		var result = 0;
@@ -1103,12 +1064,7 @@ component accessors="true"{
 	}
 
 	public numeric function getRowCount( required workbook, sheetNameOrNumber ){
-		if( arguments.KeyExists( "sheetNameOrNumber" ) ){
-			if( IsValid( "integer", arguments.sheetNameOrNumber ) && IsNumeric( arguments.sheetNameOrNumber ) )
-				setActiveSheetNumber( arguments.workbook, arguments.sheetNameOrNumber );
-			else
-				setActiveSheet( arguments.workbook, arguments.sheetNameOrNumber );
-		}
+		if( arguments.KeyExists( "sheetNameOrNumber" ) ) setActiveSheetNameOrNumber( argumentCollection=arguments );
 		var sheet = getActiveSheet( arguments.workbook );
 		var lastRowIndex = getLastRowNum( arguments.workbook, sheet );
 		// empty
@@ -1174,7 +1130,7 @@ component accessors="true"{
 	}
 
 	public boolean function isSpreadsheetFile( required string path ){
-		if( !FileExists( arguments.path ) ) throwNonExistentFileException( arguments.path );
+		throwErrorIFfileNotExists( arguments.path );
 		try{
 			var workbook = workbookFromFile( arguments.path );
 		}
@@ -1305,14 +1261,12 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid format", detail="Supported formats are: 'query', 'html' and 'csv'" );
 		if( arguments.KeyExists( "sheetName" ) && arguments.KeyExists( "sheetNumber" ) )
 			Throw( type=this.getExceptionType(), message="Cannot provide both sheetNumber and sheetName arguments", detail="Only one of either 'sheetNumber' or 'sheetName' arguments may be provided." );
-		if( !FileExists( arguments.src ) ) throwNonExistentFileException( arguments.src );
+		throwErrorIFfileNotExists( arguments.src );
 		var passwordProtected = ( arguments.KeyExists( "password") && !arguments.password.Trim().IsEmpty() );
 		var workbook = passwordProtected? workbookFromFile( arguments.src, arguments.password ): workbookFromFile( arguments.src );
 		if( arguments.KeyExists( "sheetName" ) ) setActiveSheet( workbook=workbook, sheetName=arguments.sheetName );
 		if( !arguments.KeyExists( "format" ) ) return workbook;
-		var args = {
-			workbook: workbook
-		};
+		var args = { workbook: workbook };
 		if( arguments.KeyExists( "sheetName" ) ) args.sheetName = arguments.sheetName;
 		if( arguments.KeyExists( "sheetNumber" ) ) args.sheetNumber = arguments.sheetNumber;
 		if( arguments.KeyExists( "headerRow" ) ){
@@ -1326,8 +1280,7 @@ component accessors="true"{
 		else if( arguments.KeyExists( "queryColumnNames" ) )
 			args.columnNames = arguments.queryColumnNames;// accept better alias `queryColumnNames` to match csvToQuery
 		if( ( arguments.format == "query" ) && arguments.KeyExists( "queryColumnTypes" ) ){
-			if( IsStruct( arguments.queryColumnTypes ) && !arguments.KeyExists( "headerRow" ) && !arguments.KeyExists( "columnNames" ) )
-				Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also specify the 'headerRow' or provide 'columnNames'" );
+			throwErrorIFinvalidQueryColumnTypesArgument( argumentCollection=arguments );
 			args.queryColumnTypes = arguments.queryColumnTypes;
 		}
 		args.includeBlankRows = arguments.includeBlankRows;
@@ -1712,7 +1665,7 @@ component accessors="true"{
 					}
 				}
 			}
-			else {
+			else{
 				for( var i = startIndex; i <= endIndex; i++ ){
 					var tempCell = row.getCell( JavaCast( "int", i ) );
 					var cell = createCell( row, i + arguments.offset );
@@ -1840,7 +1793,7 @@ component accessors="true"{
 	}
 
 	private void function encryptFile( required string filepath, required string password, required string algorithm ){
-		/* See http://poi.apache.org/encryption.html */
+		/* See https://poi.apache.org/encryption.html */
 		/* NB: Not all spreadsheet programs support this type of encryption */
 		// set up the encryptor with the chosen algo
 		lock name="#arguments.filepath#" timeout=5 {
@@ -1918,6 +1871,14 @@ component accessors="true"{
 	private boolean function isCsvOrTextFile( required string path ){
 		var contentType = getFileContentTypeFromPath( arguments.path );
 		return ListFindNoCase( "plain,csv", contentType );//Lucee=text/plain ACF=text/csv
+	}
+
+	private void function throwErrorIFfileNotExists( required string path ){
+		if( !FileExists( arguments.path ) ) throwNonExistentFileException( arguments.path );
+	}
+
+	private void function throwErrorIFnotCsvOrTextFile( required string path ){
+		if( !isCsvOrTextFile( arguments.path ) ) Throw( type=this.getExceptionType(), message="Invalid csv file", detail="#arguments.path# does not appear to be a text/csv file" );
 	}
 
 	/* Images */
@@ -2138,6 +2099,29 @@ component accessors="true"{
 		return getActiveSheet( arguments.workbook ).getSheetName();
 	}
 
+	private array function getAllSheetFormulas( required workbook ){
+		var rowIterator = getActiveSheet( arguments.workbook ).rowIterator();
+		var formulas = [];
+		while( rowIterator.hasNext() ){
+			var cellIterator = rowIterator.next().cellIterator();
+			while( cellIterator.hasNext() ){
+				var cell = cellIterator.next();
+				var formulaStruct = {
+					row: ( cell.getRowIndex() + 1 )
+					,column: ( cell.getColumnIndex() + 1 )
+				};
+				try{
+					formulaStruct.formula = cell.getCellFormula();
+				}
+				catch( any exception ){
+					formulaStruct.formula = "";
+				}
+				if( formulaStruct.formula.Len() ) formulas.Append( formulaStruct );
+			}
+		}
+		return formulas;
+	}
+
 	private any function getSheetByName( required workbook, required string sheetName ){
 		validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
 		return arguments.workbook.getSheet( JavaCast( "string", arguments.sheetName ) );
@@ -2165,6 +2149,16 @@ component accessors="true"{
 
 	private void function moveSheet( required workbook, required string sheetName, required string moveToIndex ){
 		arguments.workbook.setSheetOrder( JavaCast( "String", arguments.sheetName ), JavaCast( "int", arguments.moveToIndex ) );
+	}
+
+	private void function setActiveSheetNameOrNumber( required workbook, required sheetNameOrNumber ){
+		if( IsValid( "integer", arguments.sheetNameOrNumber ) && IsNumeric( arguments.sheetNameOrNumber ) ){
+			var sheetNumber = arguments.sheetNameOrNumber;
+			setActiveSheetNumber( arguments.workbook, sheetNumber );
+			return;
+		}
+		var sheetName = arguments.sheetNameOrNumber
+		setActiveSheet( arguments.workbook, sheetName );
 	}
 
 	private boolean function sheetExists( required workbook, string sheetName, numeric sheetNumber ){
@@ -2225,7 +2219,7 @@ component accessors="true"{
 				}
 			}
 		}
-		else {
+		else{
 			var lastRowIndex = sheet.object.GetLastRowNum();// zero based
 			for( var rowIndex = 0; rowIndex <= lastRowIndex; rowIndex++ )
 				addRowToSheetData( arguments.workbook, sheet, rowIndex, arguments.includeRichTextFormatting );
@@ -2245,7 +2239,7 @@ component accessors="true"{
 				i++;
 			}
 		}
-		else {
+		else{
 			for( var i=1; i <= sheet.totalColumnCount; i++ )
 				sheet.columnNames.Append( "column" & i );
 		}
@@ -2302,16 +2296,14 @@ component accessors="true"{
 		,required numeric rowIndex
 		,boolean includeRichTextFormatting=false
 	){
-		if( ( arguments.rowIndex == arguments.sheet.headerRowIndex ) && !arguments.sheet.includeHeaderRow )
-			return;
+		if( ( arguments.rowIndex == arguments.sheet.headerRowIndex ) && !arguments.sheet.includeHeaderRow ) return;
 		var rowData = [];
 		var row = arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
 		if( IsNull( row ) ){
 			if( arguments.sheet.includeBlankRows ) arguments.sheet.data.Append( rowData );
 			return;
 		}
-		if( rowIsEmpty( row ) && !arguments.sheet.includeBlankRows )
-			return;
+		if( rowIsEmpty( row ) && !arguments.sheet.includeBlankRows ) return;
 		rowData = getRowData( arguments.workbook, row, arguments.sheet.columnRanges, arguments.includeRichTextFormatting );
 		arguments.sheet.data.Append( rowData );
 		if( !arguments.sheet.columnRanges.Len() ){
@@ -2348,8 +2340,7 @@ component accessors="true"{
 
 	private numeric function getLastRowNum( required workbook, sheet=getActiveSheet( arguments.workbook ) ){
 		var lastRow = arguments.sheet.getLastRowNum();
-		if( ( lastRow == 0 ) && ( arguments.sheet.getPhysicalNumberOfRows() == 0 ) )
-			return -1; //The sheet is empty. Return -1 instead of 0
+		if( ( lastRow == 0 ) && ( arguments.sheet.getPhysicalNumberOfRows() == 0 ) ) return -1; //The sheet is empty. Return -1 instead of 0
 		return lastRow;
 	}
 
@@ -2727,16 +2718,19 @@ component accessors="true"{
 		,required numeric columnCount
 		,required array data
 	){
-		if( IsStruct( arguments.queryColumnTypes ) )
-			return getQueryColumnTypesListFromStruct( arguments.queryColumnTypes, arguments.columnNames );
-		if( arguments.queryColumnTypes == "auto" )
-			return detectQueryColumnTypesFromData( arguments.data, arguments.columnCount );
+		if( IsStruct( arguments.queryColumnTypes ) ) return getQueryColumnTypesListFromStruct( arguments.queryColumnTypes, arguments.columnNames );
+		if( arguments.queryColumnTypes == "auto" ) return detectQueryColumnTypesFromData( arguments.data, arguments.columnCount );
 		if( ListLen( arguments.queryColumnTypes ) == 1 ){
 			//single type: use as default for all
 			var columnType = arguments.queryColumnTypes;
 			return RepeatString( "#columnType#,", arguments.columnCount-1 ) & columnType;
 		}
 		return arguments.queryColumnTypes;
+	}
+
+	private void function throwErrorIFinvalidQueryColumnTypesArgument( required queryColumnTypes ){
+		if( IsStruct( arguments.queryColumnTypes ) && !arguments.KeyExists( "headerRow" ) && !arguments.KeyExists( "columnNames" ) )
+			Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also specify the 'headerRow' or provide 'columnNames'" );
 	}
 
 	/* Ranges */
@@ -2893,10 +2887,17 @@ component accessors="true"{
 		return ( Year( arguments.value ) == "1899" );
 	}
 
-	/* Strings */
+	/* CSV/Delimiters */
 
 	private boolean function delimiterIsTab( required string delimiter ){
 		return ArrayFindNoCase( [ "#Chr( 9 )#", "\t", "tab" ], arguments.delimiter );//CF2016 doesn't support [].FindNoCase( needle )
+	}
+
+	private any function getCsvFormatForDelimiter( required string delimiter ){
+		if( delimiterIsTab( arguments.delimiter ) ) return loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ];
+		return loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ]
+			.withDelimiter( JavaCast( "char", arguments.delimiter ) )
+			.withIgnoreSurroundingSpaces();//stop spaces between fields causing problems with embedded lines
 	}
 
 	/* Info */
@@ -3415,12 +3416,8 @@ component accessors="true"{
 		/* if colorValue is hex it will be converted to RGB */
 		/* if colorValue is an RGB Triplet eg. "255,255,255" then the exact color object is returned for xlsx, or the nearest color's index if xls */
 		var isRGB = ListLen( arguments.colorValue ) == 3;
-		if( !isRGB ){
-			if( isHexColor( arguments.colorValue ) )
-				arguments.colorValue = hexToRGB( arguments.colorValue );
-			else
-				return getColorIndex( arguments.colorValue );
-		}
+		if( !isRGB && !isHexColor( arguments.colorValue ) ) return getColorIndex( arguments.colorValue );
+		if( !isRGB && isHexColor( arguments.colorValue ) ) arguments.colorValue = hexToRGB( arguments.colorValue );
 		var rgb = ListToArray( arguments.colorValue );
 		if( isXmlFormat( arguments.workbook ) ){
 			var rgbBytes = [
