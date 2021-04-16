@@ -1,3 +1,7 @@
+## 2.18.2 - 16 April 2021
+
+- \#236 Regression: getCellFormula should not error if cell is specified but doesn't exist
+
 ## 2.18.1 - 15 April 2021
 
 - Enhancements
