@@ -1001,10 +1001,8 @@ component accessors="true"{
 	}
 
 	public any function getCellFormula( required workbook, numeric row, numeric column ){
-		if( !arguments.KeyExists( "row" ) || !arguments.KeyExists( "column" ) )
-			return getAllSheetFormulas( arguments.workbook );
-		if( !cellExists( arguments.workbook, arguments.row, arguments.column ) )
-			Throw( type=this.getExceptionType(), message="Non-existent cell", detail="There is no cell at row #arguments.row#, column #arguments.column#." );
+		if( !arguments.KeyExists( "row" ) || !arguments.KeyExists( "column" ) ) return getAllSheetFormulas( arguments.workbook );
+		if( !cellExists( arguments.workbook, arguments.row, arguments.column ) ) return "";
 		var cell = getCellAt( arguments.workbook, arguments.row, arguments.column );
 		if( cellIsOfType( cell, "FORMULA" ) ) return cell.getCellFormula();
 		return "";
