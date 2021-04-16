@@ -30,16 +30,11 @@ describe( "cellFormula", function(){
 		});
 	});
 
-	describe( "getCellFormula throws an exception if", function(){
-
-		it( "a non-existent cell is specified", function(){
-			workbooks.Each( function( wb ){
-				expect( function(){
-					s.getCellFormula( wb, 10, 10 );
-				}).toThrow( regex="Non-existent cell" );
-			});
+	it( "Returns an empty string if the specified cell doesn't exist", function(){
+		workbooks.Each( function( wb ){
+			var actual = s.getCellFormula( wb, 100, 100 );
+			expect( actual ).toBeEmpty();
 		});
-
 	});
 
 });	
