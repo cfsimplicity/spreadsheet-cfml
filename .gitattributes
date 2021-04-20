@@ -1,0 +1,4 @@
+# Adding this to your .gitattributes file will make it so all files
+# are checked in using UNIX line endings while letting anyone on the team
+# edit files using their local operating system's default line endings.
+* text=auto
