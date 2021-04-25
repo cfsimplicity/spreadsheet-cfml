@@ -99,12 +99,8 @@ component accessors="true"{
 
 	/* check physical path of a specific class */
 	public void function dumpPathToClass( required string className ){
-		if( IsNull( this.getOsgiLoader() ) ){
-			var classLoader = loadClass( arguments.className ).getClass().getClassLoader();
-			var path = classLoader.getResource( arguments.className.Replace( ".", "/", "all" ) & ".class" ).getPath();
-			WriteDump( path );
-			return;
-		}
+		if( IsNull( this.getOsgiLoader() ) )
+			return dumpPathToClassNoOsgi( arguments.className );
 		var bundle = this.getOsgiLoader().getBundle( this.getOsgiLibBundleSymbolicName(), this.getOsgiLibBundleVersion() );
 		var poi = loadClass( "org.apache.poi.Version" );
 		var path = BundleInfo( poi ).location & "!" &  bundle.getResource( arguments.className.Replace( ".", "/", "all" ) & ".class" ).getPath();
@@ -1842,6 +1838,12 @@ component accessors="true"{
 			,bundleSymbolicName: this.getOsgiLibBundleSymbolicName()
 			,bundleVersion: this.getOsgiLibBundleVersion()
 		);
+	}
+
+	private void function dumpPathToClassNoOsgi( required string className ){
+		var classLoader = loadClass( arguments.className ).getClass().getClassLoader();
+		var path = classLoader.getResource( arguments.className.Replace( ".", "/", "all" ) & ".class" ).getPath();
+		WriteDump( path );
 	}
 
 	/* Files */
