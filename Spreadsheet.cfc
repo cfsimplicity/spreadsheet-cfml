@@ -1703,24 +1703,12 @@ component accessors="true"{
 		while( rowIterator.hasNext() ){
 			var row = rowIterator.next();
 			if( arguments.offset > 0 ){
-				for( var i = endIndex; i >= startIndex; i-- ){
-					var tempCell = row.getCell( JavaCast( "int", i ) );
-					var cell = createCell( row, i + arguments.offset );
-					if( !IsNull( tempCell ) ){
-						setCellValueAsType( arguments.workbook, cell, getCellValueAsType( arguments.workbook, tempCell ) );
-						cell.setCellStyle( tempCell.getCellStyle() );
-					}
-				}
+				for( var i = endIndex; i >= startIndex; i-- )
+					shiftCell( arguments.workbook, row, i, arguments.offset );
 			}
 			else{
-				for( var i = startIndex; i <= endIndex; i++ ){
-					var tempCell = row.getCell( JavaCast( "int", i ) );
-					var cell = createCell( row, i + arguments.offset );
-					if( !IsNull( tempCell ) ){
-						setCellValueAsType( workbook, cell, getCellValueAsType( workbook, tempCell ) );
-						cell.setCellStyle( tempCell.getCellStyle() );
-					}
-				}
+				for( var i = startIndex; i <= endIndex; i++ )
+					shiftCell( arguments.workbook, row, i, arguments.offset );
 			}
 		}
 		// clean up any columns that need to be deleted after the shift
@@ -1731,12 +1719,12 @@ component accessors="true"{
 		if( arguments.offset > 0 ){
 			var stopValue = ( ( startIndex + numberColsToDelete ) -1 );
 			for( var i = startIndex; i <= stopValue; i++ )
-				deleteColumn( workbook, ( i +1 ) );
+				deleteColumn( arguments.workbook, ( i +1 ) );
 			return;
 		}
 		var stopValue = ( ( endIndex - numberColsToDelete ) +1 );
 		for( var i = endIndex; i >= stopValue; i-- )
-			deleteColumn( workbook, ( i +1 ) );
+			deleteColumn( arguments.workbook, ( i +1 ) );
 	}
 
 	public void function shiftRows( required workbook, required numeric start, numeric end=arguments.start, numeric offset=1 ){
@@ -2690,6 +2678,15 @@ component accessors="true"{
 				return;
 		}
 		arguments.cell.setCellValue( JavaCast( "string", arguments.value ) );
+	}
+
+	private void function shiftCell( required workbook, required row, required numeric cellIndex, required numeric offset ){
+		var tempCell = arguments.row.getCell( JavaCast( "int", arguments.cellIndex ) );
+		if( IsNull( tempCell ) )
+			return;
+		var cell = createCell( arguments.row, arguments.cellIndex + arguments.offset );
+		setCellValueAsType( arguments.workbook, cell, getCellValueAsType( arguments.workbook, tempCell ) );
+		cell.setCellStyle( tempCell.getCellStyle() );
 	}
 
 	/* Query data */
