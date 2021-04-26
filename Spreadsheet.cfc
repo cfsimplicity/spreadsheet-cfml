@@ -642,8 +642,7 @@ component accessors="true"{
 							poiCellType = "boolean";
 							break;
 						default:
-							//NB don't use member function: won't work if numeric
-							if( IsSimpleValue( cellValue ) && !Len( cellValue ) )
+							if( IsSimpleValue( cellValue ) && !Len( cellValue ) )//NB don't use member function: won't work if numeric
 								poiCellType = "blank";
 					}
 					if( arguments.KeyExists( "datatypes" ) )
@@ -2658,7 +2657,7 @@ component accessors="true"{
 				return;
 			case "date": case "time":
 				//handle empty strings which can't be treated as dates
-				if( !Len( Trim( arguments.value ) ) ){
+				if( Trim( arguments.value ).IsEmpty() ){
 					arguments.cell.setBlank(); //no need to set the value: it will be blank
 					return;
 				}
@@ -2680,7 +2679,7 @@ component accessors="true"{
 				return;
 			case "boolean":
 				//handle empty strings/nulls which can't be treated as booleans
-				if( !Len( Trim( arguments.value ) ) ){
+				if( Trim( arguments.value ).IsEmpty() ){
 					arguments.cell.setBlank(); //no need to set the value: it will be blank
 					return;
 				}
@@ -2868,7 +2867,7 @@ component accessors="true"{
 			return "numeric";
 		if( _IsDate( arguments.value ) )
 			return "date";
-		if( !Len( Trim( arguments.value ) ) )
+		if( Trim( arguments.value ).IsEmpty() )
 			return "blank";
 		return "string";
 	}
