@@ -15,8 +15,8 @@ component accessors="true"{
 	property name="javaLoaderName";
 	property name="requiresJavaLoader" type="boolean" default="false";
 	//detected state
-	property name="isACF" type="boolean" setter="false";
-	property name="javaClassesLastLoadedVia" setter="false" default="Nothing loaded yet";
+	property name="isACF" type="boolean";
+	property name="javaClassesLastLoadedVia" default="Nothing loaded yet";
 	//cached POI helper objects
 	property name="cellUtil" getter="false" setter="false";
 	property name="dateUtil" getter="false" setter="false";
