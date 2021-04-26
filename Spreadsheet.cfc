@@ -1777,8 +1777,7 @@ component accessors="true"{
 		}
 		finally{
 			// always close the stream. otherwise file may be left in a locked state if an unexpected error occurs
-			if( local.KeyExists( "outputStream" ) )
-				outputStream.close();
+			closeLocalFileOrStream( local, "outputStream" );
 			cleanUpStreamingXml( arguments.workbook );
 		}
 		if( passwordProtect )
@@ -1888,8 +1887,7 @@ component accessors="true"{
 				}
 				finally{
 					// make sure encrypted stream in closed
-					if( local.KeyExists( "encryptedStream" ) )
-						encryptedStream.close();
+					closeLocalFileOrStream( local, "encryptedStream" );
 				}
 				try{
 					// write the encrypted POI filesystem to file, replacing the unencypted version
@@ -1899,15 +1897,18 @@ component accessors="true"{
 				}
 				finally{
 					// always close the stream. otherwise file may be left in a locked state if an unexpected error occurs
-					if( local.KeyExists( "outputStream" ) )
-						outputStream.close();
+					closeLocalFileOrStream( local, "outputStream" );
 				}
 			}
 			finally{
-				if( local.KeyExists( "poifs" ) )
-					poifs.close();
+				closeLocalFileOrStream( local, "poifs" );
 			}
 		}
+	}
+
+	private void function closeLocalFileOrStream( required localScope, required string varName ){
+		if( arguments.localScope.KeyExists( arguments.varName ) )
+			arguments.localScope[ arguments.varName ].close();
 	}
 
 	private string function filenameSafe( required string input ){
@@ -2059,7 +2060,7 @@ component accessors="true"{
 			rethrow;
 		}
 		finally{
-			imageInputStream.close();
+			closeLocalFileOrStream( local, "imageInputStream" );
 		}
 		var newShapeElement = createNewHeaderImageVMLShape( pictureRelationID, vmlPosition, imageDimension );
 		headerImageXML = headerImageXML.ReReplaceNoCase( "(<\/[\w:]*xml>)", newShapeElement & "\1" );
@@ -2137,8 +2138,7 @@ component accessors="true"{
 				rethrow;
 			}
 			finally{
-				if( local.KeyExists( "file" ) )
-					file.close();
+				closeLocalFileOrStream( local, "file" );
 			}
 		}
 	}
