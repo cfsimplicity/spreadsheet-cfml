@@ -1693,6 +1693,9 @@ component accessors="true"{
 	}
 
 	public void function shiftColumns( required workbook, required numeric start, numeric end=arguments.start, numeric offset=1 ){
+		/*
+			20210427 POI 4.x's sheet.shiftColumns() doesn't seem to work reliably: XSSF version doesn't delete columns that should be replaced. Both result in errors when writing
+		*/
 		if( arguments.start <= 0 )
 			Throw( type=this.getExceptionType(), message="Invalid start value", detail="The start value must be greater than or equal to 1" );
 		if( arguments.KeyExists( "end" ) && ( ( arguments.end <= 0 ) || ( arguments.end < arguments.start ) ) )
