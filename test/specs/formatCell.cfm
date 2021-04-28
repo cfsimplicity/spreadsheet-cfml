@@ -152,7 +152,7 @@ describe( "formatCell", function(){
 		var formulaLikeString = "SUM(A2:A3)";
 		var format = { quoteprefixed: true };
 		workbooks.Each( function( wb ){
-			s.addColumn( wb, formulaLikeString, 1, 1 );
+			s.setCellValue( wb, formulaLikeString, 1, 1 );
 			var cellFormat = setAndGetFormat( wb, format );
 			expect( cellFormat.quoteprefixed ).toBeTrue();
 			expect( s.getCellValue( wb, 1, 1 ) ).toBe( formulaLikeString );

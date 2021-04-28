@@ -374,55 +374,34 @@ component accessors="true"{
 		,required data // Delimited list of values OR array
 		,numeric startRow
 		,numeric startColumn
-		,boolean insert=true
+		,boolean insert=false
 		,string delimiter=","
 		,boolean autoSize=false
 	){
-		var row = 0;
-		var cell = 0;
-		var oldCell = 0;
-		var rowNum = ( arguments.startRow?:false )? ( arguments.startRow -1 ): 0;
-		var cellNum = 0;
-		var lastCellNum = 0;
-		var cellValue = 0;
 		var sheet = getActiveSheet( arguments.workbook );
+		var rowIndex = arguments.KeyExists( "startRow" )? ( arguments.startRow -1 ): 0;
+		var cellIndex = 0;
 		if( arguments.KeyExists( "startColumn" ) )
-			cellNum = ( arguments.startColumn -1 );
+			cellIndex = ( arguments.startColumn -1 );
 		else{
-			row = sheet.getRow( rowNum );
-			// if this row exists, find the next empty cell number. note: getLastCellNum() returns the cell index PLUS ONE or -1 if not found
-			if( !IsNull( row ) && row.getLastCellNum() > 0 )
-				cellNum = row.getLastCellNum();
-			else
-				cellNum = 0;
+			var row = sheet.getRow( rowIndex );
+			if( !IsNull( row ) && rowHasCells( row ) )
+				cellIndex = getNextEmptyCellIndexFromRow( row );// append the new column to the existing columns
 		}
-		var columnNumber = ( cellNum +1 );
-		var columnData = IsArray( arguments.data )? arguments.data: ListToArray( arguments.data, arguments.delimiter );
+		if( arguments.autoSize )
+			var columnNumber = ( cellIndex +1 ); //stash the starting column number
+		var columnData = IsArray( arguments.data )? arguments.data: ListToArray( arguments.data, arguments.delimiter );//Don't use ListToArray() member function: value may not support it
 		for( var cellValue in columnData ){
-			// if rowNum is greater than the last row of the sheet, need to create a new row
-			if( rowNum > sheet.getLastRowNum() || IsNull( sheet.getRow( rowNum ) ) )
-				row = createRow( arguments.workbook, rowNum );
-			else
-				row = sheet.getRow( rowNum );
-			// POI doesn't have any 'shift column' functionality akin to shiftRows() so inserts get interesting
-			// ** Note: row.getLastCellNum() returns the cell index PLUS ONE or -1 if not found
-			if( arguments.insert && ( cellNum < row.getLastCellNum() ) ){
-				// need to get the last populated column number in the row, figure out which cells are impacted, and shift the impacted cells to the right to make room for the new data
-				lastCellNum = row.getLastCellNum();
-				for( var i = lastCellNum; i == cellNum; i-- ){
-					oldCell = row.getCell( JavaCast( "int", i -1 ) );
-					if( !IsNull( oldCell ) ){
-						cell = createCell( row, i );
-						cell.setCellStyle( oldCell.getCellStyle() );
-						var cellValue = getCellValueAsType( arguments.workbook, oldCell );
-						setCellValueAsType( arguments.workbook, oldCell, cellValue );
-						cell.setCellComment( oldCell.getCellComment() );
-					}
-				}
-			}
-			cell = createCell( row,cellNum );
+			var row = sheet.getRow( rowIndex );
+			if( rowIndex > sheet.getLastRowNum() || IsNull( row ) )
+				row = createRow( arguments.workbook, rowIndex );
+			// NB: row.getLastCellNum() returns the cell index PLUS ONE or -1 if not found
+			var insertRequired = ( arguments.KeyExists( "startColumn" ) && arguments.insert && ( cellIndex < row.getLastCellNum() ) );
+			if( insertRequired )
+				shiftColumnsRightStartingAt( cellIndex, row, arguments.workbook );
+			var cell = createCell( row, cellIndex );
 			setCellValueAsType( arguments.workbook, cell, cellValue );
-			rowNum++;
+			rowIndex++;
 		}
 		if( arguments.autoSize )
 			autoSizeColumn( arguments.workbook, columnNumber );
@@ -548,7 +527,7 @@ component accessors="true"{
 		if( !arguments.insert && !arguments.KeyExists( "row") )
 			Throw( type=this.getExceptionType(), message="Missing row value", detail="To replace a row using 'insert', please specify the row to replace." );
 		checkDataTypesArgument( arguments );
-		var lastRow = getNextEmptyRow( arguments.workbook );
+		var lastRow = getNextEmptyRowNumber( arguments.workbook );
 		//If the requested row already exists...
 		if( arguments.KeyExists( "row" ) && ( arguments.row <= lastRow ) ){
 			if( arguments.insert )
@@ -594,8 +573,8 @@ component accessors="true"{
 		// array data must be an array of arrays, not structs
 		if( dataIsArray && !IsArray( arguments.data[ 1 ] ) )
 			Throw( type=this.getExceptionType(), message="Invalid data argument", detail="Data passed as an array must be an array of arrays, one per row" );
-		var lastRow = getNextEmptyRow( arguments.workbook );
-		var insertAtRowIndex = arguments.KeyExists( "row" )? arguments.row -1: getNextEmptyRow( arguments.workbook );
+		var lastRow = getNextEmptyRowNumber( arguments.workbook );
+		var insertAtRowIndex = arguments.KeyExists( "row" )? arguments.row -1: getNextEmptyRowNumber( arguments.workbook );
 		if( arguments.KeyExists( "row" ) && ( arguments.row <= lastRow ) && arguments.insert )
 			shiftRows( arguments.workbook, arguments.row, lastRow, totalRows );
 		var currentRowIndex = insertAtRowIndex;
@@ -801,7 +780,7 @@ component accessors="true"{
 		if( arguments.row <= 0 )
 			Throw( type=this.getExceptionType(), message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
 		var rowToDelete = ( arguments.row -1 );
-		if( rowToDelete >= getFirstRowNum( arguments.workbook ) && rowToDelete <= getLastRowNum( arguments.workbook ) ) //If this is a valid row, remove it
+		if( rowToDelete >= getFirstRowNumber( arguments.workbook ) && rowToDelete <= getLastRowNumber( arguments.workbook ) ) //If this is a valid row, remove it
 			getActiveSheet( arguments.workbook ).removeRow( getRowFromActiveSheet( arguments.workbook, arguments.row ) );
 	}
 
@@ -1082,7 +1061,7 @@ component accessors="true"{
 		if( arguments.KeyExists( "sheetNameOrNumber" ) )
 			setActiveSheetNameOrNumber( argumentCollection=arguments );
 		var sheet = getActiveSheet( arguments.workbook );
-		var lastRowIndex = getLastRowNum( arguments.workbook, sheet );
+		var lastRowIndex = getLastRowNumber( arguments.workbook, sheet );
 		if( lastRowIndex == -1 ) // empty
 			return 0;
 		return lastRowIndex +1;
@@ -1707,11 +1686,11 @@ component accessors="true"{
 			var row = rowIterator.next();
 			if( arguments.offset > 0 ){
 				for( var i = endIndex; i >= startIndex; i-- )
-					shiftCell( arguments.workbook, row, i, arguments.offset );
+					shiftCopyCell( arguments.workbook, row, i, arguments.offset );
 			}
 			else{
 				for( var i = startIndex; i <= endIndex; i++ )
-					shiftCell( arguments.workbook, row, i, arguments.offset );
+					shiftCopyCell( arguments.workbook, row, i, arguments.offset );
 			}
 		}
 		// clean up any columns that need to be deleted after the shift
@@ -2292,7 +2271,7 @@ component accessors="true"{
 			}
 		}
 		else{
-			var lastRowIndex = sheet.object.GetLastRowNum();// zero based
+			var lastRowIndex = sheet.object.getLastRowNum();// zero based
 			for( var rowIndex = 0; rowIndex <= lastRowIndex; rowIndex++ )
 				addRowToSheetData( arguments.workbook, sheet, rowIndex, arguments.includeRichTextFormatting );
 		}
@@ -2384,12 +2363,12 @@ component accessors="true"{
 		rowData = getRowData( arguments.workbook, row, arguments.sheet.columnRanges, arguments.includeRichTextFormatting );
 		arguments.sheet.data.Append( rowData );
 		if( !arguments.sheet.columnRanges.Len() ){
-			var rowColumnCount = row.GetLastCellNum();
+			var rowColumnCount = row.getLastCellNum();
 			arguments.sheet.totalColumnCount = Max( arguments.sheet.totalColumnCount, rowColumnCount );
 		}
 	}
 
-	private any function createRow( required workbook, numeric rowNum=getNextEmptyRow( arguments.workbook ), boolean overwrite=true ){
+	private any function createRow( required workbook, numeric rowNum=getNextEmptyRowNumber( arguments.workbook ), boolean overwrite=true ){
 		// get existing row (if any)
 		var sheet = getActiveSheet( arguments.workbook );
 		var row = sheet.getRow( JavaCast( "int", arguments.rowNum ) );
@@ -2409,7 +2388,7 @@ component accessors="true"{
 		return row;
 	}
 
-	private numeric function getFirstRowNum( required workbook ){
+	private numeric function getFirstRowNumber( required workbook ){
 		var sheet = getActiveSheet( arguments.workbook );
 		var firstRow = sheet.getFirstRowNum();
 		if( ( firstRow == 0 ) && ( sheet.getPhysicalNumberOfRows() == 0 ) )
@@ -2417,15 +2396,19 @@ component accessors="true"{
 		return firstRow;
 	}
 
-	private numeric function getLastRowNum( required workbook, sheet=getActiveSheet( arguments.workbook ) ){
+	private numeric function getLastRowNumber( required workbook, sheet=getActiveSheet( arguments.workbook ) ){
 		var lastRow = arguments.sheet.getLastRowNum();
 		if( ( lastRow == 0 ) && ( arguments.sheet.getPhysicalNumberOfRows() == 0 ) )
 			return -1; //The sheet is empty. Return -1 instead of 0
 		return lastRow;
 	}
 
-	private numeric function getNextEmptyRow( workbook ){
-		return ( getLastRowNum( arguments.workbook ) +1 );
+	private numeric function getNextEmptyCellIndexFromRow( required row ){
+		return arguments.row.getLastCellNum(); //getLastCellNum() = the last cell index +1
+	}
+
+	private numeric function getNextEmptyRowNumber( workbook ){
+		return ( getLastRowNumber( arguments.workbook ) +1 );
 	}
 
 	private array function getRowData( required workbook, required row, array columnRanges=[], boolean includeRichTextFormatting=false ){
@@ -2433,7 +2416,7 @@ component accessors="true"{
 		if( !arguments.columnRanges.Len() ){
 			var columnRange = {
 				startAt: 1
-				,endAt: arguments.row.GetLastCellNum()
+				,endAt: arguments.row.getLastCellNum()
 			};
 			arguments.columnRanges = [ columnRange ];
 		}
@@ -2521,6 +2504,10 @@ component accessors="true"{
 	  return true;
 	}
 
+	private boolean function rowHasCells( required row ){
+		return ( arguments.row.getLastCellNum() > 0 );
+	}
+
 	/* Columns */
 
 	private numeric function columnCountFromRanges( required array ranges ){
@@ -2530,6 +2517,12 @@ component accessors="true"{
 				result++;
 		}
 		return result;
+	}
+
+	private void function shiftColumnsRightStartingAt( required numeric cellIndex, required row, required workbook ){
+		var lastCellIndex = arguments.row.getLastCellNum()-1;
+		for( var i = lastCellIndex; i >= arguments.cellIndex; i-- )
+			shiftCopyCell( arguments.workbook, arguments.row, i, 1 );
 	}
 
 	/* Cells */
@@ -2683,13 +2676,15 @@ component accessors="true"{
 		arguments.cell.setCellValue( JavaCast( "string", arguments.value ) );
 	}
 
-	private void function shiftCell( required workbook, required row, required numeric cellIndex, required numeric offset ){
-		var tempCell = arguments.row.getCell( JavaCast( "int", arguments.cellIndex ) );
-		if( IsNull( tempCell ) )
+	private void function shiftCopyCell( required workbook, required row, required numeric cellIndex, required numeric offset ){
+		var oldCell = arguments.row.getCell( JavaCast( "int", arguments.cellIndex ) );
+		if( IsNull( oldCell ) )
 			return;
 		var cell = createCell( arguments.row, arguments.cellIndex + arguments.offset );
-		setCellValueAsType( arguments.workbook, cell, getCellValueAsType( arguments.workbook, tempCell ) );
-		cell.setCellStyle( tempCell.getCellStyle() );
+		setCellValueAsType( arguments.workbook, cell, getCellValueAsType( arguments.workbook, oldCell ) );
+		cell.setCellStyle( oldCell.getCellStyle() );
+		cell.setCellComment( oldCell.getCellComment() );
+		cell.setHyperlink( oldCell.getHyperLink() );
 	}
 
 	/* Query data */
