@@ -605,41 +605,17 @@ component accessors="true"{
 						cellIndex++;
 						continue;
 					}
-					// Cast the values to the query column type
-					var poiCellType = "string";
-					switch( queryColumn.cellDataType ){
-						case "DOUBLE":
-							poiCellType = "numeric";
-							break;
-						case "DATE":
-							poiCellType = "date";
-							break;
-						case "TIME":
-							poiCellType = "time";
-							break;
-						case "BOOLEAN":
-							poiCellType = "boolean";
-							break;
-						default:
-							if( IsSimpleValue( cellValue ) && !Len( cellValue ) )//NB don't use member function: won't work if numeric
-								poiCellType = "blank";
-					}
+					var cellValueType = getCellValueTypeFromQueryColumnType( queryColumn.cellDataType, cellValue );
 					if( arguments.KeyExists( "datatypes" ) )
-	   				setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes, poiCellType );
+	   				setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes, cellValueType );
 	   			else
-						setCellValueAsType( arguments.workbook, cell, cellValue, poiCellType );
+						setCellValueAsType( arguments.workbook, cell, cellValue, cellValueType );
 					cellIndex++;
 	   		}
 	   		currentRowIndex++;
 			}
-			if( arguments.autoSizeColumns ){
-				var numberOfColumns = queryColumns.Len();
-				var thisColumn = arguments.column;
-				for( var i = thisColumn; i <= numberOfColumns; i++ ){
-					autoSizeColumn( arguments.workbook, thisColumn );
-					thisColumn++;
-				}
-			}
+			if( arguments.autoSizeColumns )
+				_autoSizeColumns( workbook=arguments.workbook, startColumnNumber=arguments.column, endColumnNumber=queryColumns.Len() );
 			return;
 		}
 		//data is an array
@@ -1686,27 +1662,13 @@ component accessors="true"{
 			var row = rowIterator.next();
 			if( arguments.offset > 0 ){
 				for( var i = endIndex; i >= startIndex; i-- )
-					shiftCopyCell( arguments.workbook, row, i, arguments.offset );
+					shiftCell( arguments.workbook, row, i, arguments.offset );
 			}
 			else{
 				for( var i = startIndex; i <= endIndex; i++ )
-					shiftCopyCell( arguments.workbook, row, i, arguments.offset );
+					shiftCell( arguments.workbook, row, i, arguments.offset );
 			}
 		}
-		// clean up any columns that need to be deleted after the shift
-		var numberColsShifted = ( ( endIndex-startIndex ) +1 );
-		var numberColsToDelete = Abs( arguments.offset );
-		if( numberColsToDelete > numberColsShifted )
-			numberColsToDelete = numberColsShifted;
-		if( arguments.offset > 0 ){
-			var stopValue = ( ( startIndex + numberColsToDelete ) -1 );
-			for( var i = startIndex; i <= stopValue; i++ )
-				deleteColumn( arguments.workbook, ( i +1 ) );
-			return;
-		}
-		var stopValue = ( ( endIndex - numberColsToDelete ) +1 );
-		for( var i = endIndex; i >= stopValue; i-- )
-			deleteColumn( arguments.workbook, ( i +1 ) );
 	}
 
 	public void function shiftRows( required workbook, required numeric start, numeric end=arguments.start, numeric offset=1 ){
@@ -2510,6 +2472,12 @@ component accessors="true"{
 
 	/* Columns */
 
+	// underscore prefix because otherwise errors: "no matching function [autoSizeColumns]"
+	private void function _autoSizeColumns( required workbook, required numeric startColumnNumber, required numeric endColumnNumber ){
+		for( var i = startColumnNumber; i <= endColumnNumber; i++ )
+			autoSizeColumn( arguments.workbook, i );
+	}
+
 	private numeric function columnCountFromRanges( required array ranges ){
 		var result = 0;
 		for( var thisRange in arguments.ranges ){
@@ -2522,7 +2490,7 @@ component accessors="true"{
 	private void function shiftColumnsRightStartingAt( required numeric cellIndex, required row, required workbook ){
 		var lastCellIndex = arguments.row.getLastCellNum()-1;
 		for( var i = lastCellIndex; i >= arguments.cellIndex; i-- )
-			shiftCopyCell( arguments.workbook, arguments.row, i, 1 );
+			shiftCell( arguments.workbook, arguments.row, i, 1 );
 	}
 
 	/* Cells */
@@ -2676,15 +2644,16 @@ component accessors="true"{
 		arguments.cell.setCellValue( JavaCast( "string", arguments.value ) );
 	}
 
-	private void function shiftCopyCell( required workbook, required row, required numeric cellIndex, required numeric offset ){
-		var oldCell = arguments.row.getCell( JavaCast( "int", arguments.cellIndex ) );
-		if( IsNull( oldCell ) )
+	private void function shiftCell( required workbook, required row, required numeric cellIndex, required numeric offset ){
+		var originalCell = arguments.row.getCell( JavaCast( "int", arguments.cellIndex ) );
+		if( IsNull( originalCell ) )
 			return;
 		var cell = createCell( arguments.row, arguments.cellIndex + arguments.offset );
-		setCellValueAsType( arguments.workbook, cell, getCellValueAsType( arguments.workbook, oldCell ) );
-		cell.setCellStyle( oldCell.getCellStyle() );
-		cell.setCellComment( oldCell.getCellComment() );
-		cell.setHyperlink( oldCell.getHyperLink() );
+		setCellValueAsType( arguments.workbook, cell, getCellValueAsType( arguments.workbook, originalCell ) );
+		cell.setCellStyle( originalCell.getCellStyle() );
+		cell.setCellComment( originalCell.getCellComment() );
+		cell.setHyperlink( originalCell.getHyperLink() );
+		arguments.row.removeCell( originalCell );
 	}
 
 	/* Query data */
@@ -2867,17 +2836,16 @@ component accessors="true"{
 		return "string";
 	}
 
-	private boolean function valueCanBeSetAsType( required value, required type ){
-		//when overriding types, check values can be cast as numbers or dates
+	private string function getCellValueTypeFromQueryColumnType( required string type, required cellValue ){
 		switch( arguments.type ){
-			case "numeric":
-				return IsNumeric( arguments.value );
-			case "date": case "time":
-				return _IsDate( arguments.value );
-			case "boolean":
-				return IsBoolean( arguments.value );
+			case "DOUBLE":
+				return "numeric";
+			case "DATE": case "TIME": case "BOOLEAN":
+				return arguments.type.LCase();
 		}
-		return true;
+		if( IsSimpleValue( arguments.cellValue ) && !Len( arguments.cellValue ) )//NB don't use member function: won't work if numeric
+			return "blank";
+		return "string";
 	}
 
 	private boolean function isString( required input ){
@@ -2957,6 +2925,19 @@ component accessors="true"{
 
 	private array function validCellOverrideTypes(){
 		return [ "numeric", "string", "date", "time", "boolean", "auto" ];
+	}
+
+	private boolean function valueCanBeSetAsType( required value, required type ){
+		//when overriding types, check values can be cast as numbers or dates
+		switch( arguments.type ){
+			case "numeric":
+				return IsNumeric( arguments.value );
+			case "date": case "time":
+				return _IsDate( arguments.value );
+			case "boolean":
+				return IsBoolean( arguments.value );
+		}
+		return true;
 	}
 
 	/* Dates */

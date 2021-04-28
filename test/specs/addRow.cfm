@@ -178,7 +178,8 @@ describe( "addRow", function(){
 		});
 	});
 
-	it( "Can insert more than 4009 rows containing dates without triggering an exception", function(){
+	//skip long test
+	xit( "Can insert more than 4009 rows containing dates without triggering an exception", function(){
 		workbooks.Each( function( wb ){
 			for( var i=1; i LTE 4010; i++ ){
 				variables.s.addRow( wb, "2016-07-14" );

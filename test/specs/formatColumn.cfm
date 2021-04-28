@@ -1,7 +1,8 @@
 <cfscript>
 describe( "formatColumn", function(){
 
-	it( "can format a column containing more than 4009 rows", function(){
+	//skip long test
+	xit( "can format a column containing more than 4009 rows", function(){
 		var path = getTestFilePath( "4010-rows.xls" );
 		var workbook = s.read( src=path );
 		var format = { italic: "true" };
