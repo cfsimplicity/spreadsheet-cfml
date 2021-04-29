@@ -1589,6 +1589,10 @@ component accessors="true"{
 		arguments.workbook.writeProtectWorkbook( JavaCast( "string", arguments.password ), JavaCast( "string", "user" ) );
 	}
 
+	public void function setRecalculateFormulasOnNextOpen( required workbook, boolean value=true ){
+		arguments.workbook.setForceFormulaRecalculation( JavaCast( "boolean", arguments.value ) );
+	}
+
 	public void function setRepeatingColumns( required workbook, required string columnRange ){
 		arguments.columnRange = arguments.columnRange.Trim();
 		if( !IsValid( "regex", arguments.columnRange,"[A-Za-z]:[A-Za-z]" ) )

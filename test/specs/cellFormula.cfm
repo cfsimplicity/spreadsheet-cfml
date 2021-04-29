@@ -37,5 +37,17 @@ describe( "cellFormula", function(){
 		});
 	});
 
+	describe( "recalculation", function(){
+
+		it( "can set a flag for all formulas to be recalculated in the workbook the next time the file is opened", function(){
+			// only xlsx seems to reflect the flag status
+			var wb = s.newXlsx();
+			expect( wb.getForceFormulaRecalculation() ).toBeFalse();
+			s.setRecalculateFormulasOnNextOpen( wb );
+			expect( wb.getForceFormulaRecalculation() ).toBeTrue();
+		});
+
+	});
+
 });	
 </cfscript>

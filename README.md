@@ -154,6 +154,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [setFooterImage](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setFooterImage)
 * [setHeaderImage](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setHeaderImage)
 * [setReadOnly](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setReadOnly)
+* [setRecalculateFormulasOnNextOpen](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setRecalculateFormulasOnNextOpen)
 * [setRepeatingColumns](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setRepeatingColumns)
 * [setRepeatingRows](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setRepeatingRows)
 * [setSheetTopMargin](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setSheetTopMargin)
