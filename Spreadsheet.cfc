@@ -1791,19 +1791,12 @@ component accessors="true"{
 		// See https://poi.apache.org/encryption.html
 		// NB: Not all spreadsheet programs support this type of encryption
 		// set up the encryptor with the chosen algo
+		var validAlgorithms = [ "agile", "standard", "binaryRC4" ];
+		if( !ArrayFindNoCase( validAlgorithms, arguments.algorithm ) )
+			Throw( type=this.getExceptionType(), message="Invalid algorithm", detail="'#arguments.algorithm#' is not a valid algorithm. Supported algorithms are: #validAlgorithms.ToList( ', ')#" );
 		lock name="#arguments.filepath#" timeout=5 {
 			var mode = loadClass( "org.apache.poi.poifs.crypt.EncryptionMode" );
-			switch( arguments.algorithm ){
-				case "agile":
-					var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.agile );
-					break;
-				case "standard":
-					var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.standard );
-					break;
-				case "binaryRC4":
-					var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.binaryRC4 );
-					break;
-			}
+			var info = loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode[ arguments.algorithm ] );
 			var encryptor = info.getEncryptor();
 			encryptor.confirmPassword( JavaCast( "string", arguments.password ) );
 			try{

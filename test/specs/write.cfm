@@ -73,6 +73,15 @@ describe( "write", function(){
 			}).toThrow( regex="File already exists" );
 		});
 
+		it( "the password encryption algorithm is not valid", function(){
+			var data = QueryNew( "column1", "VarChar", [ [ "secret" ] ] );
+			var workbook = s.newXlsx();
+			s.addRows( workbook,data );
+			expect( function(){
+				s.write( workbook=workbook, filepath=tempXlsxPath, overwrite=true, password="pass", algorithm="blah" );
+			}).toThrow( regex="Invalid algorithm" );
+		});
+
 	});	
 
 	afterEach( function(){
