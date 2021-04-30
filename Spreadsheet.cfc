@@ -2678,15 +2678,7 @@ component accessors="true"{
 				var detectedType = detectValueDataType( value );
 				if( detectedType == "blank" )
 					continue;//next column
-				var mappedType = "VARCHAR";
-				switch( detectedType ){
-					case "numeric":
-						mappedType = "DOUBLE";
-						break;// from switch only
-					case "date":
-						mappedType = "TIMESTAMP";
-						break;
-				}
+				var mappedType = mapDataTypeToQueryColumnType( detectedType );
 				if( types[ colNum ].Len() && mappedType != types[ colNum ] ){
 					//mixed types
 					types[ colNum ] = "VARCHAR";
@@ -2698,6 +2690,14 @@ component accessors="true"{
 				types[ colNum ] = "VARCHAR";
 		}
 		return types.ToList();
+	}
+
+	private string function mapDataTypeToQueryColumnType( required string dataType ){
+		switch( arguments.dataType ){
+			case "numeric": return "DOUBLE";
+			case "date": return "TIMESTAMP";
+			default: return "VARCHAR";
+		}
 	}
 
 	private string function getQueryColumnTypesListFromStruct( required struct types, required array sheetColumnNames ){
@@ -2712,27 +2712,29 @@ component accessors="true"{
 		// extract the query columns and data types
 		var metadata = GetMetaData( arguments.query );
 		// assign default formats based on the data type of each column
-		for( var col in metadata ){
-			var columnType = col.typeName?: "";// typename is missing in ACF if not specified in the query
-			switch( columnType ){
-				case "DATE": case "TIMESTAMP": case "DATETIME": case "DATETIME2":
-					col.cellDataType = "DATE";
-				break;
-				case "TIME":
-					col.cellDataType = "TIME";
-				break;
-				/* Note: Excel only supports "double" for numbers. Casting very large DECIMIAL/NUMERIC or BIGINT values to double may result in a loss of precision or conversion to NEGATIVE_INFINITY / POSITIVE_INFINITY. */
-				case "DECIMAL": case "BIGINT": case "NUMERIC": case "DOUBLE": case "FLOAT": case "INT": case "INTEGER": case "REAL": case "SMALLINT": case "TINYINT":
-					col.cellDataType = "DOUBLE";
-				break;
-				case "BOOLEAN": case "BIT":
-					col.cellDataType = "BOOLEAN";
-				break;
-				default:
-					col.cellDataType = "STRING";
-			}
-		}
+		for( var columnMetadata in metadata )
+			mapQueryColumnTypeToCellType( columnMetadata );
 		return metadata;
+	}
+
+	private void function mapQueryColumnTypeToCellType( required struct columnMetadata ){
+		var columnType = arguments.columnMetadata.typeName?: "";// typename is missing in ACF if not specified in the query
+		switch( columnType ){
+			case "DATE": case "TIMESTAMP": case "DATETIME": case "DATETIME2":
+				arguments.columnMetadata.cellDataType = "DATE";
+			return;
+			case "TIME":
+				arguments.columnMetadata.cellDataType = "TIME";
+			return;
+			/* Note: Excel only supports "double" for numbers. Casting very large DECIMIAL/NUMERIC or BIGINT values to double may result in a loss of precision or conversion to NEGATIVE_INFINITY / POSITIVE_INFINITY. */
+			case "DECIMAL": case "BIGINT": case "NUMERIC": case "DOUBLE": case "FLOAT": case "INT": case "INTEGER": case "REAL": case "SMALLINT": case "TINYINT":
+				arguments.columnMetadata.cellDataType = "DOUBLE";
+			return;
+			case "BOOLEAN": case "BIT":
+				arguments.columnMetadata.cellDataType = "BOOLEAN";
+			return;
+			default: arguments.columnMetadata.cellDataType = "STRING";
+		}
 	}
 
 	private string function queryToHtml( required query query, numeric headerRow, boolean includeHeaderRow=false ){
@@ -2982,37 +2984,35 @@ component accessors="true"{
 		arguments.workbook.createInformationProperties(); // creates the following if missing
 		var documentSummaryInfo = arguments.workbook.getDocumentSummaryInformation();
 		var summaryInfo = arguments.workbook.getSummaryInformation();
-		for( var key in arguments.info ){
-			var value = JavaCast( "string", arguments.info[ key ] );
-			switch( key ){
-				case "author":
-					summaryInfo.setAuthor( value );
-					break;
-				case "category":
-					documentSummaryInfo.setCategory( value );
-					break;
-				case "lastauthor":
-					summaryInfo.setLastAuthor( value );
-					break;
-				case "comments":
-					summaryInfo.setComments( value );
-					break;
-				case "keywords":
-					summaryInfo.setKeywords( value );
-					break;
-				case "manager":
-					documentSummaryInfo.setManager( value );
-					break;
-				case "company":
-					documentSummaryInfo.setCompany( value );
-					break;
-				case "subject":
-					summaryInfo.setSubject( value );
-					break;
-				case "title":
-					summaryInfo.setTitle( value );
-					break;
-			}
+		for( var key in arguments.info )
+			addInfoItemBinary( arguments.info, key, summaryInfo, documentSummaryInfo );
+	}
+
+	private void function addInfoItemBinary(
+		required struct info
+		,required string key
+		,required summaryInfo
+		,required documentSummaryInfo
+	){
+		var value = JavaCast( "string", arguments.info[ arguments.key ] );
+		switch( arguments.key ){
+			case "author": arguments.summaryInfo.setAuthor( value );
+				return ;
+			case "category": arguments.documentSummaryInfo.setCategory( value );
+				return ;
+			case "lastauthor": arguments.summaryInfo.setLastAuthor( value );
+				return ;
+			case "comments": arguments.summaryInfo.setComments( value );
+				return ;
+			case "keywords": arguments.summaryInfo.setKeywords( value );
+				return ;
+			case "manager": arguments.documentSummaryInfo.setManager( value );
+				return ;
+			case "company": arguments.documentSummaryInfo.setCompany( value );
+				return ;
+			case "subject": arguments.summaryInfo.setSubject( value );
+				return ;
+			case "title": arguments.summaryInfo.setTitle( value );
 		}
 	}
 
@@ -3020,37 +3020,35 @@ component accessors="true"{
 		var workbookProperties = isStreamingXmlFormat( arguments.workbook )? arguments.workbook.getXSSFWorkbook().getProperties(): arguments.workbook.getProperties();
 		var documentProperties = workbookProperties.getExtendedProperties().getUnderlyingProperties();
 		var coreProperties = workbookProperties.getCoreProperties();
-		for( var key in arguments.info ){
-			var value = JavaCast( "string", arguments.info[ key ] );
-			switch( key ){
-				case "author":
-					coreProperties.setCreator( value  );
-					break;
-				case "category":
-					coreProperties.setCategory( value );
-					break;
-				case "lastauthor":
-					coreProperties.getUnderlyingProperties().setLastModifiedByProperty( value );
-					break;
-				case "comments":
-					coreProperties.setDescription( value );
-					break;
-				case "keywords":
-					coreProperties.setKeywords( value );
-					break;
-				case "subject":
-					coreProperties.setSubjectProperty( value );
-					break;
-				case "title":
-					coreProperties.setTitle( value );
-					break;
-				case "manager":
-					documentProperties.setManager( value );
-					break;
-				case "company":
-					documentProperties.setCompany( value );
-					break;
-			}
+		for( var key in arguments.info )
+			addInfoItemXml( arguments.info, key, documentProperties, coreProperties );
+	}
+
+	private void function addInfoItemXml(
+		required struct info
+		,required string key
+		,required documentProperties
+		,required coreProperties
+	){
+		var value = JavaCast( "string", arguments.info[ key ] );
+		switch( arguments.key ){
+			case "author": arguments.coreProperties.setCreator( value  );
+				return;
+			case "category": arguments.coreProperties.setCategory( value );
+				return;
+			case "lastauthor": arguments.coreProperties.getUnderlyingProperties().setLastModifiedByProperty( value );
+				return;
+			case "comments": arguments.coreProperties.setDescription( value );
+				return;
+			case "keywords": arguments.coreProperties.setKeywords( value );
+				return;
+			case "subject": arguments.coreProperties.setSubjectProperty( value );
+				return;
+			case "title": arguments.coreProperties.setTitle( value );
+				return;
+			case "manager": arguments.documentProperties.setManager( value );
+				return;
+			case "company": arguments.documentProperties.setCompany( value );
 		}
 	}
 	
@@ -3573,33 +3571,34 @@ component accessors="true"{
 	}
 
 	private string function getRgbTripletForStyleColorFormat( required workbook, required cellStyle, required string format ){
-		var rgbTriplet = [];
 		var isXlsx = isXmlFormat( arguments.workbook );
-		var colorObject = "";
-		if( !isXlsx )
-			var palette = arguments.workbook.getCustomPalette();
-		switch( arguments.format ){
-			case "bottombordercolor":
-				colorObject = isXlsx? arguments.cellStyle.getBottomBorderXSSFColor(): palette.getColor( arguments.cellStyle.getBottomBorderColor() );
-				break;
-			case "fgcolor":
-				colorObject = isXlsx? arguments.cellStyle.getFillForegroundXSSFColor(): palette.getColor( arguments.cellStyle.getFillForegroundColor() );
-				break;
-			case "leftbordercolor":
-				colorObject = isXlsx? arguments.cellStyle.getLeftBorderXSSFColor(): palette.getColor( arguments.cellStyle.getLeftBorderColor() );
-				break;
-			case "rightbordercolor":
-				colorObject = isXlsx? arguments.cellStyle.getRightBorderXSSFColor(): palette.getColor( arguments.cellStyle.getRightBorderColor() );
-				break;
-			case "topbordercolor":
-				colorObject = isXlsx? arguments.cellStyle.getTopBorderXSSFColor(): palette.getColor( arguments.cellStyle.getTopBorderColor() );
-				break;
-		}
+		var palette = isXlsx? "": arguments.workbook.getCustomPalette();
+		var colorObject = getColorObjectForFormat( arguments.format, arguments.cellStyle, palette, isXlsx );
 		// HSSF will return an empty string rather than a null if the color doesn't exist
 		if( IsNull( colorObject ) || IsSimpleValue( colorObject) )
 			return "";
-		rgbTriplet = isXlsx? convertSignedRGBToPositiveTriplet( colorObject.getRGB() ): colorObject.getTriplet();
+		var rgbTriplet = isXlsx? convertSignedRGBToPositiveTriplet( colorObject.getRGB() ): colorObject.getTriplet();
 		return ArrayToList( rgbTriplet );
+	}
+
+	private any function getColorObjectForFormat(
+		required string format
+		,required cellStyle
+		,required any palette
+		,required boolean isXlsx
+	){
+		switch( arguments.format ){
+			case "bottombordercolor":
+				return arguments.isXlsx? arguments.cellStyle.getBottomBorderXSSFColor(): arguments.palette.getColor( arguments.cellStyle.getBottomBorderColor() );
+			case "fgcolor":
+				return arguments.isXlsx? arguments.cellStyle.getFillForegroundXSSFColor(): arguments.palette.getColor( arguments.cellStyle.getFillForegroundColor() );
+			case "leftbordercolor":
+				return arguments.isXlsx? arguments.cellStyle.getLeftBorderXSSFColor(): arguments.palette.getColor( arguments.cellStyle.getLeftBorderColor() );
+			case "rightbordercolor":
+				return arguments.isXlsx? arguments.cellStyle.getRightBorderXSSFColor(): arguments.palette.getColor( arguments.cellStyle.getRightBorderColor() );
+			case "topbordercolor":
+				return arguments.isXlsx? arguments.cellStyle.getTopBorderXSSFColor(): arguments.palette.getColor( arguments.cellStyle.getTopBorderColor() );
+		}
 	}
 
 	/* Return helper objects */
