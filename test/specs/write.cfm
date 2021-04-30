@@ -27,7 +27,7 @@ describe( "write", function(){
 
 	it( "Writes a streaming XLSX object without error", function(){
 		var rows = [];
-		for( i=1; i <= 500; i++ ){
+		for( i=1; i <= 100; i++ ){
 			rows.append( { column1=i, column2="test" } );
 		}
 		var data = QueryNew( "column1,column2", "Integer,Varchar", rows );
@@ -41,7 +41,7 @@ describe( "write", function(){
 
 	it( "Writes a streaming XLSX object with a custom window size without error", function(){
 		var rows = [];
-		for( i=1; i <= 500; i++ ){
+		for( i=1; i <= 100; i++ ){
 			rows.append( { column1=i, column2="test" } );
 		}
 		var data = QueryNew( "column1,column2", "Integer,Varchar", rows );
