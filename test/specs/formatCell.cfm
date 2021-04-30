@@ -271,6 +271,14 @@ describe( "formatCell", function(){
 		});
 	});
 
+	it( "ignores an invalid underline value", function(){
+		workbooks.Each( function( wb ){
+			s.formatCell( wb, { underline: "blah" }, 1, 1 );
+			var cellFormat = s.getCellFormat( wb, 1, 1 );
+			expect( cellFormat.underline ).toBe( "none" );
+		});
+	});
+
 	it( "will map 9 deprecated colour names ending in 1 to the corresponding valid value", function(){
 		workbooks.Each( function( wb ){
 			// include numbers either side of 127 which might throw ACF

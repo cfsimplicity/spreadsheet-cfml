@@ -960,7 +960,7 @@ component accessors="true"{
 			,textwrap: cellStyle.getWrapText()
 			,topborder: cellStyle.getBorderTop().toString()
 			,topbordercolor: getRgbTripletForStyleColorFormat( arguments.workbook, cellStyle, "topbordercolor" )
-			,underline: getUnderlineFormatAsString( cellFont )
+			,underline: lookupUnderlineFormatCode( cellFont )
 			,verticalalignment: cellStyle.getVerticalAlignment().toString()
 		};
 	}
@@ -3133,142 +3133,135 @@ component accessors="true"{
 		var cellStyle = arguments.workbook.createCellStyle();
 		if( arguments.KeyExists( "existingStyle" ) )
 			cellStyle.cloneStyleFrom( arguments.existingStyle );
-		var font = 0;
-		for( var setting in arguments.format ){
-			var settingValue = arguments.format[ setting ];
-			switch( setting ){
-				case "alignment":
-					var alignment = cellStyle.getAlignment()[ JavaCast( "string", UCase( settingValue ) ) ];
-					cellStyle.setAlignment( alignment );
-				break;
-				case "bold":
-					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() ) );
-					font.setBold( JavaCast( "boolean", settingValue ) );
-					cellStyle.setFont( font );
-				break;
-				case "bottomborder":
-					var borderStyle = cellStyle.getBorderBottom()[ JavaCast( "string", UCase( settingValue ) ) ];
-					cellStyle.setBorderBottom( borderStyle );
-				break;
-				case "bottombordercolor":
-					cellStyle.setBottomBorderColor( getColor( arguments.workbook, settingValue ) );
-				break;
-				case "color":
-					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() ) );
-					font.setColor( getColor( arguments.workbook, settingValue ) );
-					cellStyle.setFont( font );
-				break;
-				case "dataformat":
-					var dataFormat = arguments.workbook.getCreationHelper().createDataFormat();
-					cellStyle.setDataFormat( dataFormat.getFormat( JavaCast( "string", settingValue ) ) );
-				break;
-				case "fgcolor":
-					cellStyle.setFillForegroundColor( getColor( arguments.workbook, settingValue ) );
-					// make sure we always apply a fill pattern or the color will not be visible
-					if( !arguments.format.KeyExists( "fillpattern" ) ){
-						var fillpattern = cellStyle.getFillPattern()[ JavaCast( "string", "SOLID_FOREGROUND" ) ];
-						cellStyle.setFillPattern( fillpattern );
-					}
-				break;
-				case "fillpattern":
-				 //ACF docs list "nofill" as opposed to "no_fill"
-					if( settingValue == "nofill" )
-						settingValue = "NO_FILL";
-					var fillpattern = cellStyle.getFillPattern()[ JavaCast( "string", UCase( settingValue ) ) ];
-					cellStyle.setFillPattern( fillpattern );
-				break;
-				case "font":
-					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() ) );
-					font.setFontName( JavaCast( "string", settingValue ) );
-					cellStyle.setFont( font );
-				break;
-				case "fontsize":
-					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() ) );
-					font.setFontHeightInPoints( JavaCast( "int", settingValue ) );
-					cellStyle.setFont( font );
-				break;
-				//  TODO: Doesn't seem to do anything/
-				case "hidden":
-					cellStyle.setHidden( JavaCast( "boolean", settingValue ) );
-				break;
-				case "indent":
-					// Only seems to work on MS Excel. XLS limit is 15.
-					var indentValue = isXmlFormat( arguments.workbook )? settingValue: Min( 15, settingValue );
-					cellStyle.setIndention( JavaCast( "int", indentValue ) );
-				break;
-				case "italic":
-					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt ( ) ) );
-					font.setItalic( JavaCast( "boolean", settingValue ) );
-					cellStyle.setFont( font );
-				break;
-				case "leftborder":
-					var borderStyle = cellStyle.getBorderLeft()[ JavaCast( "string", UCase( settingValue ) ) ];
-					cellStyle.setBorderLeft( borderStyle );
-				break;
-				case "leftbordercolor":
-					cellStyle.setLeftBorderColor( getColor( arguments.workbook, settingValue ) );
-				break;
-				// TODO: Doesn't seem to do anything
-				case "locked":
-					cellStyle.setLocked( JavaCast( "boolean", settingValue ) );
-				break;
-				case "quoteprefixed":
-					cellStyle.setQuotePrefixed( JavaCast( "boolean", settingValue ) );
-				break;
-				case "rightborder":
-					var borderStyle = cellStyle.getBorderRight()[ JavaCast( "string", UCase( settingValue ) ) ];
-					cellStyle.setBorderRight( borderStyle );
-				break;
-				case "rightbordercolor":
-					cellStyle.setRightBorderColor( getColor( arguments.workbook, settingValue ) );
-				break;
-				case "rotation":
-					cellStyle.setRotation( JavaCast( "int", settingValue ) );
-				break;
-				case "strikeout":
-					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() ) );
-					font.setStrikeout( JavaCast( "boolean", settingValue ) );
-					cellStyle.setFont( font );
-				break;
-				case "textwrap":
-					cellStyle.setWrapText( JavaCast( "boolean", settingValue ) );
-				break;
-				case "topborder":
-					var borderStyle = cellStyle.getBorderTop()[ JavaCast( "string", UCase( settingValue ) ) ];
-					cellStyle.setBorderTop( borderStyle );
-				break;
-				case "topbordercolor":
-					cellStyle.setTopBorderColor( getColor( arguments.workbook, settingValue ) );
-				break;
-				case "underline":
-					var underlineType = 0;
-					switch( settingValue ){
-						case "none": underlineType = 0;
-							break;
-						case "single": underlineType = 1;
-							break;
-						case "double": underlineType = 2;
-							break;
-						case "single accounting": underlineType = 33;
-							break;
-						case "double accounting": underlineType = 34;
-							break;
-						default:
-							if( !IsBoolean( settingValue ) )
-								return cellStyle; //invalid - do nothing
-							underlineType = settingValue? 1: 0;
-					}
-					font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() ) );
-					font.setUnderline( JavaCast( "byte", underlineType ) );
-					cellStyle.setFont( font );
-				break;
-				case "verticalalignment":
-					var alignment = cellStyle.getVerticalAlignment()[ JavaCast( "string", UCase( settingValue ) ) ];
-					cellStyle.setVerticalAlignment( alignment );
-				break;
-			}
-		}
+		for( var setting in arguments.format )
+			setCellStyleFromFormatSetting( arguments.workbook, arguments.format, setting, cellStyle );
 		return cellStyle;
+	}
+
+	private void function setCellStyleFromFormatSetting(
+		required workbook
+		,required struct format
+		,required string setting
+		,required cellStyle
+	){
+		var font = 0;
+		var settingValue = arguments.format[ setting ];
+		switch( arguments.setting ){
+			case "alignment":
+				var alignment = arguments.cellStyle.getAlignment()[ JavaCast( "string", UCase( settingValue ) ) ];
+				arguments.cellStyle.setAlignment( alignment );
+			return;
+			case "bold":
+				font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndexAsInt() ) );
+				font.setBold( JavaCast( "boolean", settingValue ) );
+				arguments.cellStyle.setFont( font );
+			return;
+			case "bottomborder":
+				var borderStyle = arguments.cellStyle.getBorderBottom()[ JavaCast( "string", UCase( settingValue ) ) ];
+				arguments.cellStyle.setBorderBottom( borderStyle );
+			return;
+			case "bottombordercolor":
+				arguments.cellStyle.setBottomBorderColor( getColor( arguments.workbook, settingValue ) );
+			return;
+			case "color":
+				font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndexAsInt() ) );
+				font.setColor( getColor( arguments.workbook, settingValue ) );
+				arguments.cellStyle.setFont( font );
+			return;
+			case "dataformat":
+				var dataFormat = arguments.workbook.getCreationHelper().createDataFormat();
+				arguments.cellStyle.setDataFormat( dataFormat.getFormat( JavaCast( "string", settingValue ) ) );
+			return;
+			case "fgcolor":
+				arguments.cellStyle.setFillForegroundColor( getColor( arguments.workbook, settingValue ) );
+				// make sure we always apply a fill pattern or the color will not be visible
+				if( !arguments.format.KeyExists( "fillpattern" ) ){
+					var fillpattern = arguments.cellStyle.getFillPattern()[ JavaCast( "string", "SOLID_FOREGROUND" ) ];
+					arguments.cellStyle.setFillPattern( fillpattern );
+				}
+			return;
+			case "fillpattern":
+			 //ACF docs list "nofill" as opposed to "no_fill"
+				if( settingValue == "nofill" )
+					settingValue = "NO_FILL";
+				var fillpattern = arguments.cellStyle.getFillPattern()[ JavaCast( "string", UCase( settingValue ) ) ];
+				arguments.cellStyle.setFillPattern( fillpattern );
+			return;
+			case "font":
+				font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndexAsInt() ) );
+				font.setFontName( JavaCast( "string", settingValue ) );
+				arguments.cellStyle.setFont( font );
+			return;
+			case "fontsize":
+				font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndexAsInt() ) );
+				font.setFontHeightInPoints( JavaCast( "int", settingValue ) );
+				arguments.cellStyle.setFont( font );
+			return;
+			//  TODO: Doesn't seem to do anything/
+			case "hidden":
+				arguments.cellStyle.setHidden( JavaCast( "boolean", settingValue ) );
+			return;
+			case "indent":
+				// Only seems to work on MS Excel. XLS limit is 15.
+				var indentValue = isXmlFormat( arguments.workbook )? settingValue: Min( 15, settingValue );
+				arguments.cellStyle.setIndention( JavaCast( "int", indentValue ) );
+			return;
+			case "italic":
+				font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndexAsInt ( ) ) );
+				font.setItalic( JavaCast( "boolean", settingValue ) );
+				arguments.cellStyle.setFont( font );
+			return;
+			case "leftborder":
+				var borderStyle = arguments.cellStyle.getBorderLeft()[ JavaCast( "string", UCase( settingValue ) ) ];
+				arguments.cellStyle.setBorderLeft( borderStyle );
+			return;
+			case "leftbordercolor":
+				arguments.cellStyle.setLeftBorderColor( getColor( arguments.workbook, settingValue ) );
+			return;
+			// TODO: Doesn't seem to do anything
+			case "locked":
+				arguments.cellStyle.setLocked( JavaCast( "boolean", settingValue ) );
+			return;
+			case "quoteprefixed":
+				arguments.cellStyle.setQuotePrefixed( JavaCast( "boolean", settingValue ) );
+			return;
+			case "rightborder":
+				var borderStyle = arguments.cellStyle.getBorderRight()[ JavaCast( "string", UCase( settingValue ) ) ];
+				arguments.cellStyle.setBorderRight( borderStyle );
+			return;
+			case "rightbordercolor":
+				arguments.cellStyle.setRightBorderColor( getColor( arguments.workbook, settingValue ) );
+			return;
+			case "rotation":
+				arguments.cellStyle.setRotation( JavaCast( "int", settingValue ) );
+			return;
+			case "strikeout":
+				font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndexAsInt() ) );
+				font.setStrikeout( JavaCast( "boolean", settingValue ) );
+				arguments.cellStyle.setFont( font );
+			return;
+			case "textwrap":
+				arguments.cellStyle.setWrapText( JavaCast( "boolean", settingValue ) );
+			return;
+			case "topborder":
+				var borderStyle = arguments.cellStyle.getBorderTop()[ JavaCast( "string", UCase( settingValue ) ) ];
+				arguments.cellStyle.setBorderTop( borderStyle );
+			return;
+			case "topbordercolor":
+				arguments.cellStyle.setTopBorderColor( getColor( arguments.workbook, settingValue ) );
+			return;
+			case "underline":
+				var underlineType = lookupUnderlineFormat( settingValue );
+				if( underlineType == -1 )
+					return;
+				font = cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndexAsInt() ) );
+				font.setUnderline( JavaCast( "byte", underlineType ) );
+				arguments.cellStyle.setFont( font );
+			return;
+			case "verticalalignment":
+				var alignment = arguments.cellStyle.getVerticalAlignment()[ JavaCast( "string", UCase( settingValue ) ) ];
+				arguments.cellStyle.setVerticalAlignment( alignment );
+		}
 	}
 
 	private boolean function isValidCellStyleObject( required workbook, required any object ){
@@ -3284,16 +3277,28 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid argument", detail="The 'cellStyle' argument is not a valid POI cellStyle object" );
 	}
 
-	private string function getUnderlineFormatAsString( required cellFont ){
-		var lookup = {};
-		lookup[ 0 ] = "none";
-		lookup[ 1 ] = "single";
-		lookup[ 2 ] = "double";
-		lookup[ 33 ] = "single accounting";
-		lookup[ 34 ] = "double accounting";
-		if( lookup.KeyExists( arguments.cellFont.getUnderline() ) )
-			return lookup[ arguments.cellFont.getUnderline() ];
-		return "unknown";
+	private string function lookupUnderlineFormatCode( required cellFont ){
+		switch( arguments.cellFont.getUnderline() ){
+			case 0: return "none";
+			case 1: return "single";
+			case 2: return "double";
+			case 33: return "single accounting";
+			case 34: return "double accounting";
+			default: return "unknown";
+		}
+	}
+
+	private numeric function lookupUnderlineFormat( required any formatSettingValue ){
+		switch( arguments.formatSettingValue ){
+			case "none": return 0;
+			case "single": return 1;
+			case "double": return 2;
+			case "single accounting": return 33;
+			case "double accounting": return 34;
+		}
+		if( IsBoolean( arguments.formatSettingValue ) )
+			return arguments.formatSettingValue? 1: 0;
+		return -1;
 	}
 
 	private string function richStringCellValueToHtml( required workbook, required cell, required cellValue ){
