@@ -12,7 +12,7 @@ component accessors="true"{
 	//configurable
 	property name="dateFormats" type="struct";
 	property name="javaLoaderDotPath" default="javaLoader.JavaLoader";
-	property name="javaLoaderName";
+	property name="javaLoaderName" default="";
 	property name="requiresJavaLoader" type="boolean" default="false";
 	//detected state
 	property name="isACF" type="boolean";
@@ -29,16 +29,12 @@ component accessors="true"{
 		this.setDateFormats( defaultDateFormats() );
 		if( arguments.KeyExists( "dateFormats" ) )
 			overrideDefaultDateFormats( arguments.dateFormats );
-		this.setJavaLoaderName( "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#" );
-		if( this.getIsACF() )
-			this.setRequiresJavaLoader( true );
-		else
-			this.setOsgiLoader( New osgiLoader() ); //Lucee uses OSGi instead of JavaLoader
-		// JavaLoader requirement default can be overridden
-		if( arguments.KeyExists( "requiresJavaLoader" ) )
-			this.setRequiresJavaLoader( arguments.requiresJavaLoader );
-		if( !this.getRequiresJavaLoader() )
+		this.setRequiresJavaLoader( this.getIsACF() || ( arguments.KeyExists( "requiresJavaLoader" ) && arguments.requiresJavaLoader ) );
+		if( !this.getRequiresJavaLoader() ){
+			this.setOsgiLoader( New osgiLoader() );
 			return this;
+		}
+		this.setJavaLoaderName( "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#" );
 		 // Option to use the dot path of an existing javaloader installation to save duplication
 		if( arguments.KeyExists( "javaLoaderDotPath" ) )
 			this.setJavaLoaderDotPath( arguments.javaLoaderDotPath );
