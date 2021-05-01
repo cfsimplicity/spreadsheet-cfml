@@ -2993,21 +2993,21 @@ component accessors="true"{
 		var value = JavaCast( "string", arguments.info[ arguments.key ] );
 		switch( arguments.key ){
 			case "author": arguments.summaryInfo.setAuthor( value );
-				return ;
+				return;
 			case "category": arguments.documentSummaryInfo.setCategory( value );
-				return ;
+				return;
 			case "lastauthor": arguments.summaryInfo.setLastAuthor( value );
-				return ;
+				return;
 			case "comments": arguments.summaryInfo.setComments( value );
-				return ;
+				return;
 			case "keywords": arguments.summaryInfo.setKeywords( value );
-				return ;
+				return;
 			case "manager": arguments.documentSummaryInfo.setManager( value );
-				return ;
+				return;
 			case "company": arguments.documentSummaryInfo.setCompany( value );
-				return ;
+				return;
 			case "subject": arguments.summaryInfo.setSubject( value );
-				return ;
+				return;
 			case "title": arguments.summaryInfo.setTitle( value );
 		}
 	}
@@ -3121,15 +3121,15 @@ component accessors="true"{
 		if( arguments.KeyExists( "existingStyle" ) )
 			cellStyle.cloneStyleFrom( arguments.existingStyle );
 		for( var setting in arguments.format )
-			setCellStyleFromFormatSetting( arguments.workbook, arguments.format, setting, cellStyle );
+			setCellStyleFromFormatSetting( arguments.workbook, cellStyle, arguments.format, setting );
 		return cellStyle;
 	}
 
 	private void function setCellStyleFromFormatSetting(
 		required workbook
+		,required cellStyle
 		,required struct format
 		,required string setting
-		,required cellStyle
 	){
 		var font = 0;
 		var settingValue = arguments.format[ setting ];
