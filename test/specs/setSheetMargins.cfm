@@ -58,7 +58,7 @@ describe( "setSheetMargins", function(){
 
 	describe( "setting sheet margins throws an exception if", function(){
 
-		it( "the both sheet name and number are specified", function(){
+		it( "both sheet name and number are specified", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.setSheetTopMargin( wb, 3, "test", 1 );

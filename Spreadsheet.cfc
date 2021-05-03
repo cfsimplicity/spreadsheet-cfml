@@ -1610,32 +1610,32 @@ component accessors="true"{
 	}
 
 	public void function setSheetTopMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
-		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
+		var sheet = getSpecifiedOrActiveSheet( argumentCollection=arguments );
 		sheet.setMargin( sheet.TopMargin, arguments.marginSize );
 	}
 
 	public void function setSheetBottomMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
-		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
+		var sheet = getSpecifiedOrActiveSheet( argumentCollection=arguments );
 		sheet.setMargin( sheet.BottomMargin, arguments.marginSize );
 	}
 
 	public void function setSheetLeftMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
-		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
+		var sheet = getSpecifiedOrActiveSheet( argumentCollection=arguments );
 		sheet.setMargin( sheet.LeftMargin, arguments.marginSize );
 	}
 
 	public void function setSheetRightMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
-		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
+		var sheet = getSpecifiedOrActiveSheet( argumentCollection=arguments );
 		sheet.setMargin( sheet.RightMargin, arguments.marginSize );
 	}
 
 	public void function setSheetHeaderMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
-		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
+		var sheet = getSpecifiedOrActiveSheet( argumentCollection=arguments );
 		sheet.setMargin( sheet.HeaderMargin, arguments.marginSize );
 	}
 
 	public void function setSheetFooterMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
-		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
+		var sheet = getSpecifiedOrActiveSheet( argumentCollection=arguments );
 		sheet.setMargin( sheet.FooterMargin, arguments.marginSize );
 	}
 
@@ -1643,7 +1643,7 @@ component accessors="true"{
 		if( !ListFindNoCase( "landscape,portrait", arguments.mode ) )
 			Throw( type=this.getExceptionType(), message="Invalid mode argument", detail="#mode# is not a valid 'mode' argument. Use 'portrait' or 'landscape'" );
 		var setToLandscape = ( LCase( arguments.mode ) == "landscape" );
-		var sheet = getSheetByNameOrNumber( argumentCollection=arguments );
+		var sheet = getSpecifiedOrActiveSheet( argumentCollection=arguments );
 		sheet.getPrintSetup().setLandscape( JavaCast( "boolean", setToLandscape ) );
 	}
 
@@ -2101,6 +2101,16 @@ component accessors="true"{
 		return getActiveSheet( arguments.workbook ).getSheetName();
 	}
 
+	private void function setActiveSheetNameOrNumber( required workbook, required sheetNameOrNumber ){
+		if( IsValid( "integer", arguments.sheetNameOrNumber ) && IsNumeric( arguments.sheetNameOrNumber ) ){
+			var sheetNumber = arguments.sheetNameOrNumber;
+			setActiveSheetNumber( arguments.workbook, sheetNumber );
+			return;
+		}
+		var sheetName = arguments.sheetNameOrNumber;
+		setActiveSheet( arguments.workbook, sheetName );
+	}
+
 	private array function getAllSheetFormulas( required workbook ){
 		var rowIterator = getActiveSheet( arguments.workbook ).rowIterator();
 		var formulas = [];
@@ -2130,21 +2140,19 @@ component accessors="true"{
 		return arguments.workbook.getSheet( JavaCast( "string", arguments.sheetName ) );
 	}
 
-	private any function getSheetByNameOrNumber( required workbook, string sheetName, numeric sheetNumber ){
-		var sheetNameSupplied = ( arguments.KeyExists( "sheetName" ) && Len( arguments.sheetName ) );
-		if( sheetNameSupplied && arguments.KeyExists( "sheetNumber" ) )
-			Throw( type=this.getExceptionType(), message="Invalid arguments", detail="Specify either a sheetName or sheetNumber, not both" );
-		if( sheetNameSupplied )
-			return getSheetByName( arguments.workbook, arguments.sheetName );
-		if( arguments.KeyExists( "sheetNumber" ) )
-			return getSheetByNumber( arguments.workbook, arguments.sheetNumber );
-		return getActiveSheet( arguments.workbook );
-	}
-
 	private any function getSheetByNumber( required workbook, required numeric sheetNumber ){
 		validateSheetNumber( arguments.workbook, arguments.sheetNumber );
 		var sheetIndex = ( arguments.sheetNumber -1 );
 		return arguments.workbook.getSheetAt( sheetIndex );
+	}
+
+	private any function getSpecifiedOrActiveSheet( required workbook, string sheetName, numeric sheetNumber ){
+		throwErrorIFSheetNameAndNumberArgumentsBothPassed( argumentCollection=arguments );
+		if( !sheetNameArgumentWasProvided( argumentCollection=arguments ) && !sheetNumberArgumentWasProvided( argumentCollection=arguments ) )
+			return getActiveSheet( arguments.workbook );
+		if( sheetNameArgumentWasProvided( argumentCollection=arguments ) )
+			return getSheetByName( arguments.workbook, arguments.sheetName );
+		return getSheetByNumber( arguments.workbook, arguments.sheetNumber );
 	}
 
 	private numeric function getSheetIndexFromName( required workbook, required string sheetName ){
@@ -2154,16 +2162,6 @@ component accessors="true"{
 
 	private void function moveSheet( required workbook, required string sheetName, required string moveToIndex ){
 		arguments.workbook.setSheetOrder( JavaCast( "String", arguments.sheetName ), JavaCast( "int", arguments.moveToIndex ) );
-	}
-
-	private void function setActiveSheetNameOrNumber( required workbook, required sheetNameOrNumber ){
-		if( IsValid( "integer", arguments.sheetNameOrNumber ) && IsNumeric( arguments.sheetNameOrNumber ) ){
-			var sheetNumber = arguments.sheetNameOrNumber;
-			setActiveSheetNumber( arguments.workbook, sheetNumber );
-			return;
-		}
-		var sheetName = arguments.sheetNameOrNumber;
-		setActiveSheet( arguments.workbook, sheetName );
 	}
 
 	private boolean function sheetExists( required workbook, string sheetName, numeric sheetNumber ){
@@ -2290,10 +2288,26 @@ component accessors="true"{
 	}
 
 	private void function validateSheetNameOrNumberWasProvided(){
-		if( !arguments.KeyExists( "sheetName" ) && !arguments.KeyExists( "sheetNumber" ) )
+		throwErrorIFSheetNameAndNumberArgumentsBothMissing( argumentCollection=arguments );
+		throwErrorIFSheetNameAndNumberArgumentsBothPassed( argumentCollection=arguments );
+	}
+
+	private void function throwErrorIFSheetNameAndNumberArgumentsBothMissing(){
+		if( !sheetNameArgumentWasProvided( argumentCollection=arguments ) && !sheetNumberArgumentWasProvided( argumentCollection=arguments ) )
 			Throw( type=this.getExceptionType(), message="Missing Required Argument", detail="Either sheetName or sheetNumber must be provided" );
-		if( arguments.KeyExists( "sheetName" ) && arguments.KeyExists( "sheetNumber" ) )
-			Throw( type=this.getExceptionType(), message="Too Many Arguments", detail="Only one argument is allowed. Specify either a sheetName or sheetNumber, not both" );
+	}
+
+	private void function throwErrorIFSheetNameAndNumberArgumentsBothPassed(){
+		if( sheetNameArgumentWasProvided( argumentCollection=arguments ) && sheetNumberArgumentWasProvided( argumentCollection=arguments ) )
+			Throw( type=this.getExceptionType(), message="Invalid arguments", detail="Only one argument is allowed. Specify either a sheetName or sheetNumber, not both" );
+	}
+
+	private boolean function sheetNameArgumentWasProvided(){
+		return ( arguments.KeyExists( "sheetName" ) && Len( arguments.sheetName ) );
+	}
+
+	private boolean function sheetNumberArgumentWasProvided(){
+		return ( arguments.KeyExists( "sheetNumber" ) && Len( arguments.sheetNumber ) );
 	}
 
 	/* Rows */
