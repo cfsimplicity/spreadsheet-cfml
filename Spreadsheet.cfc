@@ -1316,6 +1316,13 @@ component accessors="true"{
 		arguments.workbook.setSheetName( JavaCast( "int", sheetIndex ), JavaCast( "string", arguments.sheetName ) );
 	}
 
+	public void function setActiveCell( required workbook, required numeric row, required numeric column ){
+		var sheet = getActiveSheet( arguments.workbook );
+		var cell = initializeCell( arguments.workbook, arguments.row, arguments.column );
+		var cellAddress = loadClass( "org.apache.poi.ss.util.CellAddress" ).init( cell );
+		sheet.setActiveCell( cellAddress );
+	}
+
 	public void function setActiveSheet( required workbook, string sheetName, numeric sheetNumber ){
 		validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
 		if( arguments.KeyExists( "sheetName" ) ){

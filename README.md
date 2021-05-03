@@ -148,6 +148,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [removePrintGridlines](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/removePrintGridlines)
 * [renameSheet](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/renameSheet)
 * [removeSheetNumber](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/removeSheetNumber)
+* [setActiveCell](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setActiveCell)
 * [setCellHyperLink](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setCellHyperLink)
 * [setCellRangeValue](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setCellRangeValue)
 * [setFitToPage](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setFitToPage)
