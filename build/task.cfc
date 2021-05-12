@@ -2,53 +2,64 @@ component{
 
 	/* Run me from CommandBox to compile source java, update the lib directory and build the lib-osgi.jar */
 
+	property name="classpathDirectories";
+	property name="libPath";
+	property name="minimumSupportedJvmVersion" default="8";//update this as necessary
+	property name="rootPath";
+	property name="srcPath";
+	property name="tempDirectoryPath";
+
 	void function run(){
-		var rootPath = fileSystemUtil.resolvePath( "../" );
-		var srcPath = rootPath & "src/";
-		var libPath = rootPath & "lib/";
-		var classpathDirectories = [
-			srcPath
-			,libPath & "poi-ooxml-5.0.0.jar"
-			,libPath & "xmlbeans-4.0.0.jar"
+		variables.tempDirectoryPath = getCWD() & "temp/";
+		if( !DirectoryExists( tempDirectoryPath ) )
+			DirectoryCreate( tempDirectoryPath );
+		variables.rootPath = fileSystemUtil.resolvePath( "../" );
+		variables.srcPath = variables.rootPath & "src/";
+		variables.libPath = variables.rootPath & "lib/";
+		variables.classpathDirectories = [
+			variables.srcPath
+			,variables.libPath & "poi-ooxml-5.0.0.jar"
+			,variables.libPath & "xmlbeans-4.0.0.jar"
 		];
 		var jarFileName = "luceeSpreadsheet.jar";
 		var classNames = [ "HeaderImageVML" ]; //allows for more source files in future
 		classNames.Each( function( className ){
 			var classFileName = className & ".class";
-			var javaSourceFilePath = srcPath & "luceeSpreadsheet/" & className & ".java";
-			compileSource( classpathDirectories, srcPath, javaSourceFilePath );
+			var javaSourceFilePath = variables.srcPath & "luceeSpreadsheet/" & className & ".java";
+			compileSource( javaSourceFilePath );
 		});
 		createNewJar( jarFileName );
-		replaceJarInLib( libPath, jarFileName );
-		recreateOsgiJar( rootPath, libPath );
+		replaceJarInLib( jarFileName );
+		recreateOsgiJar();
+		if( DirectoryExists( tempDirectoryPath ) )
+			DirectoryDelete( tempDirectoryPath, true );
 	}
 
-	private void function compileSource( required array classpathDirectories, required string srcPath, required string javaSourceFilePath ){
-		var destinationPath = getCWD() & "temp/";
-		var args = "-sourcepath #arguments.srcPath# -classpath #arguments.classpathDirectories.ToList( ';' )# #arguments.javaSourceFilePath# -d #destinationPath#";
+	private void function compileSource( required string javaSourceFilePath ){
+		var destinationPath = variables.tempDirectoryPath;
+		var args = "--release #variables.minimumSupportedJvmVersion# -sourcepath #variables.srcPath# -classpath #variables.classpathDirectories.ToList( ';' )# #arguments.javaSourceFilePath# -d #destinationPath#";
 		execute name="javac" arguments=args timeout="5";
 	}
 
 	private void function createNewJar( required string jarFileName ){
-		var tempSourcePath = getCWD() & "temp/";
-		args = "--create --file #( getCWD() & arguments.jarFileName )# -C #tempSourcePath# .";//everything in temp
+		var tempSourcePath = variables.tempDirectoryPath;
+		args = "cfM #( getCWD() & arguments.jarFileName )# -C #tempSourcePath# .";//everything in temp, M=no manifest to avoid JVM version problems 
 		execute name="jar" arguments=args timeout="5";
-		DirectoryDelete( tempSourcePath, true );
 	}
 
-	private void function replaceJarInLib( required string libPath, required string jarFileName ){
-		var tempFilePath =  getCWD() & jarFileName;
-		var libJarPath = arguments.libPath & arguments.jarFileName;
+	private void function replaceJarInLib( required string jarFileName ){
+		var tempFilePath = getCWD() & jarFileName;
+		var libJarPath = variables.libPath & arguments.jarFileName;
 		deleteFileIfExists( libJarPath );
 		FileMove( tempFilePath, libJarPath );
 		deleteFileIfExists( tempFilePath );
 	}
 
-	private void function recreateOsgiJar( required string rootPath, required string libPath ){
-		var libOsgiPath = arguments.rootPath & "lib-osgi.jar";
+	private void function recreateOsgiJar(){
+		var libOsgiPath = variables.rootPath & "lib-osgi.jar";
 		deleteFileIfExists( libOsgiPath );
 		var manifestPath = getCWD() & "lib-osgi.mf";
-		args = "--create --file #libOsgiPath# --manifest #manifestPath# -C #arguments.libPath# .";//everything in libPath
+		args = "cfm #libOsgiPath# #manifestPath# -C #variables.libPath# .";//everything in libPath
 		execute name="jar" arguments=args timeout="5";
 	}
 
