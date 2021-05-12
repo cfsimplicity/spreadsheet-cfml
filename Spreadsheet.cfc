@@ -3381,7 +3381,10 @@ component accessors="true"{
 		newFont.setBold( arguments.fontToClone.getBold() );
 		newFont.setCharSet( arguments.fontToClone.getCharSet() );
 		// xlsx fonts contain XSSFColor objects which may have been set as RGB
-		newFont.setColor( isXmlFormat( arguments.workbook )? arguments.fontToClone.getXSSFColor(): arguments.fontToClone.getColor() );
+		var color = isXmlFormat( arguments.workbook )? arguments.fontToClone.getXSSFColor(): arguments.fontToClone.getColor();
+		// reportedly getXSSFColor() returns null in some conditions (not reproducible)
+		if( !IsNull( color ) )
+			newFont.setColor( color );
 		newFont.setFontHeight( arguments.fontToClone.getFontHeight() );
 		newFont.setFontName( arguments.fontToClone.getFontName() );
 		newFont.setItalic( arguments.fontToClone.getItalic() );
