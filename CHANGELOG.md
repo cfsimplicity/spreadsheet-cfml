@@ -1,3 +1,14 @@
+## 2.19.0 - 14 May 2021
+
+- Enhancements
+	- \#240 Add setActiveCell()
+	- \#238 Add setRecalculateFormulasOnNextOpen()
+
+- Fixes
+	- \#243 Handle null returned from getXSSFColor()
+	- \#242 Ensure HeaderImageVML java is compiled for Java 1.8
+	-	\#237 AddColumn() with startColumn and insert=true replaces the existing column instead of inserting after it
+
 ## 2.18.2 - 16 April 2021
 
 - \#236 Regression: getCellFormula should not error if cell is specified but doesn't exist
