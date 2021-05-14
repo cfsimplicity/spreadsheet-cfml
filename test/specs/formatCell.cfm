@@ -152,7 +152,7 @@ describe( "formatCell", function(){
 		var formulaLikeString = "SUM(A2:A3)";
 		var format = { quoteprefixed: true };
 		workbooks.Each( function( wb ){
-			s.addColumn( wb, formulaLikeString, 1, 1 );
+			s.setCellValue( wb, formulaLikeString, 1, 1 );
 			var cellFormat = setAndGetFormat( wb, format );
 			expect( cellFormat.quoteprefixed ).toBeTrue();
 			expect( s.getCellValue( wb, 1, 1 ) ).toBe( formulaLikeString );
@@ -268,6 +268,14 @@ describe( "formatCell", function(){
 			s.formatCell( wb, { underline: "double accounting" }, 1, 1 );
 			var cellFormat = s.getCellFormat( wb, 1, 1 );
 			expect( cellFormat.underline ).toBe( "double accounting" );
+		});
+	});
+
+	it( "ignores an invalid underline value", function(){
+		workbooks.Each( function( wb ){
+			s.formatCell( wb, { underline: "blah" }, 1, 1 );
+			var cellFormat = s.getCellFormat( wb, 1, 1 );
+			expect( cellFormat.underline ).toBe( "none" );
 		});
 	});
 

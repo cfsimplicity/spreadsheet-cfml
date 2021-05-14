@@ -1,12 +1,18 @@
 <cfscript>
 describe( "formatColumns", function(){
 
-	it( "can format columns in a spreadsheet containing more than 4009 rows", function(){
-		var path = getTestFilePath( "4010-rows.xls" );
-		var workbook = s.read( src=path );
-		var format = { italic: "true" };
-		s.formatColumns( workbook, format, "1-2" );
-	});
+	it(
+		title="can format columns in a spreadsheet containing more than 4009 rows",
+		body=function(){
+			var path = getTestFilePath( "4010-rows.xls" );
+			var workbook = s.read( src=path );
+			var format = { italic: "true" };
+			s.formatColumns( workbook, format, "1-2" );
+		},
+		skip=function(){
+			return s.getIsACF();
+		}
+	);
 
 	describe( "formatColumns throws an exception if ", function(){
 

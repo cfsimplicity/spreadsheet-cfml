@@ -27,7 +27,7 @@ describe( "write", function(){
 
 	it( "Writes a streaming XLSX object without error", function(){
 		var rows = [];
-		for( i=1; i <= 500; i++ ){
+		for( i=1; i <= 100; i++ ){
 			rows.append( { column1=i, column2="test" } );
 		}
 		var data = QueryNew( "column1,column2", "Integer,Varchar", rows );
@@ -41,7 +41,7 @@ describe( "write", function(){
 
 	it( "Writes a streaming XLSX object with a custom window size without error", function(){
 		var rows = [];
-		for( i=1; i <= 500; i++ ){
+		for( i=1; i <= 100; i++ ){
 			rows.append( { column1=i, column2="test" } );
 		}
 		var data = QueryNew( "column1,column2", "Integer,Varchar", rows );
@@ -71,6 +71,15 @@ describe( "write", function(){
 			expect( function(){
 				s.write( workbook, tempXlsPath, false );
 			}).toThrow( regex="File already exists" );
+		});
+
+		it( "the password encryption algorithm is not valid", function(){
+			var data = QueryNew( "column1", "VarChar", [ [ "secret" ] ] );
+			var workbook = s.newXlsx();
+			s.addRows( workbook,data );
+			expect( function(){
+				s.write( workbook=workbook, filepath=tempXlsxPath, overwrite=true, password="pass", algorithm="blah" );
+			}).toThrow( regex="Invalid algorithm" );
 		});
 
 	});	

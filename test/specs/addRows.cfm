@@ -455,17 +455,23 @@ describe( "addRows", function(){
 
 	describe( "addRows throws an exception if", function(){
 
-		/* Skip this test by default: can take a long time */
-		xit( "adding more than 65536 rows to a binary spreadsheet",function(){
-			expect( function(){
-				var rows = [];
-				for( var i=1; i <= 65537; i++ ){
-					rows.append( [ i ] );
-				}
-				var data = QueryNew( "ID","Integer",rows );
-				variables.s.addRows( workbook, data );
-			}).toThrow( regex="Too many rows" );
-		});
+		it(
+			title="adding more than 65536 rows to a binary spreadsheet",
+			body=function(){
+				var xls = workbooks[ 1 ];
+				expect( function(){
+					var rows = [];
+					for( var i=1; i <= 65537; i++ ){
+						rows.append( [ i ] );
+					}
+					var data = QueryNew( "ID","Integer",rows );
+					variables.s.addRows( xls, data );
+				}).toThrow( regex="Too many rows" );
+			},
+			skip=function(){
+				return s.getIsACF();
+			}
+		);
 
 		it( "the data is neither a query nor an array", function(){
 			workbooks.Each( function( wb ){

@@ -52,7 +52,7 @@ describe( "setSheetPrintOrientation", function(){
 			});
 		});
 
-		it( "the both sheet name and number are specified", function(){
+		it( "both sheet name and number are specified", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.setSheetPrintOrientation( wb, "landscape", "test", 1 );
