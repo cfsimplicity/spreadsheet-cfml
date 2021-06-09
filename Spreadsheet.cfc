@@ -1862,13 +1862,13 @@ component accessors="true"{
 	private void function handleInvalidSpreadsheetFile( required string path ){
 		var detail = "The file #arguments.path# does not appear to be a binary or xml spreadsheet.";
 		if( isCsvOrTextFile( arguments.path ) )
-			detail &= " It may be a CSV file, in which case use 'csvToQuery()' to read it";
+			detail &= " It may be a CSV/TSV file, in which case use 'csvToQuery()' to read it";
 		Throw( type="cfsimplicity.lucee.spreadsheet.invalidFile", message="Invalid spreadsheet file", detail=detail );
 	}
 
 	private boolean function isCsvOrTextFile( required string path ){
 		var contentType = getFileContentTypeFromPath( arguments.path );
-		return ListFindNoCase( "plain,csv", contentType );//Lucee=text/plain ACF=text/csv
+		return ListFindNoCase( "plain,csv,tab-separated-values", contentType );//Lucee=text/plain ACF=text/csv tsv=text/tab-separated-values
 	}
 
 	private void function throwErrorIFfileNotExists( required string path ){
@@ -1878,7 +1878,7 @@ component accessors="true"{
 
 	private void function throwErrorIFnotCsvOrTextFile( required string path ){
 		if( !isCsvOrTextFile( arguments.path ) )
-			Throw( type=this.getExceptionType(), message="Invalid csv file", detail="#arguments.path# does not appear to be a text/csv file" );
+			Throw( type=this.getExceptionType(), message="Invalid csv/tsv file", detail="#arguments.path# does not appear to be a text/csv/tsv file" );
 	}
 
 	/* Images */
