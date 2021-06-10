@@ -510,11 +510,15 @@ describe( "read", function(){
 			}).toThrow( regex="Invalid spreadsheet file" );
 		});
 
-		it( "the source file appears to contain CSV, and suggests using 'csvToQuery'", function(){
+		it( "the source file appears to contain CSV or TSV, and suggests using 'csvToQuery'", function(){
 			expect( function(){
 				var path = getTestFilePath( "csv.xls" );
 				s.read( src=path );
-			}).toThrow( regex="may be a CSV file" );
+			}).toThrow( regex="may be a CSV" );
+			expect( function(){
+				var path = getTestFilePath( "test.tsv" );
+				s.read( src=path );
+			}).toThrow( regex="may be a CSV" );
 		});
 
 		it( "the source file is in an old format not supported by POI", function(){
