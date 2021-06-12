@@ -298,12 +298,14 @@ component accessors="true"{
 		,numeric streamingWindowSize=100
 		,boolean ignoreQueryColumnDataTypes=false
 		,struct datatypes
+		,boolean autoSizeColumns=false
 	){
 		var workbook = new( xmlFormat=arguments.xmlFormat, streamingXml=arguments.streamingXml, streamingWindowSize=arguments.streamingWindowSize );
 		var addRowsArgs = {
 			workbook: workbook
 			,data: arguments.data
 			,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
+			,autoSizeColumns: arguments.autoSizeColumns
 		};
 		if( arguments.KeyExists( "datatypes" ) )
 			addRowsArgs.datatypes = arguments.datatypes;
