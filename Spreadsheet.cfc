@@ -803,10 +803,15 @@ component accessors="true"{
 		,any cellStyle
 	){
 		checkFormatArguments( argumentCollection=arguments );
-		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
+		var formatCellArgs = {
+			workbook: arguments.workbook
+			,format: arguments.format
+			,overwriteCurrentStyle: arguments.overwriteCurrentStyle
+		};
+		addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed( argumentCollection=arguments, formatMethodArgs=formatCellArgs );
 		for( var rowNumber = arguments.startRow; rowNumber <= arguments.endRow; rowNumber++ ){
 			for( var columnNumber = arguments.startColumn; columnNumber <= arguments.endColumn; columnNumber++ )
-				formatCell( arguments.workbook, arguments.format, rowNumber, columnNumber, arguments.overwriteCurrentStyle, style );
+				formatCell( argumentCollection=formatCellArgs, row=rowNumber, column=columnNumber );
 		}
 	}
 
@@ -820,12 +825,17 @@ component accessors="true"{
 		checkFormatArguments( argumentCollection=arguments );
 		if( arguments.column < 1 )
 			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The column value must be greater than 0" );
-		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
+		var formatCellArgs = {
+			workbook: arguments.workbook
+			,format: arguments.format
+			,column: arguments.column
+			,overwriteCurrentStyle: arguments.overwriteCurrentStyle
+		};
+		addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed( argumentCollection=arguments, formatMethodArgs=formatCellArgs );
 		var rowIterator = getActiveSheet( arguments.workbook ).rowIterator();
-		var columnNumber = arguments.column;
 		while( rowIterator.hasNext() ){
 			var rowNumber = rowIterator.next().getRowNum() + 1;
-			formatCell( arguments.workbook, arguments.format, rowNumber, columnNumber, arguments.overwriteCurrentStyle, style );
+			formatCell( argumentCollection=formatCellArgs, row=rowNumber );
 		}
 	}
 
@@ -839,14 +849,19 @@ component accessors="true"{
 		checkFormatArguments( argumentCollection=arguments );
 		// Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen.
 		var allRanges = extractRanges( arguments.range );
-		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
+		var formatColumnArgs = {
+			workbook: arguments.workbook
+			,format: arguments.format
+			,overwriteCurrentStyle: arguments.overwriteCurrentStyle
+		};
+		addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed( argumentCollection=arguments, formatMethodArgs=formatColumnArgs );
 		for( var thisRange in allRanges ){
 			if( thisRange.startAt == thisRange.endAt ){ // Just one column
-				formatColumn( arguments.workbook, arguments.format, thisRange.startAt, arguments.overwriteCurrentStyle, style );
+				formatColumn( argumentCollection=formatColumnArgs, column=thisRange.startAt );
 				continue;
 			}
 			for( var columnNumber = thisRange.startAt; columnNumber <= thisRange.endAt; columnNumber++ )
-				formatColumn( arguments.workbook, arguments.format, columnNumber, arguments.overwriteCurrentStyle, style );
+				formatColumn( argumentCollection=formatColumnArgs, column=columnNumber );
 		}
 	}
 
@@ -861,10 +876,18 @@ component accessors="true"{
 		var theRow = getRowFromActiveSheet( arguments.workbook, arguments.row );
 		if( IsNull( theRow ) )
 			return;
-		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
+		var formatCellArgs = {
+			workbook: arguments.workbook
+			,format: arguments.format
+			,row: arguments.row
+			,overwriteCurrentStyle: arguments.overwriteCurrentStyle
+		};
+		addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed( argumentCollection=arguments, formatMethodArgs=formatCellArgs );
 		var cellIterator = theRow.cellIterator();
-		while( cellIterator.hasNext() )
-			formatCell( arguments.workbook, arguments.format, arguments.row, ( cellIterator.next().getColumnIndex() +1 ), arguments.overwriteCurrentStyle, style );
+		while( cellIterator.hasNext() ){
+			var columnNumber = ( cellIterator.next().getColumnIndex() +1 );
+			formatCell( argumentCollection=formatCellArgs, column=columnNumber );
+		}
 	}
 
 	public void function formatRows(
@@ -877,14 +900,19 @@ component accessors="true"{
 		checkFormatArguments( argumentCollection=arguments );
 		// Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen.
 		var allRanges = extractRanges( arguments.range );
-		var style = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
+		var formatRowArgs = {
+			workbook: arguments.workbook
+			,format: arguments.format
+			,overwriteCurrentStyle: arguments.overwriteCurrentStyle
+		};
+		addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed( argumentCollection=arguments, formatMethodArgs=formatRowArgs );
 		for( var thisRange in allRanges ){
 			if( thisRange.startAt == thisRange.endAt ){ // Just one row
 				formatRow( arguments.workbook, arguments.format, thisRange.startAt, arguments.overwriteCurrentStyle, style );
 				continue;
 			}
 			for( var rowNumber = thisRange.startAt; rowNumber <= thisRange.endAt; rowNumber++ )
-				formatRow( arguments.workbook, arguments.format, rowNumber, arguments.overwriteCurrentStyle, style );
+				formatRow( argumentCollection=formatRowArgs, row=rowNumber );
 		}
 	}
 
@@ -3285,6 +3313,11 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid arguments", detail="If you supply a 'cellStyle' the 'overwriteCurrentStyle' cannot be false" );
 		if( arguments.KeyExists( "cellStyle" ) && !isValidCellStyleObject( arguments.workbook, arguments.cellStyle ) )
 			Throw( type=this.getExceptionType(), message="Invalid argument", detail="The 'cellStyle' argument is not a valid POI cellStyle object" );
+	}
+
+	private void function addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed( required workbook, required boolean overwriteCurrentStyle, required struct formatMethodArgs, required struct format ){
+		if( arguments.overwriteCurrentStyle )
+			arguments.formatMethodArgs.cellStyle = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
 	}
 
 	private string function lookupUnderlineFormatCode( required cellFont ){
