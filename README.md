@@ -37,13 +37,13 @@ If you are running Java 6 and 7, Lucee 4.5 or ACF11, please use [version 1.x.](h
 
 The following are the essential files/folders you will need depending on which engine you are using:
 
-#### Lucee
+### Lucee
 ```
 lib-osgi.jar
 osgiLoader.cfc
 Spreadsheet.cfc
 ```
-#### Adobe ColdFusion
+### Adobe ColdFusion
 ```
 javaLoader/
 lib/
@@ -68,6 +68,18 @@ workbook = spreadsheet.new();
 spreadsheet.addRows( workbook, data );
 </cfscript>
 ```
+### init()
+
+When instantiating the library, the `init()` method **must** be called. This will happen automatically if you use the `New` keyword:
+```
+spreadsheet = New spreadsheetLibrary.Spreadsheet();
+```
+If using `CreateObject()` then you must call `init()` explicitly:
+```
+spreadsheet = CreateObject( "component", "spreadsheetLibrary.Spreadsheet" ).init();
+```
+### Using a mapping
+
 You will probably want to place the spreadsheet library files in a central location with an application mapping, and instantiate the component using its dot path (e.g. `New myLibrary.spreadsheet.Spreadsheet();`).
 
 [How to create mappings (StackOverflow)](http://stackoverflow.com/questions/12073714/components-mapping-in-railo).
