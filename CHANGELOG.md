@@ -1,3 +1,12 @@
+## 2.20.0 - 18 June 2021
+
+- Enhancements
+	- \#248 Add autoSizeColumns option to ``workbookFromQuery()`
+	- \#246 Add `isCsvOrTextFile` support for .tsv files
+
+- Fixes
+	- \#250 Multi-cell formatting methods throw invalid arguments exception if overwriteCurrentStyle is set to false
+
 ## 2.19.0 - 14 May 2021
 
 - Enhancements
