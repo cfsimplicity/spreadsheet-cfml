@@ -1757,10 +1757,12 @@ component accessors="true"{
 		,required string filepath
 		,boolean overwrite=false
 		,string delimiter=","
+		,boolean includeHeaderRow=true
+		,numeric headerRow=1
 	){
 		if( !arguments.overwrite && FileExists( arguments.filepath ) )
 			throwFileExistsException( arguments.filepath );
-		var data = sheetToQuery( arguments.workbook );
+		var data = sheetToQuery( workbook=arguments.workbook, headerRow=arguments.headerRow, includeHeaderRow=arguments.includeHeaderRow );
 		var csv = queryToCsv( query=data, delimiter=arguments.delimiter );
 		FileWrite( arguments.filepath, csv );
 	}
