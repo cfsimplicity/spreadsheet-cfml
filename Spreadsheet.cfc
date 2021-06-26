@@ -135,6 +135,7 @@ component accessors="true"{
 		,string delimiter
 		,array queryColumnNames
 		,any queryColumnTypes="" //'auto', single default type e.g. 'VARCHAR', or list of types, or struct of column names/types mapping. Empty means no types are specified.
+		,boolean makeColumnNamesSafe=false
 	){
 		var csvIsString = arguments.csv.Len();
 		var csvIsFile = arguments.filepath.Len();
@@ -187,7 +188,7 @@ component accessors="true"{
 				data.DeleteAt( 1 );
 		}
 		arguments.queryColumnTypes = parseQueryColumnTypesArgument( arguments.queryColumnTypes, columnNames, maxColumnCount, data );
-		return _QueryNew( columnNames, arguments.queryColumnTypes, data );
+		return _QueryNew( columnNames, arguments.queryColumnTypes, data, arguments.makeColumnNamesSafe );
 	}
 
 	public void function download( required workbook, required string filename, string contentType ){
@@ -1256,6 +1257,7 @@ component accessors="true"{
 		,string password
 		,string csvDelimiter=","
 		,any queryColumnTypes //'auto', list of types, or struct of column names/types mapping. Null means no types are specified.
+		,boolean makeColumnNamesSafe=false
 	){
 		if( arguments.KeyExists( "query" ) )
 			Throw( type=this.getExceptionType(), message="Invalid argument 'query'.", detail="Just use format='query' to return a query object" );
@@ -1295,6 +1297,7 @@ component accessors="true"{
 		args.fillMergedCellsWithVisibleValue = arguments.fillMergedCellsWithVisibleValue;
 		args.includeHiddenColumns = arguments.includeHiddenColumns;
 		args.includeRichTextFormatting = arguments.includeRichTextFormatting;
+		args.makeColumnNamesSafe = arguments.makeColumnNamesSafe;
 		var generatedQuery = sheetToQuery( argumentCollection=args );
 		if( arguments.format == "query" )
 			return generatedQuery;
@@ -1762,7 +1765,12 @@ component accessors="true"{
 	){
 		if( !arguments.overwrite && FileExists( arguments.filepath ) )
 			throwFileExistsException( arguments.filepath );
-		var data = sheetToQuery( workbook=arguments.workbook, headerRow=arguments.headerRow, includeHeaderRow=arguments.includeHeaderRow );
+		var data = sheetToQuery(
+			workbook=arguments.workbook
+			,headerRow=arguments.headerRow
+			,includeHeaderRow=arguments.includeHeaderRow
+			,makeColumnNamesSafe=true //doesn't affect the output: avoids ACF clunky workaround in _QueryNew()
+		);
 		var csv = queryToCsv( query=data, delimiter=arguments.delimiter );
 		FileWrite( arguments.filepath, csv );
 	}
@@ -2231,6 +2239,7 @@ component accessors="true"{
 		,string columns //range
 		,any columnNames //list or array
 		,any queryColumnTypes="" //'auto', single default type e.g. 'VARCHAR', or list of types, or struct of column names/types mapping. Empty means no types are specified.
+		,boolean makeColumnNamesSafe=false
 	){
 		var sheet = {
 			includeHeaderRow: arguments.includeHeaderRow
@@ -2288,7 +2297,7 @@ component accessors="true"{
 				sheet.columnNames.Append( "column" & i );
 		}
 		arguments.queryColumnTypes = parseQueryColumnTypesArgument( arguments.queryColumnTypes, sheet.columnNames, sheet.totalColumnCount, sheet.data );
-		var result = _QueryNew( sheet.columnNames, arguments.queryColumnTypes, sheet.data );
+		var result = _QueryNew( sheet.columnNames, arguments.queryColumnTypes, sheet.data, arguments.makeColumnNamesSafe );
 		if( !arguments.includeHiddenColumns ){
 			result = deleteHiddenColumnsFromQuery( sheet, result );
 			if( sheet.totalColumnCount == 0 )
@@ -3729,11 +3738,18 @@ component accessors="true"{
 		}
 	}
 
-	private query function _QueryNew( required array columnNames, required string columnTypeList, required array data ){
-		//NB: 'data' should not contain structs since they use the column name as key: always use array of row arrays instead
-		if( !this.getIsACF() )
+	private query function _QueryNew(
+		required array columnNames
+		,required string columnTypeList
+		,required array data //NB: 'data' should not contain structs since they use the column name as key: always use array of row arrays instead
+		,boolean makeColumnNamesSafe=false
+	){
+		if( arguments.makeColumnNamesSafe )
+			arguments.columnNames = getSafeColumnNames( arguments.columnNames );
+		if( !this.getIsACF() ) //Lucee
 			return QueryNew( arguments.columnNames, arguments.columnTypeList, arguments.data );
- 		if( !itemsContainAnInvalidVariableName( arguments.columnNames ) ) // Column names will be accepted and case preserved
+		//ACF
+ 		if( arguments.makeColumnNamesSafe || !itemsContainAnInvalidVariableName( arguments.columnNames ) ) // Column names will be accepted and case preserved
 			return QueryNew( arguments.columnNames.ToList(), arguments.columnTypeList, arguments.data ); //ACF requires a list, not an array.
 		/*
 			ACF QueryNew() won't accept invalid variable names in the column name list (e.g. names including commas or spaces, or starting with a number).
@@ -3760,12 +3776,41 @@ component accessors="true"{
 
 	/* General utilities */
 
+	private array function getSafeColumnNames( required array columnNames ){
+		var existingNames = {};
+		return arguments.columnNames.Map( function( name ){
+			name = makeVariableNameSafe( name );
+			return makeDuplicateNameUnique( name, existingNames );
+		});
+	}
+
 	private boolean function itemsContainAnInvalidVariableName( required array items ){
 		for( var item IN arguments.items ){
 			if( !IsValid( "variableName", item ) )
 				return true;
 		}
 		return false;
+	}
+
+	private string function makeDuplicateNameUnique( required string name, required struct existingNames ){
+		if( arguments.existingNames.KeyExists( arguments.name ) ){
+			arguments.existingNames[ arguments.name ]++;
+			return arguments.name & arguments.existingNames[ arguments.name ];
+		}
+		arguments.existingNames[ arguments.name ] = 1;
+		return arguments.name;
+	}
+
+	private string function makeVariableNameSafe( required string variableName ){
+		//NOTE: Lucee doesn't allow currency symbols (unlike ACF)
+		if( IsValid( "variableName", arguments.variableName ) )
+			return arguments.variableName;
+		return JavaCast( "string", arguments.variableName )
+			.Trim()
+			.ReplaceFirst( "^\d", "_" ) // no initial digits
+			.ReplaceFirst( "^##", "Number" ) // assume initial # means number
+			.ReplaceAll( "\W", "_" ) // no non-alphanumeric/underscore
+			.ReplaceAll( "_{2,}", "_" ); // remove doubled up underscores
 	}
 
 	private string function removeAllWhiteSpaceFrom( required string value ){

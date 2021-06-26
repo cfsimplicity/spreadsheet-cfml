@@ -133,6 +133,12 @@ describe( "csvToQuery", function(){
 			expect( q.getColumnNames()[ 2 ] ).toBe( columnNames[ 2 ] );
 		});
 
+		it( "Allows csv header names to be made safe for query column names", function(){
+			var csv = 'id,id,"A  B","x/?y","(a)"," A","##1","1a"#crlf#1,2,3,4,5,6,7,8';
+			var q = s.csvToQuery( csv=csv, firstRowIsHeader=true, makeColumnNamesSafe=true );
+			expect( q.getColumnNames() ).toBe( [ "id", "id2", "A_B", "x_y", "_a_", "A", "Number1", "_a" ] );
+		});
+
 	});
 
 	describe( "query column type setting", function(){
