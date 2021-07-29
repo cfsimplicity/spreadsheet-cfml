@@ -348,6 +348,26 @@ describe( "read", function(){
 				#ParseDateTime( '2015-04-01 01:01:01' )#|2");
 			expect( actual ).toBe( expected );
 		});
+
+		it( "Allows header names to be made safe for query column names", function(){
+			var data = [ [ "id","id","A  B","x/?y","(a)"," A","##1","1a" ], [ 1,2,3,4,5,6,7,8 ] ];
+			var wb = s.newXlsx();
+			s.addRows( wb, data );
+			s.write( wb, tempXlsxPath, true );
+			var q = s.read( src=tempXlsxPath, format="query", headerRow=1, makeColumnNamesSafe=true );
+			var expected = [ "id", "id2", "A_B", "x_y", "_a_", "A", "Number1", "_a" ];
+			cfloop( from=1, to=expected.Len(), index="i" ){
+				expect( q.getColumnNames()[ i ] ).toBe( expected[ i ] );
+			}
+			var wb = s.newXls();
+			s.addRows( wb, data );
+			s.write( wb, tempXlsPath, true );
+			var q = s.read( src=tempXlsPath, format="query", headerRow=1, makeColumnNamesSafe=true );
+			var expected = [ "id", "id2", "A_B", "x_y", "_a_", "A", "Number1", "_a" ];
+			cfloop( from=1, to=expected.Len(), index="i" ){
+				expect( q.getColumnNames()[ i ] ).toBe( expected[ i ] );
+			}
+		});
 		
 	});
 
