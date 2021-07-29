@@ -1,3 +1,9 @@
+## 2.21.0 - 29 July 2021
+
+- Enhancements
+	- \#251 Add makeColumnNamesSafe option to read() and csvToQuery()
+	- \#252 Allow WriteToCSV to exclude the workbook's header row
+
 ## 2.20.0 - 18 June 2021
 
 - Enhancements
