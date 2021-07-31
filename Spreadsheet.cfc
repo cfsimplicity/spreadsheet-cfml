@@ -101,14 +101,16 @@ component accessors="true"{
 		return server[ this.getJavaLoaderName() ];
 	}
 
-	public void function flushPoiLoader(){
+	public Spreadsheet function flushPoiLoader(){
 		lock scope="server" timeout="10" {
 			StructDelete( server, this.getJavaLoaderName() );
 		};
+		return this;
 	}
 
-	public void function flushOsgiBundle(){
+	public Spreadsheet function flushOsgiBundle(){
 		getOsgiLoader().uninstallBundle( this.getOsgiLibBundleSymbolicName(), this.getOsgiLibBundleVersion() );
+		return this;
 	}
 
 	public struct function getEnvironment(){
@@ -356,7 +358,7 @@ component accessors="true"{
 		return workbook;
 	}
 
-	public void function writeFileFromQuery(
+	public Spreadsheet function writeFileFromQuery(
 		required query data
 		,required string filepath
 		,boolean overwrite=false
@@ -386,23 +388,25 @@ component accessors="true"{
 		if( xmlFormat && ( ListLast( arguments.filepath, "." ) == "xls" ) )
 			arguments.filepath &= "x";
 		write( workbook=workbook, filepath=arguments.filepath, overwrite=arguments.overwrite );
+		return this;
 	}
 
 	/* End convenience methods */
 
-	public void function addAutofilter( required workbook, string cellRange="", numeric row=1 ){
+	public Spreadsheet function addAutofilter( required workbook, string cellRange="", numeric row=1 ){
 		arguments.cellRange = arguments.cellRange.Trim();
 		if( arguments.cellRange.IsEmpty() ){
 			//default to all columns in the first (default) or specified row 
 			var rowIndex = ( Max( 0, arguments.row -1 ) );
 			var cellRangeAddress = getCellHelper().getCellRangeAddressFromColumnAndRowIndices( rowIndex, rowIndex, 0, ( getColumnCount( arguments.workbook ) -1 ) );
 			getSheetHelper().getActiveSheet( arguments.workbook ).setAutoFilter( cellRangeAddress );
-			return;
+			return this;
 		}
 		getSheetHelper().getActiveSheet( arguments.workbook ).setAutoFilter( getCellHelper().getCellRangeAddressFromReference( arguments.cellRange ) );
+		return this;
 	}
 
-	public void function addColumn(
+	public Spreadsheet function addColumn(
 		required workbook
 		,required data // Delimited list of values OR array
 		,numeric startRow
@@ -438,9 +442,10 @@ component accessors="true"{
 		}
 		if( arguments.autoSize )
 			autoSizeColumn( arguments.workbook, columnNumber );
+		return this;
 	}
 
-	public void function addFreezePane(
+	public Spreadsheet function addFreezePane(
 		required workbook
 		,required numeric freezeColumn
 		,required numeric freezeRow
@@ -455,7 +460,7 @@ component accessors="true"{
 		/* createFreezePane() operates on the logical row/column numbers as opposed to physical, so no need for n-1 stuff here */
 		if( !arguments.KeyExists( "leftmostColumn" ) ){
 			sheet.createFreezePane( JavaCast( "int", arguments.freezeColumn ), JavaCast( "int", arguments.freezeRow ) );
-			return;
+			return this;
 		}
 		sheet.createFreezePane(
 			JavaCast( "int", arguments.freezeColumn )
@@ -463,9 +468,10 @@ component accessors="true"{
 			,JavaCast( "int", arguments.leftmostColumn )
 			,JavaCast( "int", arguments.topRow )
 		);
+		return this;
 	}
 
-	public void function addImage(
+	public Spreadsheet function addImage(
 		required workbook
 		,string filepath
 		,imageData
@@ -513,17 +519,19 @@ component accessors="true"{
 		/* (legacy note from spreadsheet extension) TODO: need to look into createDrawingPatriarch() vs. getDrawingPatriarch() since create will kill any existing images. getDrawingPatriarch() throws  a null pointer exception when an attempt is made to add a second image to the spreadsheet  */
 		var drawingPatriarch = getSheetHelper().getActiveSheet( arguments.workbook ).createDrawingPatriarch();
 		var picture = drawingPatriarch.createPicture( theAnchor, imageIndex );
+		return this;
 	}
 
-	public void function addInfo( required workbook, required struct info ){
+	public Spreadsheet function addInfo( required workbook, required struct info ){
 		// Valid struct keys are author, category, lastauthor, comments, keywords, manager, company, subject, title
 		if( isBinaryFormat( arguments.workbook ) )
 			getInfoHelper().addInfoBinary( arguments.workbook, arguments.info );
 		else
 			getInfoHelper().addInfoXml( arguments.workbook, arguments.info );
+		return this;
 	}
 
-	public void function addPageBreaks( required workbook, string rowBreaks="", string columnBreaks="" ){
+	public Spreadsheet function addPageBreaks( required workbook, string rowBreaks="", string columnBreaks="" ){
 		arguments.rowBreaks = Trim( arguments.rowBreaks ); //Don't use member function in case value is in fact numeric
 		arguments.columnBreaks = Trim( arguments.columnBreaks );
 		if( arguments.rowBreaks.IsEmpty() && arguments.columnBreaks.IsEmpty() )
@@ -536,13 +544,15 @@ component accessors="true"{
 			sheet.setRowBreak( JavaCast( "int", ( rowNumber -1 ) ) );
 		for( var columnNumber in arguments.columnBreaks )
 			sheet.setcolumnBreak( JavaCast( "int", ( columnNumber -1 ) ) );
+		return this;
 	}
 
-	public void function addPrintGridlines( required workbook ){
+	public Spreadsheet function addPrintGridlines( required workbook ){
 		getSheetHelper().getActiveSheet( arguments.workbook ).setPrintGridlines( JavaCast( "boolean", true ) );
+		return this;
 	}
 
-	public void function addRow(
+	public Spreadsheet function addRow(
 		required workbook
 		,required data // Delimited list of data, OR array
 		,numeric row
@@ -582,9 +592,10 @@ component accessors="true"{
 				autoSizeColumn( arguments.workbook, arguments.column );
 			cellIndex++;
 		}
+		return this;
 	}
 
-	public void function addRows(
+	public Spreadsheet function addRows(
 		required workbook
 		,required data // query or array
 		,numeric row
@@ -602,7 +613,7 @@ component accessors="true"{
 		getDataTypeHelper().checkDataTypesArgument( arguments );
 		var totalRows = dataIsQuery? arguments.data.recordCount: arguments.data.Len();
 		if( totalRows == 0 )
-			return;
+			return this;
 		// array data must be an array of arrays, not structs
 		if( dataIsArray && !IsArray( arguments.data[ 1 ] ) )
 			Throw( type=this.getExceptionType(), message="Invalid data argument", detail="Data passed as an array must be an array of arrays, one per row" );
@@ -649,7 +660,7 @@ component accessors="true"{
 			}
 			if( arguments.autoSizeColumns )
 				getColumnHelper()._autoSizeColumns( workbook=arguments.workbook, startColumnNumber=arguments.column, endColumnNumber=queryColumns.Len() );
-			return;
+			return this;
 		}
 		//data is an array
 		for( var dataRow in arguments.data ){
@@ -668,9 +679,10 @@ component accessors="true"{
 			}
 			currentRowIndex++;
    	}
+   	return this;
 	}
 
-	public void function addSplitPane(
+	public Spreadsheet function addSplitPane(
 		required workbook
 		,required numeric xSplitPosition
 		,required numeric ySplitPosition
@@ -687,9 +699,10 @@ component accessors="true"{
 			,JavaCast( "int", arguments.topRow )
 			,JavaCast( "int", arguments.activePane )
 		);
+		return this;
 	}
 
-	public void function autoSizeColumn( required workbook, required numeric column, boolean useMergedCells=false ){
+	public Spreadsheet function autoSizeColumn( required workbook, required numeric column, boolean useMergedCells=false ){
 		if( arguments.column <= 0 )
 			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
 		// Adjusts the width of the specified column to fit the contents. For performance reasons, this should normally be called only once per column.
@@ -697,29 +710,32 @@ component accessors="true"{
 		if( isStreamingXmlFormat( arguments.workbook ) )
 			getSheetHelper().getActiveSheet( arguments.workbook ).trackColumnForAutoSizing( JavaCast( "int", columnIndex ) );
 		getSheetHelper().getActiveSheet( arguments.workbook ).autoSizeColumn( columnIndex, arguments.useMergedCells );
+		return this;
 	}
 
-	public void function cleanUpStreamingXml( required workbook ){
+	public Spreadsheet function cleanUpStreamingXml( required workbook ){
 		// SXSSF uses temporary files which MUST be cleaned up, see http://poi.apache.org/components/spreadsheet/how-to.html#sxssf
 		if( isStreamingXmlFormat( arguments.workbook ) )
 			arguments.workbook.dispose(); 
+		return this;
 	}
 
-	public void function clearCell( required workbook, required numeric row, required numeric column ){
+	public Spreadsheet function clearCell( required workbook, required numeric row, required numeric column ){
 		// Clears the specified cell of all styles and values
 		var defaultStyle = arguments.workbook.getCellStyleAt( JavaCast( "short", 0 ) );
 		var rowObject = getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row );
 		if( IsNull( rowObject ) )
-			return;
+			return this;
 		var columnIndex = ( arguments.column -1 );
 		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
 		if( IsNull( cell ) )
-			return;
+			return this;
 		cell.setCellStyle( defaultStyle );
 		cell.setBlank();
+		return this;
 	}
 
-	public void function clearCellRange(
+	public Spreadsheet function clearCellRange(
 		required workbook
 		,required numeric startRow
 		,required numeric startColumn
@@ -731,20 +747,21 @@ component accessors="true"{
 				clearCell( arguments.workbook, rowNumber, columnNumber );
 			}
 		}
+		return this;
 	}
 
 	public any function createCellStyle( required workbook, required struct format ){
 		return getFormatHelper().buildCellStyle( arguments.workbook, arguments.format );
 	}
 
-	public void function createSheet( required workbook, string sheetName, overwrite=false ){
+	public Spreadsheet function createSheet( required workbook, string sheetName, overwrite=false ){
 		if( arguments.KeyExists( "sheetName" ) )
 			getSheetHelper().validateSheetName( arguments.sheetName );
 		else
 			arguments.sheetName = getSheetHelper().generateUniqueSheetName( arguments.workbook );
 		if( !getSheetHelper().sheetExists( workbook=arguments.workbook, sheetName=arguments.sheetName ) ){
 			arguments.workbook.createSheet( JavaCast( "String", arguments.sheetName ) );
-			return;
+			return this;
 		}
 		// sheet already exists with that name
 		if( !arguments.overwrite )
@@ -755,9 +772,10 @@ component accessors="true"{
 		var newSheet = arguments.workbook.createSheet( JavaCast( "String", arguments.sheetName ) );
 		var moveToIndex = sheetIndexToReplace;
 		getSheetHelper().moveSheet( arguments.workbook, arguments.sheetName, moveToIndex );
+		return this;
 	}
 
-	public void function deleteColumn( required workbook,required numeric column ){
+	public Spreadsheet function deleteColumn( required workbook,required numeric column ){
 		if( arguments.column <= 0 )
 			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
 			// POI doesn't have remove column functionality, so iterate over all the rows and remove the column indicated
@@ -769,9 +787,10 @@ component accessors="true"{
 				continue;
 			row.removeCell( cell );
 		}
+		return this;
 	}
 
-	public void function deleteColumns( required workbook, required string range ){
+	public Spreadsheet function deleteColumns( required workbook, required string range ){
 		// Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen.
 		var allRanges = getRangeHelper().extractRanges( arguments.range );
 		for( var thisRange in allRanges ){
@@ -782,18 +801,20 @@ component accessors="true"{
 			for( var columnNumber = thisRange.startAt; columnNumber <= thisRange.endAt; columnNumber++ )
 				deleteColumn( arguments.workbook, columnNumber );
 		}
+		return this;
 	}
 
-	public void function deleteRow( required workbook, required numeric row ){
+	public Spreadsheet function deleteRow( required workbook, required numeric row ){
 		// Deletes the data from a row. Does not physically delete the row
 		if( arguments.row <= 0 )
 			Throw( type=this.getExceptionType(), message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
 		var rowToDelete = ( arguments.row -1 );
 		if( rowToDelete >= getRowHelper().getFirstRowNumber( arguments.workbook ) && rowToDelete <= getRowHelper().getLastRowNumber( arguments.workbook ) ) //If this is a valid row, remove it
 			getSheetHelper().getActiveSheet( arguments.workbook ).removeRow( getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row ) );
+		return this;
 	}
 
-	public void function deleteRows( required workbook, required string range ){
+	public Spreadsheet function deleteRows( required workbook, required string range ){
 		// Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen.
 		var allRanges = getRangeHelper().extractRanges( arguments.range );
 		for( var thisRange in allRanges ){
@@ -804,9 +825,10 @@ component accessors="true"{
 			for( var rowNumber = thisRange.startAt; rowNumber <= thisRange.endAt; rowNumber++ )
 				deleteRow( arguments.workbook, rowNumber );
 		}
+		return this;
 	}
 
-	public void function formatCell(
+	public Spreadsheet function formatCell(
 		required workbook
 		,struct format={}
 		,required numeric row
@@ -818,16 +840,17 @@ component accessors="true"{
 		var cell = getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column );
 		if( arguments.KeyExists( "cellStyle" ) ){
 			cell.setCellStyle( arguments.cellStyle );
-			return;
+			return this;
 		}
 		if( arguments.overwriteCurrentStyle ){
 			cell.setCellStyle( getFormatHelper().buildCellStyle( arguments.workbook, arguments.format ) );
-			return;
+			return this;
 		}
 		cell.setCellStyle( getFormatHelper().buildCellStyle( arguments.workbook, arguments.format, cell.getCellStyle() ) );
+		return this;
 	}
 
-	public void function formatCellRange(
+	public Spreadsheet function formatCellRange(
 		required workbook
 		,struct format={}
 		,required numeric startRow
@@ -848,9 +871,10 @@ component accessors="true"{
 			for( var columnNumber = arguments.startColumn; columnNumber <= arguments.endColumn; columnNumber++ )
 				formatCell( argumentCollection=formatCellArgs, row=rowNumber, column=columnNumber );
 		}
+		return this;
 	}
 
-	public void function formatColumn(
+	public Spreadsheet function formatColumn(
 		required workbook
 		,struct format={}
 		,required numeric column
@@ -872,9 +896,10 @@ component accessors="true"{
 			var rowNumber = rowIterator.next().getRowNum() + 1;
 			formatCell( argumentCollection=formatCellArgs, row=rowNumber );
 		}
+		return this;
 	}
 
-	public void function formatColumns(
+	public Spreadsheet function formatColumns(
 		required workbook
 		,struct format={}
 		,required string range
@@ -898,9 +923,10 @@ component accessors="true"{
 			for( var columnNumber = thisRange.startAt; columnNumber <= thisRange.endAt; columnNumber++ )
 				formatColumn( argumentCollection=formatColumnArgs, column=columnNumber );
 		}
+		return this;
 	}
 
-	public void function formatRow(
+	public Spreadsheet function formatRow(
 		required workbook
 		,struct format={}
 		,required numeric row
@@ -910,7 +936,7 @@ component accessors="true"{
 		getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		var theRow = getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row );
 		if( IsNull( theRow ) )
-			return;
+			return this;
 		var formatCellArgs = {
 			workbook: arguments.workbook
 			,format: arguments.format
@@ -923,9 +949,10 @@ component accessors="true"{
 			var columnNumber = ( cellIterator.next().getColumnIndex() +1 );
 			formatCell( argumentCollection=formatCellArgs, column=columnNumber );
 		}
+		return this;
 	}
 
-	public void function formatRows(
+	public Spreadsheet function formatRows(
 		required workbook
 		,struct format={}
 		,required string range
@@ -949,9 +976,11 @@ component accessors="true"{
 			for( var rowNumber = thisRange.startAt; rowNumber <= thisRange.endAt; rowNumber++ )
 				formatRow( argumentCollection=formatRowArgs, row=rowNumber );
 		}
+		return this;
 	}
 
 	public any function getCellComment( required workbook, numeric row, numeric column ){
+		// returns struct OR array of structs
 		if( arguments.KeyExists( "row" ) && !arguments.KeyExists( "column" ) )
 			Throw( type=this.getExceptionType(), message="Invalid argument combination", detail="If you specify the row you must also specify the column" );
 		if( arguments.KeyExists( "column" ) && !arguments.KeyExists( "row" ) )
@@ -1104,12 +1133,14 @@ component accessors="true"{
 		return lastRowIndex +1;
 	}
 
-	public void function hideColumn( required workbook, required numeric column ){
+	public Spreadsheet function hideColumn( required workbook, required numeric column ){
 		getVisibilityHelper().toggleColumnHidden( arguments.workbook, arguments.column, true );
+		return this;
 	}
 
-	public void function hideRow( required workbook, required numeric row ){
+	public Spreadsheet function hideRow( required workbook, required numeric row ){
 		getVisibilityHelper().toggleRowHidden( arguments.workbook, arguments.row, true );
+		return this;
 	}
 
 	public struct function info( required workbookOrPath ){
@@ -1185,7 +1216,7 @@ component accessors="true"{
 		return arguments.workbook.getClass().getCanonicalName() == this.getSXSSFWorkbookClassName();
 	}
 
-	public void function mergeCells(
+	public Spreadsheet function mergeCells(
 		required workbook
 		,required numeric startRow
 		,required numeric endRow
@@ -1205,13 +1236,14 @@ component accessors="true"{
 		);
 		getSheetHelper().getActiveSheet( arguments.workbook ).addMergedRegion( cellRangeAddress );
 		if( !arguments.emptyInvisibleCells )
-			return;
+			return this;
 		// stash the value to retain
 		var visibleValue = getCellValue( arguments.workbook, arguments.startRow, arguments.startColumn );
 		//empty all cells in the merged region
 		setCellRangeValue( arguments.workbook, "", arguments.startRow, arguments.endRow, arguments.startColumn, arguments.endColumn );
 		//restore the stashed value
 		setCellValue( arguments.workbook, visibleValue, arguments.startRow, arguments.startColumn );
+		return this;
 	}
 
 	public any function new(
@@ -1355,25 +1387,28 @@ component accessors="true"{
 		return baos.toByteArray();
 	}
 
-	public void function removePrintGridlines( required workbook ){
+	public Spreadsheet function removePrintGridlines( required workbook ){
 		getSheetHelper().getActiveSheet( arguments.workbook ).setPrintGridlines( JavaCast( "boolean", false ) );
+		return this;
 	}
 
-	public void function removeSheet( required workbook, required string sheetName ){
+	public Spreadsheet function removeSheet( required workbook, required string sheetName ){
 		getSheetHelper().validateSheetName( arguments.sheetName );
 		getSheetHelper().validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
 		arguments.sheetNumber = ( arguments.workbook.getSheetIndex( arguments.sheetName ) +1 );
 		var sheetIndex = ( sheetNumber -1 );
 		getSheetHelper().deleteSheetAtIndex( arguments.workbook, sheetIndex );
+		return this;
 	}
 
-	public void function removeSheetNumber( required workbook, required numeric sheetNumber ){
+	public Spreadsheet function removeSheetNumber( required workbook, required numeric sheetNumber ){
 		getSheetHelper().validateSheetNumber( arguments.workbook, arguments.sheetNumber );
 		var sheetIndex = ( arguments.sheetNumber -1 );
 		getSheetHelper().deleteSheetAtIndex( arguments.workbook, sheetIndex );
+		return this;
 	}
 
-	public void function renameSheet( required workbook, required string sheetName, required numeric sheetNumber ){
+	public Spreadsheet function renameSheet( required workbook, required string sheetName, required numeric sheetNumber ){
 		getSheetHelper().validateSheetName( arguments.sheetName );
 		getSheetHelper().validateSheetNumber( arguments.workbook, arguments.sheetNumber );
 		var sheetIndex = ( arguments.sheetNumber -1 );
@@ -1381,16 +1416,18 @@ component accessors="true"{
 		if( ( foundAt > 0 ) && ( foundAt != sheetIndex ) )
 			Throw( type=this.getExceptionType(), message="Invalid Sheet Name [#arguments.sheetName#]", detail="The workbook already contains a sheet named [#sheetName#]. Sheet names must be unique" );
 		arguments.workbook.setSheetName( JavaCast( "int", sheetIndex ), JavaCast( "string", arguments.sheetName ) );
+		return this;
 	}
 
-	public void function setActiveCell( required workbook, required numeric row, required numeric column ){
+	public Spreadsheet function setActiveCell( required workbook, required numeric row, required numeric column ){
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		var cell = getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column );
 		var cellAddress = getClassHelper().loadClass( "org.apache.poi.ss.util.CellAddress" ).init( cell );
 		sheet.setActiveCell( cellAddress );
+		return this;
 	}
 
-	public void function setActiveSheet( required workbook, string sheetName, numeric sheetNumber ){
+	public Spreadsheet function setActiveSheet( required workbook, string sheetName, numeric sheetNumber ){
 		getSheetHelper().validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
 		if( arguments.KeyExists( "sheetName" ) ){
 			getSheetHelper().validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
@@ -1398,13 +1435,15 @@ component accessors="true"{
 		}
 		getSheetHelper().validateSheetNumber( arguments.workbook, arguments.sheetNumber );
 		arguments.workbook.setActiveSheet( JavaCast( "int", ( arguments.sheetNumber - 1 ) ) );
+		return this;
 	}
 
-	public void function setActiveSheetNumber( required workbook, numeric sheetNumber ){
+	public Spreadsheet function setActiveSheetNumber( required workbook, numeric sheetNumber ){
 		setActiveSheet( workbook=arguments.workbook, sheetNumber=arguments.sheetNumber );
+		return this;
 	}
 
-	public void function setCellComment(
+	public Spreadsheet function setCellComment(
 		required workbook
 		,required struct comment
 		,required numeric row
@@ -1521,9 +1560,10 @@ component accessors="true"{
 		commentObject.setString( commentString );
 		var cell = getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column );
 		cell.setCellComment( commentObject );
+		return this;
 	}
 
-	public void function setCellFormula(
+	public Spreadsheet function setCellFormula(
 		required workbook
 		,required string formula
 		,required numeric row
@@ -1531,9 +1571,10 @@ component accessors="true"{
 	){
 		var cell = getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column );
 		cell.setCellFormula( JavaCast( "string", arguments.formula ) );
+		return this;
 	}
 	
-	public void function setCellHyperlink(
+	public Spreadsheet function setCellHyperlink(
 		required workbook
 		,required string link
 		,required numeric row
@@ -1560,9 +1601,10 @@ component accessors="true"{
 			getCellHelper().setCellValueAsType( arguments.workbook, cell, arguments.cellValue );
 		if( !arguments.format.IsEmpty() )
 			formatCell( arguments.workbook, arguments.format, arguments.row, arguments.column );
+		return this;
 	}
 
-	public void function setCellRangeValue(
+	public Spreadsheet function setCellRangeValue(
 		required workbook
 		,required value
 		,required numeric startRow
@@ -1574,9 +1616,10 @@ component accessors="true"{
 			for( var columnNumber = arguments.endColumn; columnNumber >= arguments.startColumn; columnNumber-- )
 				setCellValue( arguments.workbook, arguments.value, rowNumber, columnNumber );
 		}
+		return this;
 	}
 
-	public void function setCellValue( required workbook, required value, required numeric row, required numeric column, string type ){
+	public Spreadsheet function setCellValue( required workbook, required value, required numeric row, required numeric column, string type ){
 		var args = {
 			workbook: arguments.workbook
 			,cell: getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column )
@@ -1585,26 +1628,29 @@ component accessors="true"{
 		if( arguments.KeyExists( "type" ) )
 			args.type = arguments.type;
 		getCellHelper().setCellValueAsType( argumentCollection=args );
+		return this;
 	}
 
-	public void function setColumnWidth( required workbook, required numeric column, required numeric width ){
+	public Spreadsheet function setColumnWidth( required workbook, required numeric column, required numeric width ){
 		var columnIndex = ( arguments.column -1 );
 		getSheetHelper().getActiveSheet( arguments.workbook ).setColumnWidth( JavaCast( "int", columnIndex ), JavaCast( "int", ( arguments.width * 256 ) ) );
+		return this;
 	}
 
-	public void function setFitToPage( required workbook, required boolean state, numeric pagesWide, numeric pagesHigh ){
+	public Spreadsheet function setFitToPage( required workbook, required boolean state, numeric pagesWide, numeric pagesHigh ){
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		sheet.setFitToPage( JavaCast( "boolean", arguments.state ) );
 		sheet.setAutoBreaks( JavaCast( "boolean", arguments.state ) ); //seems dependent on this matching
 		if( !arguments.state )
-			return;
+			return this;
 		if( arguments.KeyExists( "pagesWide" ) && IsValid( "integer", arguments.pagesWide ) )
 			sheet.getPrintSetup().setFitWidth( JavaCast( "short", arguments.pagesWide ) );
 		if( arguments.KeyExists( "pagesWide" ) && IsValid( "integer", arguments.pagesHigh ) )
 			sheet.getPrintSetup().setFitHeight( JavaCast( "short", arguments.pagesHigh ) );
+		return this;
 	}
 
-	public void function setFooter(
+	public Spreadsheet function setFooter(
 		required workbook
 		,string leftFooter=""
 		,string centerFooter=""
@@ -1617,18 +1663,20 @@ component accessors="true"{
 			footer.setleft( JavaCast( "string", arguments.leftFooter ) );
 		if( arguments.rightFooter.Len() )
 			footer.setright( JavaCast( "string", arguments.rightFooter ) );
+		return this;
 	}
 
-	public void function setFooterImage(
+	public Spreadsheet function setFooterImage(
 		required workbook
 		,required string position // left|center|right
 		,required any image
 		,string imageType
 	){
 		getHeaderImageHelper().setHeaderOrFooterImage( argumentCollection=arguments, isHeader=false );
+		return this;
 	}
 
-	public void function setHeader(
+	public Spreadsheet function setHeader(
 		required workbook
 		,string leftHeader=""
 		,string centerHeader=""
@@ -1641,87 +1689,101 @@ component accessors="true"{
 			header.setleft( JavaCast( "string", arguments.leftHeader ) );
 		if( arguments.rightHeader.Len() )
 			header.setright( JavaCast( "string", arguments.rightHeader ) );
+		return this;
 	}
 
-	public void function setHeaderImage(
+	public Spreadsheet function setHeaderImage(
 		required workbook
 		,required string position // left|center|right
 		,required any image
 		,string imageType
 	){
 		getHeaderImageHelper().setHeaderOrFooterImage( argumentCollection=arguments );
+		return this;
 	}
 
-	public void function setReadOnly( required workbook, required string password ){
+	public Spreadsheet function setReadOnly( required workbook, required string password ){
 		if( isXmlFormat( arguments.workbook ) )
 			Throw( type=this.getExceptionType(), message="setReadOnly not supported for XML workbooks", detail="The setReadOnly() method only works on binary 'xls' workbooks." );
 		// writeProtectWorkbook takes both a user name and a password, just making up a user name
 		arguments.workbook.writeProtectWorkbook( JavaCast( "string", arguments.password ), JavaCast( "string", "user" ) );
+		return this;
 	}
 
-	public void function setRecalculateFormulasOnNextOpen( required workbook, boolean value=true ){
+	public Spreadsheet function setRecalculateFormulasOnNextOpen( required workbook, boolean value=true ){
 		arguments.workbook.setForceFormulaRecalculation( JavaCast( "boolean", arguments.value ) );
+		return this;
 	}
 
-	public void function setRepeatingColumns( required workbook, required string columnRange ){
+	public Spreadsheet function setRepeatingColumns( required workbook, required string columnRange ){
 		arguments.columnRange = arguments.columnRange.Trim();
 		if( !IsValid( "regex", arguments.columnRange,"[A-Za-z]:[A-Za-z]" ) )
 			Throw( type=this.getExceptionType(), message="Invalid columnRange argument", detail="The 'columnRange' argument should be in the form 'A:B'" );
 		var cellRangeAddress = getCellHelper().getCellRangeAddressFromReference( arguments.columnRange );
 		getSheetHelper().getActiveSheet( arguments.workbook ).setRepeatingColumns( cellRangeAddress );
+		return this;
 	}
 
-	public void function setRepeatingRows( required workbook, required string rowRange ){
+	public Spreadsheet function setRepeatingRows( required workbook, required string rowRange ){
 		arguments.rowRange = arguments.rowRange.Trim();
 		if( !IsValid( "regex", arguments.rowRange,"\d+:\d+" ) )
 			Throw( type=this.getExceptionType(), message="Invalid rowRange argument", detail="The 'rowRange' argument should be in the form 'n:n', e.g. '1:5'" );
 		var cellRangeAddress = getCellHelper().getCellRangeAddressFromReference( arguments.rowRange );
 		getSheetHelper().getActiveSheet( arguments.workbook ).setRepeatingRows( cellRangeAddress );
+		return this;
 	}
 
-	public void function setRowHeight( required workbook, required numeric row, required numeric height ){
+	public Spreadsheet function setRowHeight( required workbook, required numeric row, required numeric height ){
 		getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row ).setHeightInPoints( JavaCast( "int", arguments.height ) );
+		return this;
 	}
 
-	public void function setSheetTopMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
+	public Spreadsheet function setSheetTopMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
 		var sheet = getSheetHelper().getSpecifiedOrActiveSheet( argumentCollection=arguments );
 		sheet.setMargin( sheet.TopMargin, arguments.marginSize );
+		return this;
 	}
 
-	public void function setSheetBottomMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
+	public Spreadsheet function setSheetBottomMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
 		var sheet = getSheetHelper().getSpecifiedOrActiveSheet( argumentCollection=arguments );
 		sheet.setMargin( sheet.BottomMargin, arguments.marginSize );
+		return this;
 	}
 
-	public void function setSheetLeftMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
+	public Spreadsheet function setSheetLeftMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
 		var sheet = getSheetHelper().getSpecifiedOrActiveSheet( argumentCollection=arguments );
 		sheet.setMargin( sheet.LeftMargin, arguments.marginSize );
+		return this;
 	}
 
-	public void function setSheetRightMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
+	public Spreadsheet function setSheetRightMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
 		var sheet = getSheetHelper().getSpecifiedOrActiveSheet( argumentCollection=arguments );
 		sheet.setMargin( sheet.RightMargin, arguments.marginSize );
+		return this;
 	}
 
-	public void function setSheetHeaderMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
+	public Spreadsheet function setSheetHeaderMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
 		var sheet = getSheetHelper().getSpecifiedOrActiveSheet( argumentCollection=arguments );
 		sheet.setMargin( sheet.HeaderMargin, arguments.marginSize );
+		return this;
 	}
 
-	public void function setSheetFooterMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
+	public Spreadsheet function setSheetFooterMargin( required workbook, required numeric marginSize, string sheetName, numeric sheetNumber ){
 		var sheet = getSheetHelper().getSpecifiedOrActiveSheet( argumentCollection=arguments );
 		sheet.setMargin( sheet.FooterMargin, arguments.marginSize );
+		return this;
 	}
 
-	public void function setSheetPrintOrientation( required workbook, required string mode, string sheetName, numeric sheetNumber ){
+	public Spreadsheet function setSheetPrintOrientation( required workbook, required string mode, string sheetName, numeric sheetNumber ){
 		if( !ListFindNoCase( "landscape,portrait", arguments.mode ) )
 			Throw( type=this.getExceptionType(), message="Invalid mode argument", detail="#mode# is not a valid 'mode' argument. Use 'portrait' or 'landscape'" );
 		var setToLandscape = ( LCase( arguments.mode ) == "landscape" );
 		var sheet = getSheetHelper().getSpecifiedOrActiveSheet( argumentCollection=arguments );
 		sheet.getPrintSetup().setLandscape( JavaCast( "boolean", setToLandscape ) );
+		return this;
 	}
 
-	public void function shiftColumns( required workbook, required numeric start, numeric end=arguments.start, numeric offset=1 ){
+	public Spreadsheet function shiftColumns( required workbook, required numeric start, numeric end=arguments.start, numeric offset=1 ){
 		/*
 			20210427 POI 4.x's sheet.shiftColumns() doesn't seem to work reliably: XSSF version doesn't delete columns that should be replaced. Both result in errors when writing
 		*/
@@ -1743,25 +1805,29 @@ component accessors="true"{
 					getCellHelper().shiftCell( arguments.workbook, row, i, arguments.offset );
 			}
 		}
+		return this;
 	}
 
-	public void function shiftRows( required workbook, required numeric start, numeric end=arguments.start, numeric offset=1 ){
+	public Spreadsheet function shiftRows( required workbook, required numeric start, numeric end=arguments.start, numeric offset=1 ){
 		getSheetHelper().getActiveSheet( arguments.workbook ).shiftRows(
 			JavaCast( "int", ( arguments.start - 1 ) )
 			,JavaCast( "int", ( arguments.end - 1 ) )
 			,JavaCast( "int", arguments.offset )
 		);
+		return this;
 	}
 
-	public void function showColumn( required workbook, required numeric column ){
+	public Spreadsheet function showColumn( required workbook, required numeric column ){
 		getVisibilityHelper().toggleColumnHidden( arguments.workbook, arguments.column, false );
+		return this;
 	}
 
-	public void function showRow( required workbook, required numeric row ){
+	public Spreadsheet function showRow( required workbook, required numeric row ){
 		getVisibilityHelper().toggleRowHidden( arguments.workbook, arguments.row, false );
+		return this;
 	}
 
-	public void function write(
+	public Spreadsheet function write(
 		required workbook
 		,required string filepath
 		,boolean overwrite=false
@@ -1787,9 +1853,10 @@ component accessors="true"{
 		}
 		if( passwordProtect )
 			getFileHelper().encryptFile( arguments.filepath, arguments.password, arguments.algorithm );
+		return this;
 	}
 
-	public void function writeToCsv(
+	public Spreadsheet function writeToCsv(
 		required workbook
 		,required string filepath
 		,boolean overwrite=false
@@ -1807,6 +1874,7 @@ component accessors="true"{
 		);
 		var csv = queryToCsv( query=data, delimiter=arguments.delimiter );
 		FileWrite( arguments.filepath, csv );
+		return this;
 	}
 
 	/* END PUBLIC API */
