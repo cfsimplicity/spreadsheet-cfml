@@ -18,9 +18,8 @@ describe( "cellStyle", function(){
 	});
 
 	it( "can create a valid POI CellStyle object from a given format", function(){
-		makePublic( s, "isValidCellStyleObject" );
 		workbooks.Each( function( wb ){
-			expect( s.isValidCellStyleObject( wb, s.createCellStyle( wb, format ) ) ).toBeTrue();
+			expect( s.getFormatHelper().isValidCellStyleObject( wb, s.createCellStyle( wb, format ) ) ).toBeTrue();
 		});
 	});
 

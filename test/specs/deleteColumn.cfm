@@ -11,7 +11,7 @@ describe( "deleteColumn", function(){
 			s.addColumn( wb, "a,b" );
 			s.addColumn( wb, "c,d" );
 			s.deleteColumn( wb, 1 );
-			var actual = s.sheetToQuery( workbook=wb, includeBlankRows=true );
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});
 	});

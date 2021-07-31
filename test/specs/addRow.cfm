@@ -12,7 +12,7 @@ describe( "addRow", function(){
 			s.addRow( wb, data );
 			s.addRow( wb, "c,d" );// should be inserted at row 2
 			var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -21,7 +21,7 @@ describe( "addRow", function(){
 		workbooks.Each( function( wb ){
 			s.addRow( workbook=wb, data="a,b|c,d", delimiter="|" );
 			var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a,b", "c,d" ] ] );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -31,7 +31,7 @@ describe( "addRow", function(){
 			s.addRow( wb, dataAsArray );
 			s.addRow( wb, [ "c", "d" ] );// should be inserted at row 2
 			var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -42,7 +42,7 @@ describe( "addRow", function(){
 			s.addRow( wb, data );
 			s.addRow( wb, "e,f", 2, 2 );
 			s.addRow( wb, "c,d", 2, 1 );
-			var actual = s.sheetToQuery( workbook=wb, includeBlankRows=true );
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});
 		//array data
@@ -51,7 +51,7 @@ describe( "addRow", function(){
 			s.addRow( wb, dataAsArray );
 			s.addRow( wb, [ "e", "f" ], 2, 2 );
 			s.addRow( wb, [ "c", "d" ], 2, 1 );
-			var actual = s.sheetToQuery( workbook=wb, includeBlankRows=true );
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -61,7 +61,7 @@ describe( "addRow", function(){
 		workbooks.Each( function( wb ){
 			s.addRow( wb, data );
 			s.addRow( workbook=wb, data=data, row=1, insert=false );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 		var workbooks = [ s.newXls(), s.newXlsx() ];
@@ -69,7 +69,7 @@ describe( "addRow", function(){
 			//array data
 			s.addRow( wb, dataAsArray );
 			s.addRow( workbook=wb, data=dataAsArray, row=1, insert=false );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -78,7 +78,7 @@ describe( "addRow", function(){
 		workbooks.Each( function( wb ){
 			s.addRow( workbook=wb, data="'a,b', 'c,d'" );
 			var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a,b", "c,d" ] ] );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});

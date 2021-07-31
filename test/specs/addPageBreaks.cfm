@@ -11,11 +11,10 @@ describe( "addPageBreaks", function(){
 	});
 
 	it( "adds page breaks at the row and column numbers passed in as lists", function(){
-		makePublic( s, "getActiveSheet" );
 		workbooks.Each( function( wb ) {
 			s.addPageBreaks( wb, "2,3", "1,2" );
-			expect( s.getActiveSheet( wb ).getRowBreaks() ).toBe( [ 1, 2 ] );
-			expect( s.getActiveSheet( wb ).getColumnBreaks() ).toBe( [ 0, 1 ] );
+			expect( s.getSheetHelper().getActiveSheet( wb ).getRowBreaks() ).toBe( [ 1, 2 ] );
+			expect( s.getSheetHelper().getActiveSheet( wb ).getColumnBreaks() ).toBe( [ 0, 1 ] );
 		});
 	});
 

@@ -8,8 +8,7 @@ describe( "renameSheet", function(){
 	it( "Renames the specified sheet", function(){
 		workbooks.Each( function( wb ){
 			s.renameSheet( wb, "test", 1 );
-			makePublic( s, "sheetExists" );
-			expect( s.sheetExists( wb, "test" ) ).toBeTrue();
+			expect( s.getSheetHelper().sheetExists( wb, "test" ) ).toBeTrue();
 		});
 	});
 

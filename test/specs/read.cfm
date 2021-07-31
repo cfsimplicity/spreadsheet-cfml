@@ -113,7 +113,7 @@ describe( "read", function(){
 		s.addRows( workbook,data );
 		s.write( workbook, tempXlsPath, true );
 		var expected = data;
-		var actual = s.sheetToQuery( workbook );
+		var actual = s.getSheetHelper().sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
 		expect( IsNumeric( s.getCellValue( workbook, 1, 1 ) ) ).tobeTrue();
 		expect( s.getCellValue( workbook, 1, 2 ) ).tobe( 0 );

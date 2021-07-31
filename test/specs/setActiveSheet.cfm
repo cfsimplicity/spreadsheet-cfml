@@ -3,14 +3,13 @@ describe( "setActiveSheet", function(){
 
 	beforeEach( function(){
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
-		makePublic( s,"getActiveSheetName" );
 	});
 
 	it( "Sets the specified sheet number to be active", function(){
 		workbooks.Each( function( wb ){
 			s.createSheet( wb, "test" );
 			s.setActiveSheet( workbook=wb, sheetNumber=2 );
-			expect( s.getActiveSheetName( wb ) ).toBe( "test" );
+			expect( s.getSheetHelper().getActiveSheetName( wb ) ).toBe( "test" );
 		});
 	});
 
@@ -18,7 +17,7 @@ describe( "setActiveSheet", function(){
 		workbooks.Each( function( wb ){
 			s.createSheet( wb, "test" );
 			s.setActiveSheet( workbook=wb, sheetName="test" );
-			expect( s.getActiveSheetName( wb ) ).toBe( "test" );
+			expect( s.getSheetHelper().getActiveSheetName( wb ) ).toBe( "test" );
 		});
 	});
 

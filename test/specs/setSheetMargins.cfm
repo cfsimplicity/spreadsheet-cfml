@@ -3,14 +3,11 @@ describe( "setSheetMargins", function(){
 
 	beforeEach( function(){
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
-		makePublic( s, "getActiveSheet" );
-		makePublic( s, "getSheetByName" );
-		makePublic( s, "getSheetByNumber" );
 	});
 
 	it( "by default sets the active sheet margins", function(){
 		workbooks.Each( function( wb ){
-			var sheet = s.getActiveSheet( wb );
+			var sheet = s.getSheetHelper().getActiveSheet( wb );
 			s.setSheetTopMargin( wb, 3 );
 			expect( sheet.getMargin( sheet.TopMargin ) ).toBe( 3 );
 			s.setSheetBottomMargin( wb, 3 );
@@ -30,7 +27,7 @@ describe( "setSheetMargins", function(){
 		workbooks.Each( function( wb ){
 			s.createSheet( wb, "test" );
 			s.setSheetTopMargin( wb, 3, "test" );
-			var sheet = s.getSheetByName( wb, "test" );
+			var sheet = s.getSheetHelper().getSheetByName( wb, "test" );
 			expect( sheet.getMargin( sheet.TopMargin ) ).toBe( 3 );
 		});
 	});
@@ -38,7 +35,7 @@ describe( "setSheetMargins", function(){
 	it( "sets a margin of the specified sheet number", function(){
 		workbooks.Each( function( wb ){
 			s.createSheet( wb, "test" );
-			var sheet = s.getSheetByNumber( wb, 2 );
+			var sheet = s.getSheetHelper().getSheetByNumber( wb, 2 );
 			// named arguments
 			s.setSheetTopMargin( workbook=wb, marginSize=3, sheetNumber=2 );
 			expect( sheet.getMargin( sheet.TopMargin ) ).toBe( 3 );
@@ -50,7 +47,7 @@ describe( "setSheetMargins", function(){
 
 	it( "can set margins to floating point values", function(){
 		workbooks.Each( function( wb ){
-			var sheet = s.getActiveSheet( wb );
+			var sheet = s.getSheetHelper().getActiveSheet( wb );
 			s.setSheetTopMargin( wb, 3.5 );
 			expect( sheet.getMargin( sheet.TopMargin ) ).toBe( 3.5 );
 		});

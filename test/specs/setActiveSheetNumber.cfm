@@ -6,11 +6,10 @@ describe( "setActiveSheetNumber", function(){
 	});
 
 	it( "Sets the specified sheet number to be active", function(){
-		makePublic( s,"getActiveSheetName" );
 		workbooks.Each( function( wb ){
 			s.createSheet( wb, "test" );
 			s.setActiveSheetNumber( wb, 2 );
-			expect( s.getActiveSheetName( wb ) ).toBe( "test" );
+			expect( s.getSheetHelper().getActiveSheetName( wb ) ).toBe( "test" );
 		});
 	});
 

@@ -22,7 +22,7 @@ describe( "clearCell", function(){
 		workbooks.Each( function( wb ){
 			s.addRows( wb, data );
 			s.clearCellRange( wb, 2, 2, 3, 3 );
-			var actual = s.sheetToQuery( workbook=wb, includeBlankRows=true );
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});
 	});

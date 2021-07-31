@@ -18,8 +18,7 @@ describe( "new", function(){
 
 	it( "Creates a workbook with the specified sheet name", function(){
 		var workbook = s.new( "test" );
-		makePublic( s, "getActiveSheetName" );
-		expect( s.getActiveSheetName( workbook ) ).toBe( "test" );
+		expect( s.getSheetHelper().getActiveSheetName( workbook ) ).toBe( "test" );
 	});
 
 	describe( "new throws an exception if", function(){

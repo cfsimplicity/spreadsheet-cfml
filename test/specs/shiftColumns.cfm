@@ -15,7 +15,7 @@ describe( "shiftColumns", function(){
 				|a|c
 				|b|d
 			");
-			var actual = s.sheetToQuery( workbook=wb, includeBlankRows=true );
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -27,7 +27,7 @@ describe( "shiftColumns", function(){
 			var expected = querySim( "column1,column2,column3,column4
 				c|e||g
 				d|f||h");
-			var actual = s.sheetToQuery( workbook=wb, includeBlankRows=true );
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});
 	});

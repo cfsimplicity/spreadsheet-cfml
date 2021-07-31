@@ -8,7 +8,7 @@ describe( "workbookFromCsv", function(){
 		var xlsx = s.workbookFromCsv( csv=csv, firstRowIsHeader=true, xmlFormat=true );
 		var workbooks = [ xls, xlsx ];
 		workbooks.Each( function( wb ){
-			actual = s.sheetToQuery( workbook=wb, headerRow=1 );
+			actual = s.getSheetHelper().sheetToQuery( workbook=wb, headerRow=1 );
 			expect( actual ).toBe( basicExpectedQuery );
 		});
 	});

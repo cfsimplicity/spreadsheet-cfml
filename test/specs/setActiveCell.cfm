@@ -10,9 +10,8 @@ describe( "setActiveCell", function(){
 
 	it( "Sets the active cell on the current active sheet by default", function(){
 		workbooks.Each( function( wb ){
-			makePublic( s, "getActiveSheet" );
 			s.setActiveCell( wb, 2, 1 );
-			expect( s.getActiveSheet( wb ).getActiveCell().toString() ).toBe( "A2" );
+			expect( s.getSheetHelper().getActiveSheet( wb ).getActiveCell().toString() ).toBe( "A2" );
 		});
 	});
 

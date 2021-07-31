@@ -11,7 +11,7 @@ describe( "deleteRows", function(){
 		workbooks.Each( function( wb ){
 			s.addRows( wb, data );
 			s.deleteRows( wb, "1-2,4" );
-			var actual = s.sheetToQuery( workbook=wb, includeBlankRows=true );
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});
 	});

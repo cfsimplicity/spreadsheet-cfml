@@ -8,13 +8,12 @@ describe( "printGridLines", function(){
 		variables.xls = s.workbookFromQuery( data, false );
 		variables.xlsx = s.workbookFromQuery( data=data, addHeaderRow=false, xmlformat=true );
 		variables.workbooks = [ xls, xlsx ];
-		makePublic( s, "getActiveSheet" );
 	});
 
 	it( "can be added", function(){
 		workbooks.Each( function( wb ){
 			s.addPrintGridLines( wb );
-			expect( s.getActiveSheet( wb ).isPrintGridlines() ).toBeTrue();
+			expect( s.getSheetHelper().getActiveSheet( wb ).isPrintGridlines() ).toBeTrue();
 		});
 	});
 
@@ -22,7 +21,7 @@ describe( "printGridLines", function(){
 		workbooks.Each( function( wb ){
 			s.addPrintGridLines( wb );
 			s.removePrintGridLines( wb );
-			expect( s.getActiveSheet( wb ).isPrintGridlines() ).toBeFalse();
+			expect( s.getSheetHelper().getActiveSheet( wb ).isPrintGridlines() ).toBeFalse();
 		});
 	});
 

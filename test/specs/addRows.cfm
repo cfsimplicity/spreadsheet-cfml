@@ -12,7 +12,7 @@ describe( "addRows", function(){
 		workbooks.Each( function( wb ){
 			s.addRow( wb, "x,y" );
 			s.addRows( wb, data );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -22,7 +22,7 @@ describe( "addRows", function(){
 		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "x", "y" ], [ "a", "b" ], [ "c", "d" ] ] );
 		workbooks.Each( function( wb ){
 			s.addRows( wb, data );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -32,7 +32,7 @@ describe( "addRows", function(){
 		workbooks.Each( function( wb ){
 			s.addRows( wb, emptyData );
 			var expected = QueryNew( "" );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -42,7 +42,7 @@ describe( "addRows", function(){
 		workbooks.Each( function( wb ){
 			s.addRow( wb, "e,f" );
 			s.addRows( wb, data, 1, 2 );
-			var actual = s.sheetToQuery( workbook=wb, includeBlankRows=true );
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});
 		//array data
@@ -50,7 +50,7 @@ describe( "addRows", function(){
 		workbooks.Each( function( wb ){
 			s.addRow( wb, "e,f" );
 			s.addRows( wb, dataAsArray, 1, 2 );
-			actual = s.sheetToQuery( workbook=wb, includeBlankRows=true );
+			actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -61,7 +61,7 @@ describe( "addRows", function(){
 			s.addRow( wb, "e,f" );
 			s.addRow( wb, "g,h" );
 			s.addRows( workbook=wb, data=data, row=1, insert=false );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 		var workbooks = [ s.newXls(), s.newXlsx() ];
@@ -69,7 +69,7 @@ describe( "addRows", function(){
 			s.addRow( wb, "e,f" );
 			s.addRow( wb, "g,h" );
 			s.addRows( workbook=wb, data=dataAsArray, row=1, insert=false );
-			actual = s.sheetToQuery( wb );
+			actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -79,7 +79,7 @@ describe( "addRows", function(){
 		var expected = data;
 		workbooks.Each( function( wb ){
 			s.addRows( wb, data );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 			expect( IsNumeric( s.getCellValue( wb, 1, 1 ) ) ).tobeTrue();
 			expect( IsNumeric( s.getCellValue( wb, 1, 2 ) ) ).tobeTrue();
@@ -92,7 +92,7 @@ describe( "addRows", function(){
 		var workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( function( wb ){
 			s.addRows( wb, dataAsArray );
-			actual = s.sheetToQuery( wb );
+			actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 			expect( IsNumeric( s.getCellValue( wb, 1, 1 ) ) ).tobeTrue();
 			expect( IsNumeric( s.getCellValue( wb, 1, 2 ) ) ).tobeTrue();
@@ -108,7 +108,7 @@ describe( "addRows", function(){
 		var expected = data;
 			workbooks.Each( function( wb ){
 			s.addRows( wb, data );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 			expect( IsBoolean( s.getCellValue( wb, 1, 1 ) ) ).toBeTrue();
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "boolean" );
@@ -117,7 +117,7 @@ describe( "addRows", function(){
 		var workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( function( wb ){
 			s.addRows( wb, dataAsArray );
-			actual = s.sheetToQuery( wb );
+			actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 			expect( IsBoolean( s.getCellValue( wb, 1, 1 ) ) ).toBeTrue();
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "string" );// don't set the cell type as boolean from an array
@@ -132,7 +132,7 @@ describe( "addRows", function(){
 		var expected = data;
 		workbooks.Each( function( wb ){
 			s.addRows( wb, data );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 			expect( IsDate( s.getCellValue( wb, 1, 1 ) ) ).toBeTrue();
 			expect( IsDate( s.getCellValue( wb, 1, 2 ) ) ).toBeTrue();
@@ -149,7 +149,7 @@ describe( "addRows", function(){
 		var workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( function( wb ){
 			s.addRows( wb, dataAsArray );
-			actual = s.sheetToQuery( wb );
+			actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 			expect( IsDate( s.getCellValue( wb, 1, 1 ) ) ).toBeTrue();
 			expect( IsDate( s.getCellValue( wb, 1, 2 ) ) ).toBeTrue();
@@ -179,7 +179,7 @@ describe( "addRows", function(){
 		var expectedDateTimeValue = data.column2[ 1 ].DateTimeFormat( "yyyy-mm-dd hh:nn:ss:l" );
 		workbooks.Each( function( wb ){
 			s.addRows( wb, data );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			var actualTimeValue = actual.column1[ 1 ];
 			var actualDateTimeValue = actual.column2[ 1 ];
 		});
@@ -189,7 +189,7 @@ describe( "addRows", function(){
 			s.addRows( wb, dataAsArray );
 			expectedTimeValue = data.column1[ 1 ].TimeFormat( "hh:nn:ss:l" );
 			expectedDateTimeValue = data.column2[ 1 ].DateTimeFormat( "yyyy-mm-dd hh:nn:ss:l" );
-			actual = s.sheetToQuery( wb );
+			actual = s.getSheetHelper().sheetToQuery( wb );
 			actualTimeValue = actual.column1[ 1 ];
 			actualDateTimeValue = actual.column2[ 1 ];
 		});
@@ -200,7 +200,7 @@ describe( "addRows", function(){
 		var expected = data;
 		workbooks.Each( function( wb ){
 			s.addRows( wb, data );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 		var dataAsArray = [ [ 0 ] ];
@@ -208,7 +208,7 @@ describe( "addRows", function(){
 		workbooks.Each( function( wb ){
 			//array data
 			s.addRows( wb, dataAsArray );
-			actual = s.sheetToQuery( wb );
+			actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -244,14 +244,14 @@ describe( "addRows", function(){
 		var expected = data;
 		workbooks.Each( function( wb ){
 			s.addRows( wb, data );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 		var dataAsArray = [ [ "01" ] ];
 		var workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( function( wb ){
 			s.addRows( wb, dataAsArray );
-			actual = s.sheetToQuery( wb );
+			actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -260,7 +260,7 @@ describe( "addRows", function(){
 		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "column1", "column2" ], [ "a","b" ], [ "c", "d" ] ] );
 		workbooks.Each( function( wb ){
 			s.addRows( workbook=wb, data=data, includeQueryColumnNames=true );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -278,7 +278,7 @@ describe( "addRows", function(){
 		workbooks.Each( function( wb ){
 			s.addRow( wb, "x,y" );
 			s.addRows( workbook=wb, data=data, row=2, includeQueryColumnNames=true );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -287,7 +287,7 @@ describe( "addRows", function(){
 		var expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "", "column1", "column2" ], [ "", "a", "b" ], [ "", "c", "d" ] ] );
 		workbooks.Each( function( wb ){
 			s.addRows( workbook=wb, data=data, column=2, includeQueryColumnNames=true );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -297,7 +297,7 @@ describe( "addRows", function(){
 		workbooks.Each( function( wb ){
 			s.addRow( wb, "x,y" );
 			s.addRows( workbook=wb, data=data, row=2, column=2, includeQueryColumnNames=true );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});

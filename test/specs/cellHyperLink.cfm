@@ -70,42 +70,38 @@ describe( "cellHyperLinks", function(){
 		});
 
 		it( "Allows email links to be added", function(){
-			makePublic( s, "getCellAt" );
 			workbooks.Each( function( wb ){
 				var email = "mailto:test@example.com";
 				s.setCellHyperlink( workbook=wb, row=1, column=1, link=email, type="email" );
 				expect( s.getCellHyperlink( wb, 1, 1 ) ).toBe( email );
-				expect( s.getCellAt( wb, 1, 1 ).getHyperLink().getType().name() ).toBe( "EMAIL" );
+				expect( s.getCellHelper().getCellAt( wb, 1, 1 ).getHyperLink().getType().name() ).toBe( "EMAIL" );
 			});
 		});
 
 		it( "Allows file links to be added", function(){
-			makePublic( s, "getCellAt" );
 			workbooks.Each( function( wb ){
 				var file = "linked.xlsx";
 				s.setCellHyperlink( workbook=wb, row=1, column=1, link=file, type="file" );
 				expect( s.getCellHyperlink( wb, 1, 1 ) ).toBe( file );
-				expect( s.getCellAt( wb, 1, 1 ).getHyperLink().getType().name() ).toBe( "FILE" );
+				expect( s.getCellHelper().getCellAt( wb, 1, 1 ).getHyperLink().getType().name() ).toBe( "FILE" );
 			});
 		});
 
 		it( "Allows internal links to be added", function(){
-			makePublic( s, "getCellAt" );
 			workbooks.Each( function( wb ){
 				var link = "'Target Sheet'!A1";
 				s.setCellHyperlink( workbook=wb, row=1, column=1, link=link, type="document" );
 				expect( s.getCellHyperlink( wb, 1, 1 ) ).toBe( link );
-				expect( s.getCellAt( wb, 1, 1 ).getHyperLink().getType().name() ).toBe( "DOCUMENT" );
+				expect( s.getCellHelper().getCellAt( wb, 1, 1 ).getHyperLink().getType().name() ).toBe( "DOCUMENT" );
 			});
 		});
 
 		it( "Allows xlsx sheet hyperlink tooltips to be set", function(){
-			makePublic( s, "getCellAt" );
 			var wb = s.newXlsx();
 			var tooltip = "I'm a tooltip";
 			s.setCellHyperlink( workbook=wb, row=1, column=1, link=uri, tooltip=tooltip );
 			expect( s.getCellHyperlink( wb, 1, 1 ) ).toBe( uri );
-			expect( s.getCellAt( wb, 1, 1 ).getHyperLink().getTooltip() ).toBe( tooltip );
+			expect( s.getCellHelper().getCellAt( wb, 1, 1 ).getHyperLink().getTooltip() ).toBe( tooltip );
 		});
 
 		describe( "setCellHyperlink throws an exception if", function(){

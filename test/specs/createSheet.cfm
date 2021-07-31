@@ -13,10 +13,9 @@ describe( "createSheet", function(){
 	});
 
 	it( "Creates a new sheet with the specified name", function(){
-		makePublic( s, "sheetExists" );
 		workbooks.Each( function( wb ){
 			s.createSheet( wb,"test" );
-			expect( s.sheetExists( workbook=wb, sheetName="test" ) ).toBeTrue();
+			expect( s.getSheetHelper().sheetExists( workbook=wb, sheetName="test" ) ).toBeTrue();
 		});
 	});
 

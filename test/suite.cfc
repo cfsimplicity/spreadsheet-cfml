@@ -2,7 +2,6 @@ component extends="testbox.system.BaseSpec"{
 
 	function newSpreadsheetInstance(){
 		var s = New root.Spreadsheet( argumentCollection=arguments );
-		makePublic( s, "sheetToQuery" );
 		return s;
 	}
 

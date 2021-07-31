@@ -10,7 +10,7 @@ describe( "addColumn", function(){
 		workbooks.Each( function( wb ){
 			s.addColumn( wb, columnData );
 			var expected = QueryNew( "column1", "VarChar", [ [ "a" ], [ "b" ] ] );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -19,7 +19,7 @@ describe( "addColumn", function(){
 		workbooks.Each( function( wb ){
 			s.addColumn( wb, columnData.ListToArray() );
 			var expected = QueryNew( "column1", "VarChar", [ [ "a" ], [ "b" ] ] );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -28,7 +28,7 @@ describe( "addColumn", function(){
 		workbooks.Each( function( wb ){
 			s.addColumn( workbook=wb, data=columnData, startRow=2 );
 			var expected = QueryNew( "column1", "VarChar", [ [ "" ], [ "a" ], [ "b" ] ] );
-			var actual = s.sheetToQuery( workbook=wb, includeBlankRows=true );
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -42,7 +42,7 @@ describe( "addColumn", function(){
 				y|a
 				 |b
 			");
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -51,7 +51,7 @@ describe( "addColumn", function(){
 		workbooks.Each( function( wb ){
 			s.addColumn( workbook=wb, data=columnData, startColumn=2 );
 			var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "", "a" ], [ "", "b" ] ] );
-			var actual = s.sheetToQuery( workbook=wb, includeBlankRows=true );
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -61,7 +61,7 @@ describe( "addColumn", function(){
 			var columnData = "a,b|c,d";
 			s.addColumn( workbook=wb, data=columnData,delimiter="|" );
 			var expected = QueryNew( "column1", "VarChar", [ [ "a,b" ], [ "c,d" ] ] );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -77,7 +77,7 @@ describe( "addColumn", function(){
 					a|c
 					b|d
 				");
-				var actual = s.sheetToQuery( wb );
+				var actual = s.getSheetHelper().sheetToQuery( wb );
 				expect( actual ).toBe( expected );
 			});
 		});
@@ -87,7 +87,7 @@ describe( "addColumn", function(){
 				s.addColumn( wb, "a,b" );
 				s.addColumn( workbook=wb, data="x,y", startColumn=1 );
 				var expected = QueryNew( "column1", "VarChar", [ [ "x" ], [ "y" ] ] );
-				var actual = s.sheetToQuery( wb );
+				var actual = s.getSheetHelper().sheetToQuery( wb );
 				expect( actual ).toBe( expected );
 				s.addColumn( wb, [ "a", "b" ] );
 				s.addColumn( workbook=wb, data=columnData, startColumn=2 );
@@ -95,7 +95,7 @@ describe( "addColumn", function(){
 					x|a
 					y|b
 				");
-				var actual = s.sheetToQuery( wb );
+				var actual = s.getSheetHelper().sheetToQuery( wb );
 				expect( actual ).toBe( expected );
 			});
 		});
@@ -110,7 +110,7 @@ describe( "addColumn", function(){
 					a|x|c|e
 					b|y|d|f
 				");
-				var actual = s.sheetToQuery( wb );
+				var actual = s.getSheetHelper().sheetToQuery( wb );
 				expect( actual ).toBe( expected );
 			});
 		});
