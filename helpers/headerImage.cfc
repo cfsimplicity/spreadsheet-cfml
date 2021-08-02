@@ -1,7 +1,7 @@
 component extends="base" accessors="true"{
 
 	//see https://stackoverflow.com/questions/51077404/apache-poi-adding-watermark-in-excel-workbook/51103756#51103756
-	public void function setHeaderOrFooterImage(
+	public any function setHeaderOrFooterImage(
 		required workbook
 		,required string position // left|center|right
 		,required any image
@@ -83,6 +83,7 @@ component extends="base" accessors="true"{
   	//create the <legacyDrawingHF r:id="..."/> in /xl/worksheets/sheetN.xml
   	if( !sheetHasExistingHeaderFooterImages )
   		sheet.getCTWorksheet().addNewLegacyDrawingHF().setId( sheetVmlRelationID );
+  	return this;
 	}
 
 	/* Private */

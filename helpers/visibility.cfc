@@ -1,8 +1,8 @@
 component extends="base" accessors="true"{
 
-	public void function doFillMergedCellsWithVisibleValue( required workbook, required sheet ){
+	public any function doFillMergedCellsWithVisibleValue( required workbook, required sheet ){
 		if( !getSheetHelper().sheetHasMergedRegions( arguments.sheet ) )
-			return;
+			return this;
 		for( var regionIndex = 0; regionIndex < arguments.sheet.getNumMergedRegions(); regionIndex++ ){
 			var region = arguments.sheet.getMergedRegion( regionIndex );
 			var regionStartRowNumber = ( region.getFirstRow() +1 );
@@ -12,14 +12,17 @@ component extends="base" accessors="true"{
 			var visibleValue = library().getCellValue( arguments.workbook, regionStartRowNumber, regionStartColumnNumber );
 			library().setCellRangeValue( arguments.workbook, visibleValue, regionStartRowNumber, regionEndRowNumber, regionStartColumnNumber, regionEndColumnNumber );
 		}
+		return this;
 	}
 
-	public void function toggleColumnHidden( required workbook, required numeric columnNumber, required boolean state ){
+	public any function toggleColumnHidden( required workbook, required numeric columnNumber, required boolean state ){
 		getSheetHelper().getActiveSheet( arguments.workbook ).setColumnHidden( JavaCast( "int", arguments.columnNumber-1 ), JavaCast( "boolean", arguments.state ) );
+		return this;
 	}
 
-	public void function toggleRowHidden( required workbook, required numeric rowNumber, required boolean state ){
+	public any function toggleRowHidden( required workbook, required numeric rowNumber, required boolean state ){
 		getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).setZeroHeight( JavaCast( "boolean", arguments.state ) );
+		return this;
 	}
 
 }

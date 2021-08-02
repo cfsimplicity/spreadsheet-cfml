@@ -6,7 +6,7 @@ component extends="base" accessors="true"{
 		WriteDump( path );
 	}
 
-	public function loadClass( required string javaclass ){
+	public any function loadClass( required string javaclass ){
 		if( library().getRequiresJavaLoader() )
 			return loadClassUsingJavaLoader( arguments.javaclass );
 		if( !IsNull( library().getOsgiLoader() ) )
@@ -23,12 +23,12 @@ component extends="base" accessors="true"{
 
 	/* Private */
 
-	private function loadClassUsingJavaLoader( required string javaclass ){
+	private any function loadClassUsingJavaLoader( required string javaclass ){
 		library().setJavaClassesLastLoadedVia( "JavaLoader" );
 		return library().getJavaLoaderInstance().create( arguments.javaclass );
 	}
 
-	private function loadClassUsingOsgi( required string javaclass ){
+	private any function loadClassUsingOsgi( required string javaclass ){
 		library().setJavaClassesLastLoadedVia( "OSGi bundle" );
 		return library().getOsgiLoader().loadClass(
 			className: arguments.javaclass

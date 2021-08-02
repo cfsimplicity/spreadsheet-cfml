@@ -182,18 +182,18 @@ component accessors="true"{
 		if( csvIsString && csvIsFile )
 			Throw( type=this.getExceptionType(), message="Mutually exclusive arguments: 'csv' and 'filepath'", detail="Only one of either 'filepath' or 'csv' arguments may be provided." );
 		if(	csvIsFile ){
-			getFileHelper().throwErrorIFfileNotExists( arguments.filepath );
-			getFileHelper().throwErrorIFnotCsvOrTextFile( arguments.filepath );
+			getFileHelper()
+				.throwErrorIFfileNotExists( arguments.filepath )
+				.throwErrorIFnotCsvOrTextFile( arguments.filepath );
 			arguments.csv = FileRead( arguments.filepath );
 		}
 		if( IsStruct( arguments.queryColumnTypes ) && !arguments.firstRowIsHeader && !arguments.KeyExists( "queryColumnNames" )  )
 			Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
 		if( arguments.trim )
 			arguments.csv = arguments.csv.Trim();
-		if( arguments.KeyExists( "delimiter" ) )
-			var format = getCsvHelper().getCsvFormatForDelimiter( arguments.delimiter );
-		else
-			var format = getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
+		var format = arguments.KeyExists( "delimiter" )? 
+			getCsvHelper().getCsvFormatForDelimiter( arguments.delimiter )
+			: getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
 		var parsed = getClassHelper().loadClass( "org.apache.commons.csv.CSVParser" ).parse( arguments.csv, format );
 		var records = parsed.getRecords();
 		var data = [];
@@ -1382,8 +1382,9 @@ component accessors="true"{
 	}
 
 	public Spreadsheet function removeSheet( required workbook, required string sheetName ){
-		getSheetHelper().validateSheetName( arguments.sheetName );
-		getSheetHelper().validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
+		getSheetHelper()
+			.validateSheetName( arguments.sheetName )
+			.validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
 		arguments.sheetNumber = ( arguments.workbook.getSheetIndex( arguments.sheetName ) +1 );
 		var sheetIndex = ( sheetNumber -1 );
 		getSheetHelper().deleteSheetAtIndex( arguments.workbook, sheetIndex );
@@ -1398,8 +1399,9 @@ component accessors="true"{
 	}
 
 	public Spreadsheet function renameSheet( required workbook, required string sheetName, required numeric sheetNumber ){
-		getSheetHelper().validateSheetName( arguments.sheetName );
-		getSheetHelper().validateSheetNumber( arguments.workbook, arguments.sheetNumber );
+		getSheetHelper()
+			.validateSheetName( arguments.sheetName )
+			.validateSheetNumber( arguments.workbook, arguments.sheetNumber );
 		var sheetIndex = ( arguments.sheetNumber -1 );
 		var foundAt = arguments.workbook.getSheetIndex( JavaCast( "string", arguments.sheetName ) );
 		if( ( foundAt > 0 ) && ( foundAt != sheetIndex ) )

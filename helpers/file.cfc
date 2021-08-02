@@ -5,7 +5,7 @@ component extends="base" accessors="true"{
 		cfcontent( type=arguments.contentType, variable="#arguments.binaryVariable#", reset="true" );
 	}
 
-	public void function encryptFile( required string filepath, required string password, required string algorithm ){
+	public any function encryptFile( required string filepath, required string password, required string algorithm ){
 		// See https://poi.apache.org/encryption.html
 		// NB: Not all spreadsheet programs support this type of encryption
 		// set up the encryptor with the chosen algo
@@ -50,11 +50,13 @@ component extends="base" accessors="true"{
 				closeLocalFileOrStream( local, "poifs" );
 			}
 		}
+		return this;
 	}
 
-	public void function closeLocalFileOrStream( required localScope, required string varName ){
+	public any function closeLocalFileOrStream( required localScope, required string varName ){
 		if( arguments.localScope.KeyExists( arguments.varName ) )
 			arguments.localScope[ arguments.varName ].close();
+		return this;
 	}
 
 	public string function filenameSafe( required string input ){
@@ -81,14 +83,16 @@ component extends="base" accessors="true"{
 		Throw( type="cfsimplicity.lucee.spreadsheet.invalidFile", message="Invalid spreadsheet file", detail=detail );
 	}
 
-	public void function throwErrorIFfileNotExists( required string path ){
+	public any function throwErrorIFfileNotExists( required string path ){
 		if( !FileExists( arguments.path ) )
 			getExceptionHelper().throwNonExistentFileException( arguments.path );
+		return this;
 	}
 
-	public void function throwErrorIFnotCsvOrTextFile( required string path ){
+	public any function throwErrorIFnotCsvOrTextFile( required string path ){
 		if( !isCsvTsvOrTextFile( arguments.path ) )
 			Throw( type=library().getExceptionType(), message="Invalid csv file", detail="#arguments.path# does not appear to be a csv/tsv/text file" );
+		return this;
 	}	
 
 	/* Private */

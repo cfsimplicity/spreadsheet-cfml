@@ -105,7 +105,7 @@ component extends="base" accessors="true"{
 		return cellObject;
 	}
 
-	public void function setCellValueAsType( required workbook, required cell, required value, string type ){
+	public any function setCellValueAsType( required workbook, required cell, required value, string type ){
 		var validCellTypes = [ "string", "numeric", "date", "time", "boolean", "blank" ];
 		if( !arguments.KeyExists( "type" ) ) //autodetect type
 			arguments.type = getDataTypeHelper().detectValueDataType( arguments.value );
@@ -119,12 +119,12 @@ component extends="base" accessors="true"{
 		switch( arguments.type ){
 			case "numeric":
 				arguments.cell.setCellValue( JavaCast( "double", Val( arguments.value ) ) );
-				return;
+				return this;
 			case "date": case "time":
 				//handle empty strings which can't be treated as dates
 				if( Trim( arguments.value ).IsEmpty() ){
 					arguments.cell.setBlank(); //no need to set the value: it will be blank
-					return;
+					return this;
 				}
 				var dateTimeValue = ParseDateTime( arguments.value );
 				if( arguments.type == "time" )
@@ -141,26 +141,27 @@ component extends="base" accessors="true"{
 					dateTimeValue = ( getDateHelper().getDateUtil().getExcelDate( javaDate ) -1 );//Convert to Excel's double value for dates, minus the 1 complete day to leave the day fraction (= time value)
 				}
 				arguments.cell.setCellValue( dateTimeValue );
-				return;
+				return this;
 			case "boolean":
 				//handle empty strings/nulls which can't be treated as booleans
 				if( Trim( arguments.value ).IsEmpty() ){
 					arguments.cell.setBlank(); //no need to set the value: it will be blank
-					return;
+					return this;
 				}
 				arguments.cell.setCellValue( JavaCast( "boolean", arguments.value ) );
-				return;
+				return this;
 			case "blank":
 				arguments.cell.setBlank(); //no need to set the value: it will be blank
-				return;
+				return this;
 		}
 		arguments.cell.setCellValue( JavaCast( "string", arguments.value ) );
+		return this;
 	}
 
-	public void function shiftCell( required workbook, required row, required numeric cellIndex, required numeric offset ){
+	public any function shiftCell( required workbook, required row, required numeric cellIndex, required numeric offset ){
 		var originalCell = arguments.row.getCell( JavaCast( "int", arguments.cellIndex ) );
 		if( IsNull( originalCell ) )
-			return;
+			return this;
 		var cell = createCell( arguments.row, arguments.cellIndex + arguments.offset );
 		setCellValueAsType( arguments.workbook, cell, getCellValueAsType( arguments.workbook, originalCell ) );
 		cell.setCellStyle( originalCell.getCellStyle() );

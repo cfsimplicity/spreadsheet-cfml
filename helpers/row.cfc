@@ -1,28 +1,29 @@
 component extends="base" accessors="true"{
 
-	public void function addRowToSheetData(
+	public any function addRowToSheetData(
 		required workbook
 		,required struct sheet
 		,required numeric rowIndex
 		,boolean includeRichTextFormatting=false
 	){
 		if( ( arguments.rowIndex == arguments.sheet.headerRowIndex ) && !arguments.sheet.includeHeaderRow )
-			return;
+			return this;
 		var rowData = [];
 		var row = arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
 		if( IsNull( row ) ){
 			if( arguments.sheet.includeBlankRows )
 				arguments.sheet.data.Append( rowData );
-			return;
+			return this;
 		}
 		if( rowIsEmpty( row ) && !arguments.sheet.includeBlankRows )
-			return;
+			return this;
 		rowData = getRowData( arguments.workbook, row, arguments.sheet.columnRanges, arguments.includeRichTextFormatting );
 		arguments.sheet.data.Append( rowData );
 		if( !arguments.sheet.columnRanges.Len() ){
 			var rowColumnCount = row.getLastCellNum();
 			arguments.sheet.totalColumnCount = Max( arguments.sheet.totalColumnCount, rowColumnCount );
 		}
+		return this;
 	}
 
 	public any function createRow( required workbook, numeric rowNum=getNextEmptyRowNumber( arguments.workbook ), boolean overwrite=true ){

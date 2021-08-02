@@ -145,24 +145,25 @@ component extends="base" accessors="true"{
 		return result.ToList();
 	}
 
-	private void function mapQueryColumnTypeToCellType( required struct columnMetadata ){
+	private any function mapQueryColumnTypeToCellType( required struct columnMetadata ){
 		var columnType = arguments.columnMetadata.typeName?: "";// typename is missing in ACF if not specified in the query
 		switch( columnType ){
 			case "DATE": case "TIMESTAMP": case "DATETIME": case "DATETIME2":
 				arguments.columnMetadata.cellDataType = "DATE";
-			return;
+			return this;
 			case "TIME":
 				arguments.columnMetadata.cellDataType = "TIME";
-			return;
+			return this;
 			/* Note: Excel only supports "double" for numbers. Casting very large DECIMIAL/NUMERIC or BIGINT values to double may result in a loss of precision or conversion to NEGATIVE_INFINITY / POSITIVE_INFINITY. */
 			case "DECIMAL": case "BIGINT": case "NUMERIC": case "DOUBLE": case "FLOAT": case "INT": case "INTEGER": case "REAL": case "SMALLINT": case "TINYINT":
 				arguments.columnMetadata.cellDataType = "DOUBLE";
-			return;
+			return this;
 			case "BOOLEAN": case "BIT":
 				arguments.columnMetadata.cellDataType = "BOOLEAN";
-			return;
+			return this;
 			default: arguments.columnMetadata.cellDataType = "STRING";
 		}
+		return this;
 	}
 
 	private string function generateHtmlRow( required array values, boolean isHeader=false ){

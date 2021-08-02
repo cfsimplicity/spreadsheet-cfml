@@ -33,12 +33,13 @@ component extends="base" accessors="true"{
 
 	/* Data type overriding */
 
-	public void function checkDataTypesArgument( required struct args ){
+	public any function checkDataTypesArgument( required struct args ){
 		if( arguments.args.KeyExists( "datatypes" ) && datatypeOverridesContainInvalidTypes( arguments.args.datatypes ) )
 			Throw( type=library().getExceptionType(), message="Invalid datatype(s)", detail="One or more of the datatypes specified is invalid. Valid types are #validCellOverrideTypes().ToList( ', ' )# and the columns they apply to should be passed as an array" );
+		return this;
 	}
 
-	public void function convertDataTypeOverrideColumnNamesToNumbers( required struct datatypeOverrides, required array columnNames ){
+	public any function convertDataTypeOverrideColumnNamesToNumbers( required struct datatypeOverrides, required array columnNames ){
 		for( var type in arguments.datatypeOverrides ){
 			var columnRefs = arguments.datatypeOverrides[ type ];
 			//NB: DO NOT SCOPE datatypeOverrides and columnNames vars inside closure!!
@@ -51,9 +52,10 @@ component extends="base" accessors="true"{
 				}
 			});
 		}
+		return this;
 	}
 
-	public void function setCellDataTypeWithOverride(
+	public any function setCellDataTypeWithOverride(
 		required workbook
 		,required cell
 		,required cellValue
@@ -65,20 +67,21 @@ component extends="base" accessors="true"{
 		if( cellTypeOverride.Len() ){
 			if( cellTypeOverride == "auto" ){
 				getCellHelper().setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue );
-				return;
+				return this;
 			}
 			if( valueCanBeSetAsType( arguments.cellValue, cellTypeOverride ) ){
 				getCellHelper().setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue, cellTypeOverride );
-				return;
+				return this;
 			}
 		}
 		// if no override, use an already set default (i.e. query column type)
 		if( arguments.KeyExists( "defaultType" ) ){
 			getCellHelper().setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue, arguments.defaultType );
-			return;
+			return this;
 		}
 		// default autodetect
 		getCellHelper().setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue );
+		return this;
 	}
 
 	/* Private */

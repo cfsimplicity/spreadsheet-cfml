@@ -7,8 +7,9 @@ component extends="base" accessors="true"{
 		return arguments.sheetName;
 	}
 
-	public void function deleteSheetAtIndex( required workbook, required numeric sheetIndex ){
+	public any function deleteSheetAtIndex( required workbook, required numeric sheetIndex ){
 		arguments.workbook.removeSheetAt( JavaCast( "int", arguments.sheetIndex ) );
+		return this;
 	}
 
 	public any function getActiveSheet( required workbook ){
@@ -27,14 +28,15 @@ component extends="base" accessors="true"{
 		return getActiveSheet( arguments.workbook ).getSheetName();
 	}
 
-	public void function setActiveSheetNameOrNumber( required workbook, required sheetNameOrNumber ){
+	public any function setActiveSheetNameOrNumber( required workbook, required sheetNameOrNumber ){
 		if( IsValid( "integer", arguments.sheetNameOrNumber ) && IsNumeric( arguments.sheetNameOrNumber ) ){
 			var sheetNumber = arguments.sheetNameOrNumber;
 			library().setActiveSheetNumber( arguments.workbook, sheetNumber );
-			return;
+			return this;
 		}
 		var sheetName = arguments.sheetNameOrNumber;
 		library().setActiveSheet( arguments.workbook, sheetName );
+		return this;
 	}
 
 	public array function getAllSheetFormulas( required workbook ){
@@ -81,8 +83,9 @@ component extends="base" accessors="true"{
 		return getSheetByNumber( arguments.workbook, arguments.sheetNumber );
 	}
 
-	public void function moveSheet( required workbook, required string sheetName, required string moveToIndex ){
+	public any function moveSheet( required workbook, required string sheetName, required string moveToIndex ){
 		arguments.workbook.setSheetOrder( JavaCast( "String", arguments.sheetName ), JavaCast( "int", arguments.moveToIndex ) );
+		return this;
 	}
 
 	public boolean function sheetExists( required workbook, string sheetName, numeric sheetNumber ){
@@ -180,19 +183,21 @@ component extends="base" accessors="true"{
 		return result;
 	}
 
-	public void function validateSheetExistsWithName( required workbook, required string sheetName ){
+	public any function validateSheetExistsWithName( required workbook, required string sheetName ){
 		if( !sheetExists( workbook=arguments.workbook, sheetName=arguments.sheetName ) )
 			Throw( type=library().getExceptionType(), message="Invalid sheet name [#arguments.sheetName#]", detail="The specified sheet was not found in the current workbook." );
+		return this;
 	}
 
-	public void function validateSheetNumber( required workbook, required numeric sheetNumber ){
+	public any function validateSheetNumber( required workbook, required numeric sheetNumber ){
 		if( !sheetExists( workbook=arguments.workbook, sheetNumber=arguments.sheetNumber ) ){
 			var sheetCount = arguments.workbook.getNumberOfSheets();
 			Throw( type=library().getExceptionType(), message="Invalid sheet number [#arguments.sheetNumber#]", detail="The sheetNumber must a whole number between 1 and the total number of sheets in the workbook [#sheetCount#]" );
 		}
+		return this;
 	}
 
-	public void function validateSheetName( required string sheetName ){
+	public any function validateSheetName( required string sheetName ){
 		var characterCount = Len( arguments.sheetName );
 		if( characterCount > 31 )
 			Throw( type=library().getExceptionType(), message="Invalid sheet name", detail="The sheetname contains too many characters [#characterCount#]. The maximum is 31." );
@@ -207,6 +212,7 @@ component extends="base" accessors="true"{
 			//ACF
 			Throw( type=library().getExceptionType(), message="Invalid characters in sheet name", detail=exception.message );
 		}
+		return this;
 	}
 
 	public void function validateSheetNameOrNumberWasProvided(){
@@ -241,14 +247,16 @@ component extends="base" accessors="true"{
 		return ( arguments.KeyExists( "sheetNumber" ) && Len( arguments.sheetNumber ) );
 	}
 
-	private void function throwErrorIFSheetNameAndNumberArgumentsBothMissing(){
+	private any function throwErrorIFSheetNameAndNumberArgumentsBothMissing(){
 		if( !sheetNameArgumentWasProvided( argumentCollection=arguments ) && !sheetNumberArgumentWasProvided( argumentCollection=arguments ) )
 			Throw( type=library().getExceptionType(), message="Missing Required Argument", detail="Either sheetName or sheetNumber must be provided" );
+		return this;
 	}
 
-	private void function throwErrorIFSheetNameAndNumberArgumentsBothPassed(){
+	private any function throwErrorIFSheetNameAndNumberArgumentsBothPassed(){
 		if( sheetNameArgumentWasProvided( argumentCollection=arguments ) && sheetNumberArgumentWasProvided( argumentCollection=arguments ) )
 			Throw( type=library().getExceptionType(), message="Invalid arguments", detail="Only one argument is allowed. Specify either a sheetName or sheetNumber, not both" );
+		return this;
 	}
 
 }
