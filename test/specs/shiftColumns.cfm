@@ -22,8 +22,8 @@ describe( "shiftColumns", function(){
 
 	it( "Shifts columns left if offset is negative", function(){
 		workbooks.Each( function( wb ){
-			s.addColumn( wb, "g,h" );//4th column to remain untouched
-			s.shiftColumns( wb, 2, 3, -1 );
+			s.addColumn( wb, "g,h" )//4th column to remain untouched
+				.shiftColumns( wb, 2, 3, -1 );
 			var expected = querySim( "column1,column2,column3,column4
 				c|e||g
 				d|f||h");

@@ -27,12 +27,12 @@ describe( "getRowCount", function(){
 
 	it( "Can get the number of rows of a sheet specified by number", function(){
 		workbooks.Each( function( wb ){
-			s.createSheet( wb );//add a second sheet and switch to it
-			s.setActiveSheetNumber( wb, 2 );
-			s.addRow( wb, "S2A1" );
-			s.addRow( wb, "S2B1" );
-			s.setActiveSheetNumber( wb,1 );//switch back to sheet 1
-			s.addRow( wb, "S1A1" );
+			s.createSheet( wb )//add a second sheet and switch to it
+				.setActiveSheetNumber( wb, 2 )
+				.addRow( wb, "S2A1" )
+				.addRow( wb, "S2B1" )
+				.setActiveSheetNumber( wb,1 )//switch back to sheet 1
+				.addRow( wb, "S1A1" );
 			expect( s.getRowCount( wb ) ).toBe( 1 );
 			expect( s.getRowCount( wb, 2 ) ).toBe( 2 );
 		});
@@ -40,12 +40,12 @@ describe( "getRowCount", function(){
 
 	it( "Can get the number of rows of a sheet specified by name", function(){
 		workbooks.Each( function( wb ){
-			s.createSheet( wb, "test" );//add a second sheet and switch to it
-			s.setActiveSheetNumber( wb, 2 );
-			s.addRow( wb, "S2A1" );
-			s.addRow( wb, "S2B1" );
-			s.setActiveSheetNumber( wb, 1 );//switch back to sheet 1
-			s.addRow( wb, "S1A1" );
+			s.createSheet( wb, "test" )//add a second sheet and switch to it
+				.setActiveSheetNumber( wb, 2 )
+				.addRow( wb, "S2A1" )
+				.addRow( wb, "S2B1" )
+				.setActiveSheetNumber( wb, 1 )//switch back to sheet 1
+				.addRow( wb, "S1A1" );
 			expect( s.getRowCount( wb ) ).toBe( 1 );
 			expect( s.getRowCount( wb, "test" ) ).toBe( 2 );
 		});

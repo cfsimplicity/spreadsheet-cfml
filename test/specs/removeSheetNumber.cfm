@@ -7,8 +7,8 @@ describe( "removeSheetNumber", function(){
 
 	it( "Deletes the sheet number specified", function(){
 		workbooks.Each( function( wb ){
-			s.createSheet( wb, "test" );
-			s.removeSheetNumber( wb, 2 );
+			s.createSheet( wb, "test" )
+				.removeSheetNumber( wb, 2 );
 			expect( wb.getNumberOfSheets() ).toBe( 1 );
 		});
 	});

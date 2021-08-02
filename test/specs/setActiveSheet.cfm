@@ -7,16 +7,16 @@ describe( "setActiveSheet", function(){
 
 	it( "Sets the specified sheet number to be active", function(){
 		workbooks.Each( function( wb ){
-			s.createSheet( wb, "test" );
-			s.setActiveSheet( workbook=wb, sheetNumber=2 );
+			s.createSheet( wb, "test" )
+				.setActiveSheet( workbook=wb, sheetNumber=2 );
 			expect( s.getSheetHelper().getActiveSheetName( wb ) ).toBe( "test" );
 		});
 	});
 
 	it( "Sets the specified sheet name to be active", function(){
 		workbooks.Each( function( wb ){
-			s.createSheet( wb, "test" );
-			s.setActiveSheet( workbook=wb, sheetName="test" );
+			s.createSheet( wb, "test" )
+				.setActiveSheet( workbook=wb, sheetName="test" );
 			expect( s.getSheetHelper().getActiveSheetName( wb ) ).toBe( "test" );
 		});
 	});

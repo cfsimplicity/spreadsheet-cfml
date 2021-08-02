@@ -53,8 +53,8 @@ describe( "info", function(){
 		workbooks.Each( function( wb ){
 			if( s.isXmlFormat( wb ) ) infoToBeReturned.spreadSheetType = "Excel (2007)";
 			var tempPath = s.isXmlFormat( wb )? tempXlsxPath: tempXlsPath;
-			s.addInfo( wb, infoToAdd );
-			s.write( wb, tempPath, true );
+			s.addInfo( wb, infoToAdd )
+				.write( wb, tempPath, true );
 			var expected = infoToBeReturned;
 			var actual = s.info( tempPath );
 			actual.creationDate = DateFormat( Now(), "yyyymmdd" );// Doesn't return this value so mock

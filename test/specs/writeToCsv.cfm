@@ -29,12 +29,12 @@ describe( "writeToCsv", function(){
 	it( "allows the sheet's header row to be excluded", function(){
 		var expectedCsv = 'a,b#crlf#c,d';
 		workbooks.Each( function( wb ){
-			s.addRow( wb, [ "column1", "column2" ], 1 );
-			s.writeToCsv( workbook=wb, filepath=tempCsvPath, overwrite=true, includeHeaderRow=false );
+			s.addRow( wb, [ "column1", "column2" ], 1 )
+				.writeToCsv( workbook=wb, filepath=tempCsvPath, overwrite=true, includeHeaderRow=false );
 			expect( FileRead( tempCsvPath ) ).toBe( expectedCsv );
 			// move header row down one
-			s.shiftRows( wb, 1, 3, 1 );
-			s.writeToCsv( workbook=wb, filepath=tempCsvPath, overwrite=true, includeHeaderRow=false, headerRow=2 );
+			s.shiftRows( wb, 1, 3, 1 )
+				.writeToCsv( workbook=wb, filepath=tempCsvPath, overwrite=true, includeHeaderRow=false, headerRow=2 );
 			expect( FileRead( tempCsvPath ) ).toBe( expectedCsv );
 		});
 	});

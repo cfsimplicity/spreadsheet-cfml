@@ -25,8 +25,8 @@ describe( "setSheetMargins", function(){
 
 	it( "sets a margin of the named sheet", function(){
 		workbooks.Each( function( wb ){
-			s.createSheet( wb, "test" );
-			s.setSheetTopMargin( wb, 3, "test" );
+			s.createSheet( wb, "test" )
+				.setSheetTopMargin( wb, 3, "test" );
 			var sheet = s.getSheetHelper().getSheetByName( wb, "test" );
 			expect( sheet.getMargin( sheet.TopMargin ) ).toBe( 3 );
 		});

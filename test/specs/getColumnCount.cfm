@@ -7,21 +7,21 @@ describe( "getColumnCount", function(){
 
 	it( "Can get the maximum number of columns in the first sheet", function(){
 		workbooks.Each( function( wb ){
-			s.addRow( wb, "1a,1b" );
-			s.addRow( wb, "2a,2b,2c" );
-			s.addRow( wb, "3a" );
+			s.addRow( wb, "1a,1b" )
+				.addRow( wb, "2a,2b,2c" )
+				.addRow( wb, "3a" );
 			expect( s.getColumnCount( wb ) ).toBe( 3 );
 		});
 	});
 
 	it( "Can get the maximum number of columns of a sheet specified by number", function(){
 		workbooks.Each( function( wb ){
-			s.createSheet( wb );//add a second sheet and switch to it
-			s.setActiveSheetNumber( wb, 2 );
-			s.addRow( wb, "1a,1b" );
-			s.addRow( wb, "2a,2b,2c" );
-			s.addRow( wb, "3a" );
-			s.setActiveSheetNumber( wb, 1 );//switch back to sheet 1
+			s.createSheet( wb )//add a second sheet and switch to it
+				.setActiveSheetNumber( wb, 2 )
+				.addRow( wb, "1a,1b" )
+				.addRow( wb, "2a,2b,2c" )
+				.addRow( wb, "3a" )
+				.setActiveSheetNumber( wb, 1 );//switch back to sheet 1
 			expect( s.getColumnCount( wb ) ).toBe( 0 );
 			expect( s.getColumnCount( wb, 2 ) ).toBe( 3 );
 		});
@@ -29,12 +29,12 @@ describe( "getColumnCount", function(){
 
 	it( "Can get the maximum number of columns of a sheet specified by name", function(){
 		workbooks.Each( function( wb ){
-			s.createSheet( wb, "test" );
-			s.setActiveSheetNumber( wb, 2 );
-			s.addRow( wb, "1a,1b" );
-			s.addRow( wb, "2a,2b,2c" );
-			s.addRow( wb, "3a" );
-			s.setActiveSheetNumber( wb, 1 );
+			s.createSheet( wb, "test" )
+				.setActiveSheetNumber( wb, 2 )
+				.addRow( wb, "1a,1b" )
+				.addRow( wb, "2a,2b,2c" )
+				.addRow( wb, "3a" )
+				.setActiveSheetNumber( wb, 1 );
 			expect( s.getColumnCount( wb ) ).toBe( 0 );
 			expect( s.getColumnCount( wb, "test" ) ).toBe( 3 );
 		});

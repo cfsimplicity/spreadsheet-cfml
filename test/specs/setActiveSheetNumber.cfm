@@ -7,8 +7,8 @@ describe( "setActiveSheetNumber", function(){
 
 	it( "Sets the specified sheet number to be active", function(){
 		workbooks.Each( function( wb ){
-			s.createSheet( wb, "test" );
-			s.setActiveSheetNumber( wb, 2 );
+			s.createSheet( wb, "test" )
+				.setActiveSheetNumber( wb, 2 );
 			expect( s.getSheetHelper().getActiveSheetName( wb ) ).toBe( "test" );
 		});
 	});

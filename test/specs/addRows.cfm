@@ -10,8 +10,8 @@ describe( "addRows", function(){
 	it( "Appends multiple rows from a query with the minimum arguments",function(){
 		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "x", "y" ], [ "a", "b" ], [ "c", "d" ] ] );
 		workbooks.Each( function( wb ){
-			s.addRow( wb, "x,y" );
-			s.addRows( wb, data );
+			s.addRow( wb, "x,y" )
+				.addRows( wb, data );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
@@ -40,16 +40,16 @@ describe( "addRows", function(){
 	it( "Inserts multiple rows at a specifed position",function(){
 		var expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "", "a", "b" ], [ "", "c", "d" ], [ "e", "f", "" ] ] );
 		workbooks.Each( function( wb ){
-			s.addRow( wb, "e,f" );
-			s.addRows( wb, data, 1, 2 );
+			s.addRow( wb, "e,f" )
+				.addRows( wb, data, 1, 2 );
 			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});
 		//array data
 		var workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( function( wb ){
-			s.addRow( wb, "e,f" );
-			s.addRows( wb, dataAsArray, 1, 2 );
+			s.addRow( wb, "e,f" )
+				.addRows( wb, dataAsArray, 1, 2 );
 			actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});
@@ -58,17 +58,17 @@ describe( "addRows", function(){
 	it( "Replaces rows if insert is false",function(){
 		var expected = data;
 		workbooks.Each( function( wb ){
-			s.addRow( wb, "e,f" );
-			s.addRow( wb, "g,h" );
-			s.addRows( workbook=wb, data=data, row=1, insert=false );
+			s.addRow( wb, "e,f" )
+				.addRow( wb, "g,h" )
+				.addRows( workbook=wb, data=data, row=1, insert=false );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 		var workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( function( wb ){
-			s.addRow( wb, "e,f" );
-			s.addRow( wb, "g,h" );
-			s.addRows( workbook=wb, data=dataAsArray, row=1, insert=false );
+			s.addRow( wb, "e,f" )
+				.addRow( wb, "g,h" )
+				.addRows( workbook=wb, data=dataAsArray, row=1, insert=false );
 			actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
@@ -276,8 +276,8 @@ describe( "addRows", function(){
 	it( "Can include the query column names starting at a specific row", function(){
 		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "x", "y" ], [ "column1", "column2" ], [ "a", "b" ], [ "c", "d" ] ] );
 		workbooks.Each( function( wb ){
-			s.addRow( wb, "x,y" );
-			s.addRows( workbook=wb, data=data, row=2, includeQueryColumnNames=true );
+			s.addRow( wb, "x,y" )
+				.addRows( workbook=wb, data=data, row=2, includeQueryColumnNames=true );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
@@ -295,8 +295,8 @@ describe( "addRows", function(){
 	it( "Can include the query column names starting at a specific row and column", function(){
 		var expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "x", "y", "" ],[ "", "column1","column2" ], [ "", "a", "b" ], [ "", "c","d" ] ] );
 		workbooks.Each( function( wb ){
-			s.addRow( wb, "x,y" );
-			s.addRows( workbook=wb, data=data, row=2, column=2, includeQueryColumnNames=true );
+			s.addRow( wb, "x,y" )
+				.addRows( workbook=wb, data=data, row=2, column=2, includeQueryColumnNames=true );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});

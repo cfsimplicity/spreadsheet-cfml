@@ -8,8 +8,8 @@ describe( "shiftRows", function(){
 
 	it( "Shifts rows down if offset is positive", function(){
 		workbooks.Each( function( wb ){
-			s.addRows( wb, rowData );
-			s.shiftRows( wb, 1, 1, 1 );
+			s.addRows( wb, rowData )
+				.shiftRows( wb, 1, 1, 1 );
 			var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "", "" ], [ "a", "b" ] ] );
 			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
@@ -18,8 +18,8 @@ describe( "shiftRows", function(){
 
 	it( "Shifts rows up if offset is negative", function(){
 		workbooks.Each( function( wb ){
-			s.addRows( wb, rowData );
-			s.shiftRows( wb, 2, 2, -1 );
+			s.addRows( wb, rowData )
+				.shiftRows( wb, 2, 2, -1 );
 			var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "c", "d" ] ] );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );

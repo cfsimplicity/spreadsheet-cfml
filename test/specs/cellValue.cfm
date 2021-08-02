@@ -61,8 +61,8 @@ describe( "cellValue", function(){
 				a|a
 				a|a");
 		workbooks.Each( function( wb ){
-			s.setCellRangeValue( wb, value, 1, 2, 1, 2 );
-			s.write( wb, tempXlsPath, true );
+			s.setCellRangeValue( wb, value, 1, 2, 1, 2 )
+				.write( wb, tempXlsPath, true );
 			actual = s.read( src=tempXlsPath, format="query" );
 			expect( actual ).toBe( expected );
 		});

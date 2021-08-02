@@ -24,8 +24,8 @@ describe( "formatColumn", function(){
 			expect( s.getCellFormat( wb, 1, 1 ).italic ).toBeTrue();
 			s.formatColumn( wb, {  bold: true }, 1 ); //overwrites current style style by default
 			expect( s.getCellFormat( wb, 1, 1 ).italic ).toBeFalse();
-			s.formatColumn( wb, {  italic: true }, 1 );
-			s.formatColumn( workbook=wb, format={ bold: true }, column=1, overwriteCurrentStyle=false );
+			s.formatColumn( wb, {  italic: true }, 1 )
+				.formatColumn( workbook=wb, format={ bold: true }, column=1, overwriteCurrentStyle=false );
 			expect( s.getCellFormat( wb, 1, 1 ).bold ).toBeTrue();
 			expect( s.getCellFormat( wb, 1, 1 ).italic ).toBeTrue();
 		});

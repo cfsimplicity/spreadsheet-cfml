@@ -8,9 +8,9 @@ describe( "deleteColumn", function(){
 	it( "Deletes the data in a specified column", function(){
 		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "", "c" ], [ "", "d" ] ] );
 		workbooks.Each( function( wb ){
-			s.addColumn( wb, "a,b" );
-			s.addColumn( wb, "c,d" );
-			s.deleteColumn( wb, 1 );
+			s.addColumn( wb, "a,b" )
+				.addColumn( wb, "c,d" )
+				.deleteColumn( wb, 1 );
 			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});

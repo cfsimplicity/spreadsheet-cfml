@@ -82,8 +82,8 @@ describe( "read", function(){
 	it( "Excludes null and blank rows in query by default", function(){
 		var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "", "" ], [ "a", "b" ] ] );
 		var workbook = s.new();
-		s.addRows( workbook, data );
-		s.write( workbook, tempXlsPath, true );
+		s.addRows( workbook, data )
+			.write( workbook, tempXlsPath, true );
 		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ] ] );;
 		var actual = s.read( src=tempXlsPath, format="query" );
 		expect( actual ).toBe( expected );
@@ -92,8 +92,8 @@ describe( "read", function(){
 	it( "Includes null and blank rows in query if includeBlankRows is true", function(){
 		var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "", "" ], [ "a", "b" ] ] );
 		var workbook = s.new();
-		s.addRows( workbook,data );
-		s.write( workbook, tempXlsPath, true );
+		s.addRows( workbook, data )
+			.write( workbook, tempXlsPath, true );
 		var expected = data;
 		var actual = s.read( src=tempXlsPath, format="query", includeBlankRows=true );
 		expect( actual ).toBe( expected );
@@ -110,8 +110,8 @@ describe( "read", function(){
 		var dateValue = CreateDate( 2015, 04, 12 );
 		var data = QueryNew( "column1,column2,column3,column4,column5", "Integer,Integer,Bit,Date,VarChar", [ [ 2, 0, true, dateValue, "01" ] ] );
 		var workbook = s.new();
-		s.addRows( workbook,data );
-		s.write( workbook, tempXlsPath, true );
+		s.addRows( workbook,data )
+			.write( workbook, tempXlsPath, true );
 		var expected = data;
 		var actual = s.getSheetHelper().sheetToQuery( workbook );
 		expect( actual ).toBe( expected );
@@ -124,8 +124,8 @@ describe( "read", function(){
 	it( "Can fill each of the empty cells in merged regions with the visible merged cell value without conflicting with includeBlankRows=true", function(){
 		var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ], [ "", "" ] ] );
 		var workbook = s.workbookFromQuery( data, false );
-		s.mergeCells( workbook, 1, 2, 1, 2, true );//force empty merged cells
-		s.write( workbook, tempXlsPath, true );
+		s.mergeCells( workbook, 1, 2, 1, 2, true )//force empty merged cells
+			.write( workbook, tempXlsPath, true );
 		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "a" ], [ "a", "a" ] ] );
 		var actual = s.read( src=tempXlsPath, format="query", fillMergedCellsWithVisibleValue=true );
 		expect( actual ).toBe( expected );
@@ -237,8 +237,8 @@ describe( "read", function(){
 	it( "Escapes double-quotes in string values when reading to CSV", function(){
 		var data = QueryNew( "column1", "VarChar", [ [ 'a "so-called" test' ] ] );
 		var workbook = s.new();
-		s.addRows( workbook, data );
-		s.write( workbook, tempXlsPath, true );
+		s.addRows( workbook, data )
+			.write( workbook, tempXlsPath, true );
 		var expected = '"a ""so-called"" test"';
 		var actual = s.read( src=tempXlsPath, format="csv" );
 		expect( actual ).toBe( expected );
@@ -253,10 +253,10 @@ describe( "read", function(){
 
 	it( "Can exclude columns formatted as 'hidden'", function(){
 		var workbook = s.new();
-		s.addColumn( workbook, "a1" );
-		s.addColumn( workbook, "b1" );
-		s.hideColumn( workbook, 1 );
-		s.write( workbook, tempXlsPath, true );
+		s.addColumn( workbook, "a1" )
+			.addColumn( workbook, "b1" )
+			.hideColumn( workbook, 1 )
+			.write( workbook, tempXlsPath, true );
 		var actual = s.read( src=tempXlsPath, format="query", includeHiddenColumns=false );
 		var expected = QuerySim( "column2
 			b1");
@@ -265,11 +265,11 @@ describe( "read", function(){
 
 	it( "Returns an empty query if excluding hidden columns and ALL columns are hidden", function(){
 		var workbook = s.new();
-		s.addColumn( workbook, "a1" );
-		s.addColumn( workbook, "b1" );
-		s.hideColumn( workbook, 1 );
-		s.hideColumn( workbook, 2 );
-		s.write( workbook, tempXlsPath, true );
+		s.addColumn( workbook, "a1" )
+			.addColumn( workbook, "b1" )
+			.hideColumn( workbook, 1 )
+			.hideColumn( workbook, 2 )
+			.write( workbook, tempXlsPath, true );
 		var actual = s.read( src=tempXlsPath, format="query", includeHiddenColumns=false );
 		var expected = QueryNew( "" );
 		expect( actual ).toBe( expected );
@@ -293,8 +293,8 @@ describe( "read", function(){
 		var workbook = s.new();
 		s.addColumn( workbook,"1,1" );
 		var theFormula = "SUM(A1:A2)";
-		s.setCellFormula( workbook, theFormula, 3, 1 );
-		s.write( workbook=workbook, filepath=tempXlsPath, overwrite=true );
+		s.setCellFormula( workbook, theFormula, 3, 1 )
+			.write( workbook=workbook, filepath=tempXlsPath, overwrite=true );
 		var expected = QueryNew( "column1","Integer", [ [ 1 ], [ 1 ], [ 2 ] ] );
 		var actual = s.read( src=tempXlsPath, format="query" );
 		expect( actual ).toBe( expected );
@@ -352,16 +352,16 @@ describe( "read", function(){
 		it( "Allows header names to be made safe for query column names", function(){
 			var data = [ [ "id","id","A  B","x/?y","(a)"," A","##1","1a" ], [ 1,2,3,4,5,6,7,8 ] ];
 			var wb = s.newXlsx();
-			s.addRows( wb, data );
-			s.write( wb, tempXlsxPath, true );
+			s.addRows( wb, data )
+				.write( wb, tempXlsxPath, true );
 			var q = s.read( src=tempXlsxPath, format="query", headerRow=1, makeColumnNamesSafe=true );
 			var expected = [ "id", "id2", "A_B", "x_y", "_a_", "A", "Number1", "_a" ];
 			cfloop( from=1, to=expected.Len(), index="i" ){
 				expect( q.getColumnNames()[ i ] ).toBe( expected[ i ] );
 			}
 			var wb = s.newXls();
-			s.addRows( wb, data );
-			s.write( wb, tempXlsPath, true );
+			s.addRows( wb, data )
+				.write( wb, tempXlsPath, true );
 			var q = s.read( src=tempXlsPath, format="query", headerRow=1, makeColumnNamesSafe=true );
 			var expected = [ "id", "id2", "A_B", "x_y", "_a_", "A", "Number1", "_a" ];
 			cfloop( from=1, to=expected.Len(), index="i" ){
@@ -375,8 +375,8 @@ describe( "read", function(){
 
 		it( "allows the query column types to be manually set using list", function(){
 			var workbook = s.new();
-			s.addRow( workbook, [ 1, 1.1, "string", CreateTime( 1, 0, 0 ) ] );
-			s.write( workbook, tempXlsPath, true );
+			s.addRow( workbook, [ 1, 1.1, "string", CreateTime( 1, 0, 0 ) ] )
+				.write( workbook, tempXlsPath, true );
 			var q = s.read( src=tempXlsPath, format="query", queryColumnTypes="Integer,Double,VarChar,Time" );
 			var columns = GetMetaData( q );
 			expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
@@ -387,8 +387,8 @@ describe( "read", function(){
 
 		it( "allows the query column types to be manually set where the column order isn't known, but the header row values are", function(){
 			var workbook = s.new();
-			s.addRows( workbook, [ [ "integer", "double", "string column", "time" ], [ 1, 1.1, "text", CreateTime( 1, 0, 0 ) ] ] );
-			s.write( workbook, tempXlsPath, true );
+			s.addRows( workbook, [ [ "integer", "double", "string column", "time" ], [ 1, 1.1, "text", CreateTime( 1, 0, 0 ) ] ] )
+				.write( workbook, tempXlsPath, true );
 			var columnTypes = { "string column": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
 			var q = s.read( src=tempXlsPath, format="query", queryColumnTypes=columnTypes, headerRow=1 );
 			var columns = GetMetaData( q );
@@ -400,8 +400,8 @@ describe( "read", function(){
 
 		it( "allows the query column types to be manually set where the column order isn't known, but the column names are", function(){
 			var workbook = s.new();
-			s.addRows( workbook, [ [ 1, 1.1, "text", CreateTime( 1, 0, 0 ) ] ] );
-			s.write( workbook, tempXlsPath, true );
+			s.addRows( workbook, [ [ 1, 1.1, "text", CreateTime( 1, 0, 0 ) ] ] )
+				.write( workbook, tempXlsPath, true );
 			var columnNames = "integer,double,string column,time";
 			var columnTypes = { "string": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
 			var q = s.read( src=tempXlsPath, format="query", queryColumnTypes=columnTypes, columnNames=columnNames );
@@ -414,8 +414,8 @@ describe( "read", function(){
 
 		it( "allows the query column types to be automatically set", function(){
 			var workbook = s.new();
-			s.addRow( workbook, [ 1, 1.1, "string", Now() ] );
-			s.write( workbook, tempXlsPath, true );
+			s.addRow( workbook, [ 1, 1.1, "string", Now() ] )
+				.write( workbook, tempXlsPath, true );
 			var q = s.read( src=tempXlsPath, format="query", queryColumnTypes="auto" );
 			var columns = GetMetaData( q );
 			expect( columns[ 1 ].typeName ).toBe( "DOUBLE" );
@@ -432,8 +432,8 @@ describe( "read", function(){
 				[ 1, 1.1, "string", Now() ],
 				[ 1, "", "", "" ]
 			];
-			s.addRows( workbook, data );
-			s.write( workbook, tempXlsPath, true );
+			s.addRows( workbook, data )
+				.write( workbook, tempXlsPath, true );
 			var q = s.read( src=tempXlsPath, format="query", queryColumnTypes="auto" );
 			var columns = GetMetaData( q );
 			expect( columns[ 1 ].typeName ).toBe( "DOUBLE" );
@@ -444,8 +444,8 @@ describe( "read", function(){
 
 		it( "allows a default type to be set for all query columns", function(){
 			var workbook = s.new();
-			s.addRow( workbook, [ 1, 1.1, "string", Now() ] );
-			s.write( workbook, tempXlsPath, true );
+			s.addRow( workbook, [ 1, 1.1, "string", Now() ] )
+				.write( workbook, tempXlsPath, true );
 			var q = s.read( src=tempXlsPath, format="query", queryColumnTypes="VARCHAR" );
 			var columns = GetMetaData( q );
 			expect( columns[ 1 ].typeName ).toBe( "VARCHAR" );
@@ -470,9 +470,9 @@ describe( "read", function(){
 				var workbook = s.new();
 				s.addColumn( workbook, "1,1" );
 				var theFormula="SUS(A1:A2)";//invalid formula
-				s.setCellFormula( workbook, theFormula, 3, 1 );
-				s.write( workbook=workbook, filepath=tempXlsPath, overwrite=true );
-				s.read( src=tempXlsPath, format="query" );
+				s.setCellFormula( workbook, theFormula, 3, 1 )
+					.write( workbook=workbook, filepath=tempXlsPath, overwrite=true )
+					.read( src=tempXlsPath, format="query" );
 			}).toThrow( regex="Failed to run formula" );
 		});
 

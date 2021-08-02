@@ -12,8 +12,8 @@ describe( "cellComment", function(){
 		};
 		var expected = Duplicate( theComment ).Append( { column: 1, row: 1 } );
 		workbooks.Each( function( wb ){
-			s.addColumn( wb, "1" );
-			s.setCellComment( wb, theComment, 1, 1 );
+			s.addColumn( wb, "1" )
+				.setCellComment( wb, theComment, 1, 1 );
 			var actual = s.getCellComment( wb, 1, 1 );
 			expect( actual ).toBe( expected );
 		});
@@ -27,8 +27,8 @@ describe( "cellComment", function(){
 			var comments = [];
 			comments.Append( { author: "cfsimplicity", comment: "This is the comment in row 1 column 1" } );
 			comments.Append( { author: "cfsimplicity", comment: "This is the comment in row 2 column 2" } );
-			s.setCellComment( wb, comments[ 1 ], 1, 1 );
-			s.setCellComment( wb, comments[ 2 ], 2, 2 );
+			s.setCellComment( wb, comments[ 1 ], 1, 1 )
+				.setCellComment( wb, comments[ 2 ], 2, 2 );
 			comments[ 1 ].Append( { column: 1, row: 1 } );
 			comments[ 2 ].Append( { column: 2, row: 2 } );
 			var expected = comments;

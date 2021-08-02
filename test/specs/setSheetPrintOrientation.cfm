@@ -18,8 +18,8 @@ describe( "setSheetPrintOrientation", function(){
 
 	it( "sets the named sheet to the specified orientation", function(){
 		workbooks.Each( function( wb ){
-			s.createSheet( wb, "test" );
-			s.setSheetPrintOrientation( wb, "landscape", "test" );
+			s.createSheet( wb, "test" )
+				.setSheetPrintOrientation( wb, "landscape", "test" );
 			var sheet = s.getSheetHelper().getSheetByName( wb, "test" );
 			expect( sheet.getPrintSetup().getLandscape() ).toBeTrue();
 		});

@@ -18,9 +18,9 @@ describe( "renameSheet", function(){
 		it( "the new sheet name already exists", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
-					s.createSheet( wb, "test" );
-					s.createSheet( wb, "test2" );
-					s.renameSheet( wb, "test2", 2 );
+					s.createSheet( wb, "test" )
+						.createSheet( wb, "test2" )
+						.renameSheet( wb, "test2", 2 );
 				}).toThrow( regex="Invalid Sheet Name" );
 			});
 		});

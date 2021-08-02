@@ -8,8 +8,8 @@ describe( "write", function(){
 	it( "Writes an XLS object correctly", function(){
 		data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a","b" ], [ "c","d" ] ] );
 		var workbook = s.newXls();
-		s.addRows( workbook, data );
-		s.write( workbook, tempXlsPath, true );
+		s.addRows( workbook, data )
+			.write( workbook, tempXlsPath, true );
 		var expected = data;
 		var actual = s.read( src=tempXlsPath, format="query" );
 		expect( actual ).toBe( expected );
@@ -18,8 +18,8 @@ describe( "write", function(){
 	it( "Writes an XLSX object correctly", function(){
 		var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
 		var workbook = s.newXlsx();
-		s.addRows( workbook, data );
-		s.write( workbook, tempXlsxPath, true );
+		s.addRows( workbook, data )
+			.write( workbook, tempXlsxPath, true );
 		var expected = data;
 		var actual = s.read( src=tempXlsxPath, format="query" );
 		expect( actual ).toBe( expected );
@@ -32,8 +32,8 @@ describe( "write", function(){
 		}
 		var data = QueryNew( "column1,column2", "Integer,Varchar", rows );
 		var workbook = s.newStreamingXlsx();
-		s.addRows( workbook, data );
-		s.write( workbook, tempXlsxPath, true );
+		s.addRows( workbook, data )
+			.write( workbook, tempXlsxPath, true );
 		var expected = data;
 		var actual = s.read( src=tempXlsxPath, format="query" );
 		expect( actual ).toBe( expected );
@@ -46,8 +46,8 @@ describe( "write", function(){
 		}
 		var data = QueryNew( "column1,column2", "Integer,Varchar", rows );
 		var workbook = s.newStreamingXlsx( streamingWindowSize=2 );
-		s.addRows( workbook, data );
-		s.write( workbook, tempXlsxPath, true );
+		s.addRows( workbook, data )
+			.write( workbook, tempXlsxPath, true );
 		var expected = data;
 		var actual = s.read( src=tempXlsxPath, format="query" );
 		expect( actual ).toBe( expected );
@@ -56,8 +56,8 @@ describe( "write", function(){
 	it( "Can write an XLSX file encrypted with a password", function(){
 		var data = QueryNew( "column1", "VarChar", [ [ "secret" ] ] );
 		var workbook = s.newXlsx();
-		s.addRows( workbook,data );
-		s.write( workbook=workbook, filepath=tempXlsxPath, overwrite=true, password="pass" );
+		s.addRows( workbook,data )
+			.write( workbook=workbook, filepath=tempXlsxPath, overwrite=true, password="pass" );
 		var expected = data;
 		var actual = s.read( src=tempXlsxPath, format="query", password="pass" );
 		expect( actual ).toBe( expected );

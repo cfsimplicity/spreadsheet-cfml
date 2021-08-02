@@ -19,8 +19,8 @@ describe( "printGridLines", function(){
 
 	it( "can be removed", function(){
 		workbooks.Each( function( wb ){
-			s.addPrintGridLines( wb );
-			s.removePrintGridLines( wb );
+			s.addPrintGridLines( wb )
+				.removePrintGridLines( wb );
 			expect( s.getSheetHelper().getActiveSheet( wb ).isPrintGridlines() ).toBeFalse();
 		});
 	});

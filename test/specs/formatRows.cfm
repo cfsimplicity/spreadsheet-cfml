@@ -11,8 +11,8 @@ describe( "formatRows", function(){
 			expect( s.getCellFormat( wb, 1, 1 ).italic ).toBeTrue();
 			s.formatRows( wb, {  bold: true }, "1-2" ); //overwrites current style style by default
 			expect( s.getCellFormat( wb, 1, 1 ).italic ).toBeFalse();
-			s.formatRows( wb, {  italic: true }, "1-2" );
-			s.formatRows( workbook=wb, format={ bold: true }, range="1-2", overwriteCurrentStyle=false );
+			s.formatRows( wb, {  italic: true }, "1-2" )
+				.formatRows( workbook=wb, format={ bold: true }, range="1-2", overwriteCurrentStyle=false );
 			expect( s.getCellFormat( wb, 1, 1 ).bold ).toBeTrue();
 			expect( s.getCellFormat( wb, 1, 1 ).italic ).toBeTrue();
 		});
