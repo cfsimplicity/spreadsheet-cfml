@@ -29,6 +29,10 @@ component accessors="true"{
 		return library().getColumnHelper();
 	}
 
+	public any function getCommetHelper(){
+		return library().getCommetHelper();
+	}
+
 	public any function getCsvHelper(){
 		return library().getCsvHelper();
 	}

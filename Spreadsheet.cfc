@@ -24,6 +24,7 @@ component accessors="true"{
 	property name="classHelper";
 	property name="colorHelper";
 	property name="columnHelper";
+	property name="commentHelper";
 	property name="csvHelper";
 	property name="dataTypeHelper";
 	property name="dateHelper";
@@ -63,6 +64,7 @@ component accessors="true"{
 		setClassHelper( New helpers.class( this ) );
 		setColorHelper( New helpers.color( this ) );
 		setColumnHelper( New helpers.column( this ) );
+		setCommentHelper( New helpers.comment( this ) );
 		setCsvHelper( New helpers.csv( this ) );
 		setDataTypeHelper( New helpers.dataType( this ) );
 		setDateHelper( New helpers.date( this ) );
@@ -524,10 +526,11 @@ component accessors="true"{
 
 	public Spreadsheet function addInfo( required workbook, required struct info ){
 		// Valid struct keys are author, category, lastauthor, comments, keywords, manager, company, subject, title
-		if( isBinaryFormat( arguments.workbook ) )
+		if( isBinaryFormat( arguments.workbook ) ){
 			getInfoHelper().addInfoBinary( arguments.workbook, arguments.info );
-		else
-			getInfoHelper().addInfoXml( arguments.workbook, arguments.info );
+			return this;
+		}
+		getInfoHelper().addInfoXml( arguments.workbook, arguments.info );
 		return this;
 	}
 
@@ -572,12 +575,8 @@ component accessors="true"{
 		getDataTypeHelper().checkDataTypesArgument( arguments );
 		var lastRow = getRowHelper().getNextEmptyRowNumber( arguments.workbook );
 		//If the requested row already exists...
-		if( arguments.KeyExists( "row" ) && ( arguments.row <= lastRow ) ){
-			if( arguments.insert )
-				shiftRows( arguments.workbook, arguments.row, lastRow, 1 );//shift the existing rows down (by one row)
-			else
-				deleteRow( arguments.workbook, arguments.row );//otherwise, clear the entire row
-		}
+		if( arguments.KeyExists( "row" ) && ( arguments.row <= lastRow ) )
+			getRowHelper().shiftOrDeleteRow( arguments.workbook, arguments.row, lastRow, arguments.insert );
 		var theRow = arguments.KeyExists( "row" )? getRowHelper().createRow( arguments.workbook, arguments.row -1 ): getRowHelper().createRow( arguments.workbook );
 		var dataIsArray = IsArray( arguments.data );
 		var rowValues = dataIsArray? arguments.data: getRowHelper().parseListDataToArray( arguments.data, arguments.delimiter, arguments.handleEmbeddedCommas );
@@ -755,23 +754,20 @@ component accessors="true"{
 	}
 
 	public Spreadsheet function createSheet( required workbook, string sheetName, overwrite=false ){
-		if( arguments.KeyExists( "sheetName" ) )
-			getSheetHelper().validateSheetName( arguments.sheetName );
-		else
-			arguments.sheetName = getSheetHelper().generateUniqueSheetName( arguments.workbook );
-		if( !getSheetHelper().sheetExists( workbook=arguments.workbook, sheetName=arguments.sheetName ) ){
-			arguments.workbook.createSheet( JavaCast( "String", arguments.sheetName ) );
+		local.sheetName = getSheetHelper().createOrValidateSheetName( argumentCollection=arguments );
+		if( !getSheetHelper().sheetExists( workbook=arguments.workbook, sheetName=sheetName ) ){
+			arguments.workbook.createSheet( JavaCast( "String", sheetName ) );
 			return this;
 		}
 		// sheet already exists with that name
 		if( !arguments.overwrite )
-			Throw( type=this.getExceptionType(), message="Sheet name already exists", detail="A sheet with the name '#arguments.sheetName#' already exists in this workbook" );
+			Throw( type=this.getExceptionType(), message="Sheet name already exists", detail="A sheet with the name '#sheetName#' already exists in this workbook" );
 		// OK to replace the existing
-		var sheetIndexToReplace = arguments.workbook.getSheetIndex( JavaCast( "string", arguments.sheetName ) );
+		var sheetIndexToReplace = arguments.workbook.getSheetIndex( JavaCast( "string", sheetName ) );
 		getSheetHelper().deleteSheetAtIndex( arguments.workbook, sheetIndexToReplace );
-		var newSheet = arguments.workbook.createSheet( JavaCast( "String", arguments.sheetName ) );
+		var newSheet = arguments.workbook.createSheet( JavaCast( "String", sheetName ) );
 		var moveToIndex = sheetIndexToReplace;
-		getSheetHelper().moveSheet( arguments.workbook, arguments.sheetName, moveToIndex );
+		getSheetHelper().moveSheet( arguments.workbook, sheetName, moveToIndex );
 		return this;
 	}
 
@@ -985,21 +981,18 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid argument combination", detail="If you specify the row you must also specify the column" );
 		if( arguments.KeyExists( "column" ) && !arguments.KeyExists( "row" ) )
 			Throw( type=this.getExceptionType(), message="Invalid argument combination", detail="If you specify the column you must also specify the row" );
-		if( arguments.KeyExists( "row" ) ){
-			var cell = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column );
-			var commentObject = cell.getCellComment();
-			if( !IsNull( commentObject ) ){
-				return {
-					author: commentObject.getAuthor()
-					,comment: commentObject.getString().getString()
-					,column: arguments.column
-					,row: arguments.row
-				};
-			}
+		if( !arguments.KeyExists( "row" ) )
+			return getCellComments( arguments.workbook );// row and column weren't provided so return all the comments as an array of structs
+		var cell = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column );
+		var commentObject = cell.getCellComment();
+		if( IsNull( commentObject ) )
 			return {};
-		}
-		// row and column weren't provided so return all the comments as an array of structs
-		return getCellComments( arguments.workbook );
+		return {
+			author: commentObject.getAuthor()
+			,comment: commentObject.getString().getString()
+			,column: arguments.column
+			,row: arguments.row
+		};
 	}
 
 	public array function getCellComments( required workbook ){
@@ -1023,10 +1016,9 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid cell", detail="There doesn't appear to be a cell at row #row#, column #column#" );
 		var cellStyle = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column ).getCellStyle();
 		var cellFont = arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() );
-		if( isXmlFormat( arguments.workbook ) )
-			var rgb = getColorHelper().convertSignedRGBToPositiveTriplet( cellFont.getXSSFColor().getRGB() );
-		else
-			var rgb = IsNull( cellFont.getHSSFColor( arguments.workbook ) )? []: cellFont.getHSSFColor( arguments.workbook ).getTriplet();
+		var rgb = isXmlFormat( arguments.workbook )?
+			getColorHelper().convertSignedRGBToPositiveTriplet( cellFont.getXSSFColor().getRGB() )
+			: IsNull( cellFont.getHSSFColor( arguments.workbook ) )? []: cellFont.getHSSFColor( arguments.workbook ).getTriplet();
 		return {
 			alignment: cellStyle.getAlignment().toString()
 			,bold: cellFont.getBold()
@@ -1162,10 +1154,8 @@ component accessors="true"{
 			* SHEETNAMES
 			* SPREADSHEETTYPE
 		*/
-		if( this.isSpreadsheetObject( arguments[ 1 ] ) ) //use this scope to avoid clash with ACF built-in function
-			var workbook = arguments[ 1 ];
-		else
-			var workbook = getWorkbookHelper().workbookFromFile( arguments[ 1 ] );
+		 //use this.isSpreadsheetObject to avoid clash with ACF built-in function
+		var workbook = this.isSpreadsheetObject( arguments[ 1 ] )? arguments[ 1 ]: getWorkbookHelper().workbookFromFile( arguments[ 1 ] );
 		//format specific metadata
 		var info = isBinaryFormat( workbook )? getInfoHelper().binaryInfo( workbook ): getInfoHelper().xmlInfo( workbook );
 		//common properties
@@ -1295,10 +1285,9 @@ component accessors="true"{
 			data.Append( rowValues );
 		}
 		var builder = getStringHelper().newJavaStringBuilder();
-		if( getCsvHelper().delimiterIsTab( arguments.delimiter ) )
-			var csvFormat = getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ];
-		else
-			var csvFormat = getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "EXCEL" ) ]
+		var csvFormat =  getCsvHelper().delimiterIsTab( arguments.delimiter )?
+			getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ]
+			: getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "EXCEL" ) ]
 				.withDelimiter( JavaCast( "char", arguments.delimiter ) );
 		getClassHelper().loadClass( "org.apache.commons.csv.CSVPrinter" )
 			.init( builder, csvFormat )
@@ -1367,17 +1356,17 @@ component accessors="true"{
 		var generatedQuery = getSheetHelper().sheetToQuery( argumentCollection=args );
 		if( arguments.format == "query" )
 			return generatedQuery;
-		var args = { query: generatedQuery };
+		args = { query: generatedQuery };
 		if( arguments.KeyExists( "headerRow" ) ){
 			args.headerRow = arguments.headerRow;
 			args.includeHeaderRow = arguments.includeHeaderRow;
 		}
-		switch( arguments.format ){
-			case "csv":
-				args.delimiter = arguments.csvDelimiter;
-				return queryToCsv( argumentCollection=args );
-			case "html": return getQueryHelper().queryToHtml( argumentCollection=args );
+		if( arguments.format == "csv" ){
+			args.delimiter = arguments.csvDelimiter;
+			return queryToCsv( argumentCollection=args );
 		}
+		// format = html
+		return getQueryHelper().queryToHtml( argumentCollection=args );
 	}
 
 	public binary function readBinary( required workbook ){
@@ -1470,93 +1459,16 @@ component accessors="true"{
 		 */
 		var factory = arguments.workbook.getCreationHelper();
 		var commentString = factory.createRichTextString( JavaCast( "string", arguments.comment.comment ) );
-		var anchor = factory.createClientAnchor();
-		var anchorValues = {};
-		if( arguments.comment.KeyExists( "anchor" ) ){
-			//specifies the position and size of the comment, e.g. "4,8,6,11"
-			var anchorValueArray = arguments.comment.anchor.ListToArray();
-			anchorValues.col1 = anchorValueArray[ 1 ];
-			anchorValues.row1 = anchorValueArray[ 2 ];
-			anchorValues.col2 = anchorValueArray[ 3 ];
-			anchorValues.row2 = anchorValueArray[ 4 ];
-		}
-		else{
-			//no position specified, so use the row/column values to set a default
-			anchorValues.col1 = arguments.column;
-			anchorValues.row1 = arguments.row;
-			anchorValues.col2 = ( arguments.column +2 );
-			anchorValues.row2 = ( arguments.row +2 );
-		}
-		anchor.setRow1( JavaCast( "int", anchorValues.row1 ) );
-		anchor.setCol1( JavaCast( "int", anchorValues.col1 ) );
-		anchor.setRow2( JavaCast( "int", anchorValues.row2 ) );
-		anchor.setCol2( JavaCast( "int", anchorValues.col2 ) );
+		var anchor = getCommentHelper().createCommentAnchor( factory, arguments.comment, arguments.row, arguments.column );
 		var drawingPatriarch = getSheetHelper().getActiveSheet( arguments.workbook ).createDrawingPatriarch();
 		var commentObject = drawingPatriarch.createCellComment( anchor );
 		if( arguments.comment.KeyExists( "author" ) )
 			commentObject.setAuthor( JavaCast( "string", arguments.comment.author ) );
 		if( arguments.comment.KeyExists( "visible" ) )
 			commentObject.setVisible( JavaCast( "boolean", arguments.comment.visible ) );//doesn't always seem to work
-		// If we're going to do anything font related, need to create a font. Didn't really want to create it above since it might not be needed.
-		var commentHasFontStyles = (
-			arguments.comment.KeyExists( "bold" )
-			|| arguments.comment.KeyExists( "color" )
-			|| arguments.comment.KeyExists( "font" )
-			|| arguments.comment.KeyExists( "italic" )
-			|| arguments.comment.KeyExists( "size" )
-			|| arguments.comment.KeyExists( "strikeout" )
-			|| arguments.comment.KeyExists( "underline" )
-		);
-		if( commentHasFontStyles ){
-			var font = workbook.createFont();
-			if( arguments.comment.KeyExists( "bold" ) )
-				font.setBold( JavaCast( "boolean", arguments.comment.bold ) );
-			if( arguments.comment.KeyExists( "color" ) )
-				font.setColor( getColorHelper().getColor( workbook, arguments.comment.color ) );
-			if( arguments.comment.KeyExists( "font" ) )
-				font.setFontName( JavaCast( "string", arguments.comment.font ) );
-			if( arguments.comment.KeyExists( "italic" ) )
-				font.setItalic( JavaCast( "string", arguments.comment.italic ) );
-			if( arguments.comment.KeyExists( "size" ) )
-				font.setFontHeightInPoints( JavaCast( "int", arguments.comment.size ) );
-			if( arguments.comment.KeyExists( "strikeout" ) )
-				font.setStrikeout( JavaCast( "boolean", arguments.comment.strikeout ) );
-			if( arguments.comment.KeyExists( "underline" ) )
-				font.setUnderline( JavaCast( "byte", arguments.comment.underline ) );
-			commentString.applyFont( font );
-		}
-		var workbookIsHSSF = isBinaryFormat( arguments.workbook );
-		//the following 5 properties are not currently supported on XSSFComment: https://github.com/cfsimplicity/lucee-spreadsheet/issues/192
-		if( workbookIsHSSF && arguments.comment.KeyExists( "fillColor" ) ){
-			var javaColorRGB = getColorHelper().getJavaColorRGBFor( arguments.comment.fillColor );
-			commentObject.setFillColor(
-				JavaCast( "int", javaColorRGB.red )
-				,JavaCast( "int", javaColorRGB.green )
-				,JavaCast( "int", javaColorRGB.blue )
-			);
-		}
-		if( workbookIsHSSF && arguments.comment.KeyExists( "lineStyle" ) )
-		 	commentObject.setLineStyle( JavaCast( "int", commentObject[ "LINESTYLE_" & arguments.comment.lineStyle.UCase() ] ) );
-		if( workbookIsHSSF && arguments.comment.KeyExists( "lineStyleColor" ) ){
-			var javaColorRGB = getColorHelper().getJavaColorRGBFor( arguments.comment.lineStyleColor );
-			commentObject.setLineStyleColor(
-				JavaCast( "int", javaColorRGB.red )
-				,JavaCast( "int", javaColorRGB.green )
-				,JavaCast( "int", javaColorRGB.blue )
-			);
-		}
-		/* Horizontal alignment can be left, center, right, justify, or distributed. Note that the constants on the Java class are slightly different in some cases: 'center'=CENTERED 'justify'=JUSTIFIED */
-		if( workbookIsHSSF && arguments.comment.KeyExists( "horizontalAlignment" ) ){
-			if( arguments.comment.horizontalAlignment.UCase() == "CENTER" )
-				arguments.comment.horizontalAlignment = "CENTERED";
-			if( arguments.comment.horizontalAlignment.UCase() == "JUSTIFY" )
-				arguments.comment.horizontalAlignment = "JUSTIFIED";
-			commentObject.setHorizontalAlignment( JavaCast( "int", commentObject[ "HORIZONTAL_ALIGNMENT_" & arguments.comment.horizontalalignment.UCase() ] ) );
-		}
-		/* Vertical alignment can be top, center, bottom, justify, and distributed. Note that center and justify are DIFFERENT than the constants for horizontal alignment, which are CENTERED and JUSTIFIED. */
-		if( workbookIsHSSF && arguments.comment.KeyExists( "verticalAlignment" ) )
-			commentObject.setVerticalAlignment( JavaCast( "int", commentObject[ "VERTICAL_ALIGNMENT_" & arguments.comment.verticalAlignment.UCase() ] ) );
-		//END HSSF only styles
+		getCommentHelper().addFontStylesToComment( arguments.comment, arguments.workbook, commentString );
+		if( isBinaryFormat( arguments.workbook ) )
+			getCommentHelper().addHSSFonlyStyles( arguments.comment, commentObject );
 		commentObject.setString( commentString );
 		var cell = getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column );
 		cell.setCellComment( commentObject );

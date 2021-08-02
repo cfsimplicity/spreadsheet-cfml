@@ -156,6 +156,20 @@ component extends="base" accessors="true"{
 		return ( arguments.row.getLastCellNum() > 0 );
 	}
 
+	public any function shiftOrDeleteRow(
+		required workbook
+		,required row
+		,required lastRow
+		,required boolean insert
+	){
+		if( arguments.insert ){
+			library().shiftRows( arguments.workbook, arguments.row, arguments.lastRow, 1 );//shift the existing rows down (by one row)
+			return this;
+		}
+		library().deleteRow( arguments.workbook, arguments.row );//otherwise, clear the entire row
+		return this;
+	}
+
 	/* Private */
 
 	private boolean function rowIsEmpty( required row ){

@@ -1,19 +1,14 @@
 component extends="base" accessors="true"{
 
-	public void function deleteSheetAtIndex( required workbook, required numeric sheetIndex ){
-		arguments.workbook.removeSheetAt( JavaCast( "int", arguments.sheetIndex ) );
+	public string function createOrValidateSheetName( required workbook ){
+		if( !arguments.KeyExists( "sheetName" ) )
+			return generateUniqueSheetName( arguments.workbook );
+		validateSheetName( arguments.sheetName );
+		return arguments.sheetName;
 	}
 
-	public string function generateUniqueSheetName( required workbook ){
-		var startNumber = ( arguments.workbook.getNumberOfSheets() +1 );
-		var maxRetry = ( startNumber +250 );
-		for( var sheetNumber = startNumber; sheetNumber <= maxRetry; sheetNumber++ ){
-			var proposedName = "Sheet" & sheetNumber;
-			if( !sheetExists( arguments.workbook, proposedName ) )
-				return proposedName;
-		}
-		// this should never happen. but if for some reason it did, warn the action failed and abort
-		Throw( type=library().getExceptionType(), message="Unable to generate name", detail="Unable to generate a unique sheet name" );
+	public void function deleteSheetAtIndex( required workbook, required numeric sheetIndex ){
+		arguments.workbook.removeSheetAt( JavaCast( "int", arguments.sheetIndex ) );
 	}
 
 	public any function getActiveSheet( required workbook ){
@@ -220,6 +215,18 @@ component extends="base" accessors="true"{
 	}
 
 	/* Private */
+
+	private string function generateUniqueSheetName( required workbook ){
+		var startNumber = ( arguments.workbook.getNumberOfSheets() +1 );
+		var maxRetry = ( startNumber +250 );
+		for( var sheetNumber = startNumber; sheetNumber <= maxRetry; sheetNumber++ ){
+			var proposedName = "Sheet" & sheetNumber;
+			if( !sheetExists( arguments.workbook, proposedName ) )
+				return proposedName;
+		}
+		// this should never happen. but if for some reason it did, warn the action failed and abort
+		Throw( type=library().getExceptionType(), message="Unable to generate name", detail="Unable to generate a unique sheet name" );
+	}
 
 	private numeric function getSheetIndexFromName( required workbook, required string sheetName ){
 		//returns -1 if non-existent
