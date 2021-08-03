@@ -8,6 +8,20 @@ component extends="base" accessors="true"{
 		return variables.dateUtil;
 	}
 
+	// alternative BIF
+	public boolean function _IsDate( required value ){
+		if( !IsDate( arguments.value ) )
+			return false;
+		// Lucee will treat 01-23112 or 23112-01 as a date!
+		if( ParseDateTime( arguments.value ).Year() > 9999 ) //ACF future limit
+			return false;
+		// ACF accepts "9a", "9p", "9 a" as dates
+		// ACF no member function
+		if( REFind( "^\d+\s*[apAP]{1,1}$", arguments.value ) )
+			return false;
+		return true;
+	}
+
 	public any function setFormats( struct dateFormats ){
 		library().setDateFormats( defaultFormats() );
 		if( !arguments.KeyExists( "dateFormats" ) )

@@ -174,7 +174,7 @@ component extends="base" accessors="true"{
 				sheet.columnNames.Append( "column" & i );
 		}
 		arguments.queryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, sheet.columnNames, sheet.totalColumnCount, sheet.data );
-		var result = library()._QueryNew( sheet.columnNames, arguments.queryColumnTypes, sheet.data, arguments.makeColumnNamesSafe );
+		var result = getQueryHelper()._QueryNew( sheet.columnNames, arguments.queryColumnTypes, sheet.data, arguments.makeColumnNamesSafe );
 		if( !arguments.includeHiddenColumns ){
 			result = getQueryHelper().deleteHiddenColumnsFromQuery( sheet, result );
 			if( sheet.totalColumnCount == 0 )

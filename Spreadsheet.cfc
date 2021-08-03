@@ -226,7 +226,7 @@ component accessors="true"{
 				data.DeleteAt( 1 );
 		}
 		arguments.queryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, columnNames, maxColumnCount, data );
-		return _QueryNew( columnNames, arguments.queryColumnTypes, data, arguments.makeColumnNamesSafe );
+		return getQueryHelper()._QueryNew( columnNames, arguments.queryColumnTypes, data, arguments.makeColumnNamesSafe );
 	}
 
 	public void function download( required workbook, required string filename, string contentType ){
@@ -349,7 +349,7 @@ component accessors="true"{
 		if( arguments.KeyExists( "datatypes" ) )
 			addRowsArgs.datatypes = arguments.datatypes;
 		if( arguments.addHeaderRow ){
-			var columns = _QueryColumnArray( arguments.data );
+			var columns = getQueryHelper()._QueryColumnArray( arguments.data );
 			addRow( workbook, columns );
 			if( arguments.boldHeaderRow )
 				formatRow( workbook, { bold: true }, 1 );
@@ -625,12 +625,12 @@ component accessors="true"{
 			var queryColumns = getQueryHelper().getQueryColumnTypeToCellTypeMappings( arguments.data );
 			var cellIndex = ( arguments.column -1 );
 			if( arguments.includeQueryColumnNames ){
-				var columnNames = _QueryColumnArray( arguments.data );
+				var columnNames = getQueryHelper()._QueryColumnArray( arguments.data );
 				addRow( workbook=arguments.workbook, data=columnNames, row=currentRowIndex +1, column=arguments.column );
 				currentRowIndex++;
 			}
 			if( arguments.KeyExists( "datatypes" ) ){
-				param local.columnNames = _QueryColumnArray( arguments.data );
+				param local.columnNames = getQueryHelper()._QueryColumnArray( arguments.data );
 				getDataTypeHelper().convertDataTypeOverrideColumnNamesToNumbers( arguments.datatypes, columnNames );
 			}
 			for( var dataRow in arguments.data ){
@@ -1269,14 +1269,14 @@ component accessors="true"{
 
 	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter="," ){		
 		var data = [];
-		var columns = _QueryColumnArray( arguments.query );
+		var columns = getQueryHelper()._QueryColumnArray( arguments.query );
 		if( arguments.includeHeaderRow )
 			data.Append( columns );
 		for( var row IN arguments.query ){
 			var rowValues = [];
 			for( var column IN columns ){
 				var cellValue = row[ column ];
-				if( getDateHelper().isDateObject( cellValue ) || _IsDate( cellValue ) )
+				if( getDateHelper().isDateObject( cellValue ) || getDateHelper()._IsDate( cellValue ) )
 					cellValue = DateTimeFormat( cellValue, this.getDateFormats().DATETIME );
 				if( IsValid( "integer", cellValue ) )
 					cellValue = JavaCast( "string", cellValue );// prevent CSV writer converting 1 to 1.0
@@ -1789,91 +1789,6 @@ component accessors="true"{
 		var csv = queryToCsv( query=data, delimiter=arguments.delimiter );
 		FileWrite( arguments.filepath, csv );
 		return this;
-	}
-
-	/* END PUBLIC API */
-
-	/* Override troublesome engine BIFs */
-
-	public boolean function _IsDate( required value ){
-		if( !IsDate( arguments.value ) )
-			return false;
-		// Lucee will treat 01-23112 or 23112-01 as a date!
-		if( ParseDateTime( arguments.value ).Year() > 9999 ) //ACF future limit
-			return false;
-		// ACF accepts "9a", "9p", "9 a" as dates
-		// ACF no member function
-		if( REFind( "^\d+\s*[apAP]{1,1}$", arguments.value ) )
-			return false;
-		return true;
-	}
-
-	/* ACF compatibility functions */
-	public array function _QueryColumnArray( required query q ){
-		try{
-			return QueryColumnArray( arguments.q ); // Lucee
-		}
-		catch( any exception ){
-			if( !exception.message CONTAINS "undefined" )
-				rethrow;
-			// ACF
-			return q.getColumnNames();
-		}
-	}
-
-	public query function _QueryDeleteColumn( required query q, required string columnToDelete ){
-		try{
-			QueryDeleteColumn( arguments.q, arguments.columnToDelete ); // Lucee/ACF2018+
-			return arguments.q;
-		}
-		catch( any exception ){
-			if( !exception.message CONTAINS "undefined" )
-				rethrow;
-			//ACF2016 doesn't support QueryDeleteColumn()
-			var columnPosition = ListFindNoCase( arguments.q.columnList, arguments.columnToDelete );
-			if( !columnPosition )
-				return arguments.q;
-			var columnsToKeep = ListDeleteAt( arguments.q.columnList, columnPosition );
-			if( !columnsToKeep.Len() )
-				return QueryNew( "" );
-			return QueryExecute( "SELECT #columnsToKeep# FROM arguments.q", {}, { dbType = "query" } );
-		}
-	}
-
-	public query function _QueryNew(
-		required array columnNames
-		,required string columnTypeList
-		,required array data //NB: 'data' should not contain structs since they use the column name as key: always use array of row arrays instead
-		,boolean makeColumnNamesSafe=false
-	){
-		if( arguments.makeColumnNamesSafe )
-			arguments.columnNames = getQueryHelper().getSafeColumnNames( arguments.columnNames );
-		if( !this.getIsACF() ) //Lucee
-			return QueryNew( arguments.columnNames, arguments.columnTypeList, arguments.data );
-		//ACF
- 		if( arguments.makeColumnNamesSafe || !getQueryHelper().columnNamesContainAnInvalidVariableName( arguments.columnNames ) ) // Column names will be accepted and case preserved
-			return QueryNew( arguments.columnNames.ToList(), arguments.columnTypeList, arguments.data ); //ACF requires a list, not an array.
-		/*
-			ACF QueryNew() won't accept invalid variable names in the column name list (e.g. names including commas or spaces, or starting with a number).
-			The following workaround allows the original column names to be used
-		*/
-		// Create a query with safe column names
-		var totalColumns = arguments.columnNames.Len();
-		var safeColumnNames = [];
-		for( var i=1; i <= totalColumns; i++ ){
-			safeColumnNames[ i ] = "C#i#";
-		}
-		var query = QueryNew( safeColumnNames.ToList(), arguments.columnTypeList, arguments.data );
-		// serialise the new query and column names to JSON strings, and restore the original column names using string replace
-		var safeColumnNamesAsJson = SerializeJSON( safeColumnNames );
-		var originalColumnNamesAsJson = SerializeJSON( arguments.columnNames );
-		var queryAsJsonColumnsReplaced = SerializeJSON( query ).Replace( 'COLUMNS":' & safeColumnNamesAsJson, 'COLUMNS":' & originalColumnNamesAsJson );
-		query = DeserializeJSON( queryAsJsonColumnsReplaced, false );
-		if( arguments.columnTypeList.IsEmpty() )
-			return query;
-		// restore the column types which will have been lost in serialization. Method is ACF ONLY!
-		query.getMetaData().setColumnTypeNames( arguments.columnTypeList.ListToArray() );
-		return query;
 	}
 
 }

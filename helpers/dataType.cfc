@@ -8,7 +8,7 @@ component extends="base" accessors="true"{
 			return "string";
 		if( IsNumeric( arguments.value ) )
 			return "numeric";
-		if( library()._IsDate( arguments.value ) )
+		if( getDateHelper()._IsDate( arguments.value ) )
 			return "date";
 		if( Trim( arguments.value ).IsEmpty() )
 			return "blank";
@@ -117,7 +117,7 @@ component extends="base" accessors="true"{
 			case "numeric":
 				return IsNumeric( arguments.value );
 			case "date": case "time":
-				return library()._IsDate( arguments.value );
+				return getDateHelper()._IsDate( arguments.value );
 			case "boolean":
 				return IsBoolean( arguments.value );
 		}

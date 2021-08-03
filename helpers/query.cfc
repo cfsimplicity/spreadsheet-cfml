@@ -1,11 +1,70 @@
 component extends="base" accessors="true"{
 
-	public boolean function columnNamesContainAnInvalidVariableName( required array names ){
-		for( var name IN arguments.names ){
-			if( !IsValid( "variableName", name ) )
-				return true;
+	public array function _QueryColumnArray( required query q ){
+		try{
+			return QueryColumnArray( arguments.q ); // Lucee
 		}
-		return false;
+		catch( any exception ){
+			if( !exception.message CONTAINS "undefined" )
+				rethrow;
+			// ACF
+			return arguments.q.getColumnNames();
+		}
+	}
+
+	public query function _QueryDeleteColumn( required query q, required string columnToDelete ){
+		try{
+			QueryDeleteColumn( arguments.q, arguments.columnToDelete ); // Lucee/ACF2018+
+			return arguments.q;
+		}
+		catch( any exception ){
+			if( !exception.message CONTAINS "undefined" )
+				rethrow;
+			//ACF2016 doesn't support QueryDeleteColumn()
+			var columnPosition = ListFindNoCase( arguments.q.columnList, arguments.columnToDelete );
+			if( !columnPosition )
+				return arguments.q;
+			var columnsToKeep = ListDeleteAt( arguments.q.columnList, columnPosition );
+			if( !columnsToKeep.Len() )
+				return QueryNew( "" );
+			return QueryExecute( "SELECT #columnsToKeep# FROM arguments.q", {}, { dbType = "query" } );
+		}
+	}
+
+	public query function _QueryNew(
+		required array columnNames
+		,required string columnTypeList
+		,required array data //NB: 'data' should not contain structs since they use the column name as key: always use array of row arrays instead
+		,boolean makeColumnNamesSafe=false
+	){
+		if( arguments.makeColumnNamesSafe )
+			arguments.columnNames = getSafeColumnNames( arguments.columnNames );
+		if( !library().getIsACF() ) //Lucee
+			return QueryNew( arguments.columnNames, arguments.columnTypeList, arguments.data );
+		//ACF
+ 		if( arguments.makeColumnNamesSafe || !columnNamesContainAnInvalidVariableName( arguments.columnNames ) ) // Column names will be accepted and case preserved
+			return QueryNew( arguments.columnNames.ToList(), arguments.columnTypeList, arguments.data ); //ACF requires a list, not an array.
+		/*
+			ACF QueryNew() won't accept invalid variable names in the column name list (e.g. names including commas or spaces, or starting with a number).
+			The following workaround allows the original column names to be used
+		*/
+		// Create a query with safe column names
+		var totalColumns = arguments.columnNames.Len();
+		var safeColumnNames = [];
+		for( var i=1; i <= totalColumns; i++ ){
+			safeColumnNames[ i ] = "C#i#";
+		}
+		var query = QueryNew( safeColumnNames.ToList(), arguments.columnTypeList, arguments.data );
+		// serialise the new query and column names to JSON strings, and restore the original column names using string replace
+		var safeColumnNamesAsJson = SerializeJSON( safeColumnNames );
+		var originalColumnNamesAsJson = SerializeJSON( arguments.columnNames );
+		var queryAsJsonColumnsReplaced = SerializeJSON( query ).Replace( 'COLUMNS":' & safeColumnNamesAsJson, 'COLUMNS":' & originalColumnNamesAsJson );
+		query = DeserializeJSON( queryAsJsonColumnsReplaced, false );
+		if( arguments.columnTypeList.IsEmpty() )
+			return query;
+		// restore the column types which will have been lost in serialization. Method is ACF ONLY!
+		query.getMetaData().setColumnTypeNames( arguments.columnTypeList.ListToArray() );
+		return query;
 	}
 
 	public query function deleteHiddenColumnsFromQuery( required sheet, required query result ){
@@ -14,7 +73,7 @@ component extends="base" accessors="true"{
 			if( !arguments.sheet.object.isColumnHidden( JavaCast( "int", colIndex ) ) )
 				continue;
 			var columnNumber = ( colIndex +1 );
-			arguments.result = library()._QueryDeleteColumn( arguments.result, arguments.sheet.columnNames[ columnNumber ] );
+			arguments.result = _QueryDeleteColumn( arguments.result, arguments.sheet.columnNames[ columnNumber ] );
 			arguments.sheet.totalColumnCount--;
 			arguments.sheet.columnNames.DeleteAt( columnNumber );
 		}
@@ -28,34 +87,6 @@ component extends="base" accessors="true"{
 		for( var columnMetadata in metadata )
 			mapQueryColumnTypeToCellType( columnMetadata );
 		return metadata;
-	}
-
-	public array function getSafeColumnNames( required array columnNames ){
-		var existingNames = {};
-		return arguments.columnNames.Map( function( name ){
-			name = makeVariableNameSafe( name );
-			return makeDuplicateNameUnique( name, existingNames );
-		});
-	}
-
-	public string function queryToHtml( required query query, numeric headerRow, boolean includeHeaderRow=false ){
-		var result = getStringHelper().newJavaStringBuilder();
-		var columns = library()._QueryColumnArray( arguments.query );
-		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
-		if( generateHeaderRow ){
-			result.Append( "<thead>" );
-			result.Append( generateHtmlRow( columns, true ) );
-			result.Append( "</thead>" );
-		}
-		result.Append( "<tbody>" );
-		for( var row in arguments.query ){
-			var rowValues = [];
-			for( var column in columns )
-				rowValues.Append( row[ column ] );
-			result.Append( generateHtmlRow( rowValues ) );
-		}
-		result.Append( "</tbody>" );
-		return result.toString();
 	}
 
 	public string function parseQueryColumnTypesArgument(
@@ -76,12 +107,40 @@ component extends="base" accessors="true"{
 		return arguments.queryColumnTypes;
 	}
 
+	public string function queryToHtml( required query query, numeric headerRow, boolean includeHeaderRow=false ){
+		var result = getStringHelper().newJavaStringBuilder();
+		var columns = _QueryColumnArray( arguments.query );
+		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
+		if( generateHeaderRow ){
+			result.Append( "<thead>" );
+			result.Append( generateHtmlRow( columns, true ) );
+			result.Append( "</thead>" );
+		}
+		result.Append( "<tbody>" );
+		for( var row in arguments.query ){
+			var rowValues = [];
+			for( var column in columns )
+				rowValues.Append( row[ column ] );
+			result.Append( generateHtmlRow( rowValues ) );
+		}
+		result.Append( "</tbody>" );
+		return result.toString();
+	}
+
 	public void function throwErrorIFinvalidQueryColumnTypesArgument( required queryColumnTypes ){
 		if( IsStruct( arguments.queryColumnTypes ) && !arguments.KeyExists( "headerRow" ) && !arguments.KeyExists( "columnNames" ) )
 			Throw( type=library().getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also specify the 'headerRow' or provide 'columnNames'" );
 	}
 
 	/* Private */
+
+	private boolean function columnNamesContainAnInvalidVariableName( required array names ){
+		for( var name IN arguments.names ){
+			if( !IsValid( "variableName", name ) )
+				return true;
+		}
+		return false;
+	}
 
 	private string function detectQueryColumnTypesFromData( required array data, required numeric columnCount ){
 		var types = [];
@@ -106,6 +165,35 @@ component extends="base" accessors="true"{
 				types[ colNum ] = "VARCHAR";
 		}
 		return types.ToList();
+	}
+
+	private string function generateHtmlRow( required array values, boolean isHeader=false ){
+		var result = getStringHelper().newJavaStringBuilder();
+		result.Append( "<tr>" );
+		var columnTag = arguments.isHeader? "th": "td";
+		for( var value in arguments.values ){
+			if( getDateHelper().isDateObject( value ) || getDateHelper()._IsDate( value ) )
+				value = DateTimeFormat( value, library().getDateFormats().DATETIME );
+			result.Append( "<#columnTag#>#value#</#columnTag#>" );
+		}
+		result.Append( "</tr>" );
+		return result.toString();
+	}
+
+	private string function getQueryColumnTypesListFromStruct( required struct types, required array sheetColumnNames ){
+		var result = [];
+		for( var columnName IN arguments.sheetColumnNames ){
+			result.Append( arguments.types.KeyExists( columnName )? arguments.types[ columnName ]: "VARCHAR" );
+		}
+		return result.ToList();
+	}
+
+	private array function getSafeColumnNames( required array columnNames ){
+		var existingNames = {};
+		return arguments.columnNames.Map( function( name ){
+			name = makeVariableNameSafe( name );
+			return makeDuplicateNameUnique( name, existingNames );
+		});
 	}
 
 	private string function makeDuplicateNameUnique( required string name, required struct existingNames ){
@@ -137,14 +225,6 @@ component extends="base" accessors="true"{
 		}
 	}
 
-	private string function getQueryColumnTypesListFromStruct( required struct types, required array sheetColumnNames ){
-		var result = [];
-		for( var columnName IN arguments.sheetColumnNames ){
-			result.Append( arguments.types.KeyExists( columnName )? arguments.types[ columnName ]: "VARCHAR" );
-		}
-		return result.ToList();
-	}
-
 	private any function mapQueryColumnTypeToCellType( required struct columnMetadata ){
 		var columnType = arguments.columnMetadata.typeName?: "";// typename is missing in ACF if not specified in the query
 		switch( columnType ){
@@ -164,19 +244,6 @@ component extends="base" accessors="true"{
 			default: arguments.columnMetadata.cellDataType = "STRING";
 		}
 		return this;
-	}
-
-	private string function generateHtmlRow( required array values, boolean isHeader=false ){
-		var result = getStringHelper().newJavaStringBuilder();
-		result.Append( "<tr>" );
-		var columnTag = arguments.isHeader? "th": "td";
-		for( var value in arguments.values ){
-			if( getDateHelper().isDateObject( value ) || library()._IsDate( value ) )
-				value = DateTimeFormat( value, library().getDateFormats().DATETIME );
-			result.Append( "<#columnTag#>#value#</#columnTag#>" );
-		}
-		result.Append( "</tr>" );
-		return result.toString();
 	}
 
 }
