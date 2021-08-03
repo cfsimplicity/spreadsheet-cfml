@@ -658,26 +658,28 @@ component accessors="true"{
 	   		currentRowIndex++;
 			}
 			if( arguments.autoSizeColumns )
-				getColumnHelper()._autoSizeColumns( workbook=arguments.workbook, startColumnNumber=arguments.column, endColumnNumber=queryColumns.Len() );
+				getColumnHelper()._autoSizeColumns( workbook, arguments.column, queryColumns.Len() );
 			return this;
 		}
 		//data is an array
+		var columnCount = 0;
 		for( var dataRow in arguments.data ){
 			var newRow = getRowHelper().createRow( arguments.workbook, currentRowIndex, false );
 			var cellIndex = ( arguments.column -1 );
    		// populate all columns in the row
-   		for( var cellValue in dataRow ){
+   		cfloop( array=dataRow, item="local.cellValue", index="local.thisColumnNumber" ){
    			var cell = getCellHelper().createCell( newRow, cellIndex );
    			if( arguments.KeyExists( "datatypes" ) )
    				getDataTypeHelper().setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes );
    			else
 					getCellHelper().setCellValueAsType( arguments.workbook, cell, cellValue );
-				if( arguments.autoSizeColumns )
-					autoSizeColumn( arguments.workbook, arguments.column );
+				columnCount = Max( columnCount, thisColumnNumber );
 				cellIndex++;
 			}
 			currentRowIndex++;
    	}
+   	if( arguments.autoSizeColumns )
+			getColumnHelper()._autoSizeColumns( workbook, arguments.column, columnCount );
    	return this;
 	}
 
