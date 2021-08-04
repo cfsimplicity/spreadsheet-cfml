@@ -1,5 +1,5 @@
 <cfscript>
-describe( "getRowCount", function(){
+describe( "getRowCount/getLastRowNumber", function(){
 
 	beforeEach( function(){
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
@@ -9,10 +9,13 @@ describe( "getRowCount", function(){
 	it( "Can get the number of rows in the first sheet", function(){
 		workbooks.Each( function( wb ){
 			expect( s.getRowCount( wb ) ).toBe( 0 );// empty
+			expect( s.getLastRowNumber( wb ) ).toBe( 0 );// empty
 			s.addRow( wb, "A1" );
 			expect( s.getRowCount( wb ) ).toBe( 1 );
+			expect( s.getLastRowNumber( wb ) ).toBe( 1 );
 			s.addRow( wb, "B1" );
 			expect( s.getRowCount( wb ) ).toBe( 2 );
+			expect( s.getLastRowNumber( wb ) ).toBe( 2 );
 		});
 	});
 
@@ -20,8 +23,10 @@ describe( "getRowCount", function(){
 		workbooks.Each( function( wb ){
 			s.addRow( wb, "B1", 2 );
 			expect( s.getRowCount( wb ) ).toBe( 2 );
+			expect( s.getLastRowNumber( wb ) ).toBe( 2 );
 			s.addRow( wb, "" );
 			expect( s.getRowCount( wb ) ).toBe( 3 );
+			expect( s.getLastRowNumber( wb ) ).toBe( 3 );
 		});
 	});
 
@@ -34,7 +39,9 @@ describe( "getRowCount", function(){
 				.setActiveSheetNumber( wb,1 )//switch back to sheet 1
 				.addRow( wb, "S1A1" );
 			expect( s.getRowCount( wb ) ).toBe( 1 );
+			expect( s.getLastRowNumber( wb ) ).toBe( 1 );
 			expect( s.getRowCount( wb, 2 ) ).toBe( 2 );
+			expect( s.getLastRowNumber( wb, 2 ) ).toBe( 2 );
 		});
 	});
 
@@ -47,7 +54,9 @@ describe( "getRowCount", function(){
 				.setActiveSheetNumber( wb, 1 )//switch back to sheet 1
 				.addRow( wb, "S1A1" );
 			expect( s.getRowCount( wb ) ).toBe( 1 );
+			expect( s.getLastRowNumber( wb ) ).toBe( 1 );
 			expect( s.getRowCount( wb, "test" ) ).toBe( 2 );
+			expect( s.getLastRowNumber( wb, "test" ) ).toBe( 2 );
 		});
 	});
 
@@ -59,10 +68,16 @@ describe( "getRowCount", function(){
 				expect( function(){
 					var result = s.getRowCount( wb, 2 );
 				}).toThrow( regex="Invalid sheet" );
+				expect( function(){
+					var result = s.getLastRowNumber( wb, 2 );
+				}).toThrow( regex="Invalid sheet" );
 			});
 			workbooks.Each( function( wb ){
 				expect( function(){
 					var result = s.getRowCount( wb, "test" );
+				}).toThrow( regex="Invalid sheet" );
+				expect( function(){
+					var result = s.getLastRowNumber( wb, "test" );
 				}).toThrow( regex="Invalid sheet" );
 			});
 		});

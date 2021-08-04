@@ -46,7 +46,7 @@ component extends="base" accessors="true"{
 		return row;
 	}
 
-	public numeric function getFirstRowNumber( required workbook ){
+	public numeric function getFirstRowIndex( required workbook ){
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		var firstRow = sheet.getFirstRowNum();
 		if( ( firstRow == 0 ) && ( sheet.getPhysicalNumberOfRows() == 0 ) )
@@ -54,7 +54,7 @@ component extends="base" accessors="true"{
 		return firstRow;
 	}
 
-	public numeric function getLastRowNumber( required workbook, sheet=getSheetHelper().getActiveSheet( arguments.workbook ) ){
+	public numeric function getLastRowIndex( required workbook, sheet=getSheetHelper().getActiveSheet( arguments.workbook ) ){
 		var lastRow = arguments.sheet.getLastRowNum();
 		if( ( lastRow == 0 ) && ( arguments.sheet.getPhysicalNumberOfRows() == 0 ) )
 			return -1; //The sheet is empty. Return -1 instead of 0
@@ -66,7 +66,7 @@ component extends="base" accessors="true"{
 	}
 
 	public numeric function getNextEmptyRowNumber( workbook ){
-		return ( getLastRowNumber( arguments.workbook ) +1 );
+		return ( getLastRowIndex( arguments.workbook ) +1 );
 	}
 
 	public array function getRowData( required workbook, required row, array columnRanges=[], boolean includeRichTextFormatting=false ){
