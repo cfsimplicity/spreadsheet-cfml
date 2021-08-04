@@ -807,7 +807,7 @@ component accessors="true"{
 		if( arguments.row <= 0 )
 			Throw( type=this.getExceptionType(), message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
 		var rowToDelete = ( arguments.row -1 );
-		if( rowToDelete >= getRowHelper().getFirstRowNumber( arguments.workbook ) && rowToDelete <= getRowHelper().getLastRowNumber( arguments.workbook ) ) //If this is a valid row, remove it
+		if( rowToDelete >= getRowHelper().getFirstRowIndex( arguments.workbook ) && rowToDelete <= getRowHelper().getLastRowIndex( arguments.workbook ) ) //If this is a valid row, remove it
 			getSheetHelper().getActiveSheet( arguments.workbook ).removeRow( getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row ) );
 		return this;
 	}
@@ -1108,6 +1108,14 @@ component accessors="true"{
 		return getSheetHelper().getActiveSheet( arguments.workbook ).getColumnWidthInPixels( JavaCast( "int", columnIndex ) );
 	}
 
+	public numeric function getLastRowNumber( required workbook, sheetNameOrNumber ){
+		if( arguments.KeyExists( "sheetNameOrNumber" ) )
+			getSheetHelper().setActiveSheetNameOrNumber( argumentCollection=arguments );
+		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
+		var lastRowIndex = getRowHelper().getLastRowIndex( arguments.workbook, sheet );
+		return lastRowIndex +1;
+	}
+
 	public array function getPresetColorNames(){
 		var presetEnum = getClassHelper().loadClass( "org.apache.poi.hssf.util.HSSFColor$HSSFColorPredefined" );
 		var result = [];
@@ -1118,13 +1126,7 @@ component accessors="true"{
 	}
 
 	public numeric function getRowCount( required workbook, sheetNameOrNumber ){
-		if( arguments.KeyExists( "sheetNameOrNumber" ) )
-			getSheetHelper().setActiveSheetNameOrNumber( argumentCollection=arguments );
-		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
-		var lastRowIndex = getRowHelper().getLastRowNumber( arguments.workbook, sheet );
-		if( lastRowIndex == -1 ) // empty
-			return 0;
-		return lastRowIndex +1;
+		return getLastRowNumber( argumentCollection=arguments );
 	}
 
 	public Spreadsheet function hideColumn( required workbook, required numeric column ){

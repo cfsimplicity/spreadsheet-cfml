@@ -147,6 +147,7 @@ You will probably want to place the spreadsheet library files in a central locat
 * [getCellType](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellType)
 * [getColumnWidth](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getColumnWidth)
 * [getColumnWidthInPixels](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getColumnWidthInPixels)
+* [getLastRowNumber](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getLastRowNumber)
 * [getPOIVersion](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getPOIVersion)
 * [getPresetColorNames](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getPresetColorNames)
 * [getRowCount](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getRowCount)
