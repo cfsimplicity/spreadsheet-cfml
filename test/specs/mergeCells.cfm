@@ -23,8 +23,7 @@ describe( "mergeCells", function(){
 
 	it( "Can empty all but the top-left-most cell of a merged region", function(){
 		workbooks.Each( function( wb ){
-			s.mergeCells( wb, 1, 2, 1, 2, true )
-				.write( wb, tempXlsPath, true );
+			s.mergeCells( wb, 1, 2, 1, 2, true );
 			expect( s.getCellValue( wb, 1, 1 ) ).toBe( "a" );
 			expect( s.getCellValue( wb, 1, 2 ) ).toBe( "" );
 			expect( s.getCellValue( wb, 2, 1 ) ).toBe( "" );
@@ -66,11 +65,6 @@ describe( "mergeCells", function(){
 			});
 		});
 
-	});
-
-	afterEach( function(){
-		if( FileExists( variables.tempXlsPath ) ) FileDelete( variables.tempXlsPath );
-		if( FileExists( variables.tempXlsxPath ) ) FileDelete( variables.tempXlsxPath );
 	});
 	
 });	

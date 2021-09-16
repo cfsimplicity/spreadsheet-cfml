@@ -72,9 +72,8 @@ describe( "cellValue", function(){
 				a|a
 				a|a");
 		workbooks.Each( function( wb ){
-			s.setCellRangeValue( wb, value, 1, 2, 1, 2 )
-				.write( wb, tempXlsPath, true );
-			actual = s.read( src=tempXlsPath, format="query" );
+			s.setCellRangeValue( wb, value, 1, 2, 1, 2 );
+			actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -195,11 +194,6 @@ describe( "cellValue", function(){
 			});
 		});
 
-	});
-
-	afterEach( function(){
-		if( FileExists( variables.tempXlsPath ) ) FileDelete( variables.tempXlsPath );
-		if( FileExists( variables.tempXlsxPath ) ) FileDelete( variables.tempXlsxPath );
 	});
 
 });	
