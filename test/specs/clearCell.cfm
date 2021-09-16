@@ -16,7 +16,18 @@ describe( "clearCell", function(){
 		});
 	});
 
-	it( "Is chainable", function(){
+	it( "Clears the specified range of cells", function(){
+		var data = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "a","b","c" ], [ "d","e","f" ], [ "g","h","i" ] ] );
+		var expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "a","b","c" ], [ "d","","" ], [ "g","","" ] ] );
+		workbooks.Each( function( wb ){
+			s.addRows( wb, data )
+				.clearCellRange( wb, 2, 2, 3, 3 );
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
+			expect( actual ).toBe( expected );
+		});
+	});
+
+	it( "clearCell is chainable", function(){
 		var expected = "";
 		workbooks.Each( function( wb ){
 			var actual = s.newChainable( wb )
@@ -28,12 +39,13 @@ describe( "clearCell", function(){
 		});
 	});
 
-	it( "Clears the specified range of cells", function(){
+	it( "clearCellRange is chainable", function(){
 		var data = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "a","b","c" ], [ "d","e","f" ], [ "g","h","i" ] ] );
 		var expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "a","b","c" ], [ "d","","" ], [ "g","","" ] ] );
 		workbooks.Each( function( wb ){
-			s.addRows( wb, data )
-				.clearCellRange( wb, 2, 2, 3, 3 );
+			s.newChainable( wb )
+				.addRows( data )
+				.clearCellRange( 2, 2, 3, 3 );
 			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});
