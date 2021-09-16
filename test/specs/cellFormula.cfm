@@ -57,6 +57,14 @@ describe( "cellFormula", function(){
 			expect( wb.getForceFormulaRecalculation() ).toBeTrue();
 		});
 
+		it( "getForceFormulaRecalculation is chainable", function(){
+			// only xlsx seems to reflect the flag status
+			var wb = s.newXlsx();
+			expect( wb.getForceFormulaRecalculation() ).toBeFalse();
+			s.newChainable( wb ).setRecalculateFormulasOnNextOpen();
+			expect( wb.getForceFormulaRecalculation() ).toBeTrue();
+		});
+
 	});
 
 });	
