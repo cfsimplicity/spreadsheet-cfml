@@ -1639,7 +1639,7 @@ component accessors="true"{
 
 	public Spreadsheet function setRepeatingColumns( required workbook, required string columnRange ){
 		arguments.columnRange = arguments.columnRange.Trim();
-		if( !IsValid( "regex", arguments.columnRange,"[A-Za-z]:[A-Za-z]" ) )
+		if( !IsValid( "regex", arguments.columnRange, "[A-Za-z]:[A-Za-z]" ) )
 			Throw( type=this.getExceptionType(), message="Invalid columnRange argument", detail="The 'columnRange' argument should be in the form 'A:B'" );
 		var cellRangeAddress = getCellHelper().getCellRangeAddressFromReference( arguments.columnRange );
 		getSheetHelper().getActiveSheet( arguments.workbook ).setRepeatingColumns( cellRangeAddress );
