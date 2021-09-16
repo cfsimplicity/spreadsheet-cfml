@@ -692,7 +692,7 @@ component accessors="true"{
 		,string activePane="UPPER_LEFT" //Valid values are LOWER_LEFT, LOWER_RIGHT, UPPER_LEFT, and UPPER_RIGHT
 	){
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
-		arguments.activePane = activeSheet[ "PANE_#arguments.activePane#" ];
+		arguments.activePane = sheet[ "PANE_#arguments.activePane#" ];
 		sheet.createSplitPane(
 			JavaCast( "int", arguments.xSplitPosition )
 			,JavaCast( "int", arguments.ySplitPosition )
