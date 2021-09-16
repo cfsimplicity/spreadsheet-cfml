@@ -12,6 +12,13 @@ describe( "createSheet", function(){
 		});
 	});
 
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb ).createSheet();
+			expect( wb.getNumberOfSheets() ).toBe( 2 );
+		});
+	});
+
 	it( "Creates a new sheet with the specified name", function(){
 		workbooks.Each( function( wb ){
 			s.createSheet( wb,"test" );

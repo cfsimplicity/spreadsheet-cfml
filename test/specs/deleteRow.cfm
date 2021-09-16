@@ -16,6 +16,18 @@ describe( "deleteRow", function(){
 		});
 	});
 
+	it( "Is chainable", function(){
+		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "", "" ], [ "c", "d" ] ] );
+		workbooks.Each( function( wb ){
+			s.newChainable( wb )
+				.addRow( "a,b" )
+				.addRow( "c,d" )
+				.deleteRow( 1 );
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
+			expect( actual ).toBe( expected );
+		});
+	});
+
 	describe( "deleteRow throws an exception if", function(){
 
 		it( "row is zero or less", function(){

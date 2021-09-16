@@ -1,6 +1,17 @@
 <cfscript>
 describe( "cellHyperLinks", function(){
 
+	it( "setCellHyperLink and getCellHyperLink are chainable", function(){
+		variables.workbooks = [ s.newXls(), s.newXlsx() ];
+		var uri = "https://w3c.org";
+		workbooks.Each( function( wb ){
+			var actual = s.newChainable( wb )
+				.setCellHyperlink( uri, 1, 1 )
+				.getCellHyperlink( 1, 1 );
+			expect( actual ).toBe( uri );
+		});
+	});
+
 	describe( "getCellHyperlink", function(){
 
 		beforeEach( function(){

@@ -32,5 +32,17 @@ describe( "shiftColumns", function(){
 		});
 	});
 
+	it( "is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb ).shiftColumns( 1, 2, 1 );
+			var expected = querySim( "column1,column2,column3
+				|a|c
+				|b|d
+			");
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
+			expect( actual ).toBe( expected );
+		});
+	});
+
 });	
 </cfscript>

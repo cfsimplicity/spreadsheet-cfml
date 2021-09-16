@@ -17,6 +17,14 @@ describe( "setFooterImage", function(){
 		expect( footer.getRight() ).toBe( "&G" );
 	});
 
+	it( "is chainable", function() {
+		var imagePath = getTestFilePath( "test.png" );
+		var wb = s.newXlsx();
+		s.newChainable( wb ).setFooterImage( "left", imagePath );
+		var footer = s.getSheetHelper().getActiveSheetFooter( wb );
+		expect( footer.getLeft() ).toBe( "&G" );//Graphic
+	});
+
 	it( "adds an image to the left, centre or right footer from a cfml image object", function() {
 		var imageData = ImageNew( "", 10, 10, "rgb", "blue" );
 		var wb = s.newXlsx();

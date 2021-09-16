@@ -13,6 +13,14 @@ describe( "setActiveSheetNumber", function(){
 		});
 	});
 
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb )
+				.createSheet( "test" )
+				.setActiveSheetNumber( 2 );
+			expect( s.getSheetHelper().getActiveSheetName( wb ) ).toBe( "test" );
+		});
+	});
 
 	describe( "setActiveSheetNumber throws an exception if", function(){
 

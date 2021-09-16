@@ -16,6 +16,18 @@ describe( "clearCell", function(){
 		});
 	});
 
+	it( "Is chainable", function(){
+		var expected = "";
+		workbooks.Each( function( wb ){
+			var actual = s.newChainable( wb )
+				.setCellValue( "test", 1, 1 )
+				.clearCell( 1, 1 )
+				.getCellValue( 1, 1 );
+			expect( actual ).toBe( expected );
+			expect( s.getCellType( wb, 1, 1 ) ).toBe( "BLANK" );
+		});
+	});
+
 	it( "Clears the specified range of cells", function(){
 		var data = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "a","b","c" ], [ "d","e","f" ], [ "g","h","i" ] ] );
 		var expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "a","b","c" ], [ "d","","" ], [ "g","","" ] ] );

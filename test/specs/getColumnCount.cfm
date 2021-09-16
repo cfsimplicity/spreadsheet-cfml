@@ -14,6 +14,15 @@ describe( "getColumnCount", function(){
 		});
 	});
 
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ){
+			var count = s.newChainable( wb )
+				.addRow( [ "a", "b", "c" ] )
+				.getColumnCount();
+			expect( count ).toBe( 3 );
+		});
+	});
+
 	it( "Can get the maximum number of columns of a sheet specified by number", function(){
 		workbooks.Each( function( wb ){
 			s.createSheet( wb )//add a second sheet and switch to it

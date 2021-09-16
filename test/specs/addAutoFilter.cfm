@@ -23,5 +23,11 @@ describe( "addAutoFilter", function(){
 		});
 	});
 
+	it( "Is chainable", function() {
+		workbooks.Each( function( wb ){
+			s.newChainable( wb ).addAutoFilter( " A1:B1 " );
+		});
+	});
+
 });	
 </cfscript>

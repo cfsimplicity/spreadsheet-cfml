@@ -12,6 +12,12 @@ describe( "renameSheet", function(){
 		});
 	});
 
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb ).renameSheet( "test", 1 );
+			expect( s.getSheetHelper().sheetExists( wb, "test" ) ).toBeTrue();
+		});
+	});
 
 	describe( "renameSheet throws an exception if", function(){
 

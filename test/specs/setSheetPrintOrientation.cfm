@@ -16,6 +16,15 @@ describe( "setSheetPrintOrientation", function(){
 		});
 	});
 
+	it( "is chainable", function(){
+		workbooks.Each( function( wb ){
+			var sheet = s.getSheetHelper().getActiveSheet( wb );
+			expect( sheet.getPrintSetup().getLandscape() ).toBeFalse();
+			s.newChainable( wb ).setSheetPrintOrientation( "landscape" );
+			expect( sheet.getPrintSetup().getLandscape() ).toBeTrue();
+		});
+	});
+
 	it( "sets the named sheet to the specified orientation", function(){
 		workbooks.Each( function( wb ){
 			s.createSheet( wb, "test" )

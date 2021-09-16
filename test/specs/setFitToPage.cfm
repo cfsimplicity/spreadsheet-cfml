@@ -27,5 +27,17 @@ describe( "setFitToPage", function(){
 		});
 	});
 
+	it( "is chainable", function(){
+		workbooks.Each( function( wb ){
+			var sheet = s.getSheetHelper().getActiveSheet( wb );
+			s.newChainable( wb ).setFitToPage( false );
+			expect( sheet.getFitToPage() ).toBeFalse();
+			s.newChainable( wb ).setFitToPage( true );
+			expect( sheet.getFitToPage() ).toBeTrue();
+			expect( sheet.getPrintSetup().getFitWidth() ).toBe( 1 );
+			expect( sheet.getPrintSetup().getFitHeight() ).toBe( 1 );
+		});
+	});
+
 });	
 </cfscript>

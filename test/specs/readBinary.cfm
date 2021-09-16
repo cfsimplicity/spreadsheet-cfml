@@ -8,5 +8,13 @@ describe( "readBinary", function(){
 		});
 	});
 
+	it( "Is chainable", function(){
+		var workbooks = [ s.newXls(), s.newXlsx() ];
+		workbooks.Each( function( wb ){
+			var actual = s.newChainable( wb ).readBinary();
+			expect( IsBinary( actual ) ).toBeTrue();
+		});
+	});
+
 });	
 </cfscript>

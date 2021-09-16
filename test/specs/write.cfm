@@ -39,6 +39,16 @@ describe( "write", function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "is chainable", function(){
+		data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a","b" ], [ "c","d" ] ] );
+		s.newChainable( "xls" )
+			.addRows( data )
+			.write( tempXlsPath, true );
+		var expected = data;
+		var actual = s.read( src=tempXlsPath, format="query" );
+		expect( actual ).toBe( expected );
+	});
+
 	it( "Writes a streaming XLSX object with a custom window size without error", function(){
 		var rows = [];
 		for( i=1; i <= 100; i++ ){

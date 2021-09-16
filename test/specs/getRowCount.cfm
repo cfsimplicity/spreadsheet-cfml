@@ -19,6 +19,17 @@ describe( "getRowCount/getLastRowNumber", function(){
 		});
 	});
 
+	it( "Are chainable", function(){
+		workbooks.Each( function( wb ){
+			var count = s.newChainable( wb )
+				.addRow( "A1" )
+				.getRowCount();
+			expect( count ).toBe( 1 );
+			var lastRowNum = s.newChainable( wb ).getLastRowNumber();
+			expect( lastRowNum ).toBe( 1 );
+		});
+	});
+
 	it( "Will include empty/blank rows", function(){
 		workbooks.Each( function( wb ){
 			s.addRow( wb, "B1", 2 );

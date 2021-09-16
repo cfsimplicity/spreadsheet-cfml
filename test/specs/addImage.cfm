@@ -11,6 +11,14 @@ describe( "addImage", function(){
 		});
 	});
 
+	it( "Is chainable", function(){
+		var imagePath = getTestFilePath( "test.png" );
+		var workbooks = [ s.newXls(), s.newXlsx() ];
+		workbooks.Each( function( wb ) {
+			s.newChainable( wb ).addImage( filepath=imagePath, anchor="1,1,2,2" );
+		});
+	});
+
 	describe( "throws an exception if", function(){
 
 		beforeEach( function(){

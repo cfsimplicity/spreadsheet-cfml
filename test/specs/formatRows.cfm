@@ -1,11 +1,14 @@
 <cfscript>
 describe( "formatRows", function(){
 
-	it( "can preserve the existing format properties other than the one(s) being changed", function(){
-		var workbooks = [ s.newXls(), s.newXlsx() ];
+	beforeEach( function(){
+		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( function( wb ){
 			s.addRows( wb, [ [ "a1", "b1" ], [ "a2", "b2" ] ] );
 		});
+	});
+
+	it( "can preserve the existing format properties other than the one(s) being changed", function(){
 		workbooks.Each( function( wb ){
 			s.formatRows( wb, {  italic: true }, "1-2" );
 			expect( s.getCellFormat( wb, 1, 1 ).italic ).toBeTrue();
@@ -15,6 +18,15 @@ describe( "formatRows", function(){
 				.formatRows( workbook=wb, format={ bold: true }, range="1-2", overwriteCurrentStyle=false );
 			expect( s.getCellFormat( wb, 1, 1 ).bold ).toBeTrue();
 			expect( s.getCellFormat( wb, 1, 1 ).italic ).toBeTrue();
+		});
+	});
+
+	it( "is chainable", function() {
+		workbooks.Each( function( wb ){
+			s.newChainable( wb )
+				.formatRows( { bold: true }, "1-2" );
+			expect( s.getCellFormat( wb, 1, 1 ).bold ).toBeTrue();
+			expect( s.getCellFormat( wb, 2, 2 ).bold ).toBeTrue();
 		});
 	});
 

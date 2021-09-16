@@ -11,5 +11,16 @@ describe( "columnWidth", function(){
 		});
 	});
 
+	it( "getColumnWidth and setColumnWidth are chainable", function(){
+		variables.workbooks = [ s.newXls(), s.newXlsx() ];
+		workbooks.Each( function( wb ){
+			var actual = s.newChainable( wb )
+				.addRow( "a" )
+				.setColumnWidth( 1, 10 )
+				.getColumnWidth( 1 );
+			expect( actual ).toBe( 10 );
+		});
+	});
+
 });	
 </cfscript>

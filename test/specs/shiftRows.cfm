@@ -26,5 +26,16 @@ describe( "shiftRows", function(){
 		});
 	});
 
+	it( "is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb )
+				.addRows( rowData )
+				.shiftRows( 1, 1, 1 );
+			var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "", "" ], [ "a", "b" ] ] );
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
+			expect( actual ).toBe( expected );
+		});
+	});
+
 });	
 </cfscript>

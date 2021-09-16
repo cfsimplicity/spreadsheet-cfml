@@ -30,6 +30,12 @@ describe( "addPageBreaks", function(){
 		});
 	});
 
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ) {
+			s.newChainable( wb ).addPageBreaks( 1, 2 );
+		});
+	});
+
 	it( "Throws a helpful exception if both arguments are missing or present but empty", function(){
 		workbooks.Each( function( wb ) {
 			expect( function(){
