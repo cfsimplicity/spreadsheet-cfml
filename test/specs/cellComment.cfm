@@ -19,6 +19,21 @@ describe( "cellComment", function(){
 		});
 	});
 
+	it( "getCellComment and setCellComment are chainable", function() {
+		var theComment = {
+			author: "cfsimplicity"
+			,comment: "This is the comment in row 1 column 1"
+		};
+		var expected = Duplicate( theComment ).Append( { column: 1, row: 1 } );
+		workbooks.Each( function( wb ){
+			var actual = s.newChainable( wb )
+				.addColumn( "1" )
+				.setCellComment( theComment, 1, 1 )
+				.getCellComment( 1, 1 );
+			expect( actual ).toBe( expected );
+		});
+	});
+
 	it( "Can get all comments in the current sheet", function() {
 		var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
 		var dataAsArray = [ [ "a", "b" ], [ "c", "d" ] ];

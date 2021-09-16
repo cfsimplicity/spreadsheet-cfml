@@ -32,6 +32,16 @@ describe( "mergeCells", function(){
 		});
 	});
 
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb ).mergeCells( 1, 2, 1, 2 );
+			expect( s.getCellValue( wb, 1, 1 ) ).toBe( "a" );
+			expect( s.getCellValue( wb, 1, 2 ) ).toBe( "b" );
+			expect( s.getCellValue( wb, 2, 1 ) ).toBe( "c" );
+			expect( s.getCellValue( wb, 2, 2 ) ).toBe( "d" );
+		});
+	});
+
 	describe( "mergeCells throws an exception if", function(){
 
 		it( "startRow OR startColumn is less than 1", function(){

@@ -17,6 +17,19 @@ describe( "read", function(){
 		expect( s.isXmlFormat( workbook ) ).toBeTrue();
 	});
 
+	it( "Is chainable", function(){
+		var path = getTestFilePath( "test.xls" );
+		var workbook = s.newChainable()
+			.read( path )
+			.getWorkbook();
+		expect( s.isBinaryFormat( workbook ) ).toBeTrue();
+		path = getTestFilePath( "test.xlsx" );
+		workbook = s.newChainable()
+			.read( path )
+			.getWorkbook();
+		expect( s.isXmlFormat( workbook ) ).toBeTrue();
+	});
+
 	it( "Can read a traditional XLS file into a query", function(){
 		var path = getTestFilePath( "test.xls" );
 		var expected = querySim(

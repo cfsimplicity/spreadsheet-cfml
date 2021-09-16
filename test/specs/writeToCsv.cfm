@@ -18,6 +18,14 @@ describe( "writeToCsv", function(){
 		});
 	});
 
+	it( "is chainable", function(){
+		var expectedCsv = 'a,b#crlf#c,d';
+		workbooks.Each( function( wb ){
+			s.newChainable( wb ).writeToCsv( tempCsvPath, true );
+			expect( FileRead( tempCsvPath ) ).toBe( expectedCsv );
+		});
+	});
+
 	it( "allows an alternative delimiter", function(){
 		var expectedCsv = 'a|b#crlf#c|d';
 		workbooks.Each( function( wb ){

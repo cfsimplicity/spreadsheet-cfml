@@ -21,6 +21,15 @@ describe( "setActiveSheet", function(){
 		});
 	});
 
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb )
+				.createSheet( "test" )
+				.setActiveSheet( sheetName="test" );
+			expect( s.getSheetHelper().getActiveSheetName( wb ) ).toBe( "test" );
+		});
+	});
+
 	describe( "setActiveSheet throws an exception if", function(){
 
 		it( "the sheet name doesn't exist", function(){

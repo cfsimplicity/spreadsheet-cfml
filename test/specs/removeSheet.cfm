@@ -13,6 +13,14 @@ describe( "removeSheet", function(){
 		});
 	});
 
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb )
+				.createSheet( "test" )
+				.removeSheet( "test" );
+			expect( wb.getNumberOfSheets() ).toBe( 1 );
+		});
+	});
 
 	describe( "removeSheet throws an exception if", function(){
 

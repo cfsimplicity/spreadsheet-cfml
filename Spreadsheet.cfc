@@ -773,7 +773,7 @@ component accessors="true"{
 		return this;
 	}
 
-	public Spreadsheet function deleteColumn( required workbook,required numeric column ){
+	public Spreadsheet function deleteColumn( required workbook, required numeric column ){
 		if( arguments.column <= 0 )
 			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
 			// POI doesn't have remove column functionality, so iterate over all the rows and remove the column indicated
@@ -1254,12 +1254,8 @@ component accessors="true"{
 		return workbook;
 	}
 
-	public any function newXls( string sheetName="Sheet1" ){
-		return new( sheetName=arguments.sheetName, xmlFormat=false );
-	}
-
-	public any function newXlsx( string sheetName="Sheet1" ){
-		return new( sheetName=arguments.sheetName, xmlFormat=true );
+	public any function newChainable( existingWorkbookOrNewWorkbookType="" ){
+		return New SpreadsheetChainable( this, arguments.existingWorkbookOrNewWorkbookType );
 	}
 
 	public any function newStreamingXlsx( string sheetName="Sheet1", numeric streamingWindowSize=100 ){
@@ -1269,6 +1265,14 @@ component accessors="true"{
 			,streamingXml=true
 			,streamingWindowSize=arguments.streamingWindowSize
 		);
+	}
+
+	public any function newXls( string sheetName="Sheet1" ){
+		return new( sheetName=arguments.sheetName, xmlFormat=false );
+	}
+
+	public any function newXlsx( string sheetName="Sheet1" ){
+		return new( sheetName=arguments.sheetName, xmlFormat=true );
 	}
 
 	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter="," ){		

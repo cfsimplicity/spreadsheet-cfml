@@ -7,11 +7,22 @@ describe( "addRows", function(){
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 	});
 
-	it( "Appends multiple rows from a query with the minimum arguments",function(){
+	it( "Appends multiple rows from a query with the minimum arguments", function(){
 		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "x", "y" ], [ "a", "b" ], [ "c", "d" ] ] );
 		workbooks.Each( function( wb ){
 			s.addRow( wb, "x,y" )
 				.addRows( wb, data );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
+			expect( actual ).toBe( expected );
+		});
+	});
+
+	it( "Is chainable", function(){
+		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "x", "y" ], [ "a", "b" ], [ "c", "d" ] ] );
+		workbooks.Each( function( wb ){
+			s.newChainable( wb )
+				.addRow( "x,y" )
+				.addRows( data );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
@@ -27,7 +38,7 @@ describe( "addRows", function(){
 		});
 	});
 
-	it( "Does nothing if array data is empty",function(){
+	it( "Does nothing if array data is empty", function(){
 		var emptyData = [];
 		workbooks.Each( function( wb ){
 			s.addRows( wb, emptyData );
@@ -37,7 +48,7 @@ describe( "addRows", function(){
 		});
 	});
 
-	it( "Inserts multiple rows at a specifed position",function(){
+	it( "Inserts multiple rows at a specifed position", function(){
 		var expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "", "a", "b" ], [ "", "c", "d" ], [ "e", "f", "" ] ] );
 		workbooks.Each( function( wb ){
 			s.addRow( wb, "e,f" )
@@ -55,7 +66,7 @@ describe( "addRows", function(){
 		});
 	});
 
-	it( "Replaces rows if insert is false",function(){
+	it( "Replaces rows if insert is false", function(){
 		var expected = data;
 		workbooks.Each( function( wb ){
 			s.addRow( wb, "e,f" )
@@ -74,7 +85,7 @@ describe( "addRows", function(){
 		});
 	});
 
-	it( "Adds numeric values correctly",function(){
+	it( "Adds numeric values correctly", function(){
 		var data = QueryNew( "column1,column2,column3", "Integer,BigInt,Double", [ [ 1, 1, 1.1 ] ] );
 		var expected = data;
 		workbooks.Each( function( wb ){
@@ -103,7 +114,7 @@ describe( "addRows", function(){
 		});
 	});
 
-	it( "Adds boolean values correctly",function(){
+	it( "Adds boolean values correctly", function(){
 		var data = QueryNew( "column1", "Bit", [ [ true ] ] );
 		var expected = data;
 			workbooks.Each( function( wb ){
@@ -124,7 +135,7 @@ describe( "addRows", function(){
 		});
 	});
 
-	it( "Adds date/time values correctly",function(){
+	it( "Adds date/time values correctly", function(){
 		var dateValue = CreateDate( 2015, 04, 12 );
 		var timeValue = CreateTime( 1, 0, 0 );
 		var dateTimeValue = createDateTime( 2015, 04, 12, 1, 0, 0 );
@@ -160,7 +171,7 @@ describe( "addRows", function(){
 		});
 	});
 
-	it( "Formats time and timestamp values correctly when custom mask includes fractions of a second",function(){
+	it( "Formats time and timestamp values correctly when custom mask includes fractions of a second", function(){
 		var dateFormats = {
 			TIME: "hh:mm:ss.000"
 			,TIMESTAMP: "yyyy-mm-dd hh:mm:ss.000"

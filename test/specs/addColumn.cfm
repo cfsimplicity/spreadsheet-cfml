@@ -167,5 +167,14 @@ describe( "addColumn", function(){
 		});
 	});
 
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb ).addColumn( columnData );
+			var expected = QueryNew( "column1", "VarChar", [ [ "a" ], [ "b" ] ] );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
+			expect( actual ).toBe( expected );
+		});
+	});
+
 });	
 </cfscript>

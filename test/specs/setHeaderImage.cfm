@@ -17,6 +17,14 @@ describe( "setHeaderImage", function(){
 		expect( header.getRight() ).toBe( "&G" );
 	});
 
+	it( "is chainable", function() {
+		var imagePath = getTestFilePath( "test.png" );
+		var wb = s.newXlsx();
+		s.newChainable( wb ).setHeaderImage( "left", imagePath );
+		var header = s.getSheetHelper().getActiveSheetHeader( wb );
+		expect( header.getLeft() ).toBe( "&G" );//Graphic
+	});
+
 	it( "adds an image to the left, centre or right header from a cfml image object", function() {
 		var imageData = ImageNew( "", 10, 10, "rgb", "blue" );
 		var wb = s.newXlsx();

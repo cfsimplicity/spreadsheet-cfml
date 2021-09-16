@@ -14,6 +14,12 @@ describe( "autoSizeColumn", function(){
 		});
 	});
 
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb ).autoSizeColumn( 2 );
+		});
+	});
+
 	it( "Doesn't error if the workbook is SXSSF", function(){
 		var data = QueryNew( "First,Last", "VarChar,VarChar", [ [ "a", "abracadabraabracadabra" ] ] );
 		var workbook = s.newStreamingXlsx();

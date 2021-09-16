@@ -197,6 +197,17 @@ describe( "addRow", function(){
 		s.addRow( workbook=local.wb, data=data, autoSizeColumns=true );
 	});
 
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb )
+				.addRow( data )
+				.addRow( "c,d" );// should be inserted at row 2
+			var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
+			expect( actual ).toBe( expected );
+		});
+	});
+
 	describe( "addRow() data type overriding",function(){
 
 		it( "throws an error if invalid types are specified in the datatype struct", function(){

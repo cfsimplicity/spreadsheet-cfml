@@ -15,5 +15,12 @@ describe( "setActiveCell", function(){
 		});
 	});
 
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb ).setActiveCell( 2, 1 );
+			expect( s.getSheetHelper().getActiveSheet( wb ).getActiveCell().toString() ).toBe( "A2" );
+		});
+	});
+
 });	
 </cfscript>

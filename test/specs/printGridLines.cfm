@@ -25,5 +25,14 @@ describe( "printGridLines", function(){
 		});
 	});
 
+	it( "addPrintGridLines and removePrintGridLines are chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb ).addPrintGridLines();
+			expect( s.getSheetHelper().getActiveSheet( wb ).isPrintGridlines() ).toBeTrue();
+			s.newChainable( wb ).removePrintGridLines();
+			expect( s.getSheetHelper().getActiveSheet( wb ).isPrintGridlines() ).toBeFalse();
+		});
+	});
+
 });	
 </cfscript>

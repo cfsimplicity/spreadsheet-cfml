@@ -17,6 +17,13 @@ describe( "cellStyle", function(){
 		});
 	});
 
+	it( "createCellStyle is chainable", function(){
+		workbooks.Each( function( wb ){
+			var style = s.newChainable( wb ).createCellStyle( format );
+			expect( s.getFormatHelper().isValidCellStyleObject( wb, style ) ).toBeTrue();
+		});
+	});
+
 	it( "can create a valid POI CellStyle object from a given format", function(){
 		workbooks.Each( function( wb ){
 			expect( s.getFormatHelper().isValidCellStyleObject( wb, s.createCellStyle( wb, format ) ) ).toBeTrue();

@@ -1,6 +1,13 @@
 <cfscript>
 describe( "formatColumns", function(){
 
+	beforeEach( function(){
+		variables.workbooks = [ s.newXls(), s.newXlsx() ];
+		workbooks.Each( function( wb ){
+			s.addRows( wb, [ [ "a1", "b1" ], [ "a2", "b2" ] ] );
+		});
+	});
+
 	it(
 		title="can format columns in a spreadsheet containing more than 4009 rows",
 		body=function(){
@@ -15,10 +22,6 @@ describe( "formatColumns", function(){
 	);
 
 	it( "can preserve the existing format properties other than the one(s) being changed", function(){
-		var workbooks = [ s.newXls(), s.newXlsx() ];
-		workbooks.Each( function( wb ){
-			s.addRows( wb, [ [ "a1", "b1" ], [ "a2", "b2" ] ] );
-		});
 		workbooks.Each( function( wb ){
 			s.formatColumns( wb, {  italic: true }, "1-2" );
 			expect( s.getCellFormat( wb, 1, 1 ).italic ).toBeTrue();
@@ -28,6 +31,15 @@ describe( "formatColumns", function(){
 				.formatColumns( workbook=wb, format={ bold: true }, range="1-2", overwriteCurrentStyle=false );
 			expect( s.getCellFormat( wb, 1, 1 ).bold ).toBeTrue();
 			expect( s.getCellFormat( wb, 1, 1 ).italic ).toBeTrue();
+		});
+	});
+
+	it( "is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb )
+				.formatColumns( { bold: true }, "1-2" );
+			expect( s.getCellFormat( wb, 1, 1 ).bold ).toBeTrue();
+			expect( s.getCellFormat( wb, 1, 2 ).bold ).toBeTrue();
 		});
 	});
 
