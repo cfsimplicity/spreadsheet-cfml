@@ -2,9 +2,9 @@ component accessors="true"{
 
 	//"static"
 	property name="version" default="3.0.0-develop" setter="false";
-	property name="osgiLibBundleVersion" default="5.0.0.2" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
-	property name="osgiLibBundleSymbolicName" default="luceeSpreadsheet" setter="false";
-	property name="exceptionType" default="cfsimplicity.lucee.spreadsheet" setter="false";
+	property name="osgiLibBundleVersion" default="5.0.0.3" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
+	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
 	//commonly invoked POI class names
 	property name="HSSFWorkbookClassName" default="org.apache.poi.hssf.usermodel.HSSFWorkbook" setter="false";
 	property name="XSSFWorkbookClassName" default="org.apache.poi.xssf.usermodel.XSSFWorkbook" setter="false";
@@ -1191,7 +1191,7 @@ component accessors="true"{
 		try{
 			var workbook = getWorkbookHelper().workbookFromFile( arguments.path );
 		}
-		catch( cfsimplicity.lucee.spreadsheet.invalidFile exception ){
+		catch( cfsimplicity.spreadsheet.invalidFile exception ){
 			return false;
 		}
 		return true;
@@ -1202,7 +1202,7 @@ component accessors="true"{
 	}
 
 	public boolean function isXmlFormat( required workbook ){
-		//CF2016 doesn't support [].Find( needle );
+		//CF2016 doesn't support [].Find( needle ) in all contexts;
 		return ArrayFind( [ this.getXSSFWorkbookClassName(), this.getSXSSFWorkbookClassName() ], arguments.workbook.getClass().getCanonicalName() );
 	}
 
