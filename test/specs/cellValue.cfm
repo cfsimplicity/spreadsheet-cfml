@@ -23,6 +23,17 @@ describe( "cellValue", function(){
 		});
 	});
 
+	it( "getCellValue and setCellValue are chainable", function(){
+		var value = "test";
+		workbooks.Each( function( wb ){
+			var actual = s.newChainable( wb )
+				.setCellValue(value, 1, 1 )
+				.getCellValue( 1, 1 );
+			expect( actual ).toBe( value );
+			expect( s.getCellType( wb, 1, 1 ) ).toBe( "string" );
+		});
+	});
+
 	it( "Sets the specified cell to the specified numeric value", function(){
 		var value = 1;
 		workbooks.Each( function( wb ){
@@ -62,8 +73,7 @@ describe( "cellValue", function(){
 				a|a");
 		workbooks.Each( function( wb ){
 			s.setCellRangeValue( wb, value, 1, 2, 1, 2 );
-			s.write( wb, tempXlsPath, true );
-			actual = s.read( src=tempXlsPath, format="query" );
+			actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -184,11 +194,6 @@ describe( "cellValue", function(){
 			});
 		});
 
-	});
-
-	afterEach( function(){
-		if( FileExists( variables.tempXlsPath ) ) FileDelete( variables.tempXlsPath );
-		if( FileExists( variables.tempXlsxPath ) ) FileDelete( variables.tempXlsxPath );
 	});
 
 });	

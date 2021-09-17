@@ -2,36 +2,42 @@
 describe( "setHeaderImage", function(){
 
 	it( "adds an image to the left, centre or right header from a file path", function() {
-		makePublic( s, "getActiveSheetHeader" );
 		var imagePath = getTestFilePath( "test.png" );
 		var wb = s.newXlsx();
 		s.setHeaderImage( wb, "left", imagePath );
-		var header = s.getActiveSheetHeader( wb );
+		var header = s.getSheetHelper().getActiveSheetHeader( wb );
 		expect( header.getLeft() ).toBe( "&G" );//Graphic
 		wb = s.newXlsx();
 		s.setHeaderImage( wb, "center", imagePath );
-		header = s.getActiveSheetHeader( wb );
+		header = s.getSheetHelper().getActiveSheetHeader( wb );
 		expect( header.getCenter() ).toBe( "&G" );
 		wb = s.newXlsx();
 		s.setHeaderImage( wb, "right", imagePath );
-		header = s.getActiveSheetHeader( wb );
+		header = s.getSheetHelper().getActiveSheetHeader( wb );
 		expect( header.getRight() ).toBe( "&G" );
 	});
 
+	it( "is chainable", function() {
+		var imagePath = getTestFilePath( "test.png" );
+		var wb = s.newXlsx();
+		s.newChainable( wb ).setHeaderImage( "left", imagePath );
+		var header = s.getSheetHelper().getActiveSheetHeader( wb );
+		expect( header.getLeft() ).toBe( "&G" );//Graphic
+	});
+
 	it( "adds an image to the left, centre or right header from a cfml image object", function() {
-		makePublic( s, "getActiveSheetHeader" );
 		var imageData = ImageNew( "", 10, 10, "rgb", "blue" );
 		var wb = s.newXlsx();
 		s.setHeaderImage( wb, "left", imageData, "png" );
-		var header = s.getActiveSheetHeader( wb );
+		var header = s.getSheetHelper().getActiveSheetHeader( wb );
 		expect( header.getLeft() ).toBe( "&G" );//Graphic
 		wb = s.newXlsx();
 		s.setHeaderImage( wb, "center", imageData, "png" );
-		header = s.getActiveSheetHeader( wb );
+		header = s.getSheetHelper().getActiveSheetHeader( wb );
 		expect( header.getCenter() ).toBe( "&G" );
 		wb = s.newXlsx();
 		s.setHeaderImage( wb, "right", imageData, "png" );
-		header = s.getActiveSheetHeader( wb );
+		header = s.getSheetHelper().getActiveSheetHeader( wb );
 		expect( header.getRight() ).toBe( "&G" );
 	});
 

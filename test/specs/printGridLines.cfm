@@ -8,21 +8,29 @@ describe( "printGridLines", function(){
 		variables.xls = s.workbookFromQuery( data, false );
 		variables.xlsx = s.workbookFromQuery( data=data, addHeaderRow=false, xmlformat=true );
 		variables.workbooks = [ xls, xlsx ];
-		makePublic( s, "getActiveSheet" );
 	});
 
 	it( "can be added", function(){
 		workbooks.Each( function( wb ){
 			s.addPrintGridLines( wb );
-			expect( s.getActiveSheet( wb ).isPrintGridlines() ).toBeTrue();
+			expect( s.getSheetHelper().getActiveSheet( wb ).isPrintGridlines() ).toBeTrue();
 		});
 	});
 
 	it( "can be removed", function(){
 		workbooks.Each( function( wb ){
-			s.addPrintGridLines( wb );
-			s.removePrintGridLines( wb );
-			expect( s.getActiveSheet( wb ).isPrintGridlines() ).toBeFalse();
+			s.addPrintGridLines( wb )
+				.removePrintGridLines( wb );
+			expect( s.getSheetHelper().getActiveSheet( wb ).isPrintGridlines() ).toBeFalse();
+		});
+	});
+
+	it( "addPrintGridLines and removePrintGridLines are chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb ).addPrintGridLines();
+			expect( s.getSheetHelper().getActiveSheet( wb ).isPrintGridlines() ).toBeTrue();
+			s.newChainable( wb ).removePrintGridLines();
+			expect( s.getSheetHelper().getActiveSheet( wb ).isPrintGridlines() ).toBeFalse();
 		});
 	});
 

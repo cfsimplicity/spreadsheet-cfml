@@ -10,13 +10,30 @@ describe( "deleteColumns", function(){
 			||e||i
 			||f||j");
 		workbooks.Each( function( wb ){
-			s.addColumn( wb, "a,b" );
-			s.addColumn( wb, "c,d" );
-			s.addColumn( wb, "e,f" );
-			s.addColumn( wb, "g,h" );
-			s.addColumn( wb, "i,j" );
-			s.deleteColumns( wb, "1-2,4" );
-			var actual = s.sheetToQuery( workbook=wb, includeBlankRows=true );
+			s.addColumn( wb, "a,b" )
+				.addColumn( wb, "c,d" )
+				.addColumn( wb, "e,f" )
+				.addColumn( wb, "g,h" )
+				.addColumn( wb, "i,j" )
+				.deleteColumns( wb, "1-2,4" );
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
+			expect( actual ).toBe( expected );
+		});
+	});
+
+	it( "Is chainable", function(){
+		var expected = querySim("column1,column2,column3,column4,column5
+			||e||i
+			||f||j");
+		workbooks.Each( function( wb ){
+			s.newChainable( wb )
+				.addColumn( "a,b" )
+				.addColumn( "c,d" )
+				.addColumn( "e,f" )
+				.addColumn( "g,h" )
+				.addColumn( "i,j" )
+				.deleteColumns( "1-2,4" );
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});
 	});

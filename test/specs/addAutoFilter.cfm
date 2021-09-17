@@ -10,11 +10,9 @@ describe( "addAutoFilter", function(){
 
 	it( "Doesn't error when passing valid arguments", function() {
 		workbooks.Each( function( wb ){
-			s.addAutoFilter( wb, "A1:B1" );
-			// default to all cols in first row if no row range passed
-			s.addAutoFilter( wb );
-			// allow row to be specified instead of range
-			s.addAutoFilter( workbook=wb, row=2 );
+			s.addAutoFilter( wb, "A1:B1" )
+			.addAutoFilter( wb )// default to all cols in first row if no row range passed
+			.addAutoFilter( workbook=wb, row=2 );// allow row to be specified instead of range
 		});
 		
 	});
@@ -22,6 +20,12 @@ describe( "addAutoFilter", function(){
 	it( "Doesn't error when passing valid arguments with extra trailing/leading space", function() {
 		workbooks.Each( function( wb ){
 			s.addAutoFilter( wb, " A1:B1 " );
+		});
+	});
+
+	it( "Is chainable", function() {
+		workbooks.Each( function( wb ){
+			s.newChainable( wb ).addAutoFilter( " A1:B1 " );
 		});
 	});
 

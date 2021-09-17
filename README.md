@@ -1,56 +1,34 @@
-# Spreadsheet library for Lucee (and Adobe ColdFusion)
+# Spreadsheet CFML library
 
-Originally adapted from the https://github.com/teamcfadvance/cfspreadsheet-railo extension, this is a standalone library for reading, creating and formatting spreadsheets in [Lucee Server](http://lucee.org/) which does not require installation as an extension. It can also be used with Adobe ColdFusion.
+Standalone library for working with spreadsheets in CFML ([Lucee](http://lucee.org/) and Adobe ColdFusion), supporting all of ColdFusion's native spreadsheet functionality and much more besides.
 
-## Rationale
-
-Unlike Adobe ColdFusion, Lucee doesn't support spreadsheet functionality out of the box. An [extension exists for Lucee](https://github.com/Leftbower/cfspreadsheet-lucee-5), but I decided to create a standalone library which doesn't depend on customisation of the engine.
-
-## Library vs Extension
-
-### Benefits
-
-- No installation required, either at the server or individual web context level.
-- `read()` method offers all the features of the `<cfspreadsheet action="read">` tag in script.
-- Offers many additional functions and options (see below).
-- Fixes various outstanding bugs/omissions.
-- No dependency on Lucee within the included jar files.
-- Also works with Adobe ColdFusion (see below).
-
-### Downsides
-
-- Existing code needs adapting to invoke the library. Existing CFML spreadsheet functions and the `<cfspreadsheet>` tag won't work with it.
-
-## Adobe ColdFusion
-
-Although primarily intended for Lucee, the library can be run under ColdFusion 2016 or higher. This may be useful where you want to your codebase to be cross-compatible between the two engines.
-
-## Minimum Requirements for version 2.x
+## Minimum Requirements
 
 - Java 8 or higher
 - Lucee 5.x or higher
 - Adobe ColdFusion 2016 or higher
 
-If you are running Java 6 and 7, Lucee 4.5 or ACF11, please use [version 1.x.](https://github.com/cfsimplicity/lucee-spreadsheet/tags)
-
 ## Usage
 
-The following are the essential files/folders you will need depending on which engine you are using:
+The following are the essential files/folders you will need depending on which CFML engine you are using:
 
 ### Lucee
 ```
+helpers/
 lib-osgi.jar
 osgiLoader.cfc
 Spreadsheet.cfc
+SpreadsheetChainable.cfc
 ```
 ### Adobe ColdFusion
 ```
+helpers/
 javaLoader/
 lib/
 Spreadsheet.cfc
+SpreadsheetChainable.cfc
 ```
-
-Note that this is not a Lucee extension, so **does not need to be installed**. To use it, simply copy the files/folders to a location where `Spreadsheet.cfc` can be called by your application code.
+Note that this is not an extension or package, so **does not need to be installed**. To use it, simply copy the files/folders to a location where `Spreadsheet.cfc` can be called by your application code.
 
 The following example assumes the file containing the script is in the same directory as the folder containing the spreadsheet library files, i.e.:
 
@@ -80,121 +58,122 @@ spreadsheet = CreateObject( "component", "spreadsheetLibrary.Spreadsheet" ).init
 ```
 ### Using a mapping
 
-You will probably want to place the spreadsheet library files in a central location with an application mapping, and instantiate the component using its dot path (e.g. `New myLibrary.spreadsheet.Spreadsheet();`).
+You may wish to place the spreadsheet library files in a central location with an application mapping, and instantiate the component using its dot path (e.g. `New myLibrary.spreadsheet.Spreadsheet();`).
 
 [How to create mappings (StackOverflow)](http://stackoverflow.com/questions/12073714/components-mapping-in-railo).
 
-[Full function reference](https://github.com/cfsimplicity/lucee-spreadsheet/wiki)
+[Full function reference](https://github.com/cfsimplicity/spreadsheet-cfml/wiki)
 
 ## Supported ColdFusion functions
 
-* [addAutofilter](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addAutofilter)
-* [addColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addColumn)
-* [addFreezePane](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addFreezePane)
-* [addImage](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addImage)
-* [addInfo](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addInfo)
-* [addPageBreaks](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addPageBreaks)
-* [addRow](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addRow)
-* [addRows](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addRows)
-* [addSplitPane](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addSplitPane)
-* autosize, implemented as [autoSizeColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/autoSizeColumn)
-* [createSheet](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/createSheet)
-* [deleteColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/deleteColumn)
-* [deleteColumns](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/deleteColumns)
-* [deleteRow](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/deleteRow)
-* [deleteRows](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/deleteRows)
-* [formatCell](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/formatCell)
-* [formatCellRange](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/formatCellRange)
-* [formatColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/formatColumn)
-* [formatColumns](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/formatColumns)
-* [formatRow](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/formatRow)
-* [formatRows](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/formatRows)
-* [getCellComment](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellComment)
-* [getCellFormula](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellFormula)
-* [getCellValue](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellValue)
-* [getColumnCount](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getColumnCount)
-* [info](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/info)
-* [isSpreadsheetFile](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isSpreadsheetFile)
-* [isSpreadsheetObject](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isSpreadsheetObject)
-* [mergeCells](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/mergeCells)
-* [new](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/new)
-* [read](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/read)
-* [readBinary](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/readBinary)
-* [removeSheet](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/removeSheet)
-* [setActiveSheet](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setActiveSheet)
-* [setActiveSheetNumber](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setActiveSheetNumber)
-* [setCellComment](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setCellComment)
-* [setCellFormula](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setCellFormula)
-* [setCellValue](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setCellValue)
-* [setColumnWidth](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setColumnWidth)
-* [setFooter](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setFooter)
-* [setHeader](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setHeader)
-* [setRowHeight](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setRowHeight)
-* [shiftColumns](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/shiftColumns)
-* [shiftRows](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/shiftRows)
-* [write](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/write)
+* [addAutofilter](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addAutofilter)
+* [addColumn](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addColumn)
+* [addFreezePane](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addFreezePane)
+* [addImage](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addImage)
+* [addInfo](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addInfo)
+* [addPageBreaks](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addPageBreaks)
+* [addRow](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addRow)
+* [addRows](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addRows)
+* [addSplitPane](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addSplitPane)
+* autosize, implemented as [autoSizeColumn](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/autoSizeColumn)
+* [createSheet](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/createSheet)
+* [deleteColumn](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/deleteColumn)
+* [deleteColumns](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/deleteColumns)
+* [deleteRow](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/deleteRow)
+* [deleteRows](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/deleteRows)
+* [formatCell](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/formatCell)
+* [formatCellRange](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/formatCellRange)
+* [formatColumn](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/formatColumn)
+* [formatColumns](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/formatColumns)
+* [formatRow](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/formatRow)
+* [formatRows](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/formatRows)
+* [getCellComment](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellComment)
+* [getCellFormula](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellFormula)
+* [getCellValue](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellValue)
+* [getColumnCount](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getColumnCount)
+* [info](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/info)
+* [isSpreadsheetFile](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isSpreadsheetFile)
+* [isSpreadsheetObject](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isSpreadsheetObject)
+* [mergeCells](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/mergeCells)
+* [new](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/new)
+* [read](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/read)
+* [readBinary](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/readBinary)
+* [removeSheet](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/removeSheet)
+* [setActiveSheet](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setActiveSheet)
+* [setActiveSheetNumber](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setActiveSheetNumber)
+* [setCellComment](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setCellComment)
+* [setCellFormula](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setCellFormula)
+* [setCellValue](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setCellValue)
+* [setColumnWidth](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setColumnWidth)
+* [setFooter](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setFooter)
+* [setHeader](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setHeader)
+* [setRowHeight](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setRowHeight)
+* [shiftColumns](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/shiftColumns)
+* [shiftRows](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/shiftRows)
+* [write](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/write)
 
 ### Extra functions not available in ColdFusion
 
-* [addPrintGridlines](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/addPrintGridlines)
-* [cleanUpStreamingXml](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/cleanUpStreamingXml)
-* [clearCell](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCell)
-* [clearCellRange](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/clearCellRange)
-* [createCellStyle](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/createCellStyle)
-* [getCellComments](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellComments)
-* [getCellFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellFormat)
-* [getCellHyperLink](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellHyperLink)
-* [getCellType](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getCellType)
-* [getColumnWidth](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getColumnWidth)
-* [getColumnWidthInPixels](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getColumnWidthInPixels)
-* [getPOIVersion](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getPOIVersion)
-* [getPresetColorNames](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getPresetColorNames)
-* [getRowCount](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/getRowCount)
-* [hideColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/hideColumn)
-* [hideRow](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/hideRow)
-* [isBinaryFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isBinaryFormat)
-* [isColumnHidden](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isColumnHidden)
-* [isRowHidden](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isRowHidden)
-* [isStreamingXmlFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isStreamingXmlFormat)
-* [isXmlFormat](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/isXmlFormat)
-* [removePrintGridlines](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/removePrintGridlines)
-* [renameSheet](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/renameSheet)
-* [removeSheetNumber](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/removeSheetNumber)
-* [setActiveCell](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setActiveCell)
-* [setCellHyperLink](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setCellHyperLink)
-* [setCellRangeValue](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setCellRangeValue)
-* [setFitToPage](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setFitToPage)
-* [setFooterImage](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setFooterImage)
-* [setHeaderImage](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setHeaderImage)
-* [setReadOnly](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setReadOnly)
-* [setRecalculateFormulasOnNextOpen](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setRecalculateFormulasOnNextOpen)
-* [setRepeatingColumns](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setRepeatingColumns)
-* [setRepeatingRows](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setRepeatingRows)
-* [setSheetTopMargin](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setSheetTopMargin)
-* [setSheetBottomMargin](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setSheetBottomMargin)
-* [setSheetLeftMargin](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setSheetLeftMargin)
-* [setSheetRightMargin](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setSheetRightMargin)
-* [setSheetHeaderMargin](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setSheetHeaderMargin)
-* [setSheetFooterMargin](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setSheetFooterMargin)
-* [setSheetPrintOrientation](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/setSheetPrintOrientation)
-* [showColumn](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/showColumn)
-* [showRow](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/showRow)
-* [writeToCsv](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/writeToCsv)
+* [addPrintGridlines](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addPrintGridlines)
+* [cleanUpStreamingXml](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/cleanUpStreamingXml)
+* [clearCell](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/clearCell)
+* [clearCellRange](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/clearCellRange)
+* [createCellStyle](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/createCellStyle)
+* [getCellComments](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellComments)
+* [getCellFormat](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellFormat)
+* [getCellHyperLink](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellHyperLink)
+* [getCellType](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellType)
+* [getColumnWidth](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getColumnWidth)
+* [getColumnWidthInPixels](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getColumnWidthInPixels)
+* [getLastRowNumber](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getLastRowNumber)
+* [getPOIVersion](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getPOIVersion)
+* [getPresetColorNames](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getPresetColorNames)
+* [getRowCount](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getRowCount)
+* [hideColumn](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/hideColumn)
+* [hideRow](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/hideRow)
+* [isBinaryFormat](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isBinaryFormat)
+* [isColumnHidden](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isColumnHidden)
+* [isRowHidden](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isRowHidden)
+* [isStreamingXmlFormat](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isStreamingXmlFormat)
+* [isXmlFormat](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isXmlFormat)
+* [removePrintGridlines](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/removePrintGridlines)
+* [renameSheet](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/renameSheet)
+* [removeSheetNumber](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/removeSheetNumber)
+* [setActiveCell](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setActiveCell)
+* [setCellHyperLink](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setCellHyperLink)
+* [setCellRangeValue](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setCellRangeValue)
+* [setFitToPage](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setFitToPage)
+* [setFooterImage](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setFooterImage)
+* [setHeaderImage](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setHeaderImage)
+* [setReadOnly](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setReadOnly)
+* [setRecalculateFormulasOnNextOpen](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setRecalculateFormulasOnNextOpen)
+* [setRepeatingColumns](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setRepeatingColumns)
+* [setRepeatingRows](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setRepeatingRows)
+* [setSheetTopMargin](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetTopMargin)
+* [setSheetBottomMargin](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetBottomMargin)
+* [setSheetLeftMargin](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetLeftMargin)
+* [setSheetRightMargin](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetRightMargin)
+* [setSheetHeaderMargin](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetHeaderMargin)
+* [setSheetFooterMargin](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetFooterMargin)
+* [setSheetPrintOrientation](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetPrintOrientation)
+* [showColumn](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/showColumn)
+* [showRow](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/showRow)
+* [writeToCsv](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/writeToCsv)
 
 ### Additional Convenience methods
 
-* [binaryFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/binaryFromQuery)
-* [csvToQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/csvToQuery)
-* [download](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/download)
-* [downloadCsvFromFile](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/downloadCsvFromFile)
-* [downloadFileFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/downloadFileFromQuery)
-* [newStreamingXlsx](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/newStreamingXlsx)
-* [newXls](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/newXls)
-* [newXlsx](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/newXlsx)
-* [queryToCsv](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/queryToCsv)
-* [workbookFromCsv](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/workbookFromCsv)
-* [workbookFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/workbookFromQuery)
-* [writeFileFromQuery](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/writeFileFromQuery)
+* [binaryFromQuery](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/binaryFromQuery)
+* [csvToQuery](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/csvToQuery)
+* [download](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/download)
+* [downloadCsvFromFile](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/downloadCsvFromFile)
+* [downloadFileFromQuery](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/downloadFileFromQuery)
+* [newStreamingXlsx](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/newStreamingXlsx)
+* [newXls](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/newXls)
+* [newXlsx](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/newXlsx)
+* [queryToCsv](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/queryToCsv)
+* [workbookFromCsv](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/workbookFromCsv)
+* [workbookFromQuery](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/workbookFromQuery)
+* [writeFileFromQuery](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/writeFileFromQuery)
 
 ### Enhanced Read() method
 
@@ -217,7 +196,18 @@ The `read()` method also features the following additional options not available
 * `csvDelimiter`
 * `queryColumnTypes`
 
-[Full documentation of read()](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/read)
+[Full documentation of read()](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/read)
+
+### Chainable syntax
+
+From version 3, multiple calls can be chained together, simplifying your code into a more expressive syntax.
+```
+spreadsheet.newChainable( "xlsx" )
+ .addRows( data )
+ .formatRow( { bold: true }, 1 )
+ .write( filepath );
+```
+[More on chaining calls](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/chaining)
 
 ### Date formats
 
@@ -234,39 +224,38 @@ An additional mask is used to output datetime values from the `read()` method in
 NB: _Do not confuse `DATETIME` and `TIMESTAMP`._ In general you should override the `TIMESTAMP` mask.
 
 Each of these can be overridden by passing in a struct including the value(s) to be overridden when instantiating the Spreadsheet component. For example:
-
 ```
 <cfscript>
 spreadsheet = New spreadsheetLibrary.spreadsheet( dateFormats={ DATE: "mm/dd/yyyy" } );
 </cfscript>
 ```
-While the above will set the library defaults, you can format cells with specific masks using the `dataFormat` attribute which can be passed to [formatCell](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/formatCell) and the other [formatting](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/Formatting-options) methods, as part of the `format` argument:
+While the above will set the library defaults, you can format cells with specific masks using the `dataFormat` attribute which can be passed to [formatCell](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/formatCell) and the other [formatting](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/Formatting-options) methods, as part of the `format` argument:
 ```
 // display datetime value with millisecond precision
 spreadsheet.formatColumn( workbook , { dataformat: "yyyy-mm-dd hh:mm:ss.000" }, 1 );
 ```
-
 ### JavaLoader
 
 From version 2.14.0, Lucee loads the POI and other required java libraries using OSGi. This is not yet supported with Adobe ColdFusion which by default uses an included version of Mark Mandel's [JavaLoader](https://github.com/markmandel/JavaLoader). 
 
-For more details and options see: [Loading the POI java libraries](https://github.com/cfsimplicity/lucee-spreadsheet/wiki/Loading-the-POI-java-libraries)
+For more details and options see: [Loading the POI java libraries](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/Loading-the-POI-java-libraries)
 
 ## CommandBox Installation
 
 You can also download this library through CommandBox/Forgebox.
 ```
-box install lucee-spreadsheet
+box install spreadsheet-cfml
 ```
 It will download the files into a modules directory and can be used just the same as downloading the files manually.
 
 If using ColdBox you can use either of the WireBox bindings like so:
 ```
-spreadsheet = wirebox.getInstance("Spreadsheet@lucee-spreadsheet");
-spreadsheet = wirebox.getInstance("LuceeSpreadsheet");
+spreadsheet = wirebox.getInstance( "Spreadsheet@spreadsheet-cfml" );
+spreadsheet = wirebox.getInstance( "Spreadsheet CFML" );
 ```
 
 ## Test Suite
+
 The automated tests require [TestBox 2.1](https://github.com/Ortus-Solutions/TestBox) or later. You will need to create an application mapping for `/testbox`
 
 ## Credits

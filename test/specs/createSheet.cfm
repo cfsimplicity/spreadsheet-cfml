@@ -12,18 +12,24 @@ describe( "createSheet", function(){
 		});
 	});
 
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb ).createSheet();
+			expect( wb.getNumberOfSheets() ).toBe( 2 );
+		});
+	});
+
 	it( "Creates a new sheet with the specified name", function(){
-		makePublic( s, "sheetExists" );
 		workbooks.Each( function( wb ){
 			s.createSheet( wb,"test" );
-			expect( s.sheetExists( workbook=wb, sheetName="test" ) ).toBeTrue();
+			expect( s.getSheetHelper().sheetExists( workbook=wb, sheetName="test" ) ).toBeTrue();
 		});
 	});
 
 	it( "Overwrites an existing sheet with the same name if overwrite is true", function(){
 		workbooks.Each( function( wb ){
-			s.createSheet( wb, "test" );
-			s.createSheet( wb, "test", true );
+			s.createSheet( wb, "test" )
+				.createSheet( wb, "test", true );
 			expect( wb.getNumberOfSheets() ).toBe( 2 );
 		});
 	});
@@ -50,8 +56,8 @@ describe( "createSheet", function(){
 		it( "a sheet exists with the specified name and overwrite is false", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
-					s.createSheet( wb, "test" );
-					s.createSheet( wb, "test" );
+					s.createSheet( wb, "test" )
+						.createSheet( wb, "test" );
 				}).toThrow( regex="already exists" );
 			});
 		});

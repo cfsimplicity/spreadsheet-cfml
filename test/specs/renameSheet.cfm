@@ -8,20 +8,25 @@ describe( "renameSheet", function(){
 	it( "Renames the specified sheet", function(){
 		workbooks.Each( function( wb ){
 			s.renameSheet( wb, "test", 1 );
-			makePublic( s, "sheetExists" );
-			expect( s.sheetExists( wb, "test" ) ).toBeTrue();
+			expect( s.getSheetHelper().sheetExists( wb, "test" ) ).toBeTrue();
 		});
 	});
 
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb ).renameSheet( "test", 1 );
+			expect( s.getSheetHelper().sheetExists( wb, "test" ) ).toBeTrue();
+		});
+	});
 
 	describe( "renameSheet throws an exception if", function(){
 
 		it( "the new sheet name already exists", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
-					s.createSheet( wb, "test" );
-					s.createSheet( wb, "test2" );
-					s.renameSheet( wb, "test2", 2 );
+					s.createSheet( wb, "test" )
+						.createSheet( wb, "test2" )
+						.renameSheet( wb, "test2", 2 );
 				}).toThrow( regex="Invalid Sheet Name" );
 			});
 		});

@@ -9,10 +9,10 @@ describe( "addRow", function(){
 
 	it( "Appends a row with the minimum arguments", function(){
 		workbooks.Each( function( wb ){
-			s.addRow( wb, data );
-			s.addRow( wb, "c,d" );// should be inserted at row 2
+			s.addRow( wb, data )
+				.addRow( wb, "c,d" );// should be inserted at row 2
 			var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -21,17 +21,17 @@ describe( "addRow", function(){
 		workbooks.Each( function( wb ){
 			s.addRow( workbook=wb, data="a,b|c,d", delimiter="|" );
 			var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a,b", "c,d" ] ] );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
 
 	it( "Appends a row as an array with the minimum arguments", function(){
 		workbooks.Each( function( wb ){
-			s.addRow( wb, dataAsArray );
-			s.addRow( wb, [ "c", "d" ] );// should be inserted at row 2
+			s.addRow( wb, dataAsArray )
+				.addRow( wb, [ "c", "d" ] );// should be inserted at row 2
 			var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -39,19 +39,19 @@ describe( "addRow", function(){
 	it( "Inserts a row at a specifed position", function(){
 		var expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "a", "b", "" ], [ "c", "d", "" ], [ "", "e", "f" ] ] );
 		workbooks.Each( function( wb ){
-			s.addRow( wb, data );
-			s.addRow( wb, "e,f", 2, 2 );
-			s.addRow( wb, "c,d", 2, 1 );
-			var actual = s.sheetToQuery( workbook=wb, includeBlankRows=true );
+			s.addRow( wb, data )
+				.addRow( wb, "e,f", 2, 2 )
+				.addRow( wb, "c,d", 2, 1 );
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});
 		//array data
 		var workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( function( wb ){
-			s.addRow( wb, dataAsArray );
-			s.addRow( wb, [ "e", "f" ], 2, 2 );
-			s.addRow( wb, [ "c", "d" ], 2, 1 );
-			var actual = s.sheetToQuery( workbook=wb, includeBlankRows=true );
+			s.addRow( wb, dataAsArray )
+				.addRow( wb, [ "e", "f" ], 2, 2 )
+				.addRow( wb, [ "c", "d" ], 2, 1 );
+			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -59,17 +59,17 @@ describe( "addRow", function(){
 	it( "Replaces a row if insert is false", function(){
 		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ] ] );
 		workbooks.Each( function( wb ){
-			s.addRow( wb, data );
-			s.addRow( workbook=wb, data=data, row=1, insert=false );
-			var actual = s.sheetToQuery( wb );
+			s.addRow( wb, data )
+				.addRow( workbook=wb, data=data, row=1, insert=false );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 		var workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( function( wb ){
 			//array data
-			s.addRow( wb, dataAsArray );
-			s.addRow( workbook=wb, data=dataAsArray, row=1, insert=false );
-			var actual = s.sheetToQuery( wb );
+			s.addRow( wb, dataAsArray )
+				.addRow( workbook=wb, data=dataAsArray, row=1, insert=false );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -78,7 +78,7 @@ describe( "addRow", function(){
 		workbooks.Each( function( wb ){
 			s.addRow( workbook=wb, data="'a,b', 'c,d'" );
 			var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a,b", "c,d" ] ] );
-			var actual = s.sheetToQuery( wb );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		});
 	});
@@ -195,6 +195,17 @@ describe( "addRow", function(){
 	it( "Doesn't error if the workbook is SXSSF and autoSizeColumns is true", function(){
 		var wb = s.newStreamingXlsx();
 		s.addRow( workbook=local.wb, data=data, autoSizeColumns=true );
+	});
+
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb )
+				.addRow( data )
+				.addRow( "c,d" );// should be inserted at row 2
+			var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
+			var actual = s.getSheetHelper().sheetToQuery( wb );
+			expect( actual ).toBe( expected );
+		});
 	});
 
 	describe( "addRow() data type overriding",function(){

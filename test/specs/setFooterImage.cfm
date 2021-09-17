@@ -2,36 +2,42 @@
 describe( "setFooterImage", function(){
 
 	it( "adds an image to the left, centre or right footer from a file path", function() {
-		makePublic( s, "getActiveSheetFooter" );
 		var imagePath = getTestFilePath( "test.png" );
 		var wb = s.newXlsx();
 		s.setFooterImage( wb, "left", imagePath );
-		var footer = s.getActiveSheetFooter( wb );
+		var footer = s.getSheetHelper().getActiveSheetFooter( wb );
 		expect( footer.getLeft() ).toBe( "&G" );//Graphic
 		wb = s.newXlsx();
 		s.setFooterImage( wb, "center", imagePath );
-		footer = s.getActiveSheetFooter( wb );
+		footer = s.getSheetHelper().getActiveSheetFooter( wb );
 		expect( footer.getCenter() ).toBe( "&G" );
 		wb = s.newXlsx();
 		s.setFooterImage( wb, "right", imagePath );
-		footer = s.getActiveSheetFooter( wb );
+		footer = s.getSheetHelper().getActiveSheetFooter( wb );
 		expect( footer.getRight() ).toBe( "&G" );
 	});
 
+	it( "is chainable", function() {
+		var imagePath = getTestFilePath( "test.png" );
+		var wb = s.newXlsx();
+		s.newChainable( wb ).setFooterImage( "left", imagePath );
+		var footer = s.getSheetHelper().getActiveSheetFooter( wb );
+		expect( footer.getLeft() ).toBe( "&G" );//Graphic
+	});
+
 	it( "adds an image to the left, centre or right footer from a cfml image object", function() {
-		makePublic( s, "getActiveSheetFooter" );
 		var imageData = ImageNew( "", 10, 10, "rgb", "blue" );
 		var wb = s.newXlsx();
 		s.setFooterImage( wb, "left", imageData, "png" );
-		var footer = s.getActiveSheetFooter( wb );
+		var footer = s.getSheetHelper().getActiveSheetFooter( wb );
 		expect( footer.getLeft() ).toBe( "&G" );//Graphic
 		wb = s.newXlsx();
 		s.setFooterImage( wb, "center", imageData, "png" );
-		footer = s.getActiveSheetFooter( wb );
+		footer = s.getSheetHelper().getActiveSheetFooter( wb );
 		expect( footer.getCenter() ).toBe( "&G" );
 		wb = s.newXlsx();
 		s.setFooterImage( wb, "right", imageData, "png" );
-		footer = s.getActiveSheetFooter( wb );
+		footer = s.getSheetHelper().getActiveSheetFooter( wb );
 		expect( footer.getRight() ).toBe( "&G" );
 	});
 

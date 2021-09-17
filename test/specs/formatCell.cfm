@@ -13,6 +13,16 @@ describe( "formatCell", function(){
 		return s.getCellFormat( wb, 1, 1 );
 	};
 
+	it( "formatCell and getCellFormat are chainable", function(){
+		var format = { bold: true };
+		workbooks.Each( function( wb ){
+			var cellFormat = s.newChainable( wb )
+				.formatCell( format, 1, 1 )
+				.getCellFormat( 1, 1 );
+			expect( cellFormat.bold ).toBeTrue();
+		});
+	});
+
 	it( "can set bold", function(){
 		var format = { bold: true };
 		workbooks.Each( function( wb ){

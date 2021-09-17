@@ -7,12 +7,20 @@ describe( "removeSheet", function(){
 
 	it( "Deletes the sheet name specified", function(){
 		workbooks.Each( function( wb ){
-			s.createSheet( wb, "test" );
-			s.removeSheet( wb, "test" );
+			s.createSheet( wb, "test" )
+				.removeSheet( wb, "test" );
 			expect( wb.getNumberOfSheets() ).toBe( 1 );
 		});
 	});
 
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb )
+				.createSheet( "test" )
+				.removeSheet( "test" );
+			expect( wb.getNumberOfSheets() ).toBe( 1 );
+		});
+	});
 
 	describe( "removeSheet throws an exception if", function(){
 

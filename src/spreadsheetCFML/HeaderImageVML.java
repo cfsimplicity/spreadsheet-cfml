@@ -1,7 +1,7 @@
 /**
 * Adapted from https://stackoverflow.com/questions/51077404/apache-poi-adding-watermark-in-excel-workbook/51103756#51103756
 **/
-package luceeSpreadsheet;
+package spreadsheetCFML;
 
 import java.io.*;
 import org.apache.poi.openxml4j.opc.*;

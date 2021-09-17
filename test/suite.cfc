@@ -2,7 +2,6 @@ component extends="testbox.system.BaseSpec"{
 
 	function newSpreadsheetInstance(){
 		var s = New root.Spreadsheet( argumentCollection=arguments );
-		makePublic( s, "sheetToQuery" );
 		return s;
 	}
 
@@ -31,7 +30,7 @@ component extends="testbox.system.BaseSpec"{
 		var specs = DirectoryList( ExpandPath( "specs" ), false, "name", "*.cfm" );
 		// run every file in the tests folder
 		for( var file in specs ){
-			include "specs/#file#";	
+			include "specs/#file#";
 		}
 
 	}

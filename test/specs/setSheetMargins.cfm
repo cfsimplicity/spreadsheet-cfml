@@ -1,16 +1,13 @@
 <cfscript>
-describe( "setSheetMargins", function(){
+describe( "setSheetMargin methods", function(){
 
 	beforeEach( function(){
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
-		makePublic( s, "getActiveSheet" );
-		makePublic( s, "getSheetByName" );
-		makePublic( s, "getSheetByNumber" );
 	});
 
-	it( "by default sets the active sheet margins", function(){
+	it( "by default set the active sheet margins", function(){
 		workbooks.Each( function( wb ){
-			var sheet = s.getActiveSheet( wb );
+			var sheet = s.getSheetHelper().getActiveSheet( wb );
 			s.setSheetTopMargin( wb, 3 );
 			expect( sheet.getMargin( sheet.TopMargin ) ).toBe( 3 );
 			s.setSheetBottomMargin( wb, 3 );
@@ -26,19 +23,38 @@ describe( "setSheetMargins", function(){
 		});
 	});
 
-	it( "sets a margin of the named sheet", function(){
+	it( "are chainable", function(){
 		workbooks.Each( function( wb ){
-			s.createSheet( wb, "test" );
-			s.setSheetTopMargin( wb, 3, "test" );
-			var sheet = s.getSheetByName( wb, "test" );
+			s.newChainable( wb )
+				.setSheetTopMargin( 3 )
+				.setSheetBottomMargin( 3 )
+				.setSheetLeftMargin( 3 )
+				.setSheetRightMargin( 3 )
+				.setSheetHeaderMargin( 3 )
+				.setSheetFooterMargin( 3 );
+			var sheet = s.getSheetHelper().getActiveSheet( wb );
+			expect( sheet.getMargin( sheet.TopMargin ) ).toBe( 3 );
+			expect( sheet.getMargin( sheet.BottomMargin ) ).toBe( 3 );
+			expect( sheet.getMargin( sheet.LeftMargin ) ).toBe( 3 );
+			expect( sheet.getMargin( sheet.RightMargin ) ).toBe( 3 );
+			expect( sheet.getMargin( sheet.HeaderMargin ) ).toBe( 3 );
+			expect( sheet.getMargin( sheet.FooterMargin ) ).toBe( 3 );
+		});
+	});
+
+	it( "set a margin of the named sheet", function(){
+		workbooks.Each( function( wb ){
+			s.createSheet( wb, "test" )
+				.setSheetTopMargin( wb, 3, "test" );
+			var sheet = s.getSheetHelper().getSheetByName( wb, "test" );
 			expect( sheet.getMargin( sheet.TopMargin ) ).toBe( 3 );
 		});
 	});
 
-	it( "sets a margin of the specified sheet number", function(){
+	it( "set a margin of the specified sheet number", function(){
 		workbooks.Each( function( wb ){
 			s.createSheet( wb, "test" );
-			var sheet = s.getSheetByNumber( wb, 2 );
+			var sheet = s.getSheetHelper().getSheetByNumber( wb, 2 );
 			// named arguments
 			s.setSheetTopMargin( workbook=wb, marginSize=3, sheetNumber=2 );
 			expect( sheet.getMargin( sheet.TopMargin ) ).toBe( 3 );
@@ -50,7 +66,7 @@ describe( "setSheetMargins", function(){
 
 	it( "can set margins to floating point values", function(){
 		workbooks.Each( function( wb ){
-			var sheet = s.getActiveSheet( wb );
+			var sheet = s.getSheetHelper().getActiveSheet( wb );
 			s.setSheetTopMargin( wb, 3.5 );
 			expect( sheet.getMargin( sheet.TopMargin ) ).toBe( 3.5 );
 		});

@@ -8,7 +8,7 @@ describe( "workbookFromQuery", function(){
 	it( "Returns a workbook from a query", function(){
 		var workbook = s.workbookFromQuery( query );
 		expected = query;
-		actual = s.sheetToQuery( workbook=workbook, headerRow=1 );
+		actual = s.getSheetHelper().sheetToQuery( workbook=workbook, headerRow=1 );
 		expect( actual ).toBe( expected );
 	});
 
@@ -23,6 +23,13 @@ describe( "workbookFromQuery", function(){
 		expect( s.getCellValue( workbook, 1, 1 ) ).toBeWithCase( "Header2" );
 		local.workbook = s.workbookFromQuery( data=query, xmlformat=true );
 		expect( s.getCellValue( workbook, 1, 1 ) ).toBeWithCase( "Header2" );
+	});
+
+	it( "is chainable", function(){
+		var workbook = s.newChainable().fromQuery( query ).getWorkbook();
+		expected = query;
+		actual = s.getSheetHelper().sheetToQuery( workbook=workbook, headerRow=1 );
+		expect( actual ).toBe( expected );
 	});
 
 });	

@@ -3,14 +3,11 @@ describe( "setSheetPrintOrientation", function(){
 
 	beforeEach( function(){
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
-		makePublic( s, "getActiveSheet" );
-		makePublic( s, "getSheetByName" );
-		makePublic( s, "getSheetByNumber" );
 	});
 
 	it( "by default sets the active sheet to the specified orientation", function(){
 		workbooks.Each( function( wb ){
-			var sheet = s.getActiveSheet( wb );
+			var sheet = s.getSheetHelper().getActiveSheet( wb );
 			expect( sheet.getPrintSetup().getLandscape() ).toBeFalse();
 			s.setSheetPrintOrientation( wb, "landscape" );
 			expect( sheet.getPrintSetup().getLandscape() ).toBeTrue();
@@ -19,11 +16,20 @@ describe( "setSheetPrintOrientation", function(){
 		});
 	});
 
+	it( "is chainable", function(){
+		workbooks.Each( function( wb ){
+			var sheet = s.getSheetHelper().getActiveSheet( wb );
+			expect( sheet.getPrintSetup().getLandscape() ).toBeFalse();
+			s.newChainable( wb ).setSheetPrintOrientation( "landscape" );
+			expect( sheet.getPrintSetup().getLandscape() ).toBeTrue();
+		});
+	});
+
 	it( "sets the named sheet to the specified orientation", function(){
 		workbooks.Each( function( wb ){
-			s.createSheet( wb, "test" );
-			s.setSheetPrintOrientation( wb, "landscape", "test" );
-			var sheet = s.getSheetByName( wb, "test" );
+			s.createSheet( wb, "test" )
+				.setSheetPrintOrientation( wb, "landscape", "test" );
+			var sheet = s.getSheetHelper().getSheetByName( wb, "test" );
 			expect( sheet.getPrintSetup().getLandscape() ).toBeTrue();
 		});
 	});
@@ -31,7 +37,7 @@ describe( "setSheetPrintOrientation", function(){
 	it( "sets the specified sheet number to the specified orientation", function(){
 		workbooks.Each( function( wb ){
 			s.createSheet( wb, "test" );
-			var sheet = s.getSheetByNumber( wb, 2 );
+			var sheet = s.getSheetHelper().getSheetByNumber( wb, 2 );
 			expect( sheet.getPrintSetup().getLandscape() ).toBeFalse();
 			// named arguments
 			s.setSheetPrintOrientation( workbook=wb, mode="landscape", sheetNumber=2 );

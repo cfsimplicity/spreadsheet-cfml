@@ -3,22 +3,30 @@ describe( "setActiveSheet", function(){
 
 	beforeEach( function(){
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
-		makePublic( s,"getActiveSheetName" );
 	});
 
 	it( "Sets the specified sheet number to be active", function(){
 		workbooks.Each( function( wb ){
-			s.createSheet( wb, "test" );
-			s.setActiveSheet( workbook=wb, sheetNumber=2 );
-			expect( s.getActiveSheetName( wb ) ).toBe( "test" );
+			s.createSheet( wb, "test" )
+				.setActiveSheet( workbook=wb, sheetNumber=2 );
+			expect( s.getSheetHelper().getActiveSheetName( wb ) ).toBe( "test" );
 		});
 	});
 
 	it( "Sets the specified sheet name to be active", function(){
 		workbooks.Each( function( wb ){
-			s.createSheet( wb, "test" );
-			s.setActiveSheet( workbook=wb, sheetName="test" );
-			expect( s.getActiveSheetName( wb ) ).toBe( "test" );
+			s.createSheet( wb, "test" )
+				.setActiveSheet( workbook=wb, sheetName="test" );
+			expect( s.getSheetHelper().getActiveSheetName( wb ) ).toBe( "test" );
+		});
+	});
+
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb )
+				.createSheet( "test" )
+				.setActiveSheet( sheetName="test" );
+			expect( s.getSheetHelper().getActiveSheetName( wb ) ).toBe( "test" );
 		});
 	});
 

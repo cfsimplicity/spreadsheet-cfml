@@ -26,7 +26,7 @@ describe( "info", function(){
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 	});
 
-	it( "Adds and can get back info from a binary xls", function(){
+	it( "Adds and can get back info", function(){
 		workbooks.Each( function( wb ){
 			s.addInfo( wb, infoToAdd );
 			if( s.isXmlFormat( wb ) ) infoToBeReturned.spreadSheetType = "Excel (2007)";
@@ -53,10 +53,22 @@ describe( "info", function(){
 		workbooks.Each( function( wb ){
 			if( s.isXmlFormat( wb ) ) infoToBeReturned.spreadSheetType = "Excel (2007)";
 			var tempPath = s.isXmlFormat( wb )? tempXlsxPath: tempXlsPath;
-			s.addInfo( wb, infoToAdd );
-			s.write( wb, tempPath, true );
+			s.addInfo( wb, infoToAdd )
+				.write( wb, tempPath, true );
 			var expected = infoToBeReturned;
 			var actual = s.info( tempPath );
+			actual.creationDate = DateFormat( Now(), "yyyymmdd" );// Doesn't return this value so mock
+			expect( actual ).toBe( expected );
+		});
+	});
+
+	it( "addInfo and info are chainable", function(){
+		workbooks.Each( function( wb ){
+			var actual = s.newChainable( wb )
+				.addInfo( infoToAdd )
+				.info();
+			if( s.isXmlFormat( wb ) ) infoToBeReturned.spreadSheetType = "Excel (2007)";
+			var expected = infoToBeReturned;
 			actual.creationDate = DateFormat( Now(), "yyyymmdd" );// Doesn't return this value so mock
 			expect( actual ).toBe( expected );
 		});

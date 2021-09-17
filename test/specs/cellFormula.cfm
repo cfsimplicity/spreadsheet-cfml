@@ -17,6 +17,16 @@ describe( "cellFormula", function(){
 		});
 	});
 
+	it( "setCellFormula and getCellFormula are chainable", function(){
+		workbooks.Each( function( wb ){
+			var actual = s.newChainable( wb )
+				.setCellFormula( theFormula, 3, 1 )
+				.getCellFormula( 3, 1 );
+			expect( actual ).toBe( theFormula );
+			expect( s.getCellValue( wb, 3, 1 ) ).toBe( 2 );
+		});
+	});
+
 	it( "Gets all formulas from the workbook", function(){
 		workbooks.Each( function( wb ){
 			s.setCellFormula( wb, theFormula, 3, 1 );
@@ -44,6 +54,14 @@ describe( "cellFormula", function(){
 			var wb = s.newXlsx();
 			expect( wb.getForceFormulaRecalculation() ).toBeFalse();
 			s.setRecalculateFormulasOnNextOpen( wb );
+			expect( wb.getForceFormulaRecalculation() ).toBeTrue();
+		});
+
+		it( "getForceFormulaRecalculation is chainable", function(){
+			// only xlsx seems to reflect the flag status
+			var wb = s.newXlsx();
+			expect( wb.getForceFormulaRecalculation() ).toBeFalse();
+			s.newChainable( wb ).setRecalculateFormulasOnNextOpen();
 			expect( wb.getForceFormulaRecalculation() ).toBeTrue();
 		});
 

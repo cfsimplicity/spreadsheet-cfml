@@ -17,10 +17,16 @@ describe( "cellStyle", function(){
 		});
 	});
 
-	it( "can create a valid POI CellStyle object from a given format", function(){
-		makePublic( s, "isValidCellStyleObject" );
+	it( "createCellStyle is chainable", function(){
 		workbooks.Each( function( wb ){
-			expect( s.isValidCellStyleObject( wb, s.createCellStyle( wb, format ) ) ).toBeTrue();
+			var style = s.newChainable( wb ).createCellStyle( format );
+			expect( s.getFormatHelper().isValidCellStyleObject( wb, style ) ).toBeTrue();
+		});
+	});
+
+	it( "can create a valid POI CellStyle object from a given format", function(){
+		workbooks.Each( function( wb ){
+			expect( s.getFormatHelper().isValidCellStyleObject( wb, s.createCellStyle( wb, format ) ) ).toBeTrue();
 		});
 	});
 
@@ -30,13 +36,13 @@ describe( "cellStyle", function(){
 			var expected = s.isXmlFormat( wb )? 1: 21;
 			expect( s.getWorkbookCellStylesTotal( wb ) ).toBe( expected );
 			var style = s.createCellStyle( wb, format );
-			s.formatCell( workbook=wb, row=1, column=1, cellStyle=style );
-			s.formatCell( workbook=wb, row=1, column=2, cellStyle=style );
-			s.createSheet( wb );
-			s.setActiveSheetNumber( wb, 2 );
-			s.addRows( wb, data );
-			s.formatCell( workbook=wb, row=1, column=1, cellStyle=style );
-			s.formatCell( workbook=wb, row=1, column=2, cellStyle=style );
+			s.formatCell( workbook=wb, row=1, column=1, cellStyle=style )
+				.formatCell( workbook=wb, row=1, column=2, cellStyle=style )
+				.createSheet( wb )
+				.setActiveSheetNumber( wb, 2 )
+				.addRows( wb, data )
+				.formatCell( workbook=wb, row=1, column=1, cellStyle=style )
+				.formatCell( workbook=wb, row=1, column=2, cellStyle=style );
 			expected = s.isXmlFormat( wb )? 2: 22;
 			expect( s.getWorkbookCellStylesTotal( wb ) ).toBe( expected );
 		});

@@ -6,14 +6,21 @@ describe( "setActiveSheetNumber", function(){
 	});
 
 	it( "Sets the specified sheet number to be active", function(){
-		makePublic( s,"getActiveSheetName" );
 		workbooks.Each( function( wb ){
-			s.createSheet( wb, "test" );
-			s.setActiveSheetNumber( wb, 2 );
-			expect( s.getActiveSheetName( wb ) ).toBe( "test" );
+			s.createSheet( wb, "test" )
+				.setActiveSheetNumber( wb, 2 );
+			expect( s.getSheetHelper().getActiveSheetName( wb ) ).toBe( "test" );
 		});
 	});
 
+	it( "Is chainable", function(){
+		workbooks.Each( function( wb ){
+			s.newChainable( wb )
+				.createSheet( "test" )
+				.setActiveSheetNumber( 2 );
+			expect( s.getSheetHelper().getActiveSheetName( wb ) ).toBe( "test" );
+		});
+	});
 
 	describe( "setActiveSheetNumber throws an exception if", function(){
 
