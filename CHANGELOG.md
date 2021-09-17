@@ -1,3 +1,16 @@
+## 3.0.0 - 17 September 2021
+- Breaking changes
+	- Rename project "spreadsheet-cfml"
+
+- Enhancements
+	- \#258 Add support for chainable operations on a workbook
+	- \#257 Add getLastRowNumber()
+	- \#254 Allow chaining of methods returning void
+
+- Fixes
+	- \#259 Fix error with addSplitPane
+	- \#256 Improve performance of autoSizeColumns on addRows() when data is an array
+
 ## 2.21.0 - 29 July 2021
 
 - Enhancements
@@ -7,7 +20,7 @@
 ## 2.20.0 - 18 June 2021
 
 - Enhancements
-	- \#248 Add autoSizeColumns option to ``workbookFromQuery()`
+	- \#248 Add autoSizeColumns option to `workbookFromQuery()`
 	- \#246 Add `isCsvOrTextFile` support for .tsv files
 
 - Fixes
