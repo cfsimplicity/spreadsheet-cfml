@@ -80,7 +80,7 @@ component extends="base" accessors="true"{
 		var detail = "The file #arguments.path# does not appear to be a binary or xml spreadsheet.";
 		if( isCsvTsvOrTextFile( arguments.path ) )
 			detail &= " It may be a CSV/TSV file, in which case use 'csvToQuery()' to read it";
-		Throw( type="cfsimplicity.lucee.spreadsheet.invalidFile", message="Invalid spreadsheet file", detail=detail );
+		Throw( type="cfsimplicity.spreadsheet.invalidFile", message="Invalid spreadsheet file", detail=detail );
 	}
 
 	public any function throwErrorIFfileNotExists( required string path ){

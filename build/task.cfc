@@ -21,11 +21,11 @@ component{
 			,variables.libPath & "poi-ooxml-5.0.0.jar"
 			,variables.libPath & "xmlbeans-4.0.0.jar"
 		];
-		var jarFileName = "luceeSpreadsheet.jar";
+		var jarFileName = "spreadsheet-cfml.jar";
 		var classNames = [ "HeaderImageVML" ]; //allows for more source files in future
 		classNames.Each( function( className ){
 			var classFileName = className & ".class";
-			var javaSourceFilePath = variables.srcPath & "luceeSpreadsheet/" & className & ".java";
+			var javaSourceFilePath = variables.srcPath & "spreadsheetCFML/" & className & ".java";
 			compileSource( javaSourceFilePath );
 		});
 		createNewJar( jarFileName );

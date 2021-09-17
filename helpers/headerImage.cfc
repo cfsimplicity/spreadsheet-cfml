@@ -57,7 +57,7 @@ component extends="base" accessors="true"{
 			var part = OPCPackage.createPart( partName, "application/vnd.openxmlformats-officedocument.vmlDrawing" );
 			var headerImageXML = getNewHeaderImageXML();
 		}
-		var headerImageVml = getClassHelper().loadClass( "luceeSpreadsheet.HeaderImageVML" ).init( part );
+		var headerImageVml = getClassHelper().loadClass( "spreadsheetCFML.HeaderImageVML" ).init( part );
 		//create the relation to the picture
 		var pictureData = arguments.workbook.getAllPictures().get( imageIndex );
 		var xssfImageRelation = getClassHelper().loadClass( "org.apache.poi.xssf.usermodel.XSSFRelation" ).IMAGES;

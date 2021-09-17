@@ -1,17 +1,17 @@
 {
-    "name" : "LuceeSpreadsheet",
-    "slug" : "lucee-spreadsheet",
-    "version" : "2.21.0",
-    "shortDescription" : "Spreadsheet Library for Lucee (and Adobe ColdFusion)",
+    "name" : "Spreadsheet CFML",
+    "slug" : "spreadsheet-cfml",
+    "version" : "3.0.0",
+    "shortDescription" : "CFML spreadsheet library",
     "author" : "Julian Halliwell",
-    "location" : "https://github.com/cfsimplicity/lucee-spreadsheet/archive/v2.21.0.zip",
-    "homepage" : "https://github.com/cfsimplicity/lucee-spreadsheet",
-    "projectURL" : "https://github.com/cfsimplicity/lucee-spreadsheet",
-    "documentation" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/main/README.md",
-    "changelog" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/main/CHANGELOG.md",
-    "bugs" : "https://github.com/cfsimplicity/lucee-spreadsheet/issues",
+    "location" : "https://github.com/cfsimplicity/spreadsheet-cfml/archive/v3.0.0.zip",
+    "homepage" : "https://github.com/cfsimplicity/spreadsheet-cfml",
+    "projectURL" : "https://github.com/cfsimplicity/spreadsheet-cfml",
+    "documentation" : "https://github.com/cfsimplicity/spreadsheet-cfml/blob/main/README.md",
+    "changelog" : "https://github.com/cfsimplicity/spreadsheet-cfml/blob/main/CHANGELOG.md",
+    "bugs" : "https://github.com/cfsimplicity/spreadsheet-cfml/issues",
     "repository" : { 
-        "type" : "git", "URL" : "https://github.com/cfsimplicity/lucee-spreadsheet"
+        "type" : "git", "URL" : "https://github.com/cfsimplicity/spreadsheet-cfml"
     },
     "engines" : [
         { "type" : "lucee", "version" : ">=5.x.x" },
@@ -19,13 +19,13 @@
     ],
     "defaultEngine" : "lucee",
     "license" : [
-        { "type" : "MIT", "URL" : "https://github.com/cfsimplicity/lucee-spreadsheet/blob/main/LICENSE" }
+        { "type" : "MIT", "URL" : "https://github.com/cfsimplicity/spreadsheet-cfml/blob/main/LICENSE" }
     ],
     "devDependencies" : {
         "testbox" : ">=2.1.x"
     },
     "type" : "modules",
-    "keywords" : [ "cfspreadsheet", "lucee", "module", "spreadsheet" ],
+    "keywords" : [ "cfspreadsheet", "coldfusion", "lucee", "module", "spreadsheet" ],
     "private" : "false",
-    "ignore" : [ "test" ]
+    "ignore" : [ "build", "src", "test" ]
 }

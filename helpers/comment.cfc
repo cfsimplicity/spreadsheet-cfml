@@ -47,7 +47,7 @@ component extends="base" accessors="true"{
 	}
 
 	public any function addHSSFonlyStyles( required struct comment, required commentObject ){
-		//the following 5 properties are not currently supported on XSSFComment: https://github.com/cfsimplicity/lucee-spreadsheet/issues/192
+		//the following 5 properties are not currently supported on XSSFComment: https://github.com/cfsimplicity/spreadsheet-cfml/issues/192
 		if( arguments.comment.KeyExists( "fillColor" ) ){
 			var javaColorRGB = getColorHelper().getJavaColorRGBFor( arguments.comment.fillColor );
 			arguments.commentObject.setFillColor(
