@@ -1,12 +1,12 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Spreadsheet CFML Library
+Bundle-Name: Spreadsheet CFML
 Bundle-SymbolicName: spreadsheet-cfml
-Bundle-Version: 5.0.0.3
+Bundle-Version: 5.0.0.4
 Bundle-ClassPath: commons-codec-1.15.jar,
  commons-collections4-4.4.jar,
  commons-compress-1.20.jar,
- commons-csv-1.8.jar,
+ commons-csv-1.9.0.jar,
  commons-io-2.8.0.jar,
  commons-math3-3.6.1.jar,
  poi-5.0.0.jar,
