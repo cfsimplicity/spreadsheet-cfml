@@ -302,10 +302,10 @@ component accessors="true"{
 		return this.getLibrary().getCellComment( argumentCollection=arguments );
 	}
 
-	public SpreadsheetChainable function getCellComments(){
+	//Ends chain
+	public array function getCellComments(){
 		addWorkbookArgument( arguments );
-		this.getLibrary().getCellComments( argumentCollection=arguments );
-		return this;
+		return this.getLibrary().getCellComments( argumentCollection=arguments );
 	}
 
 	//Ends chain

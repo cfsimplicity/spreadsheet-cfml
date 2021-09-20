@@ -19,18 +19,20 @@ describe( "cellComment", function(){
 		});
 	});
 
-	it( "getCellComment and setCellComment are chainable", function() {
-		var theComment = {
-			author: "cfsimplicity"
-			,comment: "This is the comment in row 1 column 1"
-		};
-		var expected = Duplicate( theComment ).Append( { column: 1, row: 1 } );
+	it( "getCellComment, getCellComments and setCellComment are chainable", function() {
+		var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
+		var dataAsArray = [ [ "a", "b" ], [ "c", "d" ] ];
 		workbooks.Each( function( wb ){
-			var actual = s.newChainable( wb )
-				.addColumn( "1" )
-				.setCellComment( theComment, 1, 1 )
-				.getCellComment( 1, 1 );
-			expect( actual ).toBe( expected );
+			s.addRows( wb, data );
+			var comments = [];
+			comments.Append( { author: "cfsimplicity", comment: "This is the comment in row 1 column 1", column: 1, row: 1 } );
+			comments.Append( { author: "cfsimplicity", comment: "This is the comment in row 2 column 2", column: 2, row: 2 } );
+			var wbChainable = s.newChainable( wb )
+				.setCellComment( comments[ 1 ], 1, 1 )
+				.setCellComment( comments[ 2 ], 2, 2 );
+			expect( wbChainable.getCellComment() ).toBe( comments );
+			expect( wbChainable.getCellComments() ).toBe( comments );
+			expect( wbChainable.getCellComment( 1, 1 ) ).toBe( comments[ 1 ] );
 		});
 	});
 
@@ -40,12 +42,10 @@ describe( "cellComment", function(){
 		workbooks.Each( function( wb ){
 			s.addRows( wb, data );
 			var comments = [];
-			comments.Append( { author: "cfsimplicity", comment: "This is the comment in row 1 column 1" } );
-			comments.Append( { author: "cfsimplicity", comment: "This is the comment in row 2 column 2" } );
+			comments.Append( { author: "cfsimplicity", comment: "This is the comment in row 1 column 1", column: 1, row: 1 } );
+			comments.Append( { author: "cfsimplicity", comment: "This is the comment in row 2 column 2", column: 2, row: 2 } );
 			s.setCellComment( wb, comments[ 1 ], 1, 1 )
 				.setCellComment( wb, comments[ 2 ], 2, 2 );
-			comments[ 1 ].Append( { column: 1, row: 1 } );
-			comments[ 2 ].Append( { column: 2, row: 2 } );
 			var expected = comments;
 			var actual = s.getCellComment( wb );
 			expect( actual ).toBe( expected );
