@@ -36,7 +36,6 @@ component extends="base" accessors="true"{
 	}
 
 	public string function getDefaultDateMaskFor( required date value ){
-		var dateOnly = CreateDate( Year( arguments.value ), Month( arguments.value ), Day( arguments.value ) );
 		if( isDateOnlyValue( arguments.value ) )
 			return library().getDateFormats().DATE;
 		if( isTimeOnlyValue( arguments.value ) )
