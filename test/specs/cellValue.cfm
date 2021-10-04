@@ -23,17 +23,6 @@ describe( "cellValue", function(){
 		});
 	});
 
-	it( "getCellValue and setCellValue are chainable", function(){
-		var value = "test";
-		workbooks.Each( function( wb ){
-			var actual = s.newChainable( wb )
-				.setCellValue(value, 1, 1 )
-				.getCellValue( 1, 1 );
-			expect( actual ).toBe( value );
-			expect( s.getCellType( wb, 1, 1 ) ).toBe( "string" );
-		});
-	});
-
 	it( "Sets the specified cell to the specified numeric value", function(){
 		var value = 1;
 		workbooks.Each( function( wb ){
@@ -126,6 +115,17 @@ describe( "cellValue", function(){
 		});
 	});
 
+	it( "getCellValue and setCellValue are chainable", function(){
+		var value = "test";
+		workbooks.Each( function( wb ){
+			var actual = s.newChainable( wb )
+				.setCellValue(value, 1, 1 )
+				.getCellValue( 1, 1 );
+			expect( actual ).toBe( value );
+			expect( s.getCellType( wb, 1, 1 ) ).toBe( "string" );
+		});
+	});
+
 	describe( "allows the auto data type detection to be overridden", function(){
 
 		it( "allows forcing values to be added as strings", function(){
@@ -158,6 +158,16 @@ describe( "cellValue", function(){
 			});
 		});
 
+		it( "allows forcing values to be added as times (without a date)", function(){
+			var value = "08:21:30";
+			workbooks.Each( function( wb ){
+				s.setCellValue( wb, value, 1, 1, "time" );
+				var actual = s.getCellValue( wb, 1, 1 );
+				expect( actual ).toBe( value );
+				expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );// dates are numeric in Excel
+			});
+		});
+
 		it( "allows forcing values to be added as booleans", function(){
 			var values = [ "true", true, 1, "1", "yes", 10 ];
 			workbooks.Each( function( wb ){
@@ -183,6 +193,30 @@ describe( "cellValue", function(){
 		});
 
 	});
+
+	describe(
+		title="Lucee only timezone tests",
+		body=function(){
+
+			it( "Sets the specified cell to the specified date value even if the Lucee timezone doesn't match the system", function(){
+				variables.currentTZ = GetTimeZone();
+				//Needs manually adjusting if the test Lucee instance TZ is in Central European Time, i.e. same as London e.g. Lisbon
+				variables.tempTZ = ( currentTZ == "Europe/London" )? "Europe/Paris": "Europe/London";
+				SetTimeZone( tempTZ );
+				var value = CreateDate( 2015, 04, 12 );
+				workbooks.Each( function( wb ){
+					s.setCellValue( wb, value, 1, 1 );
+					s.formatCell( wb, { dataformat: "0.0" }, 1, 1 );
+					expect( s.getCellValue( wb, 1, 1 ) ).toBe( 42106.0 );// whole number = date, no time
+				});
+				SetTimeZone( currentTZ );
+			});
+
+		},
+		skip=function(){
+			return s.getIsACF();
+		}
+	);
 
 	describe( "setCellValue throws an exception if", function(){
 

@@ -57,6 +57,21 @@ component extends="base" accessors="true"{
 		return ( Year( arguments.value ) == "1899" );
 	}
 
+	public string function getPoiTimeZone(){
+		return getClassHelper().loadClass( "org.apache.poi.util.LocaleUtil" ).getUserTimeZone();
+	}
+
+	public any function matchPoiTimeZoneToEngine(){
+		if( library().getIsACF() )
+			return this;//ACF doesn't allow the server/context timezone to be changed
+		//Lucee allows the context timezone to be changed, which can cause problems with date calculations
+		if( getPoiTimeZone() == GetTimezone() )
+			return this;
+		//Make POI match the Lucee timezone for the duration of the current thread
+		getClassHelper().loadClass( "org.apache.poi.util.LocaleUtil" ).setUserTimeZone( GetTimezone() );
+		return this;
+	}
+
 	/* Private */
 	
 	private struct function defaultFormats(){

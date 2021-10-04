@@ -121,6 +121,7 @@ component extends="base" accessors="true"{
 				arguments.cell.setCellValue( JavaCast( "double", Val( arguments.value ) ) );
 				return this;
 			case "date": case "time":
+				getDateHelper().matchPoiTimeZoneToEngine();
 				//handle empty strings which can't be treated as dates
 				if( Trim( arguments.value ).IsEmpty() ){
 					arguments.cell.setBlank(); //no need to set the value: it will be blank
@@ -168,6 +169,7 @@ component extends="base" accessors="true"{
 		cell.setCellComment( originalCell.getCellComment() );
 		cell.setHyperlink( originalCell.getHyperLink() );
 		arguments.row.removeCell( originalCell );
+		return this;
 	}
 
 }
