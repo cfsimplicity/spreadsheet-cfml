@@ -153,6 +153,59 @@ component extends="base" accessors="true"{
 	  return values;
 	}
 
+	public any function populateFromQueryRow(
+		required workbook
+		,required newRow
+		,required rowData
+		,required array queryColumns
+		,required numeric firstCellIndex
+		,required boolean ignoreQueryColumnDataTypes
+	){
+		var cellIndex = arguments.firstCellIndex;
+		var overrideDataTypes = arguments.KeyExists( "datatypes" );
+		for( var queryColumn in queryColumns ){
+ 			var cell = getCellHelper().createCell( arguments.newRow, cellIndex, false );
+			var cellValue = rowData[ queryColumn.name ];
+			if( arguments.ignoreQueryColumnDataTypes ){
+				if( overrideDataTypes )
+   				getDataTypeHelper().setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes );
+   			else
+					getCellHelper().setCellValueAsType( arguments.workbook, cell, cellValue );
+				cellIndex++;
+				continue;
+			}
+			var cellValueType = getDataTypeHelper().getCellValueTypeFromQueryColumnType( queryColumn.cellDataType, cellValue );
+			if( overrideDataTypes )
+ 				getDataTypeHelper().setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes, cellValueType );
+ 			else
+				getCellHelper().setCellValueAsType( arguments.workbook, cell, cellValue, cellValueType );
+			cellIndex++;
+ 		}
+ 		return this;
+	}
+
+	public numeric function populateFromArray(
+		required workbook
+		,required newRow
+		,required array rowData
+		,required numeric firstCellIndex
+		,required numeric currentMaxColumnCount
+	){
+		var cellIndex = arguments.firstCellIndex;
+		var columnCount = arguments.currentMaxColumnCount;
+		var overrideDataTypes = arguments.KeyExists( "datatypes" );
+		cfloop( array=rowData, item="local.cellValue", index="local.thisColumnNumber" ){
+ 			var cell = getCellHelper().createCell( arguments.newRow, cellIndex );
+ 			if( overrideDataTypes )
+ 				getDataTypeHelper().setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes );
+ 			else
+				getCellHelper().setCellValueAsType( arguments.workbook, cell, cellValue );
+			columnCount = Max( columnCount, thisColumnNumber );
+			cellIndex++;
+		}
+		return columnCount;
+	}
+
 	public boolean function rowHasCells( required row ){
 		return ( arguments.row.getLastCellNum() > 0 );
 	}

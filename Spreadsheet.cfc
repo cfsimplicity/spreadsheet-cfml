@@ -605,6 +605,7 @@ component accessors="true"{
 		if( arguments.KeyExists( "row" ) && ( arguments.row <= lastRow ) && arguments.insert )
 			shiftRows( arguments.workbook, arguments.row, lastRow, totalRows );
 		var currentRowIndex = insertAtRowIndex;
+		var overrideDataTypes = arguments.KeyExists( "datatypes" );
 		if( arguments.autoSizeColumns && isStreamingXmlFormat( arguments.workbook ) )
 			getSheetHelper().getActiveSheet( arguments.workbook ).trackAllColumnsForAutoSizing();
 			/* this will affect performance but is needed for autoSizeColumns to work properly with SXSSF: https://poi.apache.org/apidocs/dev/org/apache/poi/xssf/streaming/SXSSFSheet.html#trackAllColumnsForAutoSizing */
@@ -616,32 +617,24 @@ component accessors="true"{
 				addRow( workbook=arguments.workbook, data=columnNames, row=currentRowIndex +1, column=arguments.column );
 				currentRowIndex++;
 			}
-			if( arguments.KeyExists( "datatypes" ) ){
+			if( overrideDataTypes ){
 				param local.columnNames = getQueryHelper()._QueryColumnArray( arguments.data );
 				getDataTypeHelper().convertDataTypeOverrideColumnNamesToNumbers( arguments.datatypes, columnNames );
 			}
-			for( var dataRow in arguments.data ){
+			for( var rowData in arguments.data ){
 				var newRow = getRowHelper().createRow( arguments.workbook, currentRowIndex, false );
 				cellIndex = ( arguments.column -1 );//reset for this row
-	   		// populate all columns in the row
-	   		for( var queryColumn in queryColumns ){
-	   			var cell = getCellHelper().createCell( newRow, cellIndex, false );
-					var cellValue = dataRow[ queryColumn.name ];
-					if( arguments.ignoreQueryColumnDataTypes ){
-						if( arguments.KeyExists( "datatypes" ) )
-		   				getDataTypeHelper().setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes );
-		   			else
-							getCellHelper().setCellValueAsType( arguments.workbook, cell, cellValue );
-						cellIndex++;
-						continue;
-					}
-					var cellValueType = getDataTypeHelper().getCellValueTypeFromQueryColumnType( queryColumn.cellDataType, cellValue );
-					if( arguments.KeyExists( "datatypes" ) )
-	   				getDataTypeHelper().setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes, cellValueType );
-	   			else
-						getCellHelper().setCellValueAsType( arguments.workbook, cell, cellValue, cellValueType );
-					cellIndex++;
-	   		}
+				var populateRowArgs = {
+					workbook: arguments.workbook
+					,newRow: newRow
+					,rowData: rowData
+					,queryColumns: queryColumns
+					,firstCellIndex: cellIndex
+					,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
+				};
+				if( overrideDataTypes )
+					populateRowArgs.datatypes = arguments.datatypes;
+				getRowHelper().populateFromQueryRow( argumentCollection=populateRowArgs );
 	   		currentRowIndex++;
 			}
 			if( arguments.autoSizeColumns )
@@ -650,19 +643,19 @@ component accessors="true"{
 		}
 		//data is an array
 		var columnCount = 0;
-		for( var dataRow in arguments.data ){
+		for( var rowData in arguments.data ){
 			var newRow = getRowHelper().createRow( arguments.workbook, currentRowIndex, false );
 			var cellIndex = ( arguments.column -1 );
-   		// populate all columns in the row
-   		cfloop( array=dataRow, item="local.cellValue", index="local.thisColumnNumber" ){
-   			var cell = getCellHelper().createCell( newRow, cellIndex );
-   			if( arguments.KeyExists( "datatypes" ) )
-   				getDataTypeHelper().setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes );
-   			else
-					getCellHelper().setCellValueAsType( arguments.workbook, cell, cellValue );
-				columnCount = Max( columnCount, thisColumnNumber );
-				cellIndex++;
-			}
+   		var populateRowArgs = {
+				workbook: arguments.workbook
+				,newRow: newRow
+				,rowData: rowData
+				,firstCellIndex: cellIndex
+				,currentMaxColumnCount: columnCount
+			};
+			if( overrideDataTypes )
+				populateRowArgs.datatypes = arguments.datatypes;
+   		columnCount = getRowHelper().populateFromArray( argumentCollection=populateRowArgs );
 			currentRowIndex++;
    	}
    	if( arguments.autoSizeColumns )
