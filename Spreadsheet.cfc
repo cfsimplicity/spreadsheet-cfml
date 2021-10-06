@@ -605,6 +605,9 @@ component accessors="true"{
 		if( arguments.KeyExists( "row" ) && ( arguments.row <= lastRow ) && arguments.insert )
 			shiftRows( arguments.workbook, arguments.row, lastRow, totalRows );
 		var currentRowIndex = insertAtRowIndex;
+		if( arguments.autoSizeColumns && isStreamingXmlFormat( arguments.workbook ) )
+			getSheetHelper().getActiveSheet( arguments.workbook ).trackAllColumnsForAutoSizing();
+			/* this will affect performance but is needed for autoSizeColumns to work properly with SXSSF: https://poi.apache.org/apidocs/dev/org/apache/poi/xssf/streaming/SXSSFSheet.html#trackAllColumnsForAutoSizing */
 		if( dataIsQuery ){
 			var queryColumns = getQueryHelper().getQueryColumnTypeToCellTypeMappings( arguments.data );
 			var cellIndex = ( arguments.column -1 );
@@ -694,6 +697,7 @@ component accessors="true"{
 		var columnIndex = ( arguments.column -1 );
 		if( isStreamingXmlFormat( arguments.workbook ) )
 			getSheetHelper().getActiveSheet( arguments.workbook ).trackColumnForAutoSizing( JavaCast( "int", columnIndex ) );
+			// has no effect if tracking is already on
 		getSheetHelper().getActiveSheet( arguments.workbook ).autoSizeColumn( columnIndex, arguments.useMergedCells );
 		return this;
 	}
