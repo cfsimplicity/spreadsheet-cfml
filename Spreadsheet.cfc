@@ -566,37 +566,15 @@ component accessors="true"{
 		,boolean autoSizeColumns=false
 		,struct datatypes
 	){
-		if( arguments.KeyExists( "row" ) && ( arguments.row <= 0 ) )
-			Throw( type=this.getExceptionType(), message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
-		if( arguments.KeyExists( "column" ) && ( arguments.column <= 0 ) )
-			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
-		if( !arguments.insert && !arguments.KeyExists( "row") )
-			Throw( type=this.getExceptionType(), message="Missing row value", detail="To replace a row using 'insert', please specify the row to replace." );
-		getDataTypeHelper().checkDataTypesArgument( arguments );
-		var lastRow = getRowHelper().getNextEmptyRowNumber( arguments.workbook );
-		//If the requested row already exists...
-		if( arguments.KeyExists( "row" ) && ( arguments.row <= lastRow ) )
-			getRowHelper().shiftOrDeleteRow( arguments.workbook, arguments.row, lastRow, arguments.insert );
-		var theRow = arguments.KeyExists( "row" )? getRowHelper().createRow( arguments.workbook, arguments.row -1 ): getRowHelper().createRow( arguments.workbook );
-		var dataIsArray = IsArray( arguments.data );
-		var rowValues = dataIsArray? arguments.data: getRowHelper().parseListDataToArray( arguments.data, arguments.delimiter, arguments.handleEmbeddedCommas );
-		var cellIndex = ( arguments.column -1 );
-		for( var cellValue in rowValues ){
-			var cell = getCellHelper().createCell( theRow, cellIndex );
-			if( arguments.KeyExists( "datatypes" ) )
-   			getDataTypeHelper().setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes );
-   		else
-				getCellHelper().setCellValueAsType( arguments.workbook, cell, cellValue );
-			if( arguments.autoSizeColumns )
-				autoSizeColumn( arguments.workbook, arguments.column );
-			cellIndex++;
-		}
-		return this;
+		if( !IsArray( arguments.data ) )
+			arguments.data = getRowHelper().parseListDataToArray( arguments.data, arguments.delimiter, arguments.handleEmbeddedCommas );
+		arguments.data = [ arguments.data ];// array of arrays for addRows()
+		return addRows( argumentCollection=arguments );
 	}
 
 	public Spreadsheet function addRows(
 		required workbook
-		,required data // query or array
+		,required data // query or array of arrays
 		,numeric row
 		,numeric column=1
 		,boolean insert=true
@@ -605,6 +583,12 @@ component accessors="true"{
 		,boolean ignoreQueryColumnDataTypes=false
 		,struct datatypes
 	){
+		if( arguments.KeyExists( "row" ) && ( arguments.row <= 0 ) )
+			Throw( type=this.getExceptionType(), message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
+		if( arguments.KeyExists( "column" ) && ( arguments.column <= 0 ) )
+			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
+		if( !arguments.insert && !arguments.KeyExists( "row") )
+			Throw( type=this.getExceptionType(), message="Missing row value", detail="To replace a row using 'insert', please specify the row to replace." );
 		var dataIsQuery = IsQuery( arguments.data );
 		var dataIsArray = IsArray( arguments.data );
 		if( !dataIsQuery && !dataIsArray )

@@ -484,6 +484,30 @@ describe( "addRows", function(){
 			}
 		);
 
+		it( "row is zero or less", function(){
+			workbooks.Each( function( wb ){
+				expect( function(){
+					s.addRows( workbook=wb, data=data, row=0 );
+				}).toThrow( regex="Invalid row" );
+			});
+		});
+
+		it( "column is zero or less", function(){
+			workbooks.Each( function( wb ){
+				expect( function(){
+					s.addRows( workbook=wb, data=data, column=0 );
+				}).toThrow( regex="Invalid column" );
+			});
+		});
+
+		it( "insert is false and no row specified", function(){
+			workbooks.Each( function( wb ){
+				expect( function(){
+					s.addRows( workbook=wb, data=data, insert=false );
+				}).toThrow( regex="Missing row" );
+			});
+		});
+
 		it( "the data is neither a query nor an array", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
