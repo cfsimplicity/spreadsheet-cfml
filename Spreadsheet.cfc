@@ -790,9 +790,14 @@ component accessors="true"{
 		// Deletes the data from a row. Does not physically delete the row
 		if( arguments.row <= 0 )
 			Throw( type=this.getExceptionType(), message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
-		var rowToDelete = ( arguments.row -1 );
-		if( rowToDelete >= getRowHelper().getFirstRowIndex( arguments.workbook ) && rowToDelete <= getRowHelper().getLastRowIndex( arguments.workbook ) ) //If this is a valid row, remove it
-			getSheetHelper().getActiveSheet( arguments.workbook ).removeRow( getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row ) );
+		var rowIndex = ( arguments.row -1 );
+		if( 
+				( rowIndex < getRowHelper().getFirstRowIndex( arguments.workbook ) )
+				||
+				( rowIndex > getRowHelper().getLastRowIndex( arguments.workbook ) )
+			) //invalid
+			return this;
+		getSheetHelper().getActiveSheet( arguments.workbook ).removeRow( getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row ) );
 		return this;
 	}
 
