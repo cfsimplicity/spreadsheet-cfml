@@ -276,6 +276,17 @@ describe( "read", function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Returns an empty query if the spreadsheet is empty even if headerRow is specified", function(){
+		var workbooks = [ s.newXls(), s.newXlsx() ];
+		workbooks.Each( function( wb ){
+			var path = s.isXmlFormat( wb )? tempXlsxPath: tempXlsPath;
+			s.write( wb, path, true );
+			var actual = s.read( src=path, format="query", headerRow=1 );
+			var expected = QueryNew( "" );
+			expect( actual ).toBe( expected );
+		});
+	});
+
 	it( "Returns an empty query if excluding hidden columns and ALL columns are hidden", function(){
 		var workbook = s.new();
 		s.addColumn( workbook, "a1" )
@@ -286,6 +297,17 @@ describe( "read", function(){
 		var actual = s.read( src=tempXlsPath, format="query", includeHiddenColumns=false );
 		var expected = QueryNew( "" );
 		expect( actual ).toBe( expected );
+	});
+
+	it( "Returns a query with column names but no rows if column names are specified but spreadsheet is empty", function(){
+		var workbooks = [ s.newXls(), s.newXlsx() ];
+		workbooks.Each( function( wb ){
+			var path = s.isXmlFormat( wb )? tempXlsxPath: tempXlsPath;
+			s.write( wb, path, true );
+			var actual = s.read( src=path, format="query", columnNames="One,Two" );
+			var expected = QueryNew( "One,Two","Varchar,Varchar", [] );
+			expect( actual ).toBe( expected );
+		});
 	});
 
 	it( "Can read an encrypted XLSX file", function(){

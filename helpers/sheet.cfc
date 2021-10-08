@@ -64,11 +64,11 @@ component extends="base" accessors="true"{
 	}
 
 	public numeric function getFirstRowIndex( required sheet ){
-		return arguments.sheet.getFirstRowNum();
+		return arguments.sheet.getFirstRowNum(); //-1 if no rows exist
 	}
 
 	public numeric function getLastRowIndex( required sheet ){
-		return arguments.sheet.getLastRowNum();
+		return arguments.sheet.getLastRowNum(); //-1 if no rows exist
 	}
 
 	public numeric function getNextEmptyRowIndex( required sheet ){
@@ -137,7 +137,10 @@ component extends="base" accessors="true"{
 			,columnNames: []
 			,columnRanges: []
 			,totalColumnCount: 0
+			,data: []
 		};
+		if( arguments.KeyExists( "columnNames" ) && arguments.columnNames.Len() )
+			sheet.columnNames = IsArray( arguments.columnNames )? arguments.columnNames: arguments.columnNames.ListToArray();
 		sheet.headerRowIndex = sheet.hasHeaderRow? ( arguments.headerRow -1 ): -1;
 		if( arguments.KeyExists( "columns" ) ){
 			sheet.columnRanges = getRangeHelper().extractRanges( arguments.columns );
@@ -148,46 +151,29 @@ component extends="base" accessors="true"{
 			arguments.sheetNumber = ( getSheetIndexFromName( arguments.workbook, arguments.sheetName ) +1 );
 		}
 		sheet.object = getSheetByNumber( arguments.workbook, arguments.sheetNumber );
-		if( arguments.fillMergedCellsWithVisibleValue )
-			getVisibilityHelper().doFillMergedCellsWithVisibleValue( arguments.workbook, sheet.object );
-		sheet.data = [];
-		if( arguments.KeyExists( "rows" ) ){
-			var allRanges = getRangeHelper().extractRanges( arguments.rows );
-			for( var thisRange in allRanges ){
-				for( var rowNumber = thisRange.startAt; rowNumber <= thisRange.endAt; rowNumber++ ){
-					var rowIndex = ( rowNumber -1 );
-					getRowHelper().addRowToSheetData( arguments.workbook, sheet, rowIndex, arguments.includeRichTextFormatting );
+		var sheetHasRows = !sheetIsEmpty( sheet.object );
+		if( sheetHasRows ){
+			if( arguments.fillMergedCellsWithVisibleValue )
+				getVisibilityHelper().doFillMergedCellsWithVisibleValue( arguments.workbook, sheet.object );
+			if( arguments.KeyExists( "rows" ) ){
+				var allRanges = getRangeHelper().extractRanges( arguments.rows );
+				for( var thisRange in allRanges ){
+					for( var rowNumber = thisRange.startAt; rowNumber <= thisRange.endAt; rowNumber++ ){
+						var rowIndex = ( rowNumber -1 );
+						getRowHelper().addRowToSheetData( arguments.workbook, sheet, rowIndex, arguments.includeRichTextFormatting );
+					}
 				}
 			}
-		}
-		else{
-			var lastRowIndex = sheet.object.getLastRowNum();// zero based
-			for( var rowIndex = 0; rowIndex <= lastRowIndex; rowIndex++ )
-				getRowHelper().addRowToSheetData( arguments.workbook, sheet, rowIndex, arguments.includeRichTextFormatting );
-		}
-		//generate the query columns
-		if( arguments.KeyExists( "columnNames" ) && arguments.columnNames.Len() )
-			sheet.columnNames = IsArray( arguments.columnNames )? arguments.columnNames: arguments.columnNames.ListToArray();
-		else if( sheet.hasHeaderRow ){
-			// use specified header row values as column names
-			var headerRowObject = sheet.object.getRow( JavaCast( "int", sheet.headerRowIndex ) );
-			var rowData = getRowHelper().getRowData( arguments.workbook, headerRowObject, sheet.columnRanges );
-			var i = 1;
-			for( var value in rowData ){
-				var columnName = "column" & i;
-				if( getDataTypeHelper().isString( value ) && value.Len() )
-					columnName = value;
-				sheet.columnNames.Append( columnName );
-				i++;
+			else{
+				var lastRowIndex = sheet.object.getLastRowNum();// zero based
+				for( var rowIndex = 0; rowIndex <= lastRowIndex; rowIndex++ )
+					getRowHelper().addRowToSheetData( arguments.workbook, sheet, rowIndex, arguments.includeRichTextFormatting );
 			}
 		}
-		else{
-			for( var i=1; i <= sheet.totalColumnCount; i++ )
-				sheet.columnNames.Append( "column" & i );
-		}
+		generateQueryColumnNames( arguments.workbook, sheet );
 		arguments.queryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, sheet.columnNames, sheet.totalColumnCount, sheet.data );
 		var result = getQueryHelper()._QueryNew( sheet.columnNames, arguments.queryColumnTypes, sheet.data, arguments.makeColumnNamesSafe );
-		if( !arguments.includeHiddenColumns ){
+		if( !arguments.includeHiddenColumns && sheetHasRows ){
 			result = getQueryHelper().deleteHiddenColumnsFromQuery( sheet, result );
 			if( sheet.totalColumnCount == 0 )
 			return QueryNew( "" );// all columns were hidden: return a blank query.
@@ -234,6 +220,32 @@ component extends="base" accessors="true"{
 
 	/* Private */
 
+	private any function generateQueryColumnNames( required workbook, required struct sheet ){
+		if( arguments.sheet.columnNames.Len() )
+			return this; // alread generated
+		if( sheetIsEmpty( sheet.object ) )
+			return this;
+		if( sheet.hasHeaderRow ){
+			// use specified header row values as column names
+			var headerRowObject = sheet.object.getRow( JavaCast( "int", sheet.headerRowIndex ) );
+			var rowData = getRowHelper().getRowData( arguments.workbook, headerRowObject, sheet.columnRanges );
+			var i = 1;
+			for( var value in rowData ){
+				var columnName = "column" & i;
+				if( getDataTypeHelper().isString( value ) && value.Len() )
+					columnName = value;
+				sheet.columnNames.Append( columnName );
+				i++;
+			}
+			return this;
+		}
+		if( sheet.totalColumnCount == 0 )
+			return this;
+		for( var i=1; i <= sheet.totalColumnCount; i++ )
+			sheet.columnNames.Append( "column" & i );
+		return this;
+	}
+
 	private string function generateUniqueSheetName( required workbook ){
 		var startNumber = ( arguments.workbook.getNumberOfSheets() +1 );
 		var maxRetry = ( startNumber +250 );
@@ -249,6 +261,10 @@ component extends="base" accessors="true"{
 	private numeric function getSheetIndexFromName( required workbook, required string sheetName ){
 		//returns -1 if non-existent
 		return arguments.workbook.getSheetIndex( JavaCast( "string", arguments.sheetName ) );
+	}
+
+	private boolean function sheetIsEmpty( required sheet ){
+		return ( getLastRowIndex( arguments.sheet ) == -1 );
 	}
 
 	private boolean function sheetNameArgumentWasProvided(){
