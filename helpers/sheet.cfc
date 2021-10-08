@@ -63,6 +63,18 @@ component extends="base" accessors="true"{
 		return formulas;
 	}
 
+	public numeric function getFirstRowIndex( required sheet ){
+		return arguments.sheet.getFirstRowNum();
+	}
+
+	public numeric function getLastRowIndex( required sheet ){
+		return arguments.sheet.getLastRowNum();
+	}
+
+	public numeric function getNextEmptyRowIndex( required sheet ){
+		return ( getLastRowIndex( arguments.sheet ) +1 );
+	}
+
 	public any function getSheetByName( required workbook, required string sheetName ){
 		validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
 		return arguments.workbook.getSheet( JavaCast( "string", arguments.sheetName ) );

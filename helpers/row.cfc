@@ -26,15 +26,17 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
-	public any function createRow( required workbook, numeric rowNum=getNextEmptyRowNumber( arguments.workbook ), boolean overwrite=true ){
+	public any function createRow( required workbook, numeric rowIndex, boolean overwrite=true ){
 		// get existing row (if any)
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
-		var row = sheet.getRow( JavaCast( "int", arguments.rowNum ) );
+		if( !arguments.KeyExists( "rowIndex" ) )
+			arguments.rowIndex = getSheetHelper().getNextEmptyRowIndex( sheet );
+		var row = sheet.getRow( JavaCast( "int", arguments.rowIndex ) );
 		if( arguments.overwrite && !IsNull( row ) )
 			sheet.removeRow( row ); // forcibly remove existing row and all cells
-		if( arguments.overwrite || IsNull( sheet.getRow( JavaCast( "int", arguments.rowNum ) ) ) ){
+		if( arguments.overwrite || IsNull( sheet.getRow( JavaCast( "int", arguments.rowIndex ) ) ) ){
 			try{
-				row = sheet.createRow( JavaCast( "int", arguments.rowNum ) );
+				row = sheet.createRow( JavaCast( "int", arguments.rowIndex ) );
 			}
 			catch( java.lang.IllegalArgumentException exception ){
 				if( exception.message.FindNoCase( "Invalid row number (65536)" ) )
@@ -46,27 +48,11 @@ component extends="base" accessors="true"{
 		return row;
 	}
 
-	public numeric function getFirstRowIndex( required workbook ){
-		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
-		var firstRow = sheet.getFirstRowNum();
-		if( ( firstRow == 0 ) && ( sheet.getPhysicalNumberOfRows() == 0 ) )
-			return -1;
-		return firstRow;
-	}
-
-	public numeric function getLastRowIndex( required workbook, sheet=getSheetHelper().getActiveSheet( arguments.workbook ) ){
-		var lastRow = arguments.sheet.getLastRowNum();
-		if( ( lastRow == 0 ) && ( arguments.sheet.getPhysicalNumberOfRows() == 0 ) )
-			return -1; //The sheet is empty. Return -1 instead of 0
-		return lastRow;
-	}
-
 	public numeric function getNextEmptyCellIndexFromRow( required row ){
-		return arguments.row.getLastCellNum(); //getLastCellNum() = the last cell index +1
-	}
-
-	public numeric function getNextEmptyRowNumber( workbook ){
-		return ( getLastRowIndex( arguments.workbook ) +1 );
+		//NB: getLastCellNum() == the last cell index PLUS ONE or -1 if no cells
+		if( arguments.row.getLastCellNum() == -1 )
+			return 0;
+		return arguments.row.getLastCellNum();
 	}
 
 	public array function getRowData( required workbook, required row, array columnRanges=[], boolean includeRichTextFormatting=false ){

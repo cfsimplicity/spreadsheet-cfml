@@ -432,7 +432,7 @@ component accessors="true"{
 		var columnData = IsArray( arguments.data )? arguments.data: ListToArray( arguments.data, arguments.delimiter );//Don't use ListToArray() member function: value may not support it
 		for( var cellValue in columnData ){
 			var row = sheet.getRow( rowIndex );
-			if( rowIndex > sheet.getLastRowNum() || IsNull( row ) )
+			if( rowIndex > getSheetHelper().getLastRowIndex( sheet ) || IsNull( row ) )
 				row = getRowHelper().createRow( arguments.workbook, rowIndex );
 			// NB: row.getLastCellNum() returns the cell index PLUS ONE or -1 if not found
 			var insertRequired = ( arguments.KeyExists( "startColumn" ) && arguments.insert && ( cellIndex < row.getLastCellNum() ) );
@@ -600,10 +600,11 @@ component accessors="true"{
 		// array data must be an array of arrays, not structs
 		if( dataIsArray && !IsArray( arguments.data[ 1 ] ) )
 			Throw( type=this.getExceptionType(), message="Invalid data argument", detail="Data passed as an array must be an array of arrays, one per row" );
-		var lastRow = getRowHelper().getNextEmptyRowNumber( arguments.workbook );
-		var insertAtRowIndex = arguments.KeyExists( "row" )? arguments.row -1: getRowHelper().getNextEmptyRowNumber( arguments.workbook );
-		if( arguments.KeyExists( "row" ) && ( arguments.row <= lastRow ) && arguments.insert )
-			shiftRows( arguments.workbook, arguments.row, lastRow, totalRows );
+		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
+		var nextRowIndex = getSheetHelper().getNextEmptyRowIndex( sheet );
+		var insertAtRowIndex = arguments.KeyExists( "row" )? arguments.row -1: nextRowIndex;
+		if( arguments.KeyExists( "row" ) && ( arguments.row <= nextRowIndex ) && arguments.insert )
+			shiftRows( arguments.workbook, arguments.row, nextRowIndex, totalRows );
 		var currentRowIndex = insertAtRowIndex;
 		var overrideDataTypes = arguments.KeyExists( "datatypes" );
 		if( arguments.autoSizeColumns && isStreamingXmlFormat( arguments.workbook ) )
@@ -787,14 +788,15 @@ component accessors="true"{
 		// Deletes the data from a row. Does not physically delete the row
 		if( arguments.row <= 0 )
 			Throw( type=this.getExceptionType(), message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
+		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		var rowIndex = ( arguments.row -1 );
 		if( 
-				( rowIndex < getRowHelper().getFirstRowIndex( arguments.workbook ) )
+				( rowIndex < getSheetHelper().getFirstRowIndex( sheet ) )
 				||
-				( rowIndex > getRowHelper().getLastRowIndex( arguments.workbook ) )
+				( rowIndex > getSheetHelper().getLastRowIndex( sheet ) )
 			) //invalid
 			return this;
-		getSheetHelper().getActiveSheet( arguments.workbook ).removeRow( getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row ) );
+		sheet.removeRow( sheet.getRow( rowIndex ) );
 		return this;
 	}
 
@@ -1098,7 +1100,7 @@ component accessors="true"{
 		if( arguments.KeyExists( "sheetNameOrNumber" ) )
 			getSheetHelper().setActiveSheetNameOrNumber( argumentCollection=arguments );
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
-		var lastRowIndex = getRowHelper().getLastRowIndex( arguments.workbook, sheet );
+		var lastRowIndex = getSheetHelper().getLastRowIndex( sheet );
 		return lastRowIndex +1;
 	}
 
