@@ -72,16 +72,8 @@ component extends="base" accessors="true"{
 		/*
 		Get the value of the cell based on the data type. The thing to worry about here is cell formulas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values.
 		*/
-		if( cellIsOfType( arguments.cell, "NUMERIC" ) ){
-			// Get numeric cell data. This could be a standard number, could also be a date value.
-			if( getDateHelper().getDateUtil().isCellDateFormatted( arguments.cell ) ){
-				var cellValue = arguments.cell.getDateCellValue();
-				if( getDateHelper().isTimeOnlyValue( cellValue ) )
-					return getFormatHelper().getDataFormatter().formatCellValue( arguments.cell );//return as a time formatted string to avoid default epoch date 1899-12-31
-				return cellValue;
-			}
-			return arguments.cell.getNumericCellValue();
-		}
+		if( cellIsOfType( arguments.cell, "NUMERIC" ) )
+			return getCellNumericOrDateValue( arguments.cell );
 		if( cellIsOfType( arguments.cell, "FORMULA" ) )
 			return getCellFormulaValue( arguments.workbook, arguments.cell );
 		if( cellIsOfType( arguments.cell, "BOOLEAN" ) )
@@ -118,45 +110,15 @@ component extends="base" accessors="true"{
  		*/
 		switch( arguments.type ){
 			case "numeric":
-				arguments.cell.setCellValue( JavaCast( "double", Val( arguments.value ) ) );
-				return this;
+				return setNumericValue( argumentCollection=arguments );
 			case "date": case "time":
-				getDateHelper().matchPoiTimeZoneToEngine();
-				//handle empty strings which can't be treated as dates
-				if( Trim( arguments.value ).IsEmpty() ){
-					arguments.cell.setBlank(); //no need to set the value: it will be blank
-					return this;
-				}
-				var dateTimeValue = ParseDateTime( arguments.value );
-				if( arguments.type == "time" )
-					var cellFormat = library().getDateFormats().TIME; //don't include the epoch date in the display
-				else
-					var cellFormat = getDateHelper().getDefaultDateMaskFor( dateTimeValue );// check if DATE, TIME or TIMESTAMP
-				var dataFormat = arguments.workbook.getCreationHelper().createDataFormat();
-				//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
-				getCellUtil().setCellStyleProperty( arguments.cell, getCellUtil().DATA_FORMAT, dataFormat.getFormat( JavaCast( "string", cellFormat ) ) );
-				/*  Excel uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling */
-				if( arguments.type == "time" || getDateHelper().isTimeOnlyValue( dateTimeValue ) ){
-					dateTimeValue = dateTimeValue.Add( "d", 2 );//shift the epoch forward to match Excel's
-					var javaDate = dateTimeValue.from( dateTimeValue.toInstant() );// dateUtil needs a java date
-					dateTimeValue = ( getDateHelper().getDateUtil().getExcelDate( javaDate ) -1 );//Convert to Excel's double value for dates, minus the 1 complete day to leave the day fraction (= time value)
-				}
-				arguments.cell.setCellValue( dateTimeValue );
-				return this;
+				return setDateOrTimeValue( argumentCollection=arguments );
 			case "boolean":
-				//handle empty strings/nulls which can't be treated as booleans
-				if( Trim( arguments.value ).IsEmpty() ){
-					arguments.cell.setBlank(); //no need to set the value: it will be blank
-					return this;
-				}
-				arguments.cell.setCellValue( JavaCast( "boolean", arguments.value ) );
-				return this;
+				return setBooleanValue( argumentCollection=arguments );
 			case "blank":
-				arguments.cell.setBlank(); //no need to set the value: it will be blank
-				return this;
+				return setEmptyValue( argumentCollection=arguments );
 		}
-		arguments.cell.setCellValue( JavaCast( "string", arguments.value ) );
-		return this;
+		return setStringValue( argumentCollection=arguments );
 	}
 
 	public any function shiftCell( required workbook, required row, required numeric cellIndex, required numeric offset ){
@@ -169,6 +131,71 @@ component extends="base" accessors="true"{
 		cell.setCellComment( originalCell.getCellComment() );
 		cell.setHyperlink( originalCell.getHyperLink() );
 		arguments.row.removeCell( originalCell );
+		return this;
+	}
+
+	/* PRIVATE */
+	private boolean function isCellDateFormated( required any cell ){
+		return getDateHelper().getDateUtil().isCellDateFormatted( arguments.cell );
+	}
+
+	private any function getCellNumericOrDateValue( required any cell ){
+		// Get numeric cell data. This could be a standard number, could also be a date value.
+		if( !isCellDateFormated( arguments.cell ) )
+			return arguments.cell.getNumericCellValue();
+		var cellValue = arguments.cell.getDateCellValue();
+		if( getDateHelper().isTimeOnlyValue( cellValue ) )
+			return getFormatHelper().getDataFormatter().formatCellValue( arguments.cell );//return as a time formatted string to avoid default epoch date 1899-12-31
+		return cellValue;
+	}
+
+	private any function setNumericValue( required any cell, required any value ){
+		arguments.cell.setCellValue( JavaCast( "double", Val( arguments.value ) ) );
+		return this;
+	}
+
+	private any function setDateOrTimeValue( required workbook, required cell, required value, string type ){
+		getDateHelper().matchPoiTimeZoneToEngine();
+		//handle empty strings which can't be treated as dates
+		if( Trim( arguments.value ).IsEmpty() ){
+			arguments.cell.setBlank(); //no need to set the value: it will be blank
+			return this;
+		}
+		var dateTimeValue = ParseDateTime( arguments.value );
+		if( arguments.type == "time" )
+			var cellFormat = library().getDateFormats().TIME; //don't include the epoch date in the display
+		else
+			var cellFormat = getDateHelper().getDefaultDateMaskFor( dateTimeValue );// check if DATE, TIME or TIMESTAMP
+		var dataFormat = arguments.workbook.getCreationHelper().createDataFormat();
+		//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
+		getCellUtil().setCellStyleProperty( arguments.cell, getCellUtil().DATA_FORMAT, dataFormat.getFormat( JavaCast( "string", cellFormat ) ) );
+		/*  Excel uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling */
+		if( arguments.type == "time" || getDateHelper().isTimeOnlyValue( dateTimeValue ) ){
+			dateTimeValue = dateTimeValue.Add( "d", 2 );//shift the epoch forward to match Excel's
+			var javaDate = dateTimeValue.from( dateTimeValue.toInstant() );// dateUtil needs a java date
+			dateTimeValue = ( getDateHelper().getDateUtil().getExcelDate( javaDate ) -1 );//Convert to Excel's double value for dates, minus the 1 complete day to leave the day fraction (= time value)
+		}
+		arguments.cell.setCellValue( dateTimeValue );
+		return this;
+	}
+
+	private any function setBooleanValue( required any cell, required any value ){
+		//handle empty strings/nulls which can't be treated as booleans
+		if( Trim( arguments.value ).IsEmpty() ){
+			arguments.cell.setBlank(); //no need to set the value: it will be blank
+			return this;
+		}
+		arguments.cell.setCellValue( JavaCast( "boolean", arguments.value ) );
+		return this;
+	}
+
+	private any function setEmptyValue( required any cell ){
+		arguments.cell.setBlank(); //no need to set the value: it will be blank
+		return this;
+	}
+
+	private any function setStringValue( required any cell, required any value ){
+		arguments.cell.setCellValue( JavaCast( "string", arguments.value ) );
 		return this;
 	}
 
