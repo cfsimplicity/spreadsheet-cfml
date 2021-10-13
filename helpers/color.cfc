@@ -21,32 +21,8 @@ component extends="base" accessors="true"{
 		if( !isRGB && isHexColor( arguments.colorValue ) )
 			arguments.colorValue = hexToRGB( arguments.colorValue );
 		var rgb = ListToArray( arguments.colorValue );
-		if( library().isXmlFormat( arguments.workbook ) ){
-			var rgbBytes = [
-				JavaCast( "int", rgb[ 1 ] )
-				,JavaCast( "int", rgb[ 2 ] )
-				,JavaCast( "int", rgb[ 3 ] )
-			];
-			try{
-				return getClassHelper().loadClass( "org.apache.poi.xssf.usermodel.XSSFColor" ).init( JavaCast( "byte[]", rgbBytes ), JavaCast( "null", 0 ) );
-			}
-			//ACF doesn't handle signed java byte values the same way as Lucee: see https://www.bennadel.com/blog/2689-creating-signed-java-byte-values-using-coldfusion-numbers.htm
-			catch( any exception ){
-				if( !exception.message CONTAINS "cannot fit inside a byte" )
-					rethrow;
-				//ACF2016+ Bitwise operators can't handle >32-bit args: https://stackoverflow.com/questions/43176313/cffunction-cfargument-pass-unsigned-int32
-				var javaLangInteger = CreateObject( "java", "java.lang.Integer" );
-				var negativeMask = InputBaseN( ( "11111111" & "11111111" & "11111111" & "00000000" ), 2 );
-				negativeMask = javaLangInteger.parseUnsignedInt( negativeMask );
-				rgbBytes = [];
-				for( var value in rgb ){
-					if( BitMaskRead( value, 7, 1 ) )
-					value = BitOr( negativeMask, value );//value greater than 127
-					rgbBytes.Append( JavaCast( "byte", value ) );
-				}
-				return getClassHelper().loadClass( "org.apache.poi.xssf.usermodel.XSSFColor" ).init( JavaCast( "byte[]", rgbBytes ), JavaCast( "null", 0 ) );
-			}
-		}
+		if( library().isXmlFormat( arguments.workbook ) )
+			return getColorForXlsx( rgb );
 		var palette = arguments.workbook.getCustomPalette();
 		var similarExistingColor = palette.findSimilarColor(
 			JavaCast( "int", rgb[ 1 ] )
@@ -82,6 +58,32 @@ component extends="base" accessors="true"{
 	}
 	
 	/* Private */
+	private any function getColorForXlsx( required array rgb ){
+		var rgbBytes = [
+			JavaCast( "int", arguments.rgb[ 1 ] )
+			,JavaCast( "int", arguments.rgb[ 2 ] )
+			,JavaCast( "int", arguments.rgb[ 3 ] )
+		];
+		try{
+			return getClassHelper().loadClass( "org.apache.poi.xssf.usermodel.XSSFColor" ).init( JavaCast( "byte[]", rgbBytes ), JavaCast( "null", 0 ) );
+		}
+		//ACF doesn't handle signed java byte values the same way as Lucee: see https://www.bennadel.com/blog/2689-creating-signed-java-byte-values-using-coldfusion-numbers.htm
+		catch( any exception ){
+			if( !exception.message CONTAINS "cannot fit inside a byte" )
+				rethrow;
+			//ACF2016+ Bitwise operators can't handle >32-bit args: https://stackoverflow.com/questions/43176313/cffunction-cfargument-pass-unsigned-int32
+			var javaLangInteger = CreateObject( "java", "java.lang.Integer" );
+			var negativeMask = InputBaseN( ( "11111111" & "11111111" & "11111111" & "00000000" ), 2 );
+			negativeMask = javaLangInteger.parseUnsignedInt( negativeMask );
+			rgbBytes = [];
+			for( var value in arguments.rgb ){
+				if( BitMaskRead( value, 7, 1 ) )
+				value = BitOr( negativeMask, value );//value greater than 127
+				rgbBytes.Append( JavaCast( "byte", value ) );
+			}
+			return getClassHelper().loadClass( "org.apache.poi.xssf.usermodel.XSSFColor" ).init( JavaCast( "byte[]", rgbBytes ), JavaCast( "null", 0 ) );
+		}
+	}
 
 	private any function getColorObjectForFormat(
 		required string format
