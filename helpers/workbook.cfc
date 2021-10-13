@@ -33,7 +33,7 @@ component extends="base" accessors="true"{
 			}
 			catch( any exception ){
 				if( exception.message CONTAINS "unsupported file type" )
-				getFileHelper().handleInvalidSpreadsheetFile( arguments.path );// from POI 5.x
+					getFileHelper().handleInvalidSpreadsheetFile( arguments.path );// from POI 5.x
 				if( exception.message CONTAINS "spreadsheet seems to be Excel 5" )
 					getExceptionHelper().throwOldExcelFormatException( arguments.path );
 				rethrow;

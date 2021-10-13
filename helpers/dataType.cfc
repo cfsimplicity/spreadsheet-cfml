@@ -44,12 +44,12 @@ component extends="base" accessors="true"{
 			var columnRefs = arguments.datatypeOverrides[ type ];
 			//NB: DO NOT SCOPE datatypeOverrides and columnNames vars inside closure!!
 			columnRefs.Each( function( value, index ){
-				if( !IsNumeric( value ) ){
-					var columnNumber = ArrayFindNoCase( columnNames, value );//ACF won't accept member function on this array for some reason
-					columnRefs.DeleteAt( index );
-					columnRefs.Append( columnNumber );
-					datatypeOverrides[ type ] = columnRefs;
-				}
+				if( IsNumeric( value ) )
+					return;
+				var columnNumber = ArrayFindNoCase( columnNames, value );//ACF won't accept member function on this array for some reason
+				columnRefs.DeleteAt( index );
+				columnRefs.Append( columnNumber );
+				datatypeOverrides[ type ] = columnRefs;
 			});
 		}
 		return this;
