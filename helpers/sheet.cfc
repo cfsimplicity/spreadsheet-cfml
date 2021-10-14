@@ -221,29 +221,48 @@ component extends="base" accessors="true"{
 	/* Private */
 
 	private any function generateQueryColumnNames( required workbook, required struct sheet ){
-		if( arguments.sheet.columnNames.Len() )
+		if( arguments.sheet.columnNames.Len() ){
+			forceQueryColumnsToMatchSpecifiedColumns( arguments.sheet );
 			return this; // alread generated
-		if( sheetIsEmpty( sheet.object ) )
+		}
+		if( sheetIsEmpty( arguments.sheet.object ) )
 			return this;
-		if( sheet.hasHeaderRow ){
+		if( arguments.sheet.hasHeaderRow ){
 			// use specified header row values as column names
-			var headerRowObject = sheet.object.getRow( JavaCast( "int", sheet.headerRowIndex ) );
-			var rowData = getRowHelper().getRowData( arguments.workbook, headerRowObject, sheet.columnRanges );
-			var i = 1;
-			for( var value in rowData ){
-				var columnName = "column" & i;
-				if( getDataTypeHelper().isString( value ) && value.Len() )
-					columnName = value;
-				sheet.columnNames.Append( columnName );
-				i++;
+			var headerRowObject = arguments.sheet.object.getRow( JavaCast( "int", arguments.sheet.headerRowIndex ) );
+			var headerRowData = getRowHelper().getRowData( arguments.workbook, headerRowObject, arguments.sheet.columnRanges );
+			// adds default column names if header row column count is less than total data column count
+			cfloop( from=1, to=arguments.sheet.totalColumnCount, index="local.i" ){
+				arguments.sheet.columnNames.Append( getQueryColumnNameFromSpecifiedNames( headerRowData, i ) );
 			}
 			return this;
 		}
-		if( sheet.totalColumnCount == 0 )
+		if( arguments.sheet.totalColumnCount == 0 )
 			return this;
-		for( var i=1; i <= sheet.totalColumnCount; i++ )
-			sheet.columnNames.Append( "column" & i );
+		for( var i=1; i <= arguments.sheet.totalColumnCount; i++ )
+			arguments.sheet.columnNames.Append( "column" & i );
 		return this;
+	}
+
+	private any function forceQueryColumnsToMatchSpecifiedColumns( required struct sheet ){
+		if( arguments.sheet.columnNames.Len() >= arguments.sheet.totalColumnCount )
+			return this;
+		// Not enough columns have been specified. Stash, reset and pad out with defaults
+		var specifiedNames = arguments.sheet.columnNames;
+		arguments.sheet.columnNames = [];
+		cfloop( from=1, to=arguments.sheet.totalColumnCount, index="local.i" ){
+			arguments.sheet.columnNames.Append( getQueryColumnNameFromSpecifiedNames( specifiedNames, i ) );
+		}
+	}
+
+	private string function getQueryColumnNameFromSpecifiedNames( required array specifiedNames, required numeric index ){
+		var defaultColumnName = "column" & arguments.index;
+		if( arguments.index > arguments.specifiedNames.Len() ) //ACF won't accept IsNull( specifiedNames[ index ] )
+			return defaultColumnName;
+		var foundColumnName = arguments.specifiedNames[ arguments.index ];
+		if( getDataTypeHelper().isString( foundColumnName ) && foundColumnName.Len() )
+			return foundColumnName;
+		return defaultColumnName;
 	}
 
 	private string function generateUniqueSheetName( required workbook ){

@@ -81,6 +81,24 @@ describe( "read", function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Generates default column names if the data has more columns than the specifed header row", function(){
+		var headerRow = [ "firstColumn" ];
+		var dataRow1 = [ "row 1 col 1 value" ];
+		var dataRow2 = [ "row 2 col 1 value", "row 2 col 2 value" ];
+		var expected = querySim(
+			"firstColumn,column2
+			row 1 col 1 value|
+			row 2 col 1 value|row 2 col 2 value"
+		);
+		s.newChainable( "xls" )
+		 .addRow( headerRow )
+		 .addRow( dataRow1 )
+		 .addRow( dataRow2 )
+		 .write( tempXlsPath, true );
+		var actual = s.read( src=tempXlsPath, format="query", headerRow=1 );
+		expect( actual ).toBe( expected );
+	});
+
 	it( "Includes the specified header row in query if includeHeader is true", function(){
 		var path = getTestFilePath( "test.xls" );
 		var expected = querySim(
@@ -97,7 +115,7 @@ describe( "read", function(){
 		var workbook = s.new();
 		s.addRows( workbook, data )
 			.write( workbook, tempXlsPath, true );
-		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ] ] );;
+		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ] ] );
 		var actual = s.read( src=tempXlsPath, format="query" );
 		expect( actual ).toBe( expected );
 	});
@@ -402,6 +420,23 @@ describe( "read", function(){
 			cfloop( from=1, to=expected.Len(), index="i" ){
 				expect( q.getColumnNames()[ i ] ).toBe( expected[ i ] );
 			}
+		});
+
+		it( "Generates default column names if the data has more columns than the specifed column names", function(){
+			var columnNames = [ "firstColumn" ];
+			var dataRow1 = [ "row 1 col 1 value" ];
+			var dataRow2 = [ "row 2 col 1 value", "row 2 col 2 value" ];
+			var expected = querySim(
+				"firstColumn,column2
+				row 1 col 1 value|
+				row 2 col 1 value|row 2 col 2 value"
+			);
+			s.newChainable( "xls" )
+			 .addRow( dataRow1 )
+			 .addRow( dataRow2 )
+			 .write( tempXlsPath, true );
+			var actual = s.read( src=tempXlsPath, format="query", columnNames=columnNames );
+			expect( actual ).toBe( expected );
 		});
 		
 	});
