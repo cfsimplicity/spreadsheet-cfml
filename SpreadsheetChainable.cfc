@@ -10,12 +10,12 @@ component accessors="true"{
 	}
 
 	private void function setupWorkbook( required existingWorkbookOrNewWorkbookType ){
-		if( this.getLibrary().isSpreadsheetObject( arguments.existingWorkbookOrNewWorkbookType ) ){
-			var workbook = arguments.existingWorkbookOrNewWorkbookType;
+		if( this.getLibrary().isSpreadsheetObject( arguments[ 1 ] ) ){
+			var workbook = arguments[ 1 ];
 			this.setWorkbook( workbook );
 			return;
 		}
-		var newWorkbookType = arguments.existingWorkbookOrNewWorkbookType;
+		var newWorkbookType = arguments[ 1 ];
 		switch( newWorkbookType ){
 			case "xls": this.setWorkbook( this.getLibrary().newXls() );
 				return;
