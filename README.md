@@ -8,7 +8,9 @@ Standalone library for working with spreadsheets in CFML ([Lucee](http://lucee.o
 - Lucee 5.x or higher
 - Adobe ColdFusion 2016 or higher
 
-## Usage
+## Installation
+
+Note that this is not an extension or package, so **does not need to be installed**. To use it, simply copy the files/folders to a location where `Spreadsheet.cfc` can be called by your application code.
 
 The following are the essential files/folders you will need depending on which CFML engine you are using:
 
@@ -28,7 +30,8 @@ lib/
 Spreadsheet.cfc
 SpreadsheetChainable.cfc
 ```
-Note that this is not an extension or package, so **does not need to be installed**. To use it, simply copy the files/folders to a location where `Spreadsheet.cfc` can be called by your application code.
+
+## Usage
 
 The following example assumes the file containing the script is in the same directory as the folder containing the spreadsheet library files, i.e.:
 
@@ -44,6 +47,7 @@ spreadsheet = New spreadsheetLibrary.Spreadsheet();
 data = QueryNew( "First,Last", "VarChar, VarChar", [ [ "Susi", "Sorglos" ], [ "Frumpo", "McNugget" ] ] );
 workbook = spreadsheet.new();
 spreadsheet.addRows( workbook, data );
+spreadsheet.write( workbook, "c:/temp/data.xls" );
 </cfscript>
 ```
 ### init()
