@@ -1,3 +1,16 @@
+## 3.1.0 - 2 November 2021
+
+- Enhancements
+	- \#266 Upgrade POI to 5.1.0
+	- \#261 Update commons-csv to 1.9.0
+
+- Fixes
+	- \#260 Chainable getCellComments() should return an array
+	- \#262 Handle incorrect date value setting when Lucee timezone does not match system timezone
+	- \#253 Fix autoSizeColumns not being applied to all columns when adding rows to streaming xlsx workbooks
+	- \#263 Fix read() error if headerRow is specified and spreadsheet is empty
+	- \#265 read( format="query" ) should auto-generate column names where too few column names are specified
+
 ## 3.0.0 - 17 September 2021
 - Breaking changes
 	- Rename project "spreadsheet-cfml"
