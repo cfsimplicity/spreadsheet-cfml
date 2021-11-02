@@ -18,8 +18,8 @@ component{
 		variables.libPath = variables.rootPath & "lib/";
 		variables.classpathDirectories = [
 			variables.srcPath
-			,variables.libPath & "poi-ooxml-5.0.0.jar"
-			,variables.libPath & "xmlbeans-4.0.0.jar"
+			,variables.libPath & "poi-ooxml-5.1.0.jar"
+			,variables.libPath & "xmlbeans-5.0.2.jar"
 		];
 		var jarFileName = "spreadsheet-cfml.jar";
 		var classNames = [ "HeaderImageVML" ]; //allows for more source files in future
