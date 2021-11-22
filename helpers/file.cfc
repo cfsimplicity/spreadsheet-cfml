@@ -95,11 +95,10 @@ component extends="base" accessors="true"{
 		return this;
 	}	
 
-	/* Private */
-
-	private boolean function isCsvTsvOrTextFile( required string path ){
+	public boolean function isCsvTsvOrTextFile( required string path ){
 		var contentType = getFileContentTypeFromPath( arguments.path );
 		return ListFindNoCase( "csv,tab-separated-values,plain", contentType );//Lucee=text/plain ACF=text/csv tsv=text/tab-separated-values
 	}
+	/* Private */
 
 }
