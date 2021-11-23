@@ -242,6 +242,29 @@ describe( "read", function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Can read data starting at specific rows and/or columns into a query", function(){
+		var data = QuerySim( "A1,B1,C1,D1,E1,F1
+			A2|B2|C2|D2|E2|F2
+			A3|B3|C3|D3|E3|F3
+			A4|B4|C4|D4|E4|F4
+			A5|B5|C5|D5|E5|F5
+			A6|B6|C6|D6|E6|F6");
+		var workbook = s.workbookFromQuery( data=data, addHeaderRow=true );
+		s.write( workbook, tempXlsPath, true );
+		workbook = s.workbookFromQuery( data=data, addHeaderRow=true, xmlFormat=true );
+		s.write( workbook, tempXlsxPath, true );
+		var paths = [ tempXlsPath, tempXlsxPath ];
+		paths.Each( function( path ){
+			var actual = s.read( src=path, format="query", columns="2,4-", rows="2,4-", headerRow=1 );
+			var expected = QuerySim( "B1,D1,E1,F1
+				B2|D2|E2|F2
+				B4|D4|E4|F4
+				B5|D5|E5|F5
+				B6|D6|E6|F6");
+			expect( actual ).toBe( expected );
+		});
+	});
+
 	it( "Can return HTML table rows from an Excel file", function(){
 		var path = getTestFilePath( "test.xls" );
 		var actual = s.read( src=path, format="html" );

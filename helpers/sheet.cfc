@@ -143,7 +143,7 @@ component extends="base" accessors="true"{
 			sheet.columnNames = IsArray( arguments.columnNames )? arguments.columnNames: arguments.columnNames.ListToArray();
 		sheet.headerRowIndex = sheet.hasHeaderRow? ( arguments.headerRow -1 ): -1;
 		if( arguments.KeyExists( "columns" ) ){
-			sheet.columnRanges = getRangeHelper().extractRanges( arguments.columns );
+			sheet.columnRanges = getRangeHelper().extractRanges( arguments.columns, arguments.workbook, "column" );
 			sheet.totalColumnCount = getColumnHelper().columnCountFromRanges( sheet.columnRanges );
 		}
 		if( arguments.KeyExists( "sheetName" ) ){
@@ -156,7 +156,7 @@ component extends="base" accessors="true"{
 			if( arguments.fillMergedCellsWithVisibleValue )
 				getVisibilityHelper().doFillMergedCellsWithVisibleValue( arguments.workbook, sheet.object );
 			if( arguments.KeyExists( "rows" ) ){
-				var allRanges = getRangeHelper().extractRanges( arguments.rows );
+				var allRanges = getRangeHelper().extractRanges( arguments.rows, arguments.workbook );
 				for( var thisRange in allRanges ){
 					for( var rowNumber = thisRange.startAt; rowNumber <= thisRange.endAt; rowNumber++ ){
 						var rowIndex = ( rowNumber -1 );

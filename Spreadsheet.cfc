@@ -772,7 +772,7 @@ component accessors="true"{
 
 	public Spreadsheet function deleteColumns( required workbook, required string range ){
 		// Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen.
-		var allRanges = getRangeHelper().extractRanges( arguments.range );
+		var allRanges = getRangeHelper().extractRanges( arguments.range, arguments.workbook, "column" );
 		for( var thisRange in allRanges ){
 			if( thisRange.startAt == thisRange.endAt ){ // Just one row
 				deleteColumn( arguments.workbook, thisRange.startAt );
@@ -802,7 +802,7 @@ component accessors="true"{
 
 	public Spreadsheet function deleteRows( required workbook, required string range ){
 		// Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen.
-		var allRanges = getRangeHelper().extractRanges( arguments.range );
+		var allRanges = getRangeHelper().extractRanges( arguments.range, arguments.workbook );
 		for( var thisRange in allRanges ){
 			if( thisRange.startAt == thisRange.endAt ){ // Just one row
 				deleteRow( arguments.workbook, thisRange.startAt );
@@ -894,7 +894,7 @@ component accessors="true"{
 	){
 		getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		// Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen.
-		var allRanges = getRangeHelper().extractRanges( arguments.range );
+		var allRanges = getRangeHelper().extractRanges( arguments.range, arguments.workbook, "column" );
 		var formatColumnArgs = {
 			workbook: arguments.workbook
 			,format: arguments.format
@@ -947,7 +947,7 @@ component accessors="true"{
 	){
 		getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		// Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen.
-		var allRanges = getRangeHelper().extractRanges( arguments.range );
+		var allRanges = getRangeHelper().extractRanges( arguments.range, arguments.workbook );
 		var formatRowArgs = {
 			workbook: arguments.workbook
 			,format: arguments.format
