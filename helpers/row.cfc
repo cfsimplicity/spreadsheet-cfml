@@ -6,8 +6,11 @@ component extends="base" accessors="true"{
 		,required numeric rowIndex
 		,boolean includeRichTextFormatting=false
 	){
-		if( ( arguments.rowIndex == arguments.sheet.headerRowIndex ) && !arguments.sheet.includeHeaderRow )
+		if( ( arguments.rowIndex == arguments.sheet.headerRowIndex ) && !arguments.sheet.includeHeaderRow ){
+			var row = arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
+			setSheetColumnCountFromRow( row, arguments.sheet );
 			return this;
+		}
 		var rowData = [];
 		var row = arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
 		if( IsNull( row ) ){
@@ -19,10 +22,7 @@ component extends="base" accessors="true"{
 			return this;
 		rowData = getRowData( arguments.workbook, row, arguments.sheet.columnRanges, arguments.includeRichTextFormatting );
 		arguments.sheet.data.Append( rowData );
-		if( !arguments.sheet.columnRanges.Len() ){
-			var rowColumnCount = row.getLastCellNum();
-			arguments.sheet.totalColumnCount = Max( arguments.sheet.totalColumnCount, rowColumnCount );
-		}
+		setSheetColumnCountFromRow( row, arguments.sheet );
 		return this;
 	}
 
@@ -219,6 +219,12 @@ component extends="base" accessors="true"{
 	    	return false;
 	  }
 	  return true;
+	}
+
+	private void function setSheetColumnCountFromRow( required any row, required struct sheet ){
+		if( arguments.sheet.columnRanges.Len() )//don't change the column count if specific columns have been specified
+			return;
+		arguments.sheet.totalColumnCount = Max( arguments.sheet.totalColumnCount, arguments.row.getLastCellNum() );
 	}
 
 }

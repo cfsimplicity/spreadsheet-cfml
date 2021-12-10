@@ -223,7 +223,7 @@ component extends="base" accessors="true"{
 	private any function generateQueryColumnNames( required workbook, required struct sheet ){
 		if( arguments.sheet.columnNames.Len() ){
 			forceQueryColumnsToMatchSpecifiedColumns( arguments.sheet );
-			return this; // alread generated
+			return this; // already generated
 		}
 		if( sheetIsEmpty( arguments.sheet.object ) )
 			return this;

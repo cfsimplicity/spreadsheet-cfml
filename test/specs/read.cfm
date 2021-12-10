@@ -137,6 +137,21 @@ describe( "read", function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Includes trailing empty columns when using a header row", function(){
+		var paths = [ tempXlsPath, tempXlsxPath ];
+		var expected = QuerySim( "col1,col2,emptyCol
+			value|value|");
+		paths.Each( function( path ){
+			var type = ( path == tempXlsPath )? "xls": "xlsx";
+			var workbook = s.newChainable( type )
+				.addRow( "col1,col2,emptyCol" )
+				.addRow( "value,value" )
+				.write( path, true );
+			var actual = s.read( src=path, format="query", headerRow=1 );
+			expect( actual ).toBe( expected );
+		});
+	});
+
 	it( "Writes and reads numeric, boolean, date and leading zero values correctly", function(){
 		var dateValue = CreateDate( 2015, 04, 12 );
 		var data = QueryNew( "column1,column2,column3,column4,column5", "Integer,Integer,Bit,Date,VarChar", [ [ 2, 0, true, dateValue, "01" ] ] );
@@ -203,14 +218,14 @@ describe( "read", function(){
 			A1|B1|C1|D1|E1");
 		//With no header row, so no column names specified
 		var workbook = s.workbookFromQuery( data, false );
-		s.write( workbook, tempXlsPath,true );
+		s.write( workbook, tempXlsPath, true );
 		var actual = s.read( src=tempXlsPath, format="query", columns="2,4-5" );
 		var expected = QuerySim( "column1,column2,column3
 			B1|D1|E1");
 		expect( actual ).toBe( expected );
 		//With column names specified from the header row
 		var workbook = s.workbookFromQuery( data, true );
-		s.write( workbook ,tempXlsPath,true );
+		s.write( workbook ,tempXlsPath, true );
 		actual = s.read( src=tempXlsPath, format="query", columns="2,4-5", headerRow=1 );
 		expected = QuerySim( "B,D,E
 			B1|D1|E1");
