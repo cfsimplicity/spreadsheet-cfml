@@ -110,8 +110,8 @@ component accessors="true"{
 		return this;
 	}
 
-	public Spreadsheet function flushOsgiBundle(){
-		getOsgiLoader().uninstallBundle( this.getOsgiLibBundleSymbolicName(), this.getOsgiLibBundleVersion() );
+	public Spreadsheet function flushOsgiBundle( string version=this.getOsgiLibBundleVersion() ){
+		getOsgiLoader().uninstallBundle( this.getOsgiLibBundleSymbolicName(), arguments.version );
 		return this;
 	}
 
