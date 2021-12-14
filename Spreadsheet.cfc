@@ -110,8 +110,18 @@ component accessors="true"{
 		return this;
 	}
 
-	public Spreadsheet function flushOsgiBundle( string version=this.getOsgiLibBundleVersion() ){
-		getOsgiLoader().uninstallBundle( this.getOsgiLibBundleSymbolicName(), arguments.version );
+	public Spreadsheet function flushOsgiBundle( string version ){
+		var allBundles = getOsgiLoader().getCFMLEngineFactory().getBundleContext().getBundles();
+		var spreadsheetBundles = ArrayFilter( allBundles, function( bundle ){
+			return ( bundle.getSymbolicName() == this.getOsgiLibBundleSymbolicName() );
+		});
+		if( arguments.KeyExists( "version" ) ){
+			getOsgiLoader().uninstallBundle( this.getOsgiLibBundleSymbolicName(), arguments.version );
+			return this;
+		}
+		for( var bundle in spreadsheetBundles ){
+			getOsgiLoader().uninstallBundle( this.getOsgiLibBundleSymbolicName(), bundle.getVersion() );
+		}
 		return this;
 	}
 
