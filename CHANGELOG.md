@@ -1,10 +1,10 @@
 ## 3.2.0 - 11 December 2021
 
 - Security Update
-	-\#273 Upgrade log4j to 2.15.0
+	- \#273 Upgrade log4j to 2.15.0
 
 - Enhancements
-	- \#268 Allow row/column ranges specified for read(), deleteColumns(), delete/Rows(), formatColumns() and formatRows() to be open-ended
+	- \#268 Allow row/column ranges specified for read(), deleteColumns(), deleteRows(), formatColumns() and formatRows() to be open-ended
 	- \#274 Allow flushOsgiBundle() to flush a specified version
 
 - Fixes
