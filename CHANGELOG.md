@@ -1,3 +1,8 @@
+## 3.2.1 - 15 December 2021
+
+- Security Update
+	- \#276 Upgrade log4j to 2.16.0
+
 ## 3.2.0 - 11 December 2021
 
 - Security Update
