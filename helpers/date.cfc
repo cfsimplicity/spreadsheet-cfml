@@ -22,10 +22,16 @@ component extends="base" accessors="true"{
 		return true;
 	}
 
-	public any function setFormats( struct dateFormats ){
-		library().setDateFormats( defaultFormats() );
-		if( !arguments.KeyExists( "dateFormats" ) )
-			return this;
+	public struct function defaultFormats(){
+		return {
+			DATE: "yyyy-mm-dd"
+			,DATETIME: "yyyy-mm-dd HH:nn:ss"
+			,TIME: "hh:mm:ss"
+			,TIMESTAMP: "yyyy-mm-dd hh:mm:ss"
+		};
+	}
+
+	public any function setCustomFormats( required struct dateFormats ){
 		var libraryInstanceFormats = library().getDateFormats();
 		for( var format in arguments.dateFormats ){
 			if( !libraryInstanceFormats.KeyExists( format ) )
@@ -70,17 +76,6 @@ component extends="base" accessors="true"{
 		//Make POI match the Lucee timezone for the duration of the current thread
 		getClassHelper().loadClass( "org.apache.poi.util.LocaleUtil" ).setUserTimeZone( GetTimezone() );
 		return this;
-	}
-
-	/* Private */
-	
-	private struct function defaultFormats(){
-		return {
-			DATE: "yyyy-mm-dd"
-			,DATETIME: "yyyy-mm-dd HH:nn:ss"
-			,TIME: "hh:mm:ss"
-			,TIMESTAMP: "yyyy-mm-dd hh:mm:ss"
-		};
 	}
 
 }
