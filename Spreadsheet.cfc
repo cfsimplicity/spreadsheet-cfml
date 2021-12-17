@@ -46,7 +46,7 @@ component accessors="true"{
 	public function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader ){
 		detectEngineProperties();
 		loadHelpers();
-		setDateFormats( getDateHelper().defaultFormats() );
+		this.setDateFormats( getDateHelper().defaultFormats() );
 		if( arguments.KeyExists( "dateFormats" ) )
 			getDateHelper().setCustomFormats( arguments.dateFormats );
 		this.setRequiresJavaLoader( this.getIsACF() || ( arguments.KeyExists( "requiresJavaLoader" ) && arguments.requiresJavaLoader ) );
