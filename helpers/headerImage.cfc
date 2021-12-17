@@ -33,7 +33,7 @@ component extends="base" accessors="true"{
 		}
 		// check for existing header/footer images
 		var existingRelation = getExistingHeaderFooterImageRelation( sheet, headerImagePartName );
-		var sheetHasExistingHeaderFooterImages = local.KeyExists( "existingRelation" );
+		var sheetHasExistingHeaderFooterImages = !IsNull( existingRelation );
 		if( sheetHasExistingHeaderFooterImages ){
 			var part = existingRelation.getPackagePart();
 			try{
