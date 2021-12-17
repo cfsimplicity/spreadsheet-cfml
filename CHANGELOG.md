@@ -1,3 +1,9 @@
+## 3.2.2 - 17 December 2021
+
+- Fixes
+	-\#277 Date format initialization doesn't work in Lucee with full null support
+	-\#278 Adding header/footer images throws error with null support enabled
+
 ## 3.2.1 - 15 December 2021
 
 - Security Update
