@@ -1,3 +1,8 @@
+## 3.2.3 - 18 December 2021
+
+- Security Update
+	- \#279 Upgrade log4j to 2.17.0
+
 ## 3.2.2 - 17 December 2021
 
 - Fixes
