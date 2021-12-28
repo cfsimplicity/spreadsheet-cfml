@@ -43,6 +43,13 @@ describe( "formatColumns", function(){
 		});
 	});
 
+	it( "works when the range is just a single column", function(){
+		workbooks.Each( function( wb ){
+			s.formatColumns( wb, {  italic: true }, "2" );
+			expect( s.getCellFormat( wb, 2, 2 ).italic ).toBeTrue();
+		});
+	});
+
 	describe( "formatColumns throws an exception if ", function(){
 
 		it( "the range is invalid", function(){

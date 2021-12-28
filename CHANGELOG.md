@@ -1,3 +1,7 @@
+## 3.2.4 - 28 December 2021
+
+- \#280 Fix: formatRows() errors if range specified is a single row
+
 ## 3.2.3 - 18 December 2021
 
 - Security Update
@@ -6,8 +10,8 @@
 ## 3.2.2 - 17 December 2021
 
 - Fixes
-	-\#277 Date format initialization doesn't work in Lucee with full null support
-	-\#278 Adding header/footer images throws error with null support enabled
+	- \#277 Date format initialization doesn't work in Lucee with full null support
+	- \#278 Adding header/footer images throws error with null support enabled
 
 ## 3.2.1 - 15 December 2021
 
@@ -24,7 +28,7 @@
 	- \#274 Allow flushOsgiBundle() to flush a specified version
 
 - Fixes
-	-\#272 Read() not importing trailing empty columns
+	- \#272 Read() not importing trailing empty columns
 
 ## 3.1.0 - 2 November 2021
 
@@ -40,6 +44,7 @@
 	- \#265 read( format="query" ) should auto-generate column names where too few column names are specified
 
 ## 3.0.0 - 17 September 2021
+
 - Breaking changes
 	- Rename project "spreadsheet-cfml"
 
@@ -290,7 +295,7 @@
 ## 1.6.1 - 7 September 2017
 
 - Fixes
-	-\#130 JavaLoader should not need `loadColdFusionClassPath` setting (add commons-codec jar to lib)
+	- \#130 JavaLoader should not need `loadColdFusionClassPath` setting (add commons-codec jar to lib)
 
 ## 1.6.0 - 5 September 2017
 

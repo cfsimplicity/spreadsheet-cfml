@@ -1,7 +1,7 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="3.2.3" setter="false";
+	property name="version" default="3.2.4" setter="false";
 	property name="osgiLibBundleVersion" default="5.1.0.3" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
@@ -914,12 +914,9 @@ component accessors="true"{
 		};
 		getFormatHelper().addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed( argumentCollection=arguments, formatMethodArgs=formatColumnArgs );
 		for( var thisRange in allRanges ){
-			if( thisRange.startAt == thisRange.endAt ){ // Just one column
-				formatColumn( argumentCollection=formatColumnArgs, column=thisRange.startAt );
-				continue;
-			}
-			for( var columnNumber = thisRange.startAt; columnNumber <= thisRange.endAt; columnNumber++ )
+			for( var columnNumber = thisRange.startAt; columnNumber <= thisRange.endAt; columnNumber++ ){
 				formatColumn( argumentCollection=formatColumnArgs, column=columnNumber );
+			}
 		}
 		return this;
 	}
@@ -967,12 +964,9 @@ component accessors="true"{
 		};
 		getFormatHelper().addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed( argumentCollection=arguments, formatMethodArgs=formatRowArgs );
 		for( var thisRange in allRanges ){
-			if( thisRange.startAt == thisRange.endAt ){ // Just one row
-				formatRow( arguments.workbook, arguments.format, thisRange.startAt, arguments.overwriteCurrentStyle, style );
-				continue;
-			}
-			for( var rowNumber = thisRange.startAt; rowNumber <= thisRange.endAt; rowNumber++ )
+			for( var rowNumber = thisRange.startAt; rowNumber <= thisRange.endAt; rowNumber++ ){
 				formatRow( argumentCollection=formatRowArgs, row=rowNumber );
+			}
 		}
 		return this;
 	}
