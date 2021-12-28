@@ -914,12 +914,9 @@ component accessors="true"{
 		};
 		getFormatHelper().addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed( argumentCollection=arguments, formatMethodArgs=formatColumnArgs );
 		for( var thisRange in allRanges ){
-			if( thisRange.startAt == thisRange.endAt ){ // Just one column
-				formatColumn( argumentCollection=formatColumnArgs, column=thisRange.startAt );
-				continue;
-			}
-			for( var columnNumber = thisRange.startAt; columnNumber <= thisRange.endAt; columnNumber++ )
+			for( var columnNumber = thisRange.startAt; columnNumber <= thisRange.endAt; columnNumber++ ){
 				formatColumn( argumentCollection=formatColumnArgs, column=columnNumber );
+			}
 		}
 		return this;
 	}
@@ -967,12 +964,9 @@ component accessors="true"{
 		};
 		getFormatHelper().addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed( argumentCollection=arguments, formatMethodArgs=formatRowArgs );
 		for( var thisRange in allRanges ){
-			if( thisRange.startAt == thisRange.endAt ){ // Just one row
-				formatRow( arguments.workbook, arguments.format, thisRange.startAt, arguments.overwriteCurrentStyle, style );
-				continue;
-			}
-			for( var rowNumber = thisRange.startAt; rowNumber <= thisRange.endAt; rowNumber++ )
+			for( var rowNumber = thisRange.startAt; rowNumber <= thisRange.endAt; rowNumber++ ){
 				formatRow( argumentCollection=formatRowArgs, row=rowNumber );
+			}
 		}
 		return this;
 	}

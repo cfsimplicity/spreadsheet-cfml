@@ -30,6 +30,13 @@ describe( "formatRows", function(){
 		});
 	});
 
+	it( "works when the range is just a single row", function(){
+		workbooks.Each( function( wb ){
+			s.formatRows( wb, {  italic: true }, "2" );
+			expect( s.getCellFormat( wb, 2, 2 ).italic ).toBeTrue();
+		});
+	});
+
 	describe( "formatRows throws an exception if", function(){
 
 		it( "the range is invalid", function(){
