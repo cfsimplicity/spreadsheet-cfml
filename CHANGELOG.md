@@ -1,3 +1,7 @@
+## 3.2.4 - 28 December 2021
+
+- \#280 Fix: formatRows() errors if range specified is a single row
+
 ## 3.2.3 - 18 December 2021
 
 - Security Update
@@ -40,6 +44,7 @@
 	- \#265 read( format="query" ) should auto-generate column names where too few column names are specified
 
 ## 3.0.0 - 17 September 2021
+
 - Breaking changes
 	- Rename project "spreadsheet-cfml"
 
