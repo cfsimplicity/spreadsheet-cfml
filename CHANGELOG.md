@@ -1,3 +1,8 @@
+## 3.2.5 - 30 December 2021
+
+- Security Update
+	- \#279 Upgrade log4j to 2.17.1
+
 ## 3.2.4 - 28 December 2021
 
 - \#280 Fix: formatRows() errors if range specified is a single row
