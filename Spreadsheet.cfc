@@ -1,8 +1,8 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="3.2.4" setter="false";
-	property name="osgiLibBundleVersion" default="5.1.0.3" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="version" default="3.2.5" setter="false";
+	property name="osgiLibBundleVersion" default="5.1.0.4" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
 	//commonly invoked POI class names
