@@ -46,18 +46,13 @@ component extends="base" accessors="true"{
 		}
 	}
 
-	public any function getCellRangeAddressFromColumnAndRowIndices(
-		required numeric startRowIndex
-		,required numeric endRowIndex
-		,required numeric startColumnIndex
-		,required numeric endColumnIndex
-	){
+	public any function getCellRangeAddressFromColumnAndRowIndices( required struct indices ){
 		//index = 0 based
 		return getClassHelper().loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).init(
-			JavaCast( "int", arguments.startRowIndex )
-			,JavaCast( "int", arguments.endRowIndex )
-			,JavaCast( "int", arguments.startColumnIndex )
-			,JavaCast( "int", arguments.endColumnIndex )
+			JavaCast( "int", arguments.indices.startRow )
+			,JavaCast( "int", arguments.indices.endRow )
+			,JavaCast( "int", arguments.indices.startColumn )
+			,JavaCast( "int", arguments.indices.endColumn )
 		);
 	}
 

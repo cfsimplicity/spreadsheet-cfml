@@ -389,7 +389,13 @@ component accessors="true"{
 		if( arguments.cellRange.IsEmpty() ){
 			//default to all columns in the first (default) or specified row 
 			var rowIndex = ( Max( 0, arguments.row -1 ) );
-			var cellRangeAddress = getCellHelper().getCellRangeAddressFromColumnAndRowIndices( rowIndex, rowIndex, 0, ( getColumnCount( arguments.workbook ) -1 ) );
+			var indices = {
+				startRow: rowIndex
+				,endRow: rowIndex
+				,startColumn: 0
+				,endColumn: ( getColumnCount( arguments.workbook ) -1 )
+			};
+			var cellRangeAddress = getCellHelper().getCellRangeAddressFromColumnAndRowIndices( indices );
 			getSheetHelper().getActiveSheet( arguments.workbook ).setAutoFilter( cellRangeAddress );
 			return this;
 		}
@@ -1194,12 +1200,13 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid startRow or endRow", detail="Row values must be greater than 0 and the startRow cannot be greater than the endRow." );
 		if( arguments.startColumn < 1 || arguments.startColumn > arguments.endColumn )
 			Throw( type=this.getExceptionType(), message="Invalid startColumn or endColumn", detail="Column values must be greater than 0 and the startColumn cannot be greater than the endColumn." );
-		var cellRangeAddress = getCellHelper().getCellRangeAddressFromColumnAndRowIndices(
-			( arguments.startRow - 1 )
-			,( arguments.endRow - 1 )
-			,( arguments.startColumn - 1 )
-			,( arguments.endColumn - 1 )
-		);
+		var indices = {
+			startRow: ( arguments.startRow - 1 )
+			,endRow: ( arguments.endRow - 1 )
+			,startColumn: ( arguments.startColumn - 1 )
+			,endColumn: ( arguments.endColumn - 1 )
+		};
+		var cellRangeAddress = getCellHelper().getCellRangeAddressFromColumnAndRowIndices( indices );
 		getSheetHelper().getActiveSheet( arguments.workbook ).addMergedRegion( cellRangeAddress );
 		if( !arguments.emptyInvisibleCells )
 			return this;
@@ -1441,7 +1448,8 @@ component accessors="true"{
 		 */
 		var factory = arguments.workbook.getCreationHelper();
 		var commentString = factory.createRichTextString( JavaCast( "string", arguments.comment.comment ) );
-		var anchor = getCommentHelper().createCommentAnchor( factory, arguments.comment, arguments.row, arguments.column );
+		var cellAddress = { row: arguments.row, column: arguments.column };
+		var anchor = getCommentHelper().createCommentAnchor( factory, arguments.comment, cellAddress );
 		var drawingPatriarch = getSheetHelper().getActiveSheet( arguments.workbook ).createDrawingPatriarch();
 		var commentObject = drawingPatriarch.createCellComment( anchor );
 		if( arguments.comment.KeyExists( "author" ) )
