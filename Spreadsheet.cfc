@@ -193,52 +193,29 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Missing required argument", detail="Please provide either a csv string (csv), or the path of a file containing one (filepath)." );
 		if( csvIsString && csvIsFile )
 			Throw( type=this.getExceptionType(), message="Mutually exclusive arguments: 'csv' and 'filepath'", detail="Only one of either 'filepath' or 'csv' arguments may be provided." );
-		if(	csvIsFile ){
-			getFileHelper()
-				.throwErrorIFfileNotExists( arguments.filepath )
-				.throwErrorIFnotCsvOrTextFile( arguments.filepath );
-			arguments.csv = FileRead( arguments.filepath );
-		}
+		var csvString = csvIsFile? getCsvHelper().readFile( arguments.filepath ): arguments.csv;
 		if( IsStruct( arguments.queryColumnTypes ) && !arguments.firstRowIsHeader && !arguments.KeyExists( "queryColumnNames" )  )
 			Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
 		if( arguments.trim )
-			arguments.csv = arguments.csv.Trim();
+			csvString = csvString.Trim();
 		var format = arguments.KeyExists( "delimiter" )? 
 			getCsvHelper().getCsvFormatForDelimiter( arguments.delimiter )
 			: getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
-		var parsed = getClassHelper().loadClass( "org.apache.commons.csv.CSVParser" ).parse( arguments.csv, format );
+		var parsed = getClassHelper().loadClass( "org.apache.commons.csv.CSVParser" ).parse( csvString, format );
 		var records = parsed.getRecords();
-		var data = [];
-		var maxColumnCount = 0;
-		for( var record in records ){
-			var row = [];
-			var columnNumber = 0;
-			var iterator = record.iterator();
-			while( iterator.hasNext() ){
-				columnNumber++;
-				maxColumnCount = Max( maxColumnCount, columnNumber );
-				row.Append( iterator.next() );
-			}
-			data.Append( row );
-		}
-		if( arguments.KeyExists( "queryColumnNames" ) && arguments.queryColumnNames.Len() )
+		var dataFromRecords = getCsvHelper().dataFromRecords( records );
+		var data = dataFromRecords.data;
+		var maxColumnCount = dataFromRecords.maxColumnCount;
+		if( arguments.KeyExists( "queryColumnNames" ) && arguments.queryColumnNames.Len() ){
 			var columnNames = arguments.queryColumnNames;
-		else{
-			var columnNames = [];
-			if( arguments.firstRowIsHeader )
-				var headerRow = data[ 1 ];
-			for( var i=1; i <= maxColumnCount; i++ ){
-				if( arguments.firstRowIsHeader && !IsNull( headerRow[ i ] ) && headerRow[ i ].Len() ){
-					columnNames.Append( headerRow[ i ] );
-					continue;
-				}
-				columnNames.Append( "column#i#" );
-			}
-			if( arguments.firstRowIsHeader )
-				data.DeleteAt( 1 );
+			var parsedQueryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, columnNames, maxColumnCount, data );
+			return getQueryHelper()._QueryNew( columnNames, parsedQueryColumnTypes, data, arguments.makeColumnNamesSafe );
 		}
-		arguments.queryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, columnNames, maxColumnCount, data );
-		return getQueryHelper()._QueryNew( columnNames, arguments.queryColumnTypes, data, arguments.makeColumnNamesSafe );
+		var columnNames = getCsvHelper().getColumnNames( arguments.firstRowIsHeader, data, maxColumnCount );
+		if( arguments.firstRowIsHeader )
+			data.DeleteAt( 1 );
+		var parsedQueryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, columnNames, maxColumnCount, data );
+		return getQueryHelper()._QueryNew( columnNames, parsedQueryColumnTypes, data, arguments.makeColumnNamesSafe );
 	}
 
 	public void function download( required workbook, required string filename, string contentType ){
@@ -772,9 +749,10 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
 			// POI doesn't have remove column functionality, so iterate over all the rows and remove the column indicated
 		var rowIterator = getSheetHelper().getActiveSheet( arguments.workbook ).rowIterator();
+		var columnIndex = ( arguments.column -1 );
 		while( rowIterator.hasNext() ){
 			var row = rowIterator.next();
-			var cell = row.getCell( JavaCast( "int", ( arguments.column -1 ) ) );
+			var cell = row.getCell( JavaCast( "int", columnIndex ) );
 			if( IsNull( cell ) )
 				continue;
 			row.removeCell( cell );
