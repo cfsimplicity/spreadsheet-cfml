@@ -1,16 +1,11 @@
 component extends="base" accessors="true"{
 
-	public any function createWorkBook(
-		required string sheetName
-		,boolean xmlFormat=false
-		,boolean streamingXml=false
-		,numeric streamingWindowSize=100
-	){
-		getSheetHelper().validateSheetName( arguments.sheetName );
-		if( !arguments.xmlFormat )
+	public any function createWorkBook( string type, numeric streamingWindowSize=100 ){
+		if( arguments.type == "xls" )
 			return getClassHelper().loadClass( library().getHSSFWorkbookClassName() ).init();
-		if( !arguments.streamingXml )
+		if( arguments.type == "xlsx" )
 			return getClassHelper().loadClass( library().getXSSFWorkbookClassName() ).init();
+		// Streaming Xlsx
 		if( !IsValid( "integer", arguments.streamingWindowSize ) || ( arguments.streamingWindowSize < 1 ) )
 			Throw( type=library().getExceptionType(), message="Invalid 'streamingWindowSize' argument", detail="'streamingWindowSize' must be an integer value greater than 1" );
 		return getClassHelper().loadClass( library().getSXSSFWorkbookClassName() ).init( JavaCast( "int", arguments.streamingWindowSize ) );
@@ -42,6 +37,14 @@ component extends="base" accessors="true"{
 				getFileHelper().closeLocalFileOrStream( local, "file" );
 			}
 		}
+	}
+
+	public string function typeFromArguments( boolean xmlFormat=false, boolean streamingXml=false ){
+		if( !arguments.xmlFormat && !arguments.streamingXml )
+			return "xls";
+		if( arguments.streamingXml )
+			return "streamingXlsx";
+		return "xlsx";
 	}
 
 }

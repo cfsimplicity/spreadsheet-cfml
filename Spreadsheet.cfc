@@ -1227,7 +1227,11 @@ component accessors="true"{
 	){
 		if( arguments.streamingXml && !arguments.xmlFormat )
 			arguments.xmlFormat = true;
-		var workbook = getWorkbookHelper().createWorkBook( argumentCollection=arguments );
+		var createArgs.type = getWorkbookHelper().typeFromArguments( arguments.xmlFormat, arguments.streamingXml );
+		if( arguments.KeyExists( "streamingWindowSize" ) )
+			createArgs.streamingWindowSize = arguments.streamingWindowSize;
+		var workbook = getWorkbookHelper().createWorkBook( argumentCollection=createArgs );
+		getSheetHelper().validateSheetName( arguments.sheetName );
 		createSheet( workbook, arguments.sheetName, arguments.xmlFormat );
 		setActiveSheet( workbook, arguments.sheetName );
 		return workbook;
