@@ -1,10 +1,10 @@
 component extends="base" accessors="true"{
 
-	public boolean function delimiterIsTab( required string delimiter ){
+	boolean function delimiterIsTab( required string delimiter ){
 		return ArrayFindNoCase( [ "#Chr( 9 )#", "\t", "tab" ], arguments.delimiter );//CF2016 doesn't support [].FindNoCase( needle )
 	}
 
-	public any function getCsvFormatForDelimiter( required string delimiter ){
+	any function getCsvFormatForDelimiter( required string delimiter ){
 		if( delimiterIsTab( arguments.delimiter ) )
 			return getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ];
 		return getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ]
@@ -12,14 +12,14 @@ component extends="base" accessors="true"{
 			.withIgnoreSurroundingSpaces();//stop spaces between fields causing problems with embedded lines
 	}
 
-	public string function readFile( required string filepath ){
+	string function readFile( required string filepath ){
 		getFileHelper()
 			.throwErrorIFfileNotExists( arguments.filepath )
 			.throwErrorIFnotCsvOrTextFile( arguments.filepath );
 		return FileRead( arguments.filepath );
 	}
 
-	public struct function dataFromRecords( required array records ){
+	struct function dataFromRecords( required array records ){
 		var result = {
 			data: []
 			,maxColumnCount: 0
@@ -38,7 +38,7 @@ component extends="base" accessors="true"{
 		return result;
 	}
 
-	public array function getColumnNames( required boolean firstRowIsHeader, required array data, required numeric maxColumnCount ){
+	array function getColumnNames( required boolean firstRowIsHeader, required array data, required numeric maxColumnCount ){
 		var result = [];
 		if( arguments.firstRowIsHeader )
 			var headerRow = arguments.data[ 1 ];

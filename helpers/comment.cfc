@@ -1,6 +1,6 @@
 component extends="base" accessors="true"{
 
-	public any function createCommentAnchor( required factory, required struct comment, required struct cellAddress ){
+	any function createCommentAnchor( required factory, required struct comment, required struct cellAddress ){
 		var anchor = arguments.factory.createClientAnchor();
 		var positionSpecified = arguments.comment.KeyExists( "anchor" );
 		if( positionSpecified )
@@ -19,7 +19,7 @@ component extends="base" accessors="true"{
 		return anchor;
 	}
 
-	public any function addFontStylesToComment( required struct comment, required workbook, required commentString ){
+	any function addFontStylesToComment( required struct comment, required workbook, required commentString ){
 		if( !commentHasFontStyles( arguments.comment ) )
 			return this;
 		var font = arguments.workbook.createFont();
@@ -41,7 +41,7 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
-	public any function addHSSFonlyStyles( required struct comment, required commentObject ){
+	any function addHSSFonlyStyles( required struct comment, required commentObject ){
 		//the following 5 properties are not currently supported on XSSFComment: https://github.com/cfsimplicity/spreadsheet-cfml/issues/192
 		if( arguments.comment.KeyExists( "fillColor" ) ){
 			var javaColorRGB = getColorHelper().getJavaColorRGBFor( arguments.comment.fillColor );

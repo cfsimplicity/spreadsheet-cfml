@@ -1,11 +1,11 @@
 component extends="base" accessors="true"{
 
-	public void function downloadBinaryVariable( required binaryVariable, required string filename, required contentType ){
+	void function downloadBinaryVariable( required binaryVariable, required string filename, required contentType ){
 		cfheader( name="Content-Disposition", value='attachment; filename="#arguments.filename#"' );
 		cfcontent( type=arguments.contentType, variable="#arguments.binaryVariable#", reset="true" );
 	}
 
-	public any function encryptFile( required string filepath, required string password, required string algorithm ){
+	any function encryptFile( required string filepath, required string password, required string algorithm ){
 		// See https://poi.apache.org/encryption.html
 		// NB: Not all spreadsheet programs support this type of encryption
 		// set up the encryptor with the chosen algo
@@ -53,13 +53,13 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
-	public any function closeLocalFileOrStream( required localScope, required string varName ){
+	any function closeLocalFileOrStream( required localScope, required string varName ){
 		if( arguments.localScope.KeyExists( arguments.varName ) )
 			arguments.localScope[ arguments.varName ].close();
 		return this;
 	}
 
-	public string function filenameSafe( required string input ){
+	string function filenameSafe( required string input ){
 		var charsToRemove	=	"\|\\\*\/\:""<>~&";
 		var result = arguments.input.reReplace( "[#charsToRemove#]+", "", "ALL" ).Left( 255 );
 		if( result.IsEmpty() )
@@ -67,7 +67,7 @@ component extends="base" accessors="true"{
 		return result;
 	}
 
-	public string function getFileContentTypeFromPath( required string path ){
+	string function getFileContentTypeFromPath( required string path ){
 		try{
 			return FileGetMimeType( arguments.path, true ).ListLast( "/" );
 		}
@@ -76,20 +76,20 @@ component extends="base" accessors="true"{
 		}
 	}
 
-	public void function handleInvalidSpreadsheetFile( required string path ){
+	void function handleInvalidSpreadsheetFile( required string path ){
 		var detail = "The file #arguments.path# does not appear to be a binary or xml spreadsheet.";
 		if( isCsvTsvOrTextFile( arguments.path ) )
 			detail &= " It may be a CSV/TSV file, in which case use 'csvToQuery()' to read it";
 		Throw( type="cfsimplicity.spreadsheet.invalidFile", message="Invalid spreadsheet file", detail=detail );
 	}
 
-	public any function throwErrorIFfileNotExists( required string path ){
+	any function throwErrorIFfileNotExists( required string path ){
 		if( !FileExists( arguments.path ) )
 			getExceptionHelper().throwNonExistentFileException( arguments.path );
 		return this;
 	}
 
-	public any function throwErrorIFnotCsvOrTextFile( required string path ){
+	any function throwErrorIFnotCsvOrTextFile( required string path ){
 		if( !isCsvTsvOrTextFile( arguments.path ) )
 			Throw( type=library().getExceptionType(), message="Invalid csv file", detail="#arguments.path# does not appear to be a csv/tsv/text file" );
 		return this;

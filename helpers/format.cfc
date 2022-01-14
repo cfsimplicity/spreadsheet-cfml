@@ -2,13 +2,13 @@ component extends="base" accessors="true"{
 
 	property name="dataFormatter" getter="false" setter="false";
 
-	public any function getDataFormatter(){
+	any function getDataFormatter(){
 		if( IsNull( variables.dataFormatter ) )
 			variables.dataFormatter = getClassHelper().loadClass( "org.apache.poi.ss.usermodel.DataFormatter" ).init();
 		return variables.dataFormatter;
 	}
 
-	public any function buildCellStyle( required workbook, required struct format, existingStyle ){
+	any function buildCellStyle( required workbook, required struct format, existingStyle ){
 		var cellStyle = arguments.workbook.createCellStyle();
 		if( arguments.KeyExists( "existingStyle" ) )
 			cellStyle.cloneStyleFrom( arguments.existingStyle );
@@ -17,13 +17,13 @@ component extends="base" accessors="true"{
 		return cellStyle;
 	}
 
-	public boolean function isValidCellStyleObject( required workbook, required any object ){
+	boolean function isValidCellStyleObject( required workbook, required any object ){
 		if( library().isBinaryFormat( arguments.workbook ) )
 			return ( arguments.object.getClass().getCanonicalName() == "org.apache.poi.hssf.usermodel.HSSFCellStyle" );
 		return ( arguments.object.getClass().getCanonicalName() == "org.apache.poi.xssf.usermodel.XSSFCellStyle" );
 	}
 
-	public any function checkFormatArguments( required workbook, boolean overwriteCurrentStyle=true ){
+	any function checkFormatArguments( required workbook, boolean overwriteCurrentStyle=true ){
 		if( arguments.KeyExists( "cellStyle" ) && !arguments.overwriteCurrentStyle )
 			Throw( type=library().getExceptionType(), message="Invalid arguments", detail="If you supply a 'cellStyle' the 'overwriteCurrentStyle' cannot be false" );
 		if( arguments.KeyExists( "cellStyle" ) && !isValidCellStyleObject( arguments.workbook, arguments.cellStyle ) )
@@ -31,7 +31,7 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
-	public any function addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed(
+	any function addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed(
 		required workbook
 		,required boolean overwriteCurrentStyle
 		,required struct formatMethodArgs
@@ -42,7 +42,7 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
-	public string function lookupUnderlineFormatCode( required cellFont ){
+	string function lookupUnderlineFormatCode( required cellFont ){
 		switch( arguments.cellFont.getUnderline() ){
 			case 0: return "none";
 			case 1: return "single";
@@ -53,7 +53,7 @@ component extends="base" accessors="true"{
 		}
 	}
 
-	public string function richStringCellValueToHtml( required workbook, required cell, required cellValue ){
+	string function richStringCellValueToHtml( required workbook, required cell, required cellValue ){
 		var richTextValue = arguments.cell.getRichStringCellValue();
 		var totalRuns = richTextValue.numFormattingRuns();
 		var baseFont = arguments.cell.getCellStyle().getFont( arguments.workbook );

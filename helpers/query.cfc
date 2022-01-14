@@ -1,6 +1,6 @@
 component extends="base" accessors="true"{
 
-	public array function _QueryColumnArray( required query q ){
+	array function _QueryColumnArray( required query q ){
 		try{
 			return QueryColumnArray( arguments.q ); // Lucee
 		}
@@ -12,7 +12,7 @@ component extends="base" accessors="true"{
 		}
 	}
 
-	public query function _QueryDeleteColumn( required query q, required string columnToDelete ){
+	query function _QueryDeleteColumn( required query q, required string columnToDelete ){
 		try{
 			QueryDeleteColumn( arguments.q, arguments.columnToDelete ); // Lucee/ACF2018+
 			return arguments.q;
@@ -31,7 +31,7 @@ component extends="base" accessors="true"{
 		}
 	}
 
-	public query function _QueryNew(
+	query function _QueryNew(
 		required array columnNames
 		,required string columnTypeList
 		,required array data //NB: 'data' should not contain structs since they use the column name as key: always use array of row arrays instead
@@ -67,7 +67,7 @@ component extends="base" accessors="true"{
 		return query;
 	}
 
-	public query function deleteHiddenColumnsFromQuery( required sheet, required query result ){
+	query function deleteHiddenColumnsFromQuery( required sheet, required query result ){
 		var startIndex = ( arguments.sheet.totalColumnCount -1 );
 		for( var colIndex = startIndex; colIndex >= 0; colIndex-- ){
 			if( !arguments.sheet.object.isColumnHidden( JavaCast( "int", colIndex ) ) )
@@ -80,7 +80,7 @@ component extends="base" accessors="true"{
 		return arguments.result;
 	}
 
-	public array function getQueryColumnTypeToCellTypeMappings( required query query ){
+	array function getQueryColumnTypeToCellTypeMappings( required query query ){
 		// extract the query columns and data types
 		var metadata = GetMetaData( arguments.query );
 		// assign default formats based on the data type of each column
@@ -89,7 +89,7 @@ component extends="base" accessors="true"{
 		return metadata;
 	}
 
-	public string function parseQueryColumnTypesArgument(
+	string function parseQueryColumnTypesArgument(
 		required any queryColumnTypes
 		,required array columnNames
 		,required numeric columnCount
@@ -107,7 +107,7 @@ component extends="base" accessors="true"{
 		return arguments.queryColumnTypes;
 	}
 
-	public string function queryToHtml( required query query, numeric headerRow, boolean includeHeaderRow=false ){
+	string function queryToHtml( required query query, numeric headerRow, boolean includeHeaderRow=false ){
 		var result = getStringHelper().newJavaStringBuilder();
 		var columns = _QueryColumnArray( arguments.query );
 		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
@@ -127,7 +127,7 @@ component extends="base" accessors="true"{
 		return result.toString();
 	}
 
-	public void function throwErrorIFinvalidQueryColumnTypesArgument( required queryColumnTypes ){
+	void function throwErrorIFinvalidQueryColumnTypesArgument( required queryColumnTypes ){
 		if( IsStruct( arguments.queryColumnTypes ) && !arguments.KeyExists( "headerRow" ) && !arguments.KeyExists( "columnNames" ) )
 			Throw( type=library().getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also specify the 'headerRow' or provide 'columnNames'" );
 	}

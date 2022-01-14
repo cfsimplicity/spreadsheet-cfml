@@ -1,6 +1,6 @@
 component extends="base" accessors="true"{
 
-	public numeric function addImageToWorkbook(
+	numeric function addImageToWorkbook(
 		required workbook
 		,required any image //path or object
 		,string imageType

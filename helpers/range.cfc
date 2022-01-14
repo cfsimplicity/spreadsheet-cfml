@@ -1,6 +1,6 @@
 component extends="base" accessors="true"{
 
-	public array function extractRanges( required string rangeList, required workbook, string dimension="row" ){
+	array function extractRanges( required string rangeList, required workbook, string dimension="row" ){
 		/*
 		Parses and validates a list of row/column numbers. Returns an array of structures with the keys: startAt, endAt
 		@rangeList: a comma-delimited list where each value can be either a single number, a range of numbers with a hyphen, e.g. 1-5, or an open ended range, e.g. 2-. White space ignored.

@@ -1,6 +1,6 @@
 component extends="base" accessors="true"{
 
-	public any function doFillMergedCellsWithVisibleValue( required workbook, required sheet ){
+	any function doFillMergedCellsWithVisibleValue( required workbook, required sheet ){
 		if( !getSheetHelper().sheetHasMergedRegions( arguments.sheet ) )
 			return this;
 		for( var regionIndex = 0; regionIndex < arguments.sheet.getNumMergedRegions(); regionIndex++ ){
@@ -15,12 +15,12 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
-	public any function toggleColumnHidden( required workbook, required numeric columnNumber, required boolean state ){
+	any function toggleColumnHidden( required workbook, required numeric columnNumber, required boolean state ){
 		getSheetHelper().getActiveSheet( arguments.workbook ).setColumnHidden( JavaCast( "int", arguments.columnNumber-1 ), JavaCast( "boolean", arguments.state ) );
 		return this;
 	}
 
-	public any function toggleRowHidden( required workbook, required numeric rowNumber, required boolean state ){
+	any function toggleRowHidden( required workbook, required numeric rowNumber, required boolean state ){
 		getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).setZeroHeight( JavaCast( "boolean", arguments.state ) );
 		return this;
 	}

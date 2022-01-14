@@ -1,6 +1,6 @@
 component extends="base" accessors="true"{
 
-	public string function detectValueDataType( required value ){
+	string function detectValueDataType( required value ){
 		// Numeric must precede date test
 		// Golden default rule: treat numbers with leading zeros as STRINGS: not numbers (lucee) or dates (ACF);
 		// Do not detect booleans: leave as strings
@@ -15,7 +15,7 @@ component extends="base" accessors="true"{
 		return "string";
 	}
 
-	public string function getCellValueTypeFromQueryColumnType( required string type, required cellValue ){
+	string function getCellValueTypeFromQueryColumnType( required string type, required cellValue ){
 		switch( arguments.type ){
 			case "DOUBLE":
 				return "numeric";
@@ -27,19 +27,19 @@ component extends="base" accessors="true"{
 		return "string";
 	}
 
-	public boolean function isString( required input ){
+	boolean function isString( required input ){
 		return IsInstanceOf( arguments.input, "java.lang.String" );
 	}
 
 	/* Data type overriding */
 
-	public any function checkDataTypesArgument( required struct args ){
+	any function checkDataTypesArgument( required struct args ){
 		if( arguments.args.KeyExists( "datatypes" ) && datatypeOverridesContainInvalidTypes( arguments.args.datatypes ) )
 			Throw( type=library().getExceptionType(), message="Invalid datatype(s)", detail="One or more of the datatypes specified is invalid. Valid types are #validCellOverrideTypes().ToList( ', ' )# and the columns they apply to should be passed as an array" );
 		return this;
 	}
 
-	public any function convertDataTypeOverrideColumnNamesToNumbers( required struct datatypeOverrides, required array columnNames ){
+	any function convertDataTypeOverrideColumnNamesToNumbers( required struct datatypeOverrides, required array columnNames ){
 		for( var type in arguments.datatypeOverrides ){
 			var columnRefs = arguments.datatypeOverrides[ type ];
 			//NB: DO NOT SCOPE datatypeOverrides and columnNames vars inside closure!!
@@ -55,7 +55,7 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
-	public any function setCellDataTypeWithOverride(
+	any function setCellDataTypeWithOverride(
 		required workbook
 		,required cell
 		,required cellValue

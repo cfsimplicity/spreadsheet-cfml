@@ -1,6 +1,6 @@
 component extends="base" accessors="true"{
 
-	public void function addInfoBinary( required workbook, required struct info ){
+	void function addInfoBinary( required workbook, required struct info ){
 		arguments.workbook.createInformationProperties(); // creates the following if missing
 		var documentSummaryInfo = arguments.workbook.getDocumentSummaryInformation();
 		var summaryInfo = arguments.workbook.getSummaryInformation();
@@ -8,7 +8,7 @@ component extends="base" accessors="true"{
 			addInfoItemBinary( arguments.info, key, summaryInfo, documentSummaryInfo );
 	}
 
-	public void function addInfoXml( required workbook, required struct info ){
+	void function addInfoXml( required workbook, required struct info ){
 		var workbookProperties = library().isStreamingXmlFormat( arguments.workbook )? arguments.workbook.getXSSFWorkbook().getProperties(): arguments.workbook.getProperties();
 		var documentProperties = workbookProperties.getExtendedProperties().getUnderlyingProperties();
 		var coreProperties = workbookProperties.getCoreProperties();
@@ -16,7 +16,7 @@ component extends="base" accessors="true"{
 			addInfoItemXml( arguments.info, key, documentProperties, coreProperties );
 	}
 	
-	public struct function binaryInfo( required workbook ){
+	struct function binaryInfo( required workbook ){
 		var documentProperties = arguments.workbook.getDocumentSummaryInformation();
 		var coreProperties = arguments.workbook.getSummaryInformation();
 		return {
@@ -35,7 +35,7 @@ component extends="base" accessors="true"{
 		};
 	}
 
-	public struct function xmlInfo( required workbook ){
+	struct function xmlInfo( required workbook ){
 		var workbookProperties = library().isStreamingXmlFormat( arguments.workbook )? arguments.workbook.getXSSFWorkbook().getProperties(): arguments.workbook.getProperties();
 		var documentProperties = workbookProperties.getExtendedProperties().getUnderlyingProperties();
 		var coreProperties = workbookProperties.getCoreProperties();

@@ -1,6 +1,6 @@
 component extends="base" accessors="true"{
 
-	public string function baseFontToHtml( required workbook, required contents, required baseFont ){
+	string function baseFontToHtml( required workbook, required contents, required baseFont ){
 		/*
 			the order of processing is important for the tests to match
 			font family and size not parsed here because all cells would trigger formatting of these attributes: defaults can't be assumed
@@ -30,7 +30,7 @@ component extends="base" accessors="true"{
 		return "<span style=""#cssStyles#"">#arguments.contents#</span>";
 	}
 
-	public any function cloneFont( required workbook, required fontToClone ){
+	any function cloneFont( required workbook, required fontToClone ){
 		var newFont = arguments.workbook.createFont();
 		// copy the existing cell's font settings to the new font
 		newFont.setBold( arguments.fontToClone.getBold() );
@@ -49,7 +49,7 @@ component extends="base" accessors="true"{
 		return newFont;
 	}
 
-	public string function runFontToHtml( required workbook, required baseFont, required runFont ){
+	string function runFontToHtml( required workbook, required baseFont, required runFont ){
 		// NB: the order of processing is important for the tests to match
 		var cssStyles = getStringHelper().newJavaStringBuilder();
 		// bold
