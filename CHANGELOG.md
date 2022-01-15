@@ -1,3 +1,7 @@
+## 3.3.0
+
+- \#282 Upgrade POI to 5.2.0
+
 ## 3.2.5 - 30 December 2021
 
 - Security Update
