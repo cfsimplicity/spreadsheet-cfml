@@ -2,14 +2,14 @@ component extends="base" accessors="true"{
 
 	property name="dateUtil" getter="false" setter="false";
 
-	public any function getDateUtil(){
+	any function getDateUtil(){
 		if( IsNull( variables.dateUtil ) )
 			variables.dateUtil = getClassHelper().loadClass( "org.apache.poi.ss.usermodel.DateUtil" );
 		return variables.dateUtil;
 	}
 
 	// alternative BIF
-	public boolean function _IsDate( required value ){
+	boolean function _IsDate( required value ){
 		if( !IsDate( arguments.value ) )
 			return false;
 		// Lucee will treat 01-23112 or 23112-01 as a date!
@@ -22,7 +22,7 @@ component extends="base" accessors="true"{
 		return true;
 	}
 
-	public struct function defaultFormats(){
+	struct function defaultFormats(){
 		return {
 			DATE: "yyyy-mm-dd"
 			,DATETIME: "yyyy-mm-dd HH:nn:ss"
@@ -31,7 +31,7 @@ component extends="base" accessors="true"{
 		};
 	}
 
-	public any function setCustomFormats( required struct dateFormats ){
+	any function setCustomFormats( required struct dateFormats ){
 		var libraryInstanceFormats = library().getDateFormats();
 		for( var format in arguments.dateFormats ){
 			if( !libraryInstanceFormats.KeyExists( format ) )
@@ -41,7 +41,7 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
-	public string function getDefaultDateMaskFor( required date value ){
+	string function getDefaultDateMaskFor( required date value ){
 		if( isDateOnlyValue( arguments.value ) )
 			return library().getDateFormats().DATE;
 		if( isTimeOnlyValue( arguments.value ) )
@@ -49,25 +49,25 @@ component extends="base" accessors="true"{
 		return library().getDateFormats().TIMESTAMP;
 	}
 
-	public boolean function isDateObject( required input ){
+	boolean function isDateObject( required input ){
 		return IsInstanceOf( arguments.input, "java.util.Date" );
 	}
 
-	public boolean function isDateOnlyValue( required date value ){
+	boolean function isDateOnlyValue( required date value ){
 		var dateOnly = CreateDate( Year( arguments.value ), Month( arguments.value ), Day( arguments.value ) );
 		return ( DateCompare( arguments.value, dateOnly, "s" ) == 0 );
 	}
 
-	public boolean function isTimeOnlyValue( required date value ){
+	boolean function isTimeOnlyValue( required date value ){
 		//NB: this will only detect CF time object (epoch = 1899-12-30), not those using unix epoch 1970-01-01
 		return ( Year( arguments.value ) == "1899" );
 	}
 
-	public string function getPoiTimeZone(){
+	string function getPoiTimeZone(){
 		return getClassHelper().loadClass( "org.apache.poi.util.LocaleUtil" ).getUserTimeZone();
 	}
 
-	public any function matchPoiTimeZoneToEngine(){
+	any function matchPoiTimeZoneToEngine(){
 		if( library().getIsACF() )
 			return this;//ACF doesn't allow the server/context timezone to be changed
 		//Lucee allows the context timezone to be changed, which can cause problems with date calculations

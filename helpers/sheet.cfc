@@ -1,34 +1,34 @@
 component extends="base" accessors="true"{
 
-	public string function createOrValidateSheetName( required workbook ){
+	string function createOrValidateSheetName( required workbook ){
 		if( !arguments.KeyExists( "sheetName" ) )
 			return generateUniqueSheetName( arguments.workbook );
 		validateSheetName( arguments.sheetName );
 		return arguments.sheetName;
 	}
 
-	public any function deleteSheetAtIndex( required workbook, required numeric sheetIndex ){
+	any function deleteSheetAtIndex( required workbook, required numeric sheetIndex ){
 		arguments.workbook.removeSheetAt( JavaCast( "int", arguments.sheetIndex ) );
 		return this;
 	}
 
-	public any function getActiveSheet( required workbook ){
+	any function getActiveSheet( required workbook ){
 		return arguments.workbook.getSheetAt( JavaCast( "int", arguments.workbook.getActiveSheetIndex() ) );
 	}
 
-	public any function getActiveSheetFooter( required workbook ){
+	any function getActiveSheetFooter( required workbook ){
 		return getActiveSheet( arguments.workbook ).getFooter();
 	}
 
-	public any function getActiveSheetHeader( required workbook ){
+	any function getActiveSheetHeader( required workbook ){
 		return getActiveSheet( arguments.workbook ).getHeader();
 	}
 
-	public any function getActiveSheetName( required workbook ){
+	any function getActiveSheetName( required workbook ){
 		return getActiveSheet( arguments.workbook ).getSheetName();
 	}
 
-	public any function setActiveSheetNameOrNumber( required workbook, required sheetNameOrNumber ){
+	any function setActiveSheetNameOrNumber( required workbook, required sheetNameOrNumber ){
 		if( IsValid( "integer", arguments.sheetNameOrNumber ) && IsNumeric( arguments.sheetNameOrNumber ) ){
 			var sheetNumber = arguments.sheetNameOrNumber;
 			library().setActiveSheetNumber( arguments.workbook, sheetNumber );
@@ -39,7 +39,7 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
-	public array function getAllSheetFormulas( required workbook ){
+	array function getAllSheetFormulas( required workbook ){
 		var rowIterator = getActiveSheet( arguments.workbook ).rowIterator();
 		var formulas = [];
 		while( rowIterator.hasNext() ){
@@ -63,30 +63,30 @@ component extends="base" accessors="true"{
 		return formulas;
 	}
 
-	public numeric function getFirstRowIndex( required sheet ){
+	numeric function getFirstRowIndex( required sheet ){
 		return arguments.sheet.getFirstRowNum(); //-1 if no rows exist
 	}
 
-	public numeric function getLastRowIndex( required sheet ){
+	numeric function getLastRowIndex( required sheet ){
 		return arguments.sheet.getLastRowNum(); //-1 if no rows exist
 	}
 
-	public numeric function getNextEmptyRowIndex( required sheet ){
+	numeric function getNextEmptyRowIndex( required sheet ){
 		return ( getLastRowIndex( arguments.sheet ) +1 );
 	}
 
-	public any function getSheetByName( required workbook, required string sheetName ){
+	any function getSheetByName( required workbook, required string sheetName ){
 		validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
 		return arguments.workbook.getSheet( JavaCast( "string", arguments.sheetName ) );
 	}
 
-	public any function getSheetByNumber( required workbook, required numeric sheetNumber ){
+	any function getSheetByNumber( required workbook, required numeric sheetNumber ){
 		validateSheetNumber( arguments.workbook, arguments.sheetNumber );
 		var sheetIndex = ( arguments.sheetNumber -1 );
 		return arguments.workbook.getSheetAt( sheetIndex );
 	}
 
-	public any function getSpecifiedOrActiveSheet( required workbook, string sheetName, numeric sheetNumber ){
+	any function getSpecifiedOrActiveSheet( required workbook, string sheetName, numeric sheetNumber ){
 		throwErrorIFSheetNameAndNumberArgumentsBothPassed( argumentCollection=arguments );
 		if( !sheetNameArgumentWasProvided( argumentCollection=arguments ) && !sheetNumberArgumentWasProvided( argumentCollection=arguments ) )
 			return getActiveSheet( arguments.workbook );
@@ -95,12 +95,12 @@ component extends="base" accessors="true"{
 		return getSheetByNumber( arguments.workbook, arguments.sheetNumber );
 	}
 
-	public any function moveSheet( required workbook, required string sheetName, required string moveToIndex ){
+	any function moveSheet( required workbook, required string sheetName, required string moveToIndex ){
 		arguments.workbook.setSheetOrder( JavaCast( "String", arguments.sheetName ), JavaCast( "int", arguments.moveToIndex ) );
 		return this;
 	}
 
-	public boolean function sheetExists( required workbook, string sheetName, numeric sheetNumber ){
+	boolean function sheetExists( required workbook, string sheetName, numeric sheetNumber ){
 		validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
 		if( arguments.KeyExists( "sheetName" ) )
 			arguments.sheetNumber = ( getSheetIndexFromName( arguments.workbook, arguments.sheetName ) +1 );
@@ -110,11 +110,11 @@ component extends="base" accessors="true"{
 		return false;
 	}
 
-	public boolean function sheetHasMergedRegions( required sheet ){
+	boolean function sheetHasMergedRegions( required sheet ){
 		return ( arguments.sheet.getNumMergedRegions() > 0 );
 	}
 
-	public query function sheetToQuery(
+	query function sheetToQuery(
 		required workbook
 		,string sheetName
 		,numeric sheetNumber=1
@@ -181,13 +181,13 @@ component extends="base" accessors="true"{
 		return result;
 	}
 
-	public any function validateSheetExistsWithName( required workbook, required string sheetName ){
+	any function validateSheetExistsWithName( required workbook, required string sheetName ){
 		if( !sheetExists( workbook=arguments.workbook, sheetName=arguments.sheetName ) )
 			Throw( type=library().getExceptionType(), message="Invalid sheet name [#arguments.sheetName#]", detail="The specified sheet was not found in the current workbook." );
 		return this;
 	}
 
-	public any function validateSheetNumber( required workbook, required numeric sheetNumber ){
+	any function validateSheetNumber( required workbook, required numeric sheetNumber ){
 		if( !sheetExists( workbook=arguments.workbook, sheetNumber=arguments.sheetNumber ) ){
 			var sheetCount = arguments.workbook.getNumberOfSheets();
 			Throw( type=library().getExceptionType(), message="Invalid sheet number [#arguments.sheetNumber#]", detail="The sheetNumber must a whole number between 1 and the total number of sheets in the workbook [#sheetCount#]" );
@@ -195,7 +195,7 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
-	public any function validateSheetName( required string sheetName ){
+	any function validateSheetName( required string sheetName ){
 		var characterCount = Len( arguments.sheetName );
 		if( characterCount > 31 )
 			Throw( type=library().getExceptionType(), message="Invalid sheet name", detail="The sheetname contains too many characters [#characterCount#]. The maximum is 31." );
@@ -213,7 +213,7 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
-	public void function validateSheetNameOrNumberWasProvided(){
+	void function validateSheetNameOrNumberWasProvided(){
 		throwErrorIFSheetNameAndNumberArgumentsBothMissing( argumentCollection=arguments );
 		throwErrorIFSheetNameAndNumberArgumentsBothPassed( argumentCollection=arguments );
 	}

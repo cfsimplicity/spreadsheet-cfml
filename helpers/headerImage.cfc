@@ -1,7 +1,7 @@
 component extends="base" accessors="true"{
 
 	//see https://stackoverflow.com/questions/51077404/apache-poi-adding-watermark-in-excel-workbook/51103756#51103756
-	public any function setHeaderOrFooterImage(
+	any function setHeaderOrFooterImage(
 		required workbook
 		,required string position // left|center|right
 		,required any image

@@ -1,6 +1,6 @@
 component extends="base" accessors="true"{
 
-	public any function addRowToSheetData(
+	any function addRowToSheetData(
 		required workbook
 		,required struct sheet
 		,required numeric rowIndex
@@ -26,7 +26,7 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
-	public any function createRow( required workbook, numeric rowIndex, boolean overwrite=true ){
+	any function createRow( required workbook, numeric rowIndex, boolean overwrite=true ){
 		// get existing row (if any)
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		if( !arguments.KeyExists( "rowIndex" ) )
@@ -48,14 +48,14 @@ component extends="base" accessors="true"{
 		return row;
 	}
 
-	public numeric function getNextEmptyCellIndexFromRow( required row ){
+	numeric function getNextEmptyCellIndexFromRow( required row ){
 		//NB: getLastCellNum() == the last cell index PLUS ONE or -1 if no cells
 		if( arguments.row.getLastCellNum() == -1 )
 			return 0;
 		return arguments.row.getLastCellNum();
 	}
 
-	public array function getRowData( required workbook, required row, array columnRanges=[], boolean includeRichTextFormatting=false ){
+	array function getRowData( required workbook, required row, array columnRanges=[], boolean includeRichTextFormatting=false ){
 		var result = [];
 		if( !arguments.columnRanges.Len() ){
 			var columnRange = {
@@ -81,12 +81,12 @@ component extends="base" accessors="true"{
 		return result;
 	}
 
-	public any function getRowFromActiveSheet( required workbook, required numeric rowNumber ){
+	any function getRowFromActiveSheet( required workbook, required numeric rowNumber ){
 		var rowIndex = ( arguments.rowNumber-1 );
 		return getSheetHelper().getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
 	}
 
-	public array function parseListDataToArray( required string line, required string delimiter, boolean handleEmbeddedCommas=true ){
+	array function parseListDataToArray( required string line, required string delimiter, boolean handleEmbeddedCommas=true ){
 		var elements = ListToArray( arguments.line, arguments.delimiter );
 		var potentialQuotes = 0;
 		arguments.line = ToString( arguments.line );
@@ -139,7 +139,7 @@ component extends="base" accessors="true"{
 	  return values;
 	}
 
-	public any function populateFromQueryRow(
+	any function populateFromQueryRow(
 		required workbook
 		,required newRow
 		,required rowData
@@ -170,7 +170,7 @@ component extends="base" accessors="true"{
  		return this;
 	}
 
-	public numeric function populateFromArray(
+	numeric function populateFromArray(
 		required workbook
 		,required newRow
 		,required array rowData
@@ -192,11 +192,11 @@ component extends="base" accessors="true"{
 		return columnCount;
 	}
 
-	public boolean function rowHasCells( required row ){
+	boolean function rowHasCells( required row ){
 		return ( arguments.row.getLastCellNum() > 0 );
 	}
 
-	public any function shiftOrDeleteRow(
+	any function shiftOrDeleteRow(
 		required workbook
 		,required row
 		,required lastRow

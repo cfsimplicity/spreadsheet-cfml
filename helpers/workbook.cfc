@@ -1,22 +1,17 @@
 component extends="base" accessors="true"{
 
-	public any function createWorkBook(
-		required string sheetName
-		,boolean xmlFormat=false
-		,boolean streamingXml=false
-		,numeric streamingWindowSize=100
-	){
-		getSheetHelper().validateSheetName( arguments.sheetName );
-		if( !arguments.xmlFormat )
+	any function createWorkBook( string type, numeric streamingWindowSize=100 ){
+		if( arguments.type == "xls" )
 			return getClassHelper().loadClass( library().getHSSFWorkbookClassName() ).init();
-		if( !arguments.streamingXml )
+		if( arguments.type == "xlsx" )
 			return getClassHelper().loadClass( library().getXSSFWorkbookClassName() ).init();
+		// Streaming Xlsx
 		if( !IsValid( "integer", arguments.streamingWindowSize ) || ( arguments.streamingWindowSize < 1 ) )
 			Throw( type=library().getExceptionType(), message="Invalid 'streamingWindowSize' argument", detail="'streamingWindowSize' must be an integer value greater than 1" );
 		return getClassHelper().loadClass( library().getSXSSFWorkbookClassName() ).init( JavaCast( "int", arguments.streamingWindowSize ) );
 	}
 
-	public any function workbookFromFile( required string path, string password ){
+	any function workbookFromFile( required string path, string password ){
 		// works with both xls and xlsx
 		// see https://stackoverflow.com/a/46149469 for why FileInputStream is preferable to File
 		// 20210322 using File doesn't seem to improve memory usage anyway.
@@ -42,6 +37,14 @@ component extends="base" accessors="true"{
 				getFileHelper().closeLocalFileOrStream( local, "file" );
 			}
 		}
+	}
+
+	string function typeFromArguments( boolean xmlFormat=false, boolean streamingXml=false ){
+		if( !arguments.xmlFormat && !arguments.streamingXml )
+			return "xls";
+		if( arguments.streamingXml )
+			return "streamingXlsx";
+		return "xlsx";
 	}
 
 }

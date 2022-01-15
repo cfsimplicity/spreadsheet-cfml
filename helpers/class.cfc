@@ -1,12 +1,12 @@
 component extends="base" accessors="true"{
 
-	public void function dumpPathToClassNoOsgi( required string className ){
+	void function dumpPathToClassNoOsgi( required string className ){
 		var classLoader = loadClass( arguments.className ).getClass().getClassLoader();
 		var path = classLoader.getResource( arguments.className.Replace( ".", "/", "all" ) & ".class" ).getPath();
 		WriteDump( path );
 	}
 
-	public any function loadClass( required string javaclass ){
+	any function loadClass( required string javaclass ){
 		if( library().getRequiresJavaLoader() )
 			return loadClassUsingJavaLoader( arguments.javaclass );
 		if( !IsNull( library().getOsgiLoader() ) )

@@ -1,8 +1,8 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="3.2.5" setter="false";
-	property name="osgiLibBundleVersion" default="5.1.0.4" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="version" default="3.3.0" setter="false";
+	property name="osgiLibBundleVersion" default="5.2.0.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
 	//commonly invoked POI class names
@@ -193,52 +193,29 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Missing required argument", detail="Please provide either a csv string (csv), or the path of a file containing one (filepath)." );
 		if( csvIsString && csvIsFile )
 			Throw( type=this.getExceptionType(), message="Mutually exclusive arguments: 'csv' and 'filepath'", detail="Only one of either 'filepath' or 'csv' arguments may be provided." );
-		if(	csvIsFile ){
-			getFileHelper()
-				.throwErrorIFfileNotExists( arguments.filepath )
-				.throwErrorIFnotCsvOrTextFile( arguments.filepath );
-			arguments.csv = FileRead( arguments.filepath );
-		}
+		var csvString = csvIsFile? getCsvHelper().readFile( arguments.filepath ): arguments.csv;
 		if( IsStruct( arguments.queryColumnTypes ) && !arguments.firstRowIsHeader && !arguments.KeyExists( "queryColumnNames" )  )
 			Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
 		if( arguments.trim )
-			arguments.csv = arguments.csv.Trim();
+			csvString = csvString.Trim();
 		var format = arguments.KeyExists( "delimiter" )? 
 			getCsvHelper().getCsvFormatForDelimiter( arguments.delimiter )
 			: getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
-		var parsed = getClassHelper().loadClass( "org.apache.commons.csv.CSVParser" ).parse( arguments.csv, format );
+		var parsed = getClassHelper().loadClass( "org.apache.commons.csv.CSVParser" ).parse( csvString, format );
 		var records = parsed.getRecords();
-		var data = [];
-		var maxColumnCount = 0;
-		for( var record in records ){
-			var row = [];
-			var columnNumber = 0;
-			var iterator = record.iterator();
-			while( iterator.hasNext() ){
-				columnNumber++;
-				maxColumnCount = Max( maxColumnCount, columnNumber );
-				row.Append( iterator.next() );
-			}
-			data.Append( row );
-		}
-		if( arguments.KeyExists( "queryColumnNames" ) && arguments.queryColumnNames.Len() )
+		var dataFromRecords = getCsvHelper().dataFromRecords( records );
+		var data = dataFromRecords.data;
+		var maxColumnCount = dataFromRecords.maxColumnCount;
+		if( arguments.KeyExists( "queryColumnNames" ) && arguments.queryColumnNames.Len() ){
 			var columnNames = arguments.queryColumnNames;
-		else{
-			var columnNames = [];
-			if( arguments.firstRowIsHeader )
-				var headerRow = data[ 1 ];
-			for( var i=1; i <= maxColumnCount; i++ ){
-				if( arguments.firstRowIsHeader && !IsNull( headerRow[ i ] ) && headerRow[ i ].Len() ){
-					columnNames.Append( headerRow[ i ] );
-					continue;
-				}
-				columnNames.Append( "column#i#" );
-			}
-			if( arguments.firstRowIsHeader )
-				data.DeleteAt( 1 );
+			var parsedQueryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, columnNames, maxColumnCount, data );
+			return getQueryHelper()._QueryNew( columnNames, parsedQueryColumnTypes, data, arguments.makeColumnNamesSafe );
 		}
-		arguments.queryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, columnNames, maxColumnCount, data );
-		return getQueryHelper()._QueryNew( columnNames, arguments.queryColumnTypes, data, arguments.makeColumnNamesSafe );
+		var columnNames = getCsvHelper().getColumnNames( arguments.firstRowIsHeader, data, maxColumnCount );
+		if( arguments.firstRowIsHeader )
+			data.DeleteAt( 1 );
+		var parsedQueryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, columnNames, maxColumnCount, data );
+		return getQueryHelper()._QueryNew( columnNames, parsedQueryColumnTypes, data, arguments.makeColumnNamesSafe );
 	}
 
 	public void function download( required workbook, required string filename, string contentType ){
@@ -412,7 +389,13 @@ component accessors="true"{
 		if( arguments.cellRange.IsEmpty() ){
 			//default to all columns in the first (default) or specified row 
 			var rowIndex = ( Max( 0, arguments.row -1 ) );
-			var cellRangeAddress = getCellHelper().getCellRangeAddressFromColumnAndRowIndices( rowIndex, rowIndex, 0, ( getColumnCount( arguments.workbook ) -1 ) );
+			var indices = {
+				startRow: rowIndex
+				,endRow: rowIndex
+				,startColumn: 0
+				,endColumn: ( getColumnCount( arguments.workbook ) -1 )
+			};
+			var cellRangeAddress = getCellHelper().getCellRangeAddressFromColumnAndRowIndices( indices );
 			getSheetHelper().getActiveSheet( arguments.workbook ).setAutoFilter( cellRangeAddress );
 			return this;
 		}
@@ -772,9 +755,10 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
 			// POI doesn't have remove column functionality, so iterate over all the rows and remove the column indicated
 		var rowIterator = getSheetHelper().getActiveSheet( arguments.workbook ).rowIterator();
+		var columnIndex = ( arguments.column -1 );
 		while( rowIterator.hasNext() ){
 			var row = rowIterator.next();
-			var cell = row.getCell( JavaCast( "int", ( arguments.column -1 ) ) );
+			var cell = row.getCell( JavaCast( "int", columnIndex ) );
 			if( IsNull( cell ) )
 				continue;
 			row.removeCell( cell );
@@ -1216,12 +1200,13 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid startRow or endRow", detail="Row values must be greater than 0 and the startRow cannot be greater than the endRow." );
 		if( arguments.startColumn < 1 || arguments.startColumn > arguments.endColumn )
 			Throw( type=this.getExceptionType(), message="Invalid startColumn or endColumn", detail="Column values must be greater than 0 and the startColumn cannot be greater than the endColumn." );
-		var cellRangeAddress = getCellHelper().getCellRangeAddressFromColumnAndRowIndices(
-			( arguments.startRow - 1 )
-			,( arguments.endRow - 1 )
-			,( arguments.startColumn - 1 )
-			,( arguments.endColumn - 1 )
-		);
+		var indices = {
+			startRow: ( arguments.startRow - 1 )
+			,endRow: ( arguments.endRow - 1 )
+			,startColumn: ( arguments.startColumn - 1 )
+			,endColumn: ( arguments.endColumn - 1 )
+		};
+		var cellRangeAddress = getCellHelper().getCellRangeAddressFromColumnAndRowIndices( indices );
 		getSheetHelper().getActiveSheet( arguments.workbook ).addMergedRegion( cellRangeAddress );
 		if( !arguments.emptyInvisibleCells )
 			return this;
@@ -1242,7 +1227,11 @@ component accessors="true"{
 	){
 		if( arguments.streamingXml && !arguments.xmlFormat )
 			arguments.xmlFormat = true;
-		var workbook = getWorkbookHelper().createWorkBook( argumentCollection=arguments );
+		var createArgs.type = getWorkbookHelper().typeFromArguments( arguments.xmlFormat, arguments.streamingXml );
+		if( arguments.KeyExists( "streamingWindowSize" ) )
+			createArgs.streamingWindowSize = arguments.streamingWindowSize;
+		var workbook = getWorkbookHelper().createWorkBook( argumentCollection=createArgs );
+		getSheetHelper().validateSheetName( arguments.sheetName );
 		createSheet( workbook, arguments.sheetName, arguments.xmlFormat );
 		setActiveSheet( workbook, arguments.sheetName );
 		return workbook;
@@ -1463,7 +1452,8 @@ component accessors="true"{
 		 */
 		var factory = arguments.workbook.getCreationHelper();
 		var commentString = factory.createRichTextString( JavaCast( "string", arguments.comment.comment ) );
-		var anchor = getCommentHelper().createCommentAnchor( factory, arguments.comment, arguments.row, arguments.column );
+		var cellAddress = { row: arguments.row, column: arguments.column };
+		var anchor = getCommentHelper().createCommentAnchor( factory, arguments.comment, cellAddress );
 		var drawingPatriarch = getSheetHelper().getActiveSheet( arguments.workbook ).createDrawingPatriarch();
 		var commentObject = drawingPatriarch.createCellComment( anchor );
 		if( arguments.comment.KeyExists( "author" ) )

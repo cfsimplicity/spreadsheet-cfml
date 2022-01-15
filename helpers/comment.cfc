@@ -1,21 +1,16 @@
 component extends="base" accessors="true"{
 
-	public any function createCommentAnchor(
-		required factory
-		,required struct comment
-		,required numeric row
-		,required numeric column
-	){
+	any function createCommentAnchor( required factory, required struct comment, required struct cellAddress ){
 		var anchor = arguments.factory.createClientAnchor();
 		var positionSpecified = arguments.comment.KeyExists( "anchor" );
 		if( positionSpecified )
 			var positions = arguments.comment.anchor.ListToArray();
 		// else no position specified, so use the row/column values to set a default
 		var anchorValues = {
-			col1: positionSpecified? positions[ 1 ]: arguments.column
-			,row1: positionSpecified? positions[ 2 ]: arguments.row
-			,col2: positionSpecified? positions[ 3 ]: arguments.column+2
-			,row2: positionSpecified? positions[ 4 ]: arguments.row+2
+			col1: positionSpecified? positions[ 1 ]: arguments.cellAddress.column
+			,row1: positionSpecified? positions[ 2 ]: arguments.cellAddress.row
+			,col2: positionSpecified? positions[ 3 ]: arguments.cellAddress.column+2
+			,row2: positionSpecified? positions[ 4 ]: arguments.cellAddress.row+2
 		};
 		anchor.setCol1( JavaCast( "int", anchorValues.col1 ) );
 		anchor.setRow1( JavaCast( "int", anchorValues.row1 ) );
@@ -24,7 +19,7 @@ component extends="base" accessors="true"{
 		return anchor;
 	}
 
-	public any function addFontStylesToComment( required struct comment, required workbook, required commentString ){
+	any function addFontStylesToComment( required struct comment, required workbook, required commentString ){
 		if( !commentHasFontStyles( arguments.comment ) )
 			return this;
 		var font = arguments.workbook.createFont();
@@ -46,7 +41,7 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
-	public any function addHSSFonlyStyles( required struct comment, required commentObject ){
+	any function addHSSFonlyStyles( required struct comment, required commentObject ){
 		//the following 5 properties are not currently supported on XSSFComment: https://github.com/cfsimplicity/spreadsheet-cfml/issues/192
 		if( arguments.comment.KeyExists( "fillColor" ) ){
 			var javaColorRGB = getColorHelper().getJavaColorRGBFor( arguments.comment.fillColor );

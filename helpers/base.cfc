@@ -3,101 +3,101 @@ component accessors="true"{
 	property name="libraryInstance";
 	property name="rootPath";
 
-	public any function init( required Spreadsheet libraryInstance ){
+	any function init( required Spreadsheet libraryInstance ){
 		this.setLibraryInstance( arguments.libraryInstance );
 		this.setRootPath( GetDirectoryFromPath( GetCurrentTemplatePath() ) & "../" );
 		return this;
 	}
 
-	public Spreadsheet function library(){
+	Spreadsheet function library(){
 		return this.getLibraryInstance();
 	}
 
-	public any function getCellHelper(){
+	any function getCellHelper(){
 		return library().getCellHelper();
 	}
 
-	public any function getClassHelper(){
+	any function getClassHelper(){
 		return library().getClassHelper();
 	}
 
-	public any function getColorHelper(){
+	any function getColorHelper(){
 		return library().getColorHelper();
 	}
 
-	public any function getColumnHelper(){
+	any function getColumnHelper(){
 		return library().getColumnHelper();
 	}
 
-	public any function getCommetHelper(){
+	any function getCommetHelper(){
 		return library().getCommetHelper();
 	}
 
-	public any function getCsvHelper(){
+	any function getCsvHelper(){
 		return library().getCsvHelper();
 	}
 
-	public any function getDataTypeHelper(){
+	any function getDataTypeHelper(){
 		return library().getDataTypeHelper();
 	}
 
-	public any function getDateHelper(){
+	any function getDateHelper(){
 		return library().getDateHelper();
 	}
 
-	public any function getExceptionHelper(){
+	any function getExceptionHelper(){
 		return library().getExceptionHelper();
 	}
 
-	public any function getFileHelper(){
+	any function getFileHelper(){
 		return library().getFileHelper();
 	}
 
-	public any function getFontHelper(){
+	any function getFontHelper(){
 		return library().getFontHelper();
 	}
 
-	public any function getFormatHelper(){
+	any function getFormatHelper(){
 		return library().getFormatHelper();
 	}
 
-	public any function getHeaderImageHelper(){
+	any function getHeaderImageHelper(){
 		return library().getHeaderImageHelper();
 	}
 
-	public any function getImageHelper(){
+	any function getImageHelper(){
 		return library().getImageHelper();
 	}
 
-	public any function getInfoHelper(){
+	any function getInfoHelper(){
 		return library().getInfoHelper();
 	}
 
-	public any function getQueryHelper(){
+	any function getQueryHelper(){
 		return library().getQueryHelper();
 	}
 
-	public any function getRangeHelper(){
+	any function getRangeHelper(){
 		return library().getRangeHelper();
 	}
 
-	public any function getRowHelper(){
+	any function getRowHelper(){
 		return library().getRowHelper();
 	}
 
-	public any function getSheetHelper(){
+	any function getSheetHelper(){
 		return library().getSheetHelper();
 	}
 
-	public any function getStringHelper(){
+	any function getStringHelper(){
 		return library().getStringHelper();
 	}
 
-	public any function getVisibilityHelper(){
+	any function getVisibilityHelper(){
 		return library().getvisibilityHelper();
 	}
 
-	public any function getWorkbookHelper(){
+	any function getWorkbookHelper(){
 		return library().getWorkbookHelper();
 	}
 

@@ -1,6 +1,6 @@
 component extends="base" accessors="true"{
 
-	public array function convertSignedRGBToPositiveTriplet( required any signedRGB ){
+	array function convertSignedRGBToPositiveTriplet( required any signedRGB ){
 		// When signed, values of 128+ are negative: convert then to positive values
 		var result = [];
 		for( var i=1; i <= 3; i++ ){
@@ -9,7 +9,7 @@ component extends="base" accessors="true"{
 		return result;
 	}
 
-	public any function getColor( required workbook, required string colorValue ){
+	any function getColor( required workbook, required string colorValue ){
 		/*
 			if colorValue is a preset name, returns the index
 			if colorValue is hex it will be converted to RGB
@@ -32,7 +32,7 @@ component extends="base" accessors="true"{
 		return similarExistingColor.getIndex();
 	}
 
-	public struct function getJavaColorRGBFor( required string colorName ){
+	struct function getJavaColorRGBFor( required string colorName ){
 		var findColor = arguments.colorName.Trim().UCase();
 		var color = CreateObject( "Java", "java.awt.Color" );
 		if( IsNull( color[ findColor ] ) || !IsInstanceOf( color[ findColor ], "java.awt.Color" ) )//don't use member functions on color
@@ -46,7 +46,7 @@ component extends="base" accessors="true"{
 		return colorRGB;
 	}
 
-	public string function getRgbTripletForStyleColorFormat( required workbook, required cellStyle, required string format ){
+	string function getRgbTripletForStyleColorFormat( required workbook, required cellStyle, required string format ){
 		var isXlsx = library().isXmlFormat( arguments.workbook );
 		var palette = isXlsx? "": arguments.workbook.getCustomPalette();
 		var colorObject = getColorObjectForFormat( arguments.format, arguments.cellStyle, palette, isXlsx );

@@ -2,24 +2,24 @@ component extends="base" accessors="true"{
 
 	property name="cellUtil" getter="false" setter="false";
 
-	public any function getCellUtil(){
+	any function getCellUtil(){
 		if( IsNull( variables.cellUtil ) )
 			variables.cellUtil = getClassHelper().loadClass( "org.apache.poi.ss.util.CellUtil" );
 		return variables.cellUtil;
 	}
 
-	public boolean function cellExists( required workbook, required numeric rowNumber, required numeric columnNumber ){
+	boolean function cellExists( required workbook, required numeric rowNumber, required numeric columnNumber ){
 		var checkRow = getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.rowNumber );
 		var columnIndex = ( arguments.columnNumber -1 );
 		return !IsNull( checkRow ) && !IsNull( checkRow.getCell( JavaCast( "int", columnIndex ) ) );
 	}
 
-	public boolean function cellIsOfType( required cell, required string type ){
+	boolean function cellIsOfType( required cell, required string type ){
 		var cellType = arguments.cell.getCellType();
 		return ObjectEquals( cellType, cellType[ arguments.type ] );
 	}
 
-	public any function createCell( required row, numeric cellNum=arguments.row.getLastCellNum(), overwrite=true ){
+	any function createCell( required row, numeric cellNum=arguments.row.getLastCellNum(), overwrite=true ){
 		// get existing cell (if any)
 		var cell = arguments.row.getCell( JavaCast( "int", arguments.cellNum ) );
 		if( arguments.overwrite && !IsNull( cell ) )
@@ -29,14 +29,14 @@ component extends="base" accessors="true"{
 		return cell;
 	}
 
-	public any function getCellAt( required workbook, required numeric rowNumber, required numeric columnNumber ){
+	any function getCellAt( required workbook, required numeric rowNumber, required numeric columnNumber ){
 		if( !cellExists( argumentCollection=arguments ) )
 			Throw( type=library().getExceptionType(), message="Invalid cell", detail="The requested cell [#arguments.rowNumber#,#arguments.columnNumber#] does not exist in the active sheet" );
 		var columnIndex = ( arguments.columnNumber -1 );
 		return getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).getCell( JavaCast( "int", columnIndex ) );
 	}
 
-	public any function getCellFormulaValue( required workbook, required cell ){
+	any function getCellFormulaValue( required workbook, required cell ){
 		var formulaEvaluator = arguments.workbook.getCreationHelper().createFormulaEvaluator();
 		try{
 			return getFormatHelper().getDataFormatter().formatCellValue( arguments.cell, formulaEvaluator );
@@ -46,29 +46,24 @@ component extends="base" accessors="true"{
 		}
 	}
 
-	public any function getCellRangeAddressFromColumnAndRowIndices(
-		required numeric startRowIndex
-		,required numeric endRowIndex
-		,required numeric startColumnIndex
-		,required numeric endColumnIndex
-	){
+	any function getCellRangeAddressFromColumnAndRowIndices( required struct indices ){
 		//index = 0 based
 		return getClassHelper().loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).init(
-			JavaCast( "int", arguments.startRowIndex )
-			,JavaCast( "int", arguments.endRowIndex )
-			,JavaCast( "int", arguments.startColumnIndex )
-			,JavaCast( "int", arguments.endColumnIndex )
+			JavaCast( "int", arguments.indices.startRow )
+			,JavaCast( "int", arguments.indices.endRow )
+			,JavaCast( "int", arguments.indices.startColumn )
+			,JavaCast( "int", arguments.indices.endColumn )
 		);
 	}
 
-	public any function getCellRangeAddressFromReference( required string rangeReference ){
+	any function getCellRangeAddressFromReference( required string rangeReference ){
 		/*
 		rangeReference = usually a standard area ref (e.g. "B1:D8"). May be a single cell ref (e.g. "B5") in which case the result is a 1 x 1 cell range. May also be a whole row range (e.g. "3:5"), or a whole column range (e.g. "C:F")
 		*/
 		return getClassHelper().loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String", arguments.rangeReference ) );
 	}
 
-	public any function getCellValueAsType( required workbook, required cell ){
+	any function getCellValueAsType( required workbook, required cell ){
 		/*
 		Get the value of the cell based on the data type. The thing to worry about here is cell formulas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values.
 		*/
@@ -88,7 +83,7 @@ component extends="base" accessors="true"{
 		}
 	}
 
-	public any function initializeCell( required workbook, required numeric rowNumber, required numeric columnNumber ){
+	any function initializeCell( required workbook, required numeric rowNumber, required numeric columnNumber ){
 		//Automatically creates the cell if it does not exist, instead of throwing an error
 		var rowIndex = JavaCast( "int", ( arguments.rowNumber -1 ) );
 		var columnIndex = JavaCast( "int", ( arguments.columnNumber -1 ) );
@@ -97,7 +92,7 @@ component extends="base" accessors="true"{
 		return cellObject;
 	}
 
-	public any function setCellValueAsType( required workbook, required cell, required value, string type ){
+	any function setCellValueAsType( required workbook, required cell, required value, string type ){
 		var validCellTypes = [ "string", "numeric", "date", "time", "boolean", "blank" ];
 		if( !arguments.KeyExists( "type" ) ) //autodetect type
 			arguments.type = getDataTypeHelper().detectValueDataType( arguments.value );
@@ -121,7 +116,7 @@ component extends="base" accessors="true"{
 		return setStringValue( argumentCollection=arguments );
 	}
 
-	public any function shiftCell( required workbook, required row, required numeric cellIndex, required numeric offset ){
+	any function shiftCell( required workbook, required row, required numeric cellIndex, required numeric offset ){
 		var originalCell = arguments.row.getCell( JavaCast( "int", arguments.cellIndex ) );
 		if( IsNull( originalCell ) )
 			return this;
