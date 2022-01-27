@@ -376,7 +376,7 @@ component accessors="true"{
 			workbookFromQueryArgs.datatypes = arguments.datatypes;
 		var workbook = workbookFromQuery( argumentCollection=workbookFromQueryArgs );
 		// force to .xlsx if appropriate
-		if( xmlFormat && ( ListLast( arguments.filepath, "." ) == "xls" ) )
+		if( arguments.xmlFormat && ( ListLast( arguments.filepath, "." ) == "xls" ) )
 			arguments.filepath &= "x";
 		write( workbook=workbook, filepath=arguments.filepath, overwrite=arguments.overwrite );
 		return this;
