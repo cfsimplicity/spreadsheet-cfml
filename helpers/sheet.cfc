@@ -176,7 +176,7 @@ component extends="base" accessors="true"{
 		if( !arguments.includeHiddenColumns && sheetHasRows ){
 			result = getQueryHelper().deleteHiddenColumnsFromQuery( sheet, result );
 			if( sheet.totalColumnCount == 0 )
-			return QueryNew( "" );// all columns were hidden: return a blank query.
+				return QueryNew( "" );// all columns were hidden: return a blank query.
 		}
 		return result;
 	}
