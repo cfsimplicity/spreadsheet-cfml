@@ -564,6 +564,32 @@ describe( "read", function(){
 
 	});
 
+	describe(
+		title="Lucee only timezone tests",
+		body=function(){
+
+			it( "Doesn't offset a date value even if the Lucee timezone doesn't match the system", function(){
+				variables.currentTZ = GetTimeZone();
+				variables.tempTZ = "US/Eastern";
+				spreadsheetTypes.Each( function( type ){
+					var path = variables[ "temp" & type & "Path" ];
+					s.newChainable( type ).setCellValue( "2022-01-01", 1, 1, "date" ).write( path, true );
+					SetTimeZone( tempTZ );
+					var actual = s.read( path, "query" ).column1;
+					var expected = CreateDate( 2022, 01, 01 );
+					expect( actual ).toBe( expected );
+					SetTimeZone( currentTZ );
+				});
+				
+			});
+
+		},
+		skip=function(){
+			// only valid if system timezone is ahead of temporary test timezone
+			return ( s.getIsACF() || ( s.getDateHelper().getPoiTimeZone() != "Europe/London" ) );
+		}
+	);
+
 	describe( "read throws an exception if", function(){
 
 		it( "queryColumnTypes is specified as a 'columnName/type' struct, but headerRow and columnNames arguments are missing", function(){

@@ -138,6 +138,7 @@ component extends="base" accessors="true"{
 		// Get numeric cell data. This could be a standard number, could also be a date value.
 		if( !isCellDateFormated( arguments.cell ) )
 			return arguments.cell.getNumericCellValue();
+		getDateHelper().matchPoiTimeZoneToEngine();
 		var cellValue = arguments.cell.getDateCellValue();
 		if( getDateHelper().isTimeOnlyValue( cellValue ) )
 			return getFormatHelper().getDataFormatter().formatCellValue( arguments.cell );//return as a time formatted string to avoid default epoch date 1899-12-31
