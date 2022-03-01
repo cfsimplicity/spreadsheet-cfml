@@ -53,6 +53,39 @@ describe( "read", function(){
 		var actual = s.read( src=path, format="query" );
 	});
 
+	it( "Uses the first *visible* sheet if format=query and no sheet specified", function(){
+		spreadsheetTypes.Each( function( type ){
+			var path = variables[ "temp" & type & "Path" ];
+			var wb = s.newChainable( type )
+				.renameSheet( "hidden sheet", 1 )
+				.setCellValue( "I'm in a hidden sheet", 1, 1 )
+				.createSheet( "visible sheet" )
+				.setActiveSheetNumber( 2 )
+				.setCellValue( "I'm in a visible sheet", 1, 1 )
+				.getWorkbook();
+			s.getSheetHelper().setVisibility( wb, 1, "VERY_HIDDEN" );
+			s.write( wb, path, true );
+			var expected = QueryNew( "column1", "VarChar", [ [ "I'm in a visible sheet" ] ] );
+			var actual = s.read( src=path, format="query" );
+			expect( actual ).toBe( expected );
+		});
+	});
+
+	it( "Returns a blank query if format=query and there are no visible sheets", function(){
+		spreadsheetTypes.Each( function( type ){
+			var path = variables[ "temp" & type & "Path" ];
+			var wb = s.newChainable( type )
+				.renameSheet( "hidden sheet", 1 )
+				.setCellValue( "I'm in a hidden sheet", 1, 1 )
+				.getWorkbook();
+			s.getSheetHelper().setVisibility( wb, 1, "VERY_HIDDEN" );
+			s.write( wb, path, true );
+			var expected = QueryNew( "" );
+			var actual = s.read( src=path, format="query" );
+			expect( actual ).toBe( expected );
+		});
+	});
+
 	it( "Reads from the specified sheet name", function(){
 		var path = getTestFilePath( "test.xls" );// has 2 sheets
 		var expected = querySim(

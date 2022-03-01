@@ -100,6 +100,21 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
+	void function setVisibility( required workbook, required numeric sheetNumber, required string visibility ){
+		/* POI Docs: "Please note that the sheet currently set as active sheet (sheet 0 in a newly created workbook or the one set via setActiveSheet()) cannot be hidden." */
+		validateSheetNumber( arguments.workbook, arguments.sheetNumber );
+		var validStates = [ "HIDDEN", "VERY_HIDDEN", "VISIBLE" ];
+		if( !validStates.Find( arguments.visibility ) )
+			Throw( type=this.getExceptionType(), message="Invalid visibility parameter: '#arguments.visibility#'", detail="The visibility must be one of the following: #validStates.ToList( ', ' )#." );
+		var visibilityEnum = getClassHelper().loadClass( "org.apache.poi.ss.usermodel.SheetVisibility" )[ JavaCast( "string", arguments.visibility ) ];
+		var sheetIndex = ( arguments.sheetNumber -1 );
+		arguments.workbook.setSheetVisibility( sheetIndex, visibilityEnum );
+	}
+
+	boolean function isVisible( required workbook, required numeric sheetNumber ){
+		return ( getVisibility( argumentCollection=arguments ) == "VISIBLE" );
+	}
+
 	boolean function sheetExists( required workbook, string sheetName, numeric sheetNumber ){
 		validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
 		if( arguments.KeyExists( "sheetName" ) )
@@ -117,7 +132,7 @@ component extends="base" accessors="true"{
 	query function sheetToQuery(
 		required workbook
 		,string sheetName
-		,numeric sheetNumber=1
+		,numeric sheetNumber
 		,numeric headerRow
 		,boolean includeHeaderRow=false
 		,boolean includeBlankRows=false
@@ -150,6 +165,10 @@ component extends="base" accessors="true"{
 			validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
 			arguments.sheetNumber = ( getSheetIndexFromName( arguments.workbook, arguments.sheetName ) +1 );
 		}
+		else if( !arguments.KeyExists( "sheetNumber" ) )
+			arguments.sheetNumber = getFirstVisibleSheetNumber( arguments.workbook );
+		if( arguments.sheetNumber == 0 )
+			return QueryNew( "" );//no visible sheets
 		sheet.object = getSheetByNumber( arguments.workbook, arguments.sheetNumber );
 		var sheetHasRows = !sheetIsEmpty( sheet.object );
 		if( sheetHasRows ){
@@ -255,16 +274,6 @@ component extends="base" accessors="true"{
 		}
 	}
 
-	private string function getQueryColumnNameFromSpecifiedNames( required array specifiedNames, required numeric index ){
-		var defaultColumnName = "column" & arguments.index;
-		if( arguments.index > arguments.specifiedNames.Len() ) //ACF won't accept IsNull( specifiedNames[ index ] )
-			return defaultColumnName;
-		var foundColumnName = arguments.specifiedNames[ arguments.index ];
-		if( getDataTypeHelper().isString( foundColumnName ) && foundColumnName.Len() )
-			return foundColumnName;
-		return defaultColumnName;
-	}
-
 	private string function generateUniqueSheetName( required workbook ){
 		var startNumber = ( arguments.workbook.getNumberOfSheets() +1 );
 		var maxRetry = ( startNumber +250 );
@@ -277,9 +286,34 @@ component extends="base" accessors="true"{
 		Throw( type=library().getExceptionType(), message="Unable to generate name", detail="Unable to generate a unique sheet name" );
 	}
 
+	private numeric function getFirstVisibleSheetNumber( required workbook ){
+		var totalSheets = arguments.workbook.getNumberOfSheets();
+		cfloop( from=1, to=totalSheets, index="local.sheetNumber" ){
+			if( isVisible( arguments.workbook, sheetNumber ) )
+				return sheetNumber;
+		}
+		return 0;
+	}
+
+	private string function getQueryColumnNameFromSpecifiedNames( required array specifiedNames, required numeric index ){
+		var defaultColumnName = "column" & arguments.index;
+		if( arguments.index > arguments.specifiedNames.Len() ) //ACF won't accept IsNull( specifiedNames[ index ] )
+			return defaultColumnName;
+		var foundColumnName = arguments.specifiedNames[ arguments.index ];
+		if( getDataTypeHelper().isString( foundColumnName ) && foundColumnName.Len() )
+			return foundColumnName;
+		return defaultColumnName;
+	}
+
 	private numeric function getSheetIndexFromName( required workbook, required string sheetName ){
 		//returns -1 if non-existent
 		return arguments.workbook.getSheetIndex( JavaCast( "string", arguments.sheetName ) );
+	}
+
+	private string function getVisibility( required workbook, required numeric sheetNumber ){
+		validateSheetNumber( arguments.workbook, arguments.sheetNumber );
+		var sheetIndex = ( arguments.sheetNumber -1 );
+		return arguments.workbook.getSheetVisibility( sheetIndex ).toString();
 	}
 
 	private boolean function sheetIsEmpty( required sheet ){
