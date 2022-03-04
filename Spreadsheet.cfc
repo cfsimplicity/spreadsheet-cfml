@@ -40,7 +40,6 @@ component accessors="true"{
 	property name="rowHelper";
 	property name="sheetHelper";
 	property name="stringHelper";
-	property name="visibilityHelper";
 	property name="workbookHelper";
 
 	public function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader ){
@@ -82,7 +81,6 @@ component accessors="true"{
 		setRowHelper( New helpers.row( this ) );
 		setSheetHelper( New helpers.sheet( this ) );
 		setStringHelper( New helpers.string( this ) );
-		setVisibilityHelper( New helpers.visibility( this ) );
 		setWorkbookHelper( New helpers.workbook( this ) );
 	}
 
@@ -1108,12 +1106,12 @@ component accessors="true"{
 	}
 
 	public Spreadsheet function hideColumn( required workbook, required numeric column ){
-		getVisibilityHelper().toggleColumnHidden( arguments.workbook, arguments.column, true );
+		getColumnHelper().toggleColumnHidden( arguments.workbook, arguments.column, true );
 		return this;
 	}
 
 	public Spreadsheet function hideRow( required workbook, required numeric row ){
-		getVisibilityHelper().toggleRowHidden( arguments.workbook, arguments.row, true );
+		getRowHelper().toggleRowHidden( arguments.workbook, arguments.row, true );
 		return this;
 	}
 
@@ -1724,12 +1722,12 @@ component accessors="true"{
 	}
 
 	public Spreadsheet function showColumn( required workbook, required numeric column ){
-		getVisibilityHelper().toggleColumnHidden( arguments.workbook, arguments.column, false );
+		getColumnHelper().toggleColumnHidden( arguments.workbook, arguments.column, false );
 		return this;
 	}
 
 	public Spreadsheet function showRow( required workbook, required numeric row ){
-		getVisibilityHelper().toggleRowHidden( arguments.workbook, arguments.row, false );
+		getRowHelper().toggleRowHidden( arguments.workbook, arguments.row, false );
 		return this;
 	}
 

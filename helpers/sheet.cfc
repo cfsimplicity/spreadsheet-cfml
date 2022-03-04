@@ -125,7 +125,7 @@ component extends="base" accessors="true"{
 		return false;
 	}
 
-	boolean function sheetHasMergedRegions( required sheet ){
+	boolean function hasMergedRegions( required sheet ){
 		return ( arguments.sheet.getNumMergedRegions() > 0 );
 	}
 
@@ -173,7 +173,7 @@ component extends="base" accessors="true"{
 		var sheetHasRows = !sheetIsEmpty( sheet.object );
 		if( sheetHasRows ){
 			if( arguments.fillMergedCellsWithVisibleValue )
-				getVisibilityHelper().doFillMergedCellsWithVisibleValue( arguments.workbook, sheet.object );
+				doFillMergedCellsWithVisibleValue( arguments.workbook, sheet.object );
 			if( arguments.KeyExists( "rows" ) ){
 				var allRanges = getRangeHelper().extractRanges( arguments.rows, arguments.workbook );
 				for( var thisRange in allRanges ){
@@ -338,6 +338,20 @@ component extends="base" accessors="true"{
 		if( sheetNameArgumentWasProvided( argumentCollection=arguments ) && sheetNumberArgumentWasProvided( argumentCollection=arguments ) )
 			Throw( type=library().getExceptionType(), message="Invalid arguments", detail="Only one argument is allowed. Specify either a sheetName or sheetNumber, not both" );
 		return this;
+	}
+
+	private void function doFillMergedCellsWithVisibleValue( required workbook, required sheet ){
+		if( !getSheetHelper().hasMergedRegions( arguments.sheet ) )
+			return this;
+		for( var regionIndex = 0; regionIndex < arguments.sheet.getNumMergedRegions(); regionIndex++ ){
+			var region = arguments.sheet.getMergedRegion( regionIndex );
+			var regionStartRowNumber = ( region.getFirstRow() +1 );
+			var regionEndRowNumber = ( region.getLastRow() +1 );
+			var regionStartColumnNumber = ( region.getFirstColumn() +1 );
+			var regionEndColumnNumber = ( region.getLastColumn() +1 );
+			var visibleValue = library().getCellValue( arguments.workbook, regionStartRowNumber, regionStartColumnNumber );
+			library().setCellRangeValue( arguments.workbook, visibleValue, regionStartRowNumber, regionEndRowNumber, regionStartColumnNumber, regionEndColumnNumber );
+		}
 	}
 
 }
