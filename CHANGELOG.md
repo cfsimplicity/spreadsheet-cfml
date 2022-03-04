@@ -1,3 +1,12 @@
+## 3.4.0 - 4 March 2022
+
+- Enhancements
+	- \#286 Add sheetInfo() to return metadata for a specific sheet within a workbook 
+
+- Fixes
+	- \#283 Mismatched system/Lucee timezones causes read() to offset date values
+	- \#285 read() should use the first visible sheet in the workbook if no sheet is specified, ignoring hidden sheets
+
 ## 3.3.0
 
 - \#282 Upgrade POI to 5.2.0
