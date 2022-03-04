@@ -1687,6 +1687,10 @@ component accessors="true"{
 		return this;
 	}
 
+	public struct function sheetInfo( required workbook, numeric sheetNumber=1 ){
+		return getSheetHelper().info( argumentCollection=arguments );
+	}
+
 	public Spreadsheet function shiftColumns( required workbook, required numeric start, numeric end=arguments.start, numeric offset=1 ){
 		/*
 			20210427 POI 4.x's sheet.shiftColumns() doesn't seem to work reliably: XSSF version doesn't delete columns that should be replaced. Both result in errors when writing

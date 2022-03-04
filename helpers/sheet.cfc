@@ -95,6 +95,32 @@ component extends="base" accessors="true"{
 		return getSheetByNumber( arguments.workbook, arguments.sheetNumber );
 	}
 
+	struct function info( required workbook, required numeric sheetNumber ){
+		var sheet = getSheetByNumber( argumentCollection=arguments );
+		var isXlsx = library().isXmlFormat( arguments.workbook );
+		return {
+			displaysAutomaticPageBreaks: sheet.getAutobreaks()
+			,displaysFormulas: sheet.isDisplayFormulas()
+			,displaysGridlines: sheet.isDisplayGridlines()
+			,displaysRowAndColumnHeadings: sheet.isDisplayRowColHeadings()
+			,displaysZeros: sheet.isDisplayZeros()
+			,hasComments: hasComments( sheet, isXlsx )
+			,hasMergedRegions: BooleanFormat( sheet.getNumMergedRegions() )
+			,isCurrentActiveSheet: isActive( sheet, isXlsx )
+			,isHidden: !isVisible( argumentCollection=arguments )
+			,isRightToLeft: sheet.isRightToLeft()
+			,name: sheet.getSheetName()
+			,numberOfMergedRegions: sheet.getNumMergedRegions()
+			,printsFitToPage: sheet.getFitToPage()
+			,printsGridlines: sheet.isPrintGridlines()
+			,printsHorizontallyCentered: sheet.getHorizontallyCenter()
+			,printsRowAndColumnHeadings: sheet.isPrintRowAndColumnHeadings()
+			,printsVerticallyCentered: sheet.getVerticallyCenter()
+			,recalculateFormulasOnNextOpen: sheet.getForceFormulaRecalculation()
+			,visibility: getVisibility( argumentCollection=arguments )
+		};
+	}
+
 	any function moveSheet( required workbook, required string sheetName, required string moveToIndex ){
 		arguments.workbook.setSheetOrder( JavaCast( "String", arguments.sheetName ), JavaCast( "int", arguments.moveToIndex ) );
 		return this;
@@ -314,6 +340,18 @@ component extends="base" accessors="true"{
 		validateSheetNumber( arguments.workbook, arguments.sheetNumber );
 		var sheetIndex = ( arguments.sheetNumber -1 );
 		return arguments.workbook.getSheetVisibility( sheetIndex ).toString();
+	}
+
+	private boolean function hasComments( required sheet, required boolean isXlsx ){
+		return BooleanFormat( arguments.isXlsx? arguments.sheet.hasComments(): arguments.sheet.getCellComments().Count() );
+	}
+
+	private boolean function isActive( required sheet, required boolean isXlsx ){
+		if( !arguments.isXlsx )
+			return arguments.sheet.isActive();
+		var workbook = arguments.sheet.getWorkbook();
+		var sheetIndex = workbook.getSheetIndex( arguments.sheet );
+		return ( sheetIndex == workbook.getActiveSheetIndex() );
 	}
 
 	private boolean function sheetIsEmpty( required sheet ){
