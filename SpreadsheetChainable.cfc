@@ -629,6 +629,12 @@ component accessors="true"{
 		return this;
 	}
 
+	// Ends chain
+	public struct function sheetInfo( numeric sheetNumber=1 ){
+		addWorkbookArgument( arguments );
+		return this.getLibrary().sheetInfo( argumentCollection=arguments );
+	}
+
 	public SpreadsheetChainable function shiftColumns( required numeric start, numeric end=arguments.start, numeric offset=1 ){
 		addWorkbookArgument( arguments );
 		this.getLibrary().shiftColumns( argumentCollection=arguments );

@@ -160,6 +160,7 @@ You may wish to place the spreadsheet library files in a central location with a
 * [setSheetHeaderMargin](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetHeaderMargin)
 * [setSheetFooterMargin](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetFooterMargin)
 * [setSheetPrintOrientation](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetPrintOrientation)
+* [sheetInfo](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/sheetInfo)
 * [showColumn](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/showColumn)
 * [showRow](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/showRow)
 * [writeToCsv](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/writeToCsv)

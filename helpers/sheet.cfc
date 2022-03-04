@@ -95,9 +95,50 @@ component extends="base" accessors="true"{
 		return getSheetByNumber( arguments.workbook, arguments.sheetNumber );
 	}
 
+	struct function info( required workbook, required numeric sheetNumber ){
+		var sheet = getSheetByNumber( argumentCollection=arguments );
+		var isXlsx = library().isXmlFormat( arguments.workbook );
+		return {
+			displaysAutomaticPageBreaks: sheet.getAutobreaks()
+			,displaysFormulas: sheet.isDisplayFormulas()
+			,displaysGridlines: sheet.isDisplayGridlines()
+			,displaysRowAndColumnHeadings: sheet.isDisplayRowColHeadings()
+			,displaysZeros: sheet.isDisplayZeros()
+			,hasComments: hasComments( sheet, isXlsx )
+			,hasMergedRegions: BooleanFormat( sheet.getNumMergedRegions() )
+			,isCurrentActiveSheet: isActive( sheet, isXlsx )
+			,isHidden: !isVisible( argumentCollection=arguments )
+			,isRightToLeft: sheet.isRightToLeft()
+			,name: sheet.getSheetName()
+			,numberOfMergedRegions: sheet.getNumMergedRegions()
+			,printsFitToPage: sheet.getFitToPage()
+			,printsGridlines: sheet.isPrintGridlines()
+			,printsHorizontallyCentered: sheet.getHorizontallyCenter()
+			,printsRowAndColumnHeadings: sheet.isPrintRowAndColumnHeadings()
+			,printsVerticallyCentered: sheet.getVerticallyCenter()
+			,recalculateFormulasOnNextOpen: sheet.getForceFormulaRecalculation()
+			,visibility: getVisibility( argumentCollection=arguments )
+		};
+	}
+
 	any function moveSheet( required workbook, required string sheetName, required string moveToIndex ){
 		arguments.workbook.setSheetOrder( JavaCast( "String", arguments.sheetName ), JavaCast( "int", arguments.moveToIndex ) );
 		return this;
+	}
+
+	void function setVisibility( required workbook, required numeric sheetNumber, required string visibility ){
+		/* POI Docs: "Please note that the sheet currently set as active sheet (sheet 0 in a newly created workbook or the one set via setActiveSheet()) cannot be hidden." */
+		validateSheetNumber( arguments.workbook, arguments.sheetNumber );
+		var validStates = [ "HIDDEN", "VERY_HIDDEN", "VISIBLE" ];
+		if( !validStates.Find( arguments.visibility ) )
+			Throw( type=this.getExceptionType(), message="Invalid visibility parameter: '#arguments.visibility#'", detail="The visibility must be one of the following: #validStates.ToList( ', ' )#." );
+		var visibilityEnum = getClassHelper().loadClass( "org.apache.poi.ss.usermodel.SheetVisibility" )[ JavaCast( "string", arguments.visibility ) ];
+		var sheetIndex = ( arguments.sheetNumber -1 );
+		arguments.workbook.setSheetVisibility( sheetIndex, visibilityEnum );
+	}
+
+	boolean function isVisible( required workbook, required numeric sheetNumber ){
+		return ( getVisibility( argumentCollection=arguments ) == "VISIBLE" );
 	}
 
 	boolean function sheetExists( required workbook, string sheetName, numeric sheetNumber ){
@@ -110,14 +151,14 @@ component extends="base" accessors="true"{
 		return false;
 	}
 
-	boolean function sheetHasMergedRegions( required sheet ){
+	boolean function hasMergedRegions( required sheet ){
 		return ( arguments.sheet.getNumMergedRegions() > 0 );
 	}
 
 	query function sheetToQuery(
 		required workbook
 		,string sheetName
-		,numeric sheetNumber=1
+		,numeric sheetNumber
 		,numeric headerRow
 		,boolean includeHeaderRow=false
 		,boolean includeBlankRows=false
@@ -150,11 +191,15 @@ component extends="base" accessors="true"{
 			validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
 			arguments.sheetNumber = ( getSheetIndexFromName( arguments.workbook, arguments.sheetName ) +1 );
 		}
+		else if( !arguments.KeyExists( "sheetNumber" ) )
+			arguments.sheetNumber = getFirstVisibleSheetNumber( arguments.workbook );
+		if( arguments.sheetNumber == 0 )
+			return QueryNew( "" );//no visible sheets
 		sheet.object = getSheetByNumber( arguments.workbook, arguments.sheetNumber );
 		var sheetHasRows = !sheetIsEmpty( sheet.object );
 		if( sheetHasRows ){
 			if( arguments.fillMergedCellsWithVisibleValue )
-				getVisibilityHelper().doFillMergedCellsWithVisibleValue( arguments.workbook, sheet.object );
+				doFillMergedCellsWithVisibleValue( arguments.workbook, sheet.object );
 			if( arguments.KeyExists( "rows" ) ){
 				var allRanges = getRangeHelper().extractRanges( arguments.rows, arguments.workbook );
 				for( var thisRange in allRanges ){
@@ -176,7 +221,7 @@ component extends="base" accessors="true"{
 		if( !arguments.includeHiddenColumns && sheetHasRows ){
 			result = getQueryHelper().deleteHiddenColumnsFromQuery( sheet, result );
 			if( sheet.totalColumnCount == 0 )
-			return QueryNew( "" );// all columns were hidden: return a blank query.
+				return QueryNew( "" );// all columns were hidden: return a blank query.
 		}
 		return result;
 	}
@@ -255,16 +300,6 @@ component extends="base" accessors="true"{
 		}
 	}
 
-	private string function getQueryColumnNameFromSpecifiedNames( required array specifiedNames, required numeric index ){
-		var defaultColumnName = "column" & arguments.index;
-		if( arguments.index > arguments.specifiedNames.Len() ) //ACF won't accept IsNull( specifiedNames[ index ] )
-			return defaultColumnName;
-		var foundColumnName = arguments.specifiedNames[ arguments.index ];
-		if( getDataTypeHelper().isString( foundColumnName ) && foundColumnName.Len() )
-			return foundColumnName;
-		return defaultColumnName;
-	}
-
 	private string function generateUniqueSheetName( required workbook ){
 		var startNumber = ( arguments.workbook.getNumberOfSheets() +1 );
 		var maxRetry = ( startNumber +250 );
@@ -277,9 +312,46 @@ component extends="base" accessors="true"{
 		Throw( type=library().getExceptionType(), message="Unable to generate name", detail="Unable to generate a unique sheet name" );
 	}
 
+	private numeric function getFirstVisibleSheetNumber( required workbook ){
+		var totalSheets = arguments.workbook.getNumberOfSheets();
+		cfloop( from=1, to=totalSheets, index="local.sheetNumber" ){
+			if( isVisible( arguments.workbook, sheetNumber ) )
+				return sheetNumber;
+		}
+		return 0;
+	}
+
+	private string function getQueryColumnNameFromSpecifiedNames( required array specifiedNames, required numeric index ){
+		var defaultColumnName = "column" & arguments.index;
+		if( arguments.index > arguments.specifiedNames.Len() ) //ACF won't accept IsNull( specifiedNames[ index ] )
+			return defaultColumnName;
+		var foundColumnName = arguments.specifiedNames[ arguments.index ];
+		if( getDataTypeHelper().isString( foundColumnName ) && foundColumnName.Len() )
+			return foundColumnName;
+		return defaultColumnName;
+	}
+
 	private numeric function getSheetIndexFromName( required workbook, required string sheetName ){
 		//returns -1 if non-existent
 		return arguments.workbook.getSheetIndex( JavaCast( "string", arguments.sheetName ) );
+	}
+
+	private string function getVisibility( required workbook, required numeric sheetNumber ){
+		validateSheetNumber( arguments.workbook, arguments.sheetNumber );
+		var sheetIndex = ( arguments.sheetNumber -1 );
+		return arguments.workbook.getSheetVisibility( sheetIndex ).toString();
+	}
+
+	private boolean function hasComments( required sheet, required boolean isXlsx ){
+		return BooleanFormat( arguments.isXlsx? arguments.sheet.hasComments(): arguments.sheet.getCellComments().Count() );
+	}
+
+	private boolean function isActive( required sheet, required boolean isXlsx ){
+		if( !arguments.isXlsx )
+			return arguments.sheet.isActive();
+		var workbook = arguments.sheet.getWorkbook();
+		var sheetIndex = workbook.getSheetIndex( arguments.sheet );
+		return ( sheetIndex == workbook.getActiveSheetIndex() );
 	}
 
 	private boolean function sheetIsEmpty( required sheet ){
@@ -304,6 +376,20 @@ component extends="base" accessors="true"{
 		if( sheetNameArgumentWasProvided( argumentCollection=arguments ) && sheetNumberArgumentWasProvided( argumentCollection=arguments ) )
 			Throw( type=library().getExceptionType(), message="Invalid arguments", detail="Only one argument is allowed. Specify either a sheetName or sheetNumber, not both" );
 		return this;
+	}
+
+	private void function doFillMergedCellsWithVisibleValue( required workbook, required sheet ){
+		if( !getSheetHelper().hasMergedRegions( arguments.sheet ) )
+			return this;
+		for( var regionIndex = 0; regionIndex < arguments.sheet.getNumMergedRegions(); regionIndex++ ){
+			var region = arguments.sheet.getMergedRegion( regionIndex );
+			var regionStartRowNumber = ( region.getFirstRow() +1 );
+			var regionEndRowNumber = ( region.getLastRow() +1 );
+			var regionStartColumnNumber = ( region.getFirstColumn() +1 );
+			var regionEndColumnNumber = ( region.getLastColumn() +1 );
+			var visibleValue = library().getCellValue( arguments.workbook, regionStartRowNumber, regionStartColumnNumber );
+			library().setCellRangeValue( arguments.workbook, visibleValue, regionStartRowNumber, regionEndRowNumber, regionStartColumnNumber, regionEndColumnNumber );
+		}
 	}
 
 }

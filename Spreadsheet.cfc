@@ -1,7 +1,7 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="3.3.0" setter="false";
+	property name="version" default="3.4.0" setter="false";
 	property name="osgiLibBundleVersion" default="5.2.0.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
@@ -40,7 +40,6 @@ component accessors="true"{
 	property name="rowHelper";
 	property name="sheetHelper";
 	property name="stringHelper";
-	property name="visibilityHelper";
 	property name="workbookHelper";
 
 	public function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader ){
@@ -82,7 +81,6 @@ component accessors="true"{
 		setRowHelper( New helpers.row( this ) );
 		setSheetHelper( New helpers.sheet( this ) );
 		setStringHelper( New helpers.string( this ) );
-		setVisibilityHelper( New helpers.visibility( this ) );
 		setWorkbookHelper( New helpers.workbook( this ) );
 	}
 
@@ -376,7 +374,7 @@ component accessors="true"{
 			workbookFromQueryArgs.datatypes = arguments.datatypes;
 		var workbook = workbookFromQuery( argumentCollection=workbookFromQueryArgs );
 		// force to .xlsx if appropriate
-		if( xmlFormat && ( ListLast( arguments.filepath, "." ) == "xls" ) )
+		if( arguments.xmlFormat && ( ListLast( arguments.filepath, "." ) == "xls" ) )
 			arguments.filepath &= "x";
 		write( workbook=workbook, filepath=arguments.filepath, overwrite=arguments.overwrite );
 		return this;
@@ -1108,12 +1106,12 @@ component accessors="true"{
 	}
 
 	public Spreadsheet function hideColumn( required workbook, required numeric column ){
-		getVisibilityHelper().toggleColumnHidden( arguments.workbook, arguments.column, true );
+		getColumnHelper().toggleColumnHidden( arguments.workbook, arguments.column, true );
 		return this;
 	}
 
 	public Spreadsheet function hideRow( required workbook, required numeric row ){
-		getVisibilityHelper().toggleRowHidden( arguments.workbook, arguments.row, true );
+		getRowHelper().toggleRowHidden( arguments.workbook, arguments.row, true );
 		return this;
 	}
 
@@ -1689,6 +1687,10 @@ component accessors="true"{
 		return this;
 	}
 
+	public struct function sheetInfo( required workbook, numeric sheetNumber=1 ){
+		return getSheetHelper().info( argumentCollection=arguments );
+	}
+
 	public Spreadsheet function shiftColumns( required workbook, required numeric start, numeric end=arguments.start, numeric offset=1 ){
 		/*
 			20210427 POI 4.x's sheet.shiftColumns() doesn't seem to work reliably: XSSF version doesn't delete columns that should be replaced. Both result in errors when writing
@@ -1724,12 +1726,12 @@ component accessors="true"{
 	}
 
 	public Spreadsheet function showColumn( required workbook, required numeric column ){
-		getVisibilityHelper().toggleColumnHidden( arguments.workbook, arguments.column, false );
+		getColumnHelper().toggleColumnHidden( arguments.workbook, arguments.column, false );
 		return this;
 	}
 
 	public Spreadsheet function showRow( required workbook, required numeric row ){
-		getVisibilityHelper().toggleRowHidden( arguments.workbook, arguments.row, false );
+		getRowHelper().toggleRowHidden( arguments.workbook, arguments.row, false );
 		return this;
 	}
 

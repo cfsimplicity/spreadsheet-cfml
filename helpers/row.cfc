@@ -210,6 +210,11 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
+	any function toggleRowHidden( required workbook, required numeric rowNumber, required boolean state ){
+		getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).setZeroHeight( JavaCast( "boolean", arguments.state ) );
+		return this;
+	}
+
 	/* Private */
 
 	private boolean function rowIsEmpty( required row ){

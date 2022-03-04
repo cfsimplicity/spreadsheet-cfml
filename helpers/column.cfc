@@ -21,4 +21,9 @@ component extends="base" accessors="true"{
 			getCellHelper().shiftCell( arguments.workbook, arguments.row, i, 1 );
 	}
 
+	any function toggleColumnHidden( required workbook, required numeric columnNumber, required boolean state ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).setColumnHidden( JavaCast( "int", arguments.columnNumber-1 ), JavaCast( "boolean", arguments.state ) );
+		return this;
+	}
+
 }

@@ -53,6 +53,39 @@ describe( "read", function(){
 		var actual = s.read( src=path, format="query" );
 	});
 
+	it( "Uses the first *visible* sheet if format=query and no sheet specified", function(){
+		spreadsheetTypes.Each( function( type ){
+			var path = variables[ "temp" & type & "Path" ];
+			var wb = s.newChainable( type )
+				.renameSheet( "hidden sheet", 1 )
+				.setCellValue( "I'm in a hidden sheet", 1, 1 )
+				.createSheet( "visible sheet" )
+				.setActiveSheetNumber( 2 )
+				.setCellValue( "I'm in a visible sheet", 1, 1 )
+				.getWorkbook();
+			s.getSheetHelper().setVisibility( wb, 1, "VERY_HIDDEN" );
+			s.write( wb, path, true );
+			var expected = QueryNew( "column1", "VarChar", [ [ "I'm in a visible sheet" ] ] );
+			var actual = s.read( src=path, format="query" );
+			expect( actual ).toBe( expected );
+		});
+	});
+
+	it( "Returns a blank query if format=query and there are no visible sheets", function(){
+		spreadsheetTypes.Each( function( type ){
+			var path = variables[ "temp" & type & "Path" ];
+			var wb = s.newChainable( type )
+				.renameSheet( "hidden sheet", 1 )
+				.setCellValue( "I'm in a hidden sheet", 1, 1 )
+				.getWorkbook();
+			s.getSheetHelper().setVisibility( wb, 1, "VERY_HIDDEN" );
+			s.write( wb, path, true );
+			var expected = QueryNew( "" );
+			var actual = s.read( src=path, format="query" );
+			expect( actual ).toBe( expected );
+		});
+	});
+
 	it( "Reads from the specified sheet name", function(){
 		var path = getTestFilePath( "test.xls" );// has 2 sheets
 		var expected = querySim(
@@ -563,6 +596,32 @@ describe( "read", function(){
 		});
 
 	});
+
+	describe(
+		title="Lucee only timezone tests",
+		body=function(){
+
+			it( "Doesn't offset a date value even if the Lucee timezone doesn't match the system", function(){
+				variables.currentTZ = GetTimeZone();
+				variables.tempTZ = "US/Eastern";
+				spreadsheetTypes.Each( function( type ){
+					var path = variables[ "temp" & type & "Path" ];
+					s.newChainable( type ).setCellValue( "2022-01-01", 1, 1, "date" ).write( path, true );
+					SetTimeZone( tempTZ );
+					var actual = s.read( path, "query" ).column1;
+					var expected = CreateDate( 2022, 01, 01 );
+					expect( actual ).toBe( expected );
+					SetTimeZone( currentTZ );
+				});
+				
+			});
+
+		},
+		skip=function(){
+			// only valid if system timezone is ahead of temporary test timezone
+			return ( s.getIsACF() || ( s.getDateHelper().getPoiTimeZone() != "Europe/London" ) );
+		}
+	);
 
 	describe( "read throws an exception if", function(){
 

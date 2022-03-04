@@ -93,10 +93,6 @@ component accessors="true"{
 		return library().getStringHelper();
 	}
 
-	any function getVisibilityHelper(){
-		return library().getvisibilityHelper();
-	}
-
 	any function getWorkbookHelper(){
 		return library().getWorkbookHelper();
 	}
