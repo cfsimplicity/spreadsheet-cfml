@@ -1,3 +1,7 @@
+## 3.4.1 - 7 March 2022
+
+- \#287 Upgrade POI to 5.2.1
+
 ## 3.4.0 - 4 March 2022
 
 - Enhancements
@@ -7,7 +11,7 @@
 	- \#283 Mismatched system/Lucee timezones causes read() to offset date values
 	- \#285 read() should use the first visible sheet in the workbook if no sheet is specified, ignoring hidden sheets
 
-## 3.3.0
+## 3.3.0 - 15 January 2022
 
 - \#282 Upgrade POI to 5.2.0
 

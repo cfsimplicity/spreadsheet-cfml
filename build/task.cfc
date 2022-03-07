@@ -18,7 +18,7 @@ component{
 		variables.libPath = variables.rootPath & "lib/";
 		variables.classpathDirectories = [
 			variables.srcPath
-			,variables.libPath & "poi-ooxml-5.2.0.jar"
+			,variables.libPath & "poi-ooxml-5.2.1.jar"
 			,variables.libPath & "xmlbeans-5.0.3.jar"
 		];
 		var jarFileName = "spreadsheet-cfml.jar";
