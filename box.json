@@ -1,10 +1,10 @@
 {
     "name" : "Spreadsheet CFML",
     "slug" : "spreadsheet-cfml",
-    "version" : "3.4.2",
+    "version" : "3.4.3",
     "shortDescription" : "CFML spreadsheet library",
     "author" : "Julian Halliwell",
-    "location" : "https://github.com/cfsimplicity/spreadsheet-cfml/archive/v3.4.2.zip",
+    "location" : "https://github.com/cfsimplicity/spreadsheet-cfml/archive/v3.4.3.zip",
     "homepage" : "https://github.com/cfsimplicity/spreadsheet-cfml",
     "projectURL" : "https://github.com/cfsimplicity/spreadsheet-cfml",
     "documentation" : "https://github.com/cfsimplicity/spreadsheet-cfml/blob/main/README.md",
