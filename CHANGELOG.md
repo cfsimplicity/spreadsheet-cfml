@@ -1,4 +1,4 @@
-## 3.4.2 - 8 March 2022
+## 3.4.3 - 8 March 2022
 
 - \#288 sheetInfo() should default to the currently active sheet, not the first
 
