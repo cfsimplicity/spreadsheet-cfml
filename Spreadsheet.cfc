@@ -1,7 +1,7 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="3.4.1" setter="false";
+	property name="version" default="3.4.1-develop" setter="false";
 	property name="osgiLibBundleVersion" default="5.2.1.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
@@ -1687,7 +1687,7 @@ component accessors="true"{
 		return this;
 	}
 
-	public struct function sheetInfo( required workbook, numeric sheetNumber=1 ){
+	public struct function sheetInfo( required workbook, numeric sheetNumber ){
 		return getSheetHelper().info( argumentCollection=arguments );
 	}
 

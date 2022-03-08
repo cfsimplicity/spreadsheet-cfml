@@ -630,7 +630,7 @@ component accessors="true"{
 	}
 
 	// Ends chain
-	public struct function sheetInfo( numeric sheetNumber=1 ){
+	public struct function sheetInfo( numeric sheetNumber ){
 		addWorkbookArgument( arguments );
 		return this.getLibrary().sheetInfo( argumentCollection=arguments );
 	}
