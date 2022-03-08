@@ -95,7 +95,9 @@ component extends="base" accessors="true"{
 		return getSheetByNumber( arguments.workbook, arguments.sheetNumber );
 	}
 
-	struct function info( required workbook, required numeric sheetNumber ){
+	struct function info( required workbook, numeric sheetNumber ){
+		if( !arguments.KeyExists( "sheetNumber" ) )
+			arguments.sheetNumber = ( arguments.workbook.getActiveSheetIndex() +1 );
 		var sheet = getSheetByNumber( argumentCollection=arguments );
 		var isXlsx = library().isXmlFormat( arguments.workbook );
 		return {

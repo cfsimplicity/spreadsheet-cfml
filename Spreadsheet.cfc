@@ -1687,7 +1687,7 @@ component accessors="true"{
 		return this;
 	}
 
-	public struct function sheetInfo( required workbook, numeric sheetNumber=1 ){
+	public struct function sheetInfo( required workbook, numeric sheetNumber ){
 		return getSheetHelper().info( argumentCollection=arguments );
 	}
 
