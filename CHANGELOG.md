@@ -1,3 +1,7 @@
+## 3.4.2 - 8 March 2022
+
+- \#288 sheetInfo() should default to the currently active sheet, not the first
+
 ## 3.4.1 - 7 March 2022
 
 - \#287 Upgrade POI to 5.2.1
