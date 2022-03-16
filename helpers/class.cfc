@@ -30,12 +30,22 @@ component extends="base" accessors="true"{
 
 	private any function loadClassUsingOsgi( required string javaclass ){
 		library().setJavaClassesLastLoadedVia( "OSGi bundle" );
-		return library().getOsgiLoader().loadClass(
-			className: arguments.javaclass
-			,bundlePath: this.getRootPath() & "lib-osgi.jar"
-			,bundleSymbolicName: library().getOsgiLibBundleSymbolicName()
-			,bundleVersion: library().getOsgiLibBundleVersion()
-		);
+		try{
+			return library().getOsgiLoader().loadClass(
+				className: arguments.javaclass
+				,bundlePath: this.getRootPath() & "lib-osgi.jar"
+				,bundleSymbolicName: library().getOsgiLibBundleSymbolicName()
+				,bundleVersion: library().getOsgiLibBundleVersion()
+			);
+		}
+		catch( org.osgi.framework.BundleException exception ){
+			if( exception.message.FindNoCase( "is not available in version" ) ){
+				library().flushOsgiBundle();
+				retry;
+			}
+			else
+				rethrow;
+		}
 	}
 
 }
