@@ -1,3 +1,8 @@
+## 3.4.4 - 25 March 2022
+
+- \#289 Prevent one-off OSGi bundle errors when the bundle version changes
+- \#290 Upgrade POI to 5.2.2
+
 ## 3.4.3 - 8 March 2022
 
 - \#288 sheetInfo() should default to the currently active sheet, not the first
