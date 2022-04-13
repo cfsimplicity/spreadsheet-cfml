@@ -46,18 +46,14 @@ component extends="base" accessors="true"{
 			var cellIterator = rowIterator.next().cellIterator();
 			while( cellIterator.hasNext() ){
 				var cell = cellIterator.next();
-				var formulaStruct = {
-					row: ( cell.getRowIndex() + 1 )
-					,column: ( cell.getColumnIndex() + 1 )
-				};
-				try{
-					formulaStruct.formula = cell.getCellFormula();
+				var cellFormula = getCellFormula( cell );
+				if ( cellFormula.Len() ) {
+					formulas.Append( {
+						row: ( cell.getRowIndex() + 1 )
+						,column: ( cell.getColumnIndex() + 1 )
+						,formula: cellFormula
+					} );
 				}
-				catch( any exception ){
-					formulaStruct.formula = "";
-				}
-				if( formulaStruct.formula.Len() )
-					formulas.Append( formulaStruct );
 			}
 		}
 		return formulas;
@@ -266,6 +262,14 @@ component extends="base" accessors="true"{
 	}
 
 	/* Private */
+
+
+	private string function getCellFormula( required cell ) {
+		if ( getCellHelper().cellIsOfType( cell, "FORMULA" ) ) {
+			return cell.getCellFormula();
+		}
+		return "";
+	}
 
 	private any function generateQueryColumnNames( required workbook, required struct sheet ){
 		if( arguments.sheet.columnNames.Len() ){
