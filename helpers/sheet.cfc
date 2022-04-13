@@ -47,7 +47,7 @@ component extends="base" accessors="true"{
 			while( cellIterator.hasNext() ){
 				var cell = cellIterator.next();
 				var cellFormula = getCellFormula( cell );
-				if ( cellFormula.Len() ) {
+				if( cellFormula.Len() ) {
 					formulas.Append( {
 						row: ( cell.getRowIndex() + 1 )
 						,column: ( cell.getColumnIndex() + 1 )
@@ -263,11 +263,9 @@ component extends="base" accessors="true"{
 
 	/* Private */
 
-
 	private string function getCellFormula( required cell ) {
-		if ( getCellHelper().cellIsOfType( cell, "FORMULA" ) ) {
+		if( getCellHelper().cellIsOfType( cell, "FORMULA" ) )
 			return cell.getCellFormula();
-		}
 		return "";
 	}
 
