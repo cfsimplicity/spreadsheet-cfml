@@ -161,6 +161,7 @@ component extends="base" accessors="true"{
 		,boolean includeHeaderRow=false
 		,boolean includeBlankRows=false
 		,boolean includeHiddenColumns=false
+		,boolean includeHiddenRows=false
 		,boolean fillMergedCellsWithVisibleValue=false
 		,boolean includeRichTextFormatting=false
 		,string rows //range
@@ -173,6 +174,7 @@ component extends="base" accessors="true"{
 			includeHeaderRow: arguments.includeHeaderRow
 			,hasHeaderRow: ( arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) )
 			,includeBlankRows: arguments.includeBlankRows
+			,includeHiddenRows: arguments.includeHiddenRows
 			,columnNames: []
 			,columnRanges: []
 			,totalColumnCount: 0

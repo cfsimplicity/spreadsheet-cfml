@@ -365,6 +365,20 @@ describe( "read", function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Can exclude rows formatted as 'hidden'", function(){
+		var data = QueryNew( "item", "VarChar", [ [ "Apple" ], [ "Banana" ], [ "Carrot" ], [ "Doughnut" ] ] );
+		var workbook = s.new();
+		s.addRows( workbook, data );
+		s.hideRow( workbook, 1 );
+		s.hideRow( workbook, 3 );
+		s.write( workbook, tempXlsPath, true );
+		var actual = s.read( src=tempXlsPath, format="query", includeHiddenRows=false );
+		var expected = QuerySim( "column1
+			Banana
+			Doughnut");
+		expect( actual ).toBe( expected );
+	});
+
 	it( "Returns an empty query if the spreadsheet is empty even if headerRow is specified", function(){
 		var workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( function( wb ){
@@ -412,7 +426,7 @@ describe( "read", function(){
 		var actual = s.read( src=path, format="query", password="pass" );
 		expect( actual ).toBe( expected );
 	});
-	
+
 	it( "Can read a spreadsheet containing a formula", function(){
 		var workbook = s.new();
 		s.addColumn( workbook,"1,1" );
@@ -509,7 +523,7 @@ describe( "read", function(){
 			var actual = s.read( src=tempXlsPath, format="query", columnNames=columnNames );
 			expect( actual ).toBe( expected );
 		});
-		
+
 	});
 
 	describe( "query column type setting", function(){
@@ -613,7 +627,7 @@ describe( "read", function(){
 					expect( actual ).toBe( expected );
 					SetTimeZone( currentTZ );
 				});
-				
+
 			});
 
 		},
@@ -722,5 +736,5 @@ describe( "read", function(){
 		if( FileExists( variables.tempXlsxPath ) ) FileDelete( variables.tempXlsxPath );
 	});
 
-});	
+});
 </cfscript>
