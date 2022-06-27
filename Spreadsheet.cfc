@@ -85,7 +85,7 @@ component accessors="true"{
 	}
 
 	/* Meta utilities */
-	
+
 	private void function detectEngineProperties(){
 		this.setIsACF( ( server.coldfusion.productname == "ColdFusion Server" ) );
 	}
@@ -196,7 +196,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
 		if( arguments.trim )
 			csvString = csvString.Trim();
-		var format = arguments.KeyExists( "delimiter" )? 
+		var format = arguments.KeyExists( "delimiter" )?
 			getCsvHelper().getCsvFormatForDelimiter( arguments.delimiter )
 			: getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
 		var parsed = getClassHelper().loadClass( "org.apache.commons.csv.CSVParser" ).parse( csvString, format );
@@ -385,7 +385,7 @@ component accessors="true"{
 	public Spreadsheet function addAutofilter( required workbook, string cellRange="", numeric row=1 ){
 		arguments.cellRange = arguments.cellRange.Trim();
 		if( arguments.cellRange.IsEmpty() ){
-			//default to all columns in the first (default) or specified row 
+			//default to all columns in the first (default) or specified row
 			var rowIndex = ( Max( 0, arguments.row -1 ) );
 			var indices = {
 				startRow: rowIndex
@@ -692,7 +692,7 @@ component accessors="true"{
 	public Spreadsheet function cleanUpStreamingXml( required workbook ){
 		// SXSSF uses temporary files which MUST be cleaned up, see http://poi.apache.org/components/spreadsheet/how-to.html#sxssf
 		if( isStreamingXmlFormat( arguments.workbook ) )
-			arguments.workbook.dispose(); 
+			arguments.workbook.dispose();
 		return this;
 	}
 
@@ -784,7 +784,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		var rowIndex = ( arguments.row -1 );
-		if( 
+		if(
 				( rowIndex < getSheetHelper().getFirstRowIndex( sheet ) )
 				||
 				( rowIndex > getSheetHelper().getLastRowIndex( sheet ) )
@@ -1159,7 +1159,7 @@ component accessors="true"{
 	}
 
 	public boolean function isRowHidden( required workbook, required numeric row ){
-		return getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row ).getZeroHeight();
+		return getRowHelper().isRowHidden( arguments.workbook, arguments.row );
 	}
 
 	public boolean function isSpreadsheetFile( required string path ){
@@ -1256,7 +1256,7 @@ component accessors="true"{
 		return new( sheetName=arguments.sheetName, xmlFormat=true );
 	}
 
-	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter="," ){		
+	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter="," ){
 		var data = [];
 		var columns = getQueryHelper()._QueryColumnArray( arguments.query );
 		if( arguments.includeHeaderRow )
@@ -1297,6 +1297,7 @@ component accessors="true"{
 		,boolean includeBlankRows=false
 		,boolean fillMergedCellsWithVisibleValue=false
 		,boolean includeHiddenColumns=true
+		,boolean includeHiddenRows=true
 		,boolean includeRichTextFormatting=false
 		,string password
 		,string csvDelimiter=","
@@ -1340,6 +1341,7 @@ component accessors="true"{
 		args.includeBlankRows = arguments.includeBlankRows;
 		args.fillMergedCellsWithVisibleValue = arguments.fillMergedCellsWithVisibleValue;
 		args.includeHiddenColumns = arguments.includeHiddenColumns;
+		args.includeHiddenRows = arguments.includeHiddenRows;
 		args.includeRichTextFormatting = arguments.includeRichTextFormatting;
 		args.makeColumnNamesSafe = arguments.makeColumnNamesSafe;
 		var generatedQuery = getSheetHelper().sheetToQuery( argumentCollection=args );
@@ -1477,7 +1479,7 @@ component accessors="true"{
 		cell.setCellFormula( JavaCast( "string", arguments.formula ) );
 		return this;
 	}
-	
+
 	public Spreadsheet function setCellHyperlink(
 		required workbook
 		,required string link

@@ -20,6 +20,8 @@ component extends="base" accessors="true"{
 		}
 		if( rowIsEmpty( row ) && !arguments.sheet.includeBlankRows )
 			return this;
+		if( rowIsHidden( row ) && !arguments.sheet.includeHiddenRows )
+			return this;
 		rowData = getRowData( arguments.workbook, row, arguments.sheet.columnRanges, arguments.includeRichTextFormatting );
 		arguments.sheet.data.Append( rowData );
 		setSheetColumnCountFromRow( row, arguments.sheet );
@@ -210,8 +212,12 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
+	boolean function isRowHidden( required workbook, required numeric row ){
+		return rowIsHidden( getRowFromActiveSheet( arguments.workbook, arguments.row ) );
+	}
+
 	any function toggleRowHidden( required workbook, required numeric rowNumber, required boolean state ){
-		getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).setZeroHeight( JavaCast( "boolean", arguments.state ) );
+		getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).setZeroHeight( JavaCast( "boolean", arguments.state ) );
 		return this;
 	}
 
@@ -224,6 +230,10 @@ component extends="base" accessors="true"{
 	    	return false;
 	  }
 	  return true;
+	}
+
+	private boolean function rowIsHidden( required row ){
+		return arguments.row.getZeroHeight() || arguments.row.getHeight() == 0;
 	}
 
 	private void function setSheetColumnCountFromRow( required any row, required struct sheet ){
