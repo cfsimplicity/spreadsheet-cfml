@@ -385,7 +385,7 @@ component extends="base" accessors="true"{
 	}
 
 	private void function doFillMergedCellsWithVisibleValue( required workbook, required sheet ){
-		if( !getSheetHelper().hasMergedRegions( arguments.sheet ) )
+		if( !hasMergedRegions( arguments.sheet ) )
 			return this;
 		for( var regionIndex = 0; regionIndex < arguments.sheet.getNumMergedRegions(); regionIndex++ ){
 			var region = arguments.sheet.getMergedRegion( regionIndex );

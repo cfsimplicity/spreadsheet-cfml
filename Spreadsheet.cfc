@@ -1274,7 +1274,7 @@ component accessors="true"{
 			data.Append( rowValues );
 		}
 		var builder = getStringHelper().newJavaStringBuilder();
-		var csvFormat =  getCsvHelper().delimiterIsTab( arguments.delimiter )?
+		var csvFormat = getCsvHelper().delimiterIsTab( arguments.delimiter )?
 			getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ]
 			: getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "EXCEL" ) ]
 				.withDelimiter( JavaCast( "char", arguments.delimiter ) );
