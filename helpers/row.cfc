@@ -5,14 +5,15 @@ component extends="base" accessors="true"{
 		,required struct sheet
 		,required numeric rowIndex
 		,boolean includeRichTextFormatting=false
+		,any rowObject
 	){
 		if( ( arguments.rowIndex == arguments.sheet.headerRowIndex ) && !arguments.sheet.includeHeaderRow ){
-			var row = arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
+			var row = arguments.rowObject?: arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
 			setSheetColumnCountFromRow( row, arguments.sheet );
 			return this;
 		}
 		var rowData = [];
-		var row = arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
+		var row = arguments.rowObject?: arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
 		if( IsNull( row ) ){
 			if( arguments.sheet.includeBlankRows )
 				arguments.sheet.data.Append( rowData );
@@ -86,6 +87,18 @@ component extends="base" accessors="true"{
 	any function getRowFromActiveSheet( required workbook, required numeric rowNumber ){
 		var rowIndex = ( arguments.rowNumber-1 );
 		return getSheetHelper().getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
+	}
+
+	any function getRowFromSheet( required workbook, required sheet, required numeric rowIndex ){
+		if( !getStreamingReaderHelper().isStreamingReaderFormat( arguments.workbook ) )
+			return arguments.sheet.getRow( JavaCast( "int", arguments.rowIndex ) );
+		//streaming reader sheet, no random access so iterate
+		var rowIterator = arguments.sheet.rowIterator();
+		while( rowIterator.hasNext() ){
+			var rowObject = rowIterator.next();
+			if( rowObject.getRowNum() == arguments.rowIndex )
+				return rowObject;
+		}
 	}
 
 	array function parseListDataToArray( required string line, required string delimiter, boolean handleEmbeddedCommas=true ){

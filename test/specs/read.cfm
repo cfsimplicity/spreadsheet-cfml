@@ -104,7 +104,7 @@ describe( "read", function(){
 		expect( actual ).toBe( expected );
 	});
 
-	it( "Uses header row for column names if specified", function(){
+	it( "Uses the specified header row for column names", function(){
 		var path = getTestFilePath( "test.xls" );
 		var expected = querySim(
 			"a,b
@@ -189,7 +189,7 @@ describe( "read", function(){
 		var dateValue = CreateDate( 2015, 04, 12 );
 		var data = QueryNew( "column1,column2,column3,column4,column5", "Integer,Integer,Bit,Date,VarChar", [ [ 2, 0, true, dateValue, "01" ] ] );
 		var workbook = s.new();
-		s.addRows( workbook,data )
+		s.addRows( workbook, data )
 			.write( workbook, tempXlsPath, true );
 		var expected = data;
 		var actual = s.getSheetHelper().sheetToQuery( workbook );
@@ -329,7 +329,7 @@ describe( "read", function(){
 	it( "Can return a CSV string from an Excel file", function(){
 		var path = getTestFilePath( "test.xls" );
 		var expected = 'a,b#crlf#1,2015-04-01 00:00:00#crlf#2015-04-01 01:01:01,2';
-		var actual = s.read( src=path,format="csv" );
+		var actual = s.read( src=path, format="csv" );
 		expect( actual ).toBe( expected );
 		expected = 'a,b#crlf#a,b#crlf#1,2015-04-01 00:00:00#crlf#2015-04-01 01:01:01,2';
 		actual = s.read( src=path, format="csv", headerRow=1, includeHeaderRow=true );
@@ -353,6 +353,20 @@ describe( "read", function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Includes columns formatted as 'hidden' by default", function(){
+		spreadsheetTypes.Each( function( type ){
+			var path = variables[ "temp" & type & "Path" ];
+			s.newChainable( type )
+				.addColumn( "a1" )
+				.addColumn( "b1" )
+				.hideColumn( 1 )
+				.write( path, true );
+			var actual = s.read( src=path, format="query" );
+			var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a1", "b1" ] ] );
+			expect( actual ).toBe( expected );
+		});
+	});
+
 	it( "Can exclude columns formatted as 'hidden'", function(){
 		var workbook = s.new();
 		s.addColumn( workbook, "a1" )
@@ -365,17 +379,29 @@ describe( "read", function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Includes rows formatted as 'hidden' by default", function(){
+		var data = QueryNew( "column1", "VarChar", [ [ "Apple" ], [ "Banana" ], [ "Carrot" ], [ "Doughnut" ] ] );
+		spreadsheetTypes.Each( function( type ){
+			var path = variables[ "temp" & type & "Path" ];
+			s.newChainable( type )
+				.addRows( data )
+				.hideRow( 1 )
+				.write( path, true );
+			var actual = s.read( src=path, format="query" );
+			var expected = data;
+			expect( actual ).toBe( expected );
+		});
+	});
+
 	it( "Can exclude rows formatted as 'hidden'", function(){
-		var data = QueryNew( "item", "VarChar", [ [ "Apple" ], [ "Banana" ], [ "Carrot" ], [ "Doughnut" ] ] );
+		var data = QueryNew( "column1", "VarChar", [ [ "Apple" ], [ "Banana" ], [ "Carrot" ], [ "Doughnut" ] ] );
 		var workbook = s.new();
 		s.addRows( workbook, data );
 		s.hideRow( workbook, 1 );
 		s.hideRow( workbook, 3 );
 		s.write( workbook, tempXlsPath, true );
 		var actual = s.read( src=tempXlsPath, format="query", includeHiddenRows=false );
-		var expected = QuerySim( "column1
-			Banana
-			Doughnut");
+		var expected = QueryNew( "column1", "VarChar", [ [ "Banana" ], [ "Doughnut" ] ] );
 		expect( actual ).toBe( expected );
 	});
 
@@ -429,7 +455,7 @@ describe( "read", function(){
 
 	it( "Can read a spreadsheet containing a formula", function(){
 		var workbook = s.new();
-		s.addColumn( workbook,"1,1" );
+		s.addColumn( workbook, "1,1" );
 		var theFormula = "SUM(A1:A2)";
 		s.setCellFormula( workbook, theFormula, 3, 1 )
 			.write( workbook=workbook, filepath=tempXlsPath, overwrite=true );
@@ -688,6 +714,13 @@ describe( "read", function(){
 				var path = getTestFilePath( "test.xls" );
 				s.read( src=path, format="query", sheetNumber=20 );
 			}).toThrow( regex="Invalid sheet|out of range" );
+		});
+
+		it( "both sheetName and sheetNumber arguments are specified", function(){
+			expect( function(){
+				var path = getTestFilePath( "test.xls" );
+				s.read( src=path, sheetName="sheet1", sheetNumber=2 );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidArguments" );
 		});
 
 		it( "the password for an encrypted XML file is incorrect", function(){

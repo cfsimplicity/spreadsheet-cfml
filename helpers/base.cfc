@@ -89,6 +89,10 @@ component accessors="true"{
 		return library().getSheetHelper();
 	}
 
+	any function getStreamingReaderHelper(){
+		return library().getStreamingReaderHelper();
+	}
+
 	any function getStringHelper(){
 		return library().getStringHelper();
 	}

@@ -196,24 +196,17 @@ component extends="base" accessors="true"{
 		if( arguments.sheetNumber == 0 )
 			return QueryNew( "" );//no visible sheets
 		sheet.object = getSheetByNumber( arguments.workbook, arguments.sheetNumber );
-		var sheetHasRows = !sheetIsEmpty( sheet.object );
+		var sheetHasRows = !sheetIsEmpty( sheet.object, arguments.workbook );
 		if( sheetHasRows ){
-			if( arguments.fillMergedCellsWithVisibleValue )
-				doFillMergedCellsWithVisibleValue( arguments.workbook, sheet.object );
-			if( arguments.KeyExists( "rows" ) ){
-				var allRanges = getRangeHelper().extractRanges( arguments.rows, arguments.workbook );
-				for( var thisRange in allRanges ){
-					for( var rowNumber = thisRange.startAt; rowNumber <= thisRange.endAt; rowNumber++ ){
-						var rowIndex = ( rowNumber -1 );
-						getRowHelper().addRowToSheetData( arguments.workbook, sheet, rowIndex, arguments.includeRichTextFormatting );
-					}
-				}
-			}
-			else{
-				var lastRowIndex = sheet.object.getLastRowNum();// zero based
-				for( var rowIndex = 0; rowIndex <= lastRowIndex; rowIndex++ )
-					getRowHelper().addRowToSheetData( arguments.workbook, sheet, rowIndex, arguments.includeRichTextFormatting );
-			}
+			var populateDataArgs = {
+				workbook: arguments.workbook
+				,sheet: sheet
+				,fillMergedCellsWithVisibleValue: arguments.fillMergedCellsWithVisibleValue
+				,includeRichTextFormatting: arguments.includeRichTextFormatting
+			};
+			if( arguments.KeyExists( "rows" ) )
+				populateDataArgs.rows = arguments.rows;
+			populateSheetData( argumentCollection= populateDataArgs );
 		}
 		generateQueryColumnNames( arguments.workbook, sheet );
 		arguments.queryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, sheet.columnNames, sheet.totalColumnCount, sheet.data );
@@ -263,6 +256,12 @@ component extends="base" accessors="true"{
 		throwErrorIFSheetNameAndNumberArgumentsBothPassed( argumentCollection=arguments );
 	}
 
+	any function throwErrorIFSheetNameAndNumberArgumentsBothPassed(){
+		if( sheetNameArgumentWasProvided( argumentCollection=arguments ) && sheetNumberArgumentWasProvided( argumentCollection=arguments ) )
+			Throw( type=library().getExceptionType() & ".invalidArguments", message="Invalid arguments", detail="Specify either a sheetName or sheetNumber, not both" );
+		return this;
+	}
+
 	/* Private */
 
 	private string function getCellFormula( required cell ) {
@@ -276,11 +275,11 @@ component extends="base" accessors="true"{
 			forceQueryColumnsToMatchSpecifiedColumns( arguments.sheet );
 			return this; // already generated
 		}
-		if( sheetIsEmpty( arguments.sheet.object ) )
+		if( sheetIsEmpty( arguments.sheet.object, arguments.workbook ) )
 			return this;
 		if( arguments.sheet.hasHeaderRow ){
 			// use specified header row values as column names
-			var headerRowObject = arguments.sheet.object.getRow( JavaCast( "int", arguments.sheet.headerRowIndex ) );
+			var headerRowObject = getRowHelper().getRowFromSheet( arguments.workbook, arguments.sheet.object, arguments.sheet.headerRowIndex );
 			var headerRowData = getRowHelper().getRowData( arguments.workbook, headerRowObject, arguments.sheet.columnRanges );
 			// adds default column names if header row column count is less than total data column count
 			cfloop( from=1, to=arguments.sheet.totalColumnCount, index="local.i" ){
@@ -343,6 +342,8 @@ component extends="base" accessors="true"{
 	}
 
 	private string function getVisibility( required workbook, required numeric sheetNumber ){
+		if( getStreamingReaderHelper().isStreamingReaderFormat( arguments.workbook ) ) // getSheetVisibility() not supported
+			return "VISIBLE";
 		validateSheetNumber( arguments.workbook, arguments.sheetNumber );
 		var sheetIndex = ( arguments.sheetNumber -1 );
 		return arguments.workbook.getSheetVisibility( sheetIndex ).toString();
@@ -360,8 +361,8 @@ component extends="base" accessors="true"{
 		return ( sheetIndex == workbook.getActiveSheetIndex() );
 	}
 
-	private boolean function sheetIsEmpty( required sheet ){
-		return ( getLastRowIndex( arguments.sheet ) == -1 );
+	private boolean function sheetIsEmpty( required sheet, required workbook ){
+		return !arguments.sheet.rowIterator().hasNext();
 	}
 
 	private boolean function sheetNameArgumentWasProvided(){
@@ -378,12 +379,6 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
-	private any function throwErrorIFSheetNameAndNumberArgumentsBothPassed(){
-		if( sheetNameArgumentWasProvided( argumentCollection=arguments ) && sheetNumberArgumentWasProvided( argumentCollection=arguments ) )
-			Throw( type=library().getExceptionType(), message="Invalid arguments", detail="Only one argument is allowed. Specify either a sheetName or sheetNumber, not both" );
-		return this;
-	}
-
 	private void function doFillMergedCellsWithVisibleValue( required workbook, required sheet ){
 		if( !hasMergedRegions( arguments.sheet ) )
 			return this;
@@ -395,6 +390,39 @@ component extends="base" accessors="true"{
 			var regionEndColumnNumber = ( region.getLastColumn() +1 );
 			var visibleValue = library().getCellValue( arguments.workbook, regionStartRowNumber, regionStartColumnNumber );
 			library().setCellRangeValue( arguments.workbook, visibleValue, regionStartRowNumber, regionEndRowNumber, regionStartColumnNumber, regionEndColumnNumber );
+		}
+	}
+
+	private void function populateSheetData(
+		required workbook
+		,required sheet
+		,required boolean fillMergedCellsWithVisibleValue
+		,required boolean includeRichTextFormatting
+	){
+		if( getStreamingReaderHelper().isStreamingReaderFormat( arguments.workbook ) ){
+			var rowIterator = arguments.sheet.object.rowIterator();
+			while( rowIterator.hasNext() ){
+				var rowObject = rowIterator.next();
+				var rowIndex = rowObject.getRowNum();
+				getRowHelper().addRowToSheetData( arguments.workbook, arguments.sheet, rowIndex, arguments.includeRichTextFormatting, rowObject );
+			}
+			return;
+		}
+		if( arguments.fillMergedCellsWithVisibleValue )
+			doFillMergedCellsWithVisibleValue( arguments.workbook, arguments.sheet.object );
+		if( arguments.KeyExists( "rows" ) ){
+			var allRanges = getRangeHelper().extractRanges( arguments.rows, arguments.workbook );
+			for( var thisRange in allRanges ){
+				for( var rowNumber = thisRange.startAt; rowNumber <= thisRange.endAt; rowNumber++ ){
+					var rowIndex = ( rowNumber -1 );
+					getRowHelper().addRowToSheetData( arguments.workbook, arguments.sheet, rowIndex, arguments.includeRichTextFormatting );
+				}
+			}
+		}
+		else{
+			var lastRowIndex = arguments.sheet.object.getLastRowNum();// zero based
+			for( var rowIndex = 0; rowIndex <= lastRowIndex; rowIndex++ )
+				getRowHelper().addRowToSheetData( arguments.workbook, arguments.sheet, rowIndex, arguments.includeRichTextFormatting );
 		}
 	}
 
