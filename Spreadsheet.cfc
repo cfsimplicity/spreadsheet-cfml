@@ -1,8 +1,8 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="3.4.4" setter="false";
-	property name="osgiLibBundleVersion" default="5.2.2.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="version" default="3.5.0" setter="false";
+	property name="osgiLibBundleVersion" default="5.2.2.1" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
 	//commonly invoked POI class names
@@ -39,6 +39,7 @@ component accessors="true"{
 	property name="rangeHelper";
 	property name="rowHelper";
 	property name="sheetHelper";
+	property name="streamingReaderHelper";
 	property name="stringHelper";
 	property name="workbookHelper";
 
@@ -80,12 +81,13 @@ component accessors="true"{
 		setRangeHelper( New helpers.range( this ) );
 		setRowHelper( New helpers.row( this ) );
 		setSheetHelper( New helpers.sheet( this ) );
+		setStreamingReaderHelper( New helpers.streamingReader( this ) );
 		setStringHelper( New helpers.string( this ) );
 		setWorkbookHelper( New helpers.workbook( this ) );
 	}
 
 	/* Meta utilities */
-	
+
 	private void function detectEngineProperties(){
 		this.setIsACF( ( server.coldfusion.productname == "ColdFusion Server" ) );
 	}
@@ -196,7 +198,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
 		if( arguments.trim )
 			csvString = csvString.Trim();
-		var format = arguments.KeyExists( "delimiter" )? 
+		var format = arguments.KeyExists( "delimiter" )?
 			getCsvHelper().getCsvFormatForDelimiter( arguments.delimiter )
 			: getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
 		var parsed = getClassHelper().loadClass( "org.apache.commons.csv.CSVParser" ).parse( csvString, format );
@@ -385,7 +387,7 @@ component accessors="true"{
 	public Spreadsheet function addAutofilter( required workbook, string cellRange="", numeric row=1 ){
 		arguments.cellRange = arguments.cellRange.Trim();
 		if( arguments.cellRange.IsEmpty() ){
-			//default to all columns in the first (default) or specified row 
+			//default to all columns in the first (default) or specified row
 			var rowIndex = ( Max( 0, arguments.row -1 ) );
 			var indices = {
 				startRow: rowIndex
@@ -692,7 +694,7 @@ component accessors="true"{
 	public Spreadsheet function cleanUpStreamingXml( required workbook ){
 		// SXSSF uses temporary files which MUST be cleaned up, see http://poi.apache.org/components/spreadsheet/how-to.html#sxssf
 		if( isStreamingXmlFormat( arguments.workbook ) )
-			arguments.workbook.dispose(); 
+			arguments.workbook.dispose();
 		return this;
 	}
 
@@ -784,7 +786,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType(), message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		var rowIndex = ( arguments.row -1 );
-		if( 
+		if(
 				( rowIndex < getSheetHelper().getFirstRowIndex( sheet ) )
 				||
 				( rowIndex > getSheetHelper().getLastRowIndex( sheet ) )
@@ -1064,9 +1066,8 @@ component accessors="true"{
 	public numeric function getColumnCount( required workbook, sheetNameOrNumber ){
 		if( arguments.KeyExists( "sheetNameOrNumber" ) )
 			getSheetHelper().setActiveSheetNameOrNumber( argumentCollection=arguments );
-		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
-		var rowIterator = sheet.rowIterator();
 		var result = 0;
+		var rowIterator = getSheetHelper().getActiveSheet( arguments.workbook ).rowIterator();
 		while( rowIterator.hasNext() ){
 			var row = rowIterator.next();
 			result = Max( result, row.getLastCellNum() );
@@ -1159,7 +1160,7 @@ component accessors="true"{
 	}
 
 	public boolean function isRowHidden( required workbook, required numeric row ){
-		return getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row ).getZeroHeight();
+		return getRowHelper().isRowHidden( arguments.workbook, arguments.row );
 	}
 
 	public boolean function isSpreadsheetFile( required string path ){
@@ -1256,7 +1257,7 @@ component accessors="true"{
 		return new( sheetName=arguments.sheetName, xmlFormat=true );
 	}
 
-	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter="," ){		
+	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter="," ){
 		var data = [];
 		var columns = getQueryHelper()._QueryColumnArray( arguments.query );
 		if( arguments.includeHeaderRow )
@@ -1274,7 +1275,7 @@ component accessors="true"{
 			data.Append( rowValues );
 		}
 		var builder = getStringHelper().newJavaStringBuilder();
-		var csvFormat =  getCsvHelper().delimiterIsTab( arguments.delimiter )?
+		var csvFormat = getCsvHelper().delimiterIsTab( arguments.delimiter )?
 			getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ]
 			: getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "EXCEL" ) ]
 				.withDelimiter( JavaCast( "char", arguments.delimiter ) );
@@ -1297,6 +1298,7 @@ component accessors="true"{
 		,boolean includeBlankRows=false
 		,boolean fillMergedCellsWithVisibleValue=false
 		,boolean includeHiddenColumns=true
+		,boolean includeHiddenRows=true
 		,boolean includeRichTextFormatting=false
 		,string password
 		,string csvDelimiter=","
@@ -1305,10 +1307,8 @@ component accessors="true"{
 	){
 		if( arguments.KeyExists( "query" ) )
 			Throw( type=this.getExceptionType(), message="Invalid argument 'query'.", detail="Just use format='query' to return a query object" );
-		if( arguments.KeyExists( "format" ) && !ListFindNoCase( "query,html,csv", arguments.format ) )
-			Throw( type=this.getExceptionType(), message="Invalid format", detail="Supported formats are: 'query', 'html' and 'csv'" );
-		if( arguments.KeyExists( "sheetName" ) && arguments.KeyExists( "sheetNumber" ) )
-			Throw( type=this.getExceptionType(), message="Cannot provide both sheetNumber and sheetName arguments", detail="Only one of either 'sheetNumber' or 'sheetName' arguments may be provided." );
+		getExceptionHelper().throwExceptionIFreadFormatIsInvalid( argumentCollection=arguments );
+		getSheetHelper().throwErrorIFSheetNameAndNumberArgumentsBothPassed( argumentCollection=arguments );
 		getFileHelper().throwErrorIFfileNotExists( arguments.src );
 		var passwordProtected = ( arguments.KeyExists( "password") && !arguments.password.Trim().IsEmpty() );
 		var workbook = passwordProtected? getWorkbookHelper().workbookFromFile( arguments.src, arguments.password ): getWorkbookHelper().workbookFromFile( arguments.src );
@@ -1334,12 +1334,13 @@ component accessors="true"{
 		else if( arguments.KeyExists( "queryColumnNames" ) )
 			args.columnNames = arguments.queryColumnNames;// accept better alias `queryColumnNames` to match csvToQuery
 		if( ( arguments.format == "query" ) && arguments.KeyExists( "queryColumnTypes" ) ){
-			getQueryHelper().throwErrorIFinvalidQueryColumnTypesArgument( argumentCollection=arguments );
 			args.queryColumnTypes = arguments.queryColumnTypes;
+			getQueryHelper().throwErrorIFinvalidQueryColumnTypesArgument( argumentCollection=args );
 		}
 		args.includeBlankRows = arguments.includeBlankRows;
 		args.fillMergedCellsWithVisibleValue = arguments.fillMergedCellsWithVisibleValue;
 		args.includeHiddenColumns = arguments.includeHiddenColumns;
+		args.includeHiddenRows = arguments.includeHiddenRows;
 		args.includeRichTextFormatting = arguments.includeRichTextFormatting;
 		args.makeColumnNamesSafe = arguments.makeColumnNamesSafe;
 		var generatedQuery = getSheetHelper().sheetToQuery( argumentCollection=args );
@@ -1363,6 +1364,68 @@ component accessors="true"{
 		arguments.workbook.write( baos );
 		baos.flush();
 		return baos.toByteArray();
+	}
+
+	public any function readLargeFile(
+		required string src
+		,string format="query"
+		,string sheetName
+		,numeric sheetNumber // 1-based
+		,numeric headerRow
+		,boolean includeHeaderRow=false
+		,boolean includeBlankRows=false
+		,boolean includeHiddenColumns=true
+		,boolean includeHiddenRows=true
+		,any queryColumnNames //list or array
+		,any queryColumnTypes //'auto', list of types, or struct of column names/types mapping. Null means no types are specified.
+		,boolean makeColumnNamesSafe=false
+		,string password
+		,string csvDelimiter=","
+		,struct streamingReaderOptions
+	){
+		if( this.getIsACF() ){
+			Throw( type="#this.getExceptionType()#.methodNotSupported", message="'readLargeFile()' is not supported with ColdFusion", detail="'readLargeFile()' currently only works with Lucee." );
+		}
+		getFileHelper().throwErrorIFfileNotExists( arguments.src );
+		getExceptionHelper().throwExceptionIFreadFormatIsInvalid( argumentCollection=arguments );
+		getSheetHelper().throwErrorIFSheetNameAndNumberArgumentsBothPassed( argumentCollection=arguments );
+		var builderOptions = arguments.streamingReaderOptions?:{};
+		if( arguments.KeyExists( "password" ) )
+			builderOptions.password = arguments.password;
+		var sheetToQueryArgs = {
+			includeBlankRows: arguments.includeBlankRows
+			,includeHiddenColumns: arguments.includeHiddenColumns
+			,includeHiddenRows: arguments.includeHiddenRows
+			,makeColumnNamesSafe: arguments.makeColumnNamesSafe
+		};
+		if( arguments.KeyExists( "sheetName" ) )
+			sheetToQueryArgs.sheetName = arguments.sheetName;
+		if( arguments.KeyExists( "sheetNumber" ) )
+			sheetToQueryArgs.sheetNumber = arguments.sheetNumber;
+		if( arguments.KeyExists( "headerRow" ) ){
+			sheetToQueryArgs.headerRow = arguments.headerRow;
+			sheetToQueryArgs.includeHeaderRow = arguments.includeHeaderRow;
+		}
+		if( arguments.KeyExists( "queryColumnNames" ) )
+			sheetToQueryArgs.columnNames = arguments.queryColumnNames;
+		if( ( arguments.format == "query" ) && arguments.KeyExists( "queryColumnTypes" ) ){
+			sheetToQueryArgs.queryColumnTypes = arguments.queryColumnTypes;
+			getQueryHelper().throwErrorIFinvalidQueryColumnTypesArgument( argumentCollection=sheetToQueryArgs );
+		}
+		var generatedQuery = getStreamingReaderHelper().readFileIntoQuery( arguments.src, builderOptions, sheetToQueryArgs );
+		if( arguments.format == "query" )
+			return generatedQuery;
+		var exportArgs = { query: generatedQuery };
+		if( arguments.KeyExists( "headerRow" ) ){
+			exportArgs.headerRow = arguments.headerRow;
+			exportArgs.includeHeaderRow = arguments.includeHeaderRow;
+		}
+		if( arguments.format == "csv" ){
+			exportArgs.delimiter = arguments.csvDelimiter;
+			return queryToCsv( argumentCollection=exportArgs );
+		}
+		// format = html
+		return getQueryHelper().queryToHtml( argumentCollection=exportArgs );
 	}
 
 	public Spreadsheet function removePrintGridlines( required workbook ){
@@ -1477,7 +1540,7 @@ component accessors="true"{
 		cell.setCellFormula( JavaCast( "string", arguments.formula ) );
 		return this;
 	}
-	
+
 	public Spreadsheet function setCellHyperlink(
 		required workbook
 		,required string link

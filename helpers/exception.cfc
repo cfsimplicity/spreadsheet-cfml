@@ -17,4 +17,13 @@ component extends="base" accessors="true"{
 		Throw( type=library().getExceptionType(), message="Could not determine image type", detail="An image type could not be determined from the image provided" );
 	}
 
+	void function throwExceptionIFreadFormatIsInvalid(){
+		if( arguments.KeyExists( "format" ) && !ListFindNoCase( "query,html,csv", arguments.format ) )
+			Throw( type=library().getExceptionType() & ".invalidReadFormat", message="Invalid format", detail="Supported formats are: 'query', 'html' and 'csv'" );
+	}
+
+	void function throwInvalidFileForReadLargeFileException(){
+		Throw( type=library().getExceptionType() & ".invalidFile", message="Invalid spreadsheet file", detail="readLargeFile() can only be used with XLSX files. The file you are trying to read does not appear to be an XLSX file." );
+	}
+
 }

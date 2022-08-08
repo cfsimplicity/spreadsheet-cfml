@@ -1,3 +1,10 @@
+## 3.5.0 - 8 August 2022
+
+- Enhancements
+	- \#291 Speed improvement for getAllSheetFormulas()
+	- \#293 Add includeHiddenRows option to read()
+	- \#296 Add readLargeFile()
+
 ## 3.4.4 - 25 March 2022
 
 - \#289 Prevent one-off OSGi bundle errors when the bundle version changes

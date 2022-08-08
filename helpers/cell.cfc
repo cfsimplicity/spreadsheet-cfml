@@ -37,6 +37,9 @@ component extends="base" accessors="true"{
 	}
 
 	any function getCellFormulaValue( required workbook, required cell ){
+		// streaming reader cannot calculate formulas: return cached value
+		if( getStreamingReaderHelper().isStreamingReaderFormat( arguments.workbook ) )
+			return arguments.cell.getStringCellValue();
 		var formulaEvaluator = arguments.workbook.getCreationHelper().createFormulaEvaluator();
 		try{
 			return getFormatHelper().getDataFormatter().formatCellValue( arguments.cell, formulaEvaluator );

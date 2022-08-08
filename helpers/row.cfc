@@ -5,20 +5,23 @@ component extends="base" accessors="true"{
 		,required struct sheet
 		,required numeric rowIndex
 		,boolean includeRichTextFormatting=false
+		,any rowObject
 	){
 		if( ( arguments.rowIndex == arguments.sheet.headerRowIndex ) && !arguments.sheet.includeHeaderRow ){
-			var row = arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
+			var row = arguments.rowObject?: arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
 			setSheetColumnCountFromRow( row, arguments.sheet );
 			return this;
 		}
 		var rowData = [];
-		var row = arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
+		var row = arguments.rowObject?: arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
 		if( IsNull( row ) ){
 			if( arguments.sheet.includeBlankRows )
 				arguments.sheet.data.Append( rowData );
 			return this;
 		}
 		if( rowIsEmpty( row ) && !arguments.sheet.includeBlankRows )
+			return this;
+		if( rowIsHidden( row ) && !arguments.sheet.includeHiddenRows )
 			return this;
 		rowData = getRowData( arguments.workbook, row, arguments.sheet.columnRanges, arguments.includeRichTextFormatting );
 		arguments.sheet.data.Append( rowData );
@@ -84,6 +87,18 @@ component extends="base" accessors="true"{
 	any function getRowFromActiveSheet( required workbook, required numeric rowNumber ){
 		var rowIndex = ( arguments.rowNumber-1 );
 		return getSheetHelper().getActiveSheet( arguments.workbook ).getRow( JavaCast( "int", rowIndex ) );
+	}
+
+	any function getRowFromSheet( required workbook, required sheet, required numeric rowIndex ){
+		if( !getStreamingReaderHelper().isStreamingReaderFormat( arguments.workbook ) )
+			return arguments.sheet.getRow( JavaCast( "int", arguments.rowIndex ) );
+		//streaming reader sheet, no random access so iterate
+		var rowIterator = arguments.sheet.rowIterator();
+		while( rowIterator.hasNext() ){
+			var rowObject = rowIterator.next();
+			if( rowObject.getRowNum() == arguments.rowIndex )
+				return rowObject;
+		}
 	}
 
 	array function parseListDataToArray( required string line, required string delimiter, boolean handleEmbeddedCommas=true ){
@@ -210,8 +225,12 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
+	boolean function isRowHidden( required workbook, required numeric row ){
+		return rowIsHidden( getRowFromActiveSheet( arguments.workbook, arguments.row ) );
+	}
+
 	any function toggleRowHidden( required workbook, required numeric rowNumber, required boolean state ){
-		getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).setZeroHeight( JavaCast( "boolean", arguments.state ) );
+		getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).setZeroHeight( JavaCast( "boolean", arguments.state ) );
 		return this;
 	}
 
@@ -224,6 +243,10 @@ component extends="base" accessors="true"{
 	    	return false;
 	  }
 	  return true;
+	}
+
+	private boolean function rowIsHidden( required row ){
+		return arguments.row.getZeroHeight() || arguments.row.getHeight() == 0;
 	}
 
 	private void function setSheetColumnCountFromRow( required any row, required struct sheet ){
