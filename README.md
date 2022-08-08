@@ -140,6 +140,7 @@ You may wish to place the spreadsheet library files in a central location with a
 * [isRowHidden](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isRowHidden)
 * [isStreamingXmlFormat](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isStreamingXmlFormat)
 * [isXmlFormat](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isXmlFormat)
+* [readLargeFile](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/readLargeFile)
 * [removePrintGridlines](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/removePrintGridlines)
 * [renameSheet](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/renameSheet)
 * [removeSheetNumber](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/removeSheetNumber)
