@@ -10,86 +10,86 @@ component accessors="true"{
 	property name="XSSFWorkbookClassName" default="org.apache.poi.xssf.usermodel.XSSFWorkbook" setter="false";
 	property name="SXSSFWorkbookClassName" default="org.apache.poi.xssf.streaming.SXSSFWorkbook" setter="false";
 	//configurable
-	property name="dateFormats" type="struct";
-	property name="javaLoaderDotPath" default="javaLoader.JavaLoader";
-	property name="javaLoaderName" default="";
+	property name="dateFormats" type="struct" setter="false";
+	property name="javaLoaderDotPath" default="javaLoader.JavaLoader" setter="false";
+	property name="javaLoaderName" default="" setter="false";
 	property name="requiresJavaLoader" type="boolean" default="false";
 	//detected state
-	property name="isACF" type="boolean";
+	property name="isACF" type="boolean" setter="false";
 	property name="javaClassesLastLoadedVia" default="Nothing loaded yet";
 	//Lucee osgi loader
-	property name="osgiLoader";
+	property name="osgiLoader" setter="false";
 	// Helpers
-	property name="cellHelper";
-	property name="classHelper";
-	property name="colorHelper";
-	property name="columnHelper";
-	property name="commentHelper";
-	property name="csvHelper";
-	property name="dataTypeHelper";
-	property name="dateHelper";
-	property name="exceptionHelper";
-	property name="fileHelper";
-	property name="fontHelper";
-	property name="formatHelper";
-	property name="headerImageHelper";
-	property name="imageHelper";
-	property name="infoHelper";
-	property name="queryHelper";
-	property name="rangeHelper";
-	property name="rowHelper";
-	property name="sheetHelper";
-	property name="streamingReaderHelper";
-	property name="stringHelper";
-	property name="workbookHelper";
+	property name="cellHelper" setter="false";
+	property name="classHelper" setter="false";
+	property name="colorHelper" setter="false";
+	property name="columnHelper" setter="false";
+	property name="commentHelper" setter="false";
+	property name="csvHelper" setter="false";
+	property name="dataTypeHelper" setter="false";
+	property name="dateHelper" setter="false";
+	property name="exceptionHelper" setter="false";
+	property name="fileHelper" setter="false";
+	property name="fontHelper" setter="false";
+	property name="formatHelper" setter="false";
+	property name="headerImageHelper" setter="false";
+	property name="imageHelper" setter="false";
+	property name="infoHelper" setter="false";
+	property name="queryHelper" setter="false";
+	property name="rangeHelper" setter="false";
+	property name="rowHelper" setter="false";
+	property name="sheetHelper" setter="false";
+	property name="streamingReaderHelper" setter="false";
+	property name="stringHelper" setter="false";
+	property name="workbookHelper" setter="false";
 
 	public function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader ){
 		detectEngineProperties();
 		loadHelpers();
-		this.setDateFormats( getDateHelper().defaultFormats() );
+		variables.dateFormats = getDateHelper().defaultFormats();
 		if( arguments.KeyExists( "dateFormats" ) )
 			getDateHelper().setCustomFormats( arguments.dateFormats );
-		this.setRequiresJavaLoader( this.getIsACF() || ( arguments.KeyExists( "requiresJavaLoader" ) && arguments.requiresJavaLoader ) );
+		variables.requiresJavaLoader = this.getIsACF() || ( arguments.KeyExists( "requiresJavaLoader" ) && arguments.requiresJavaLoader );
 		if( !this.getRequiresJavaLoader() ){
-			this.setOsgiLoader( New osgiLoader() );
+			variables.osgiLoader = New osgiLoader();
 			return this;
 		}
-		this.setJavaLoaderName( "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#" );
+		variables.javaLoaderName = "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#";
 		 // Option to use the dot path of an existing javaloader installation to save duplication
 		if( arguments.KeyExists( "javaLoaderDotPath" ) )
-			this.setJavaLoaderDotPath( arguments.javaLoaderDotPath );
+			variables.javaLoaderDotPath = arguments.javaLoaderDotPath;
 		return this;
 	}
 
 	private void function loadHelpers(){
-		setCellHelper( New helpers.cell( this ) );
-		setClassHelper( New helpers.class( this ) );
-		setColorHelper( New helpers.color( this ) );
-		setColumnHelper( New helpers.column( this ) );
-		setCommentHelper( New helpers.comment( this ) );
-		setCsvHelper( New helpers.csv( this ) );
-		setDataTypeHelper( New helpers.dataType( this ) );
-		setDateHelper( New helpers.date( this ) );
-		setExceptionHelper( New helpers.exception( this ) );
-		setFileHelper( New helpers.file( this ) );
-		setFontHelper( New helpers.font( this ) );
-		setFormatHelper( New helpers.format( this ) );
-		setHeaderImageHelper( New helpers.headerImage( this ) );
-		setImageHelper( New helpers.image( this ) );
-		setInfoHelper( New helpers.info( this ) );
-		setQueryHelper( New helpers.query( this ) );
-		setRangeHelper( New helpers.range( this ) );
-		setRowHelper( New helpers.row( this ) );
-		setSheetHelper( New helpers.sheet( this ) );
-		setStreamingReaderHelper( New helpers.streamingReader( this ) );
-		setStringHelper( New helpers.string( this ) );
-		setWorkbookHelper( New helpers.workbook( this ) );
+		variables.cellHelper = New helpers.cell( this );
+		variables.classHelper = New helpers.class( this );
+		variables.colorHelper = New helpers.color( this );
+		variables.columnHelper = New helpers.column( this );
+		variables.commentHelper = New helpers.comment( this );
+		variables.csvHelper = New helpers.csv( this );
+		variables.dataTypeHelper = New helpers.dataType( this );
+		variables.dateHelper = New helpers.date( this );
+		variables.exceptionHelper = New helpers.exception( this );
+		variables.fileHelper = New helpers.file( this );
+		variables.fontHelper = New helpers.font( this );
+		variables.formatHelper = New helpers.format( this );
+		variables.headerImageHelper = New helpers.headerImage( this );
+		variables.imageHelper = New helpers.image( this );
+		variables.infoHelper = New helpers.info( this );
+		variables.queryHelper = New helpers.query( this );
+		variables.rangeHelper = New helpers.range( this );
+		variables.rowHelper = New helpers.row( this );
+		variables.sheetHelper = New helpers.sheet( this );
+		variables.streamingReaderHelper = New helpers.streamingReader( this );
+		variables.stringHelper = New helpers.string( this );
+		variables.workbookHelper = New helpers.workbook( this );
 	}
 
 	/* Meta utilities */
 
 	private void function detectEngineProperties(){
-		this.setIsACF( ( server.coldfusion.productname == "ColdFusion Server" ) );
+		variables.isACF = ( server.coldfusion.productname == "ColdFusion Server" );
 	}
 
 	public string function getPoiVersion(){
