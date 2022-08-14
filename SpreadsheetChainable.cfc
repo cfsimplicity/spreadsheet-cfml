@@ -1,52 +1,55 @@
-component accessors="true"{
+component{
 
 	property name="library";
 	property name="workbook";
 
 	public SpreadsheetChainable function init( required spreadsheetLibrary, required existingWorkbookOrNewWorkbookType ){
-		this.setLibrary( arguments.spreadsheetLibrary );
+		variables.library = arguments.spreadsheetLibrary;
 		setupWorkbook( arguments.existingWorkbookOrNewWorkbookType );
 		return this;
 	}
 
+	public any function getWorkbook(){
+		return variables.workbook;
+	}
+
 	private void function setupWorkbook( required existingWorkbookOrNewWorkbookType ){
-		if( this.getLibrary().isSpreadsheetObject( arguments[ 1 ] ) ){
-			var workbook = arguments[ 1 ];
-			this.setWorkbook( workbook );
+		if( variables.library.isSpreadsheetObject( arguments[ 1 ] ) ){
+			variables.workbook = arguments[ 1 ];
 			return;
 		}
 		var newWorkbookType = arguments[ 1 ];
 		switch( newWorkbookType ){
-			case "xls": this.setWorkbook( this.getLibrary().newXls() );
+			case "xls": variables.workbook = variables.library.newXls();
 				return;
-			case "xlsx": this.setWorkbook( this.getLibrary().newXlsx() );
+			case "xlsx": variables.workbook = variables.library.newXlsx();
 				return;
 			case "streamingXlsx": case "streamingXml":
-				this.setWorkbook( this.getLibrary().newStreamingXlsx() );
+				variables.workbook = variables.library.newStreamingXlsx();
 		}
 	}
 
 	private void function addWorkbookArgument( required args ){
 		throwErrorIfWorkbookIsNull();
 		throwErrorIfWorkbookIsInvalid();
-		arguments.args.workbook = this.getWorkbook();
+		arguments.args.workbook = variables.workbook;
 	}
 
 	private void function throwErrorIfWorkbookIsNull(){
-		if( IsNull( this.getWorkbook() ) )
-			Throw( type=this.getLibrary().getExceptionType(), message="Missing workbook", detail="No workbook object has been specified for this chained call. You can specify a new workbook type or pass in an existing object on initialisation, or read a file, query or csv on the second call after initialisation" );
+		if( IsNull( variables.workbook ) )
+			Throw( type=variables.library.getExceptionType(), message="Missing workbook", detail="No workbook object has been specified for this chained call. You can specify a new workbook type or pass in an existing object on initialisation, or read a file, query or csv on the second call after initialisation" );
 	}
 
 	private void function throwErrorIfWorkbookIsInvalid(){
-		if( !this.getLibrary().isSpreadsheetObject( this.getWorkbook() ) )
-			Throw( type=this.getLibrary().getExceptionType(), message="Invalid workbook", detail="The workbook specified in the chained call is not a valid spreadsheet object" );
+		if( !variables.library.isSpreadsheetObject( variables.workbook ) )
+			Throw( type=variables.library.getExceptionType(), message="Invalid workbook", detail="The workbook specified in the chained call is not a valid spreadsheet object" );
 	}
 
 	/* PUBLIC API */
 	
 	public SpreadsheetChainable function addAutofilter( string cellRange="", numeric row=1 ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().addAutofilter( argumentCollection=arguments );
+		variables.library.addAutofilter( argumentCollection=arguments );
 		return this;
 	}
 
@@ -59,7 +62,7 @@ component accessors="true"{
 		,boolean autoSize=false
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().addColumn( argumentCollection=arguments );
+		variables.library.addColumn( argumentCollection=arguments );
 		return this;
 	}
 
@@ -70,7 +73,7 @@ component accessors="true"{
 		,numeric topRow //top row visible in bottom pane
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().addFreezePane( argumentCollection=arguments );
+		variables.library.addFreezePane( argumentCollection=arguments );
 		return this;
 	}
 
@@ -81,25 +84,25 @@ component accessors="true"{
 		,required string anchor
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().addImage( argumentCollection=arguments );
+		variables.library.addImage( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function addInfo( required struct info ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().addInfo( argumentCollection=arguments );
+		variables.library.addInfo( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function addPageBreaks( string rowBreaks="", string columnBreaks="" ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().addPageBreaks( argumentCollection=arguments );
+		variables.library.addPageBreaks( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function addPrintGridLines(){
 		addWorkbookArgument( arguments );
-		this.getLibrary().addPrintGridLines( argumentCollection=arguments );
+		variables.library.addPrintGridLines( argumentCollection=arguments );
 		return this;
 	}
 
@@ -114,7 +117,7 @@ component accessors="true"{
 		,struct datatypes
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().addRow( argumentCollection=arguments );
+		variables.library.addRow( argumentCollection=arguments );
 		return this;
 	}
 
@@ -129,7 +132,7 @@ component accessors="true"{
 		,struct datatypes
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().addRows( argumentCollection=arguments );
+		variables.library.addRows( argumentCollection=arguments );
 		return this;
 	}
 
@@ -141,25 +144,25 @@ component accessors="true"{
 		,string activePane="UPPER_LEFT" //Valid values are LOWER_LEFT, LOWER_RIGHT, UPPER_LEFT, and UPPER_RIGHT
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().addSplitPane( argumentCollection=arguments );
+		variables.library.addSplitPane( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function autoSizeColumn( required numeric column, boolean useMergedCells=false ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().autoSizeColumn( argumentCollection=arguments );
+		variables.library.autoSizeColumn( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function cleanUpStreamingXml(){
 		addWorkbookArgument( arguments );
-		this.getLibrary().cleanUpStreamingXml( argumentCollection=arguments );
+		variables.library.cleanUpStreamingXml( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function clearCell( required numeric row, required numeric column ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().clearCell( argumentCollection=arguments );
+		variables.library.clearCell( argumentCollection=arguments );
 		return this;
 	}
 
@@ -170,50 +173,50 @@ component accessors="true"{
 		,required numeric endColumn
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().clearCellRange( argumentCollection=arguments );
+		variables.library.clearCellRange( argumentCollection=arguments );
 		return this;
 	}
 
 	// Ends chain - returns CellStyle object
 	public any function createCellStyle( required struct format ){
 		addWorkbookArgument( arguments );
-		return this.getLibrary().createCellStyle( argumentCollection=arguments );
+		return variables.library.createCellStyle( argumentCollection=arguments );
 	}
 
 	public SpreadsheetChainable function createSheet( string sheetName, overwrite=false ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().createSheet( argumentCollection=arguments );
+		variables.library.createSheet( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function deleteColumn( required numeric column ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().deleteColumn( argumentCollection=arguments );
+		variables.library.deleteColumn( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function deleteColumns( required string range ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().deleteColumns( argumentCollection=arguments );
+		variables.library.deleteColumns( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function deleteRow( required numeric row ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().deleteRow( argumentCollection=arguments );
+		variables.library.deleteRow( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function deleteRows( required string range ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().deleteRows( argumentCollection=arguments );
+		variables.library.deleteRows( argumentCollection=arguments );
 		return this;
 	}
 
 	// Ends chain
 	public void function download( required string filename, string contentType ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().download( argumentCollection=arguments );
+		variables.library.download( argumentCollection=arguments );
 	}
 
 	public SpreadsheetChainable function formatCell(
@@ -224,7 +227,7 @@ component accessors="true"{
 		,any cellStyle
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().formatCell( argumentCollection=arguments );
+		variables.library.formatCell( argumentCollection=arguments );
 		return this;
 	}
 
@@ -238,7 +241,7 @@ component accessors="true"{
 		,any cellStyle
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().formatCellRange( argumentCollection=arguments );
+		variables.library.formatCellRange( argumentCollection=arguments );
 		return this;
 	}
 
@@ -249,7 +252,7 @@ component accessors="true"{
 		,any cellStyle
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().formatColumn( argumentCollection=arguments );
+		variables.library.formatColumn( argumentCollection=arguments );
 		return this;
 	}
 
@@ -260,7 +263,7 @@ component accessors="true"{
 		,any cellStyle
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().formatColumns( argumentCollection=arguments );
+		variables.library.formatColumns( argumentCollection=arguments );
 		return this;
 	}
 
@@ -271,7 +274,7 @@ component accessors="true"{
 		,any cellStyle
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().formatRow( argumentCollection=arguments );
+		variables.library.formatRow( argumentCollection=arguments );
 		return this;
 	}
 
@@ -282,101 +285,101 @@ component accessors="true"{
 		,any cellStyle
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().formatRows( argumentCollection=arguments );
+		variables.library.formatRows( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function fromCsv(){
-		this.setWorkbook( this.getLibrary().workbookFromCsv( argumentCollection=arguments ) );
+		variables.workbook = variables.library.workbookFromCsv( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function fromQuery(){
-		this.setWorkbook( this.getLibrary().workbookFromQuery( argumentCollection=arguments ) );
+		variables.workbook = variables.library.workbookFromQuery( argumentCollection=arguments );
 		return this;
 	}
 
 	public any function getCellComment( numeric row, numeric column ){
 		// Ends chain: returns struct OR array of structs
 		addWorkbookArgument( arguments );
-		return this.getLibrary().getCellComment( argumentCollection=arguments );
+		return variables.library.getCellComment( argumentCollection=arguments );
 	}
 
 	//Ends chain
 	public array function getCellComments(){
 		addWorkbookArgument( arguments );
-		return this.getLibrary().getCellComments( argumentCollection=arguments );
+		return variables.library.getCellComments( argumentCollection=arguments );
 	}
 
 	//Ends chain
 	public struct function getCellFormat( required numeric row, required numeric column ){
 		addWorkbookArgument( arguments );
-		return this.getLibrary().getCellFormat( argumentCollection=arguments );
+		return variables.library.getCellFormat( argumentCollection=arguments );
 	}
 
 	public any function getCellFormula( numeric row, numeric column ){
 		// Ends chain: returns string OR array of strings
 		addWorkbookArgument( arguments );
-		return this.getLibrary().getCellFormula( argumentCollection=arguments );
+		return variables.library.getCellFormula( argumentCollection=arguments );
 	}
 
 	// Ends chain
 	public string function getCellHyperLink( required numeric row, required numeric column ){
 		addWorkbookArgument( arguments );
-		return this.getLibrary().getCellHyperLink( argumentCollection=arguments );
+		return variables.library.getCellHyperLink( argumentCollection=arguments );
 	}
 
 	// Ends chain
 	public string function getCellType( required numeric row, required numeric column ){
 		addWorkbookArgument( arguments );
-		return this.getLibrary().getCellType( argumentCollection=arguments );
+		return variables.library.getCellType( argumentCollection=arguments );
 	}
 
 	// Ends chain
 	public any function getCellValue( required numeric row, required numeric column ){
 		addWorkbookArgument( arguments );
-		return this.getLibrary().getCellValue( argumentCollection=arguments );
+		return variables.library.getCellValue( argumentCollection=arguments );
 	}
 
 	// Ends chain
 	public numeric function getColumnCount( sheetNameOrNumber ){
 		addWorkbookArgument( arguments );
-		return this.getLibrary().getColumnCount( argumentCollection=arguments );
+		return variables.library.getColumnCount( argumentCollection=arguments );
 	}
 
 	// Ends chain
 	public numeric function getColumnWidth( required numeric column ){
 		addWorkbookArgument( arguments );
-		return this.getLibrary().getColumnWidth( argumentCollection=arguments );
+		return variables.library.getColumnWidth( argumentCollection=arguments );
 	}
 
 	// Ends chain
 	public numeric function getColumnWidthInPixels( required numeric column ){
 		addWorkbookArgument( arguments );
-		return this.getLibrary().getColumnWidthInPixels( argumentCollection=arguments );
+		return variables.library.getColumnWidthInPixels( argumentCollection=arguments );
 	}
 
 	// Ends chain
 	public numeric function getLastRowNumber( sheetNameOrNumber ){
 		addWorkbookArgument( arguments );
-		return this.getLibrary().getLastRowNumber( argumentCollection=arguments );
+		return variables.library.getLastRowNumber( argumentCollection=arguments );
 	}
 
 	// Ends chain
 	public numeric function getRowCount( sheetNameOrNumber ){
 		addWorkbookArgument( arguments );
-		return this.getLibrary().getRowCount( argumentCollection=arguments );
+		return variables.library.getRowCount( argumentCollection=arguments );
 	}
 
 	public SpreadsheetChainable function hideColumn( required numeric column ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().hideColumn( argumentCollection=arguments );
+		variables.library.hideColumn( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function hideRow( required numeric row ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().hideRow( argumentCollection=arguments );
+		variables.library.hideRow( argumentCollection=arguments );
 		return this;
 	}
 
@@ -385,7 +388,7 @@ component accessors="true"{
 		// argument name is workbookOrPath not workbook so custom handling
 		throwErrorIfWorkbookIsNull();
 		throwErrorIfWorkbookIsInvalid();
-		return this.getLibrary().info( workbookOrPath=this.getWorkbook() );
+		return variables.library.info( workbookOrPath=variables.workbook );
 	}
 
 	public SpreadsheetChainable function mergeCells(
@@ -396,60 +399,60 @@ component accessors="true"{
 		,boolean emptyInvisibleCells=false
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().mergeCells( argumentCollection=arguments );
+		variables.library.mergeCells( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function read(){
-		this.setWorkbook( this.getLibrary().read( argumentCollection=arguments ) );
+		variables.workbook = variables.library.read( argumentCollection=arguments );
 		return this;
 	}
 
 	// Ends chain
 	public binary function readBinary(){
 		addWorkbookArgument( arguments );
-		return this.getLibrary().readBinary( argumentCollection=arguments );
+		return variables.library.readBinary( argumentCollection=arguments );
 	}
 
 	public SpreadsheetChainable function removePrintGridlines(){
 		addWorkbookArgument( arguments );
-		this.getLibrary().removePrintGridlines( argumentCollection=arguments );
+		variables.library.removePrintGridlines( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function removeSheet( required string sheetName ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().removeSheet( argumentCollection=arguments );
+		variables.library.removeSheet( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function removeSheetNumber( required numeric sheetNumber ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().removeSheetNumber( argumentCollection=arguments );
+		variables.library.removeSheetNumber( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function renameSheet( required string sheetName, required numeric sheetNumber ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().renameSheet( argumentCollection=arguments );
+		variables.library.renameSheet( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setActiveCell( required numeric row, required numeric column ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setActiveCell( argumentCollection=arguments );
+		variables.library.setActiveCell( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setActiveSheet( string sheetName, numeric sheetNumber ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setActiveSheet( argumentCollection=arguments );
+		variables.library.setActiveSheet( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setActiveSheetNumber( numeric sheetNumber ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setActiveSheetNumber( argumentCollection=arguments );
+		variables.library.setActiveSheetNumber( argumentCollection=arguments );
 		return this;
 	}
 
@@ -459,7 +462,7 @@ component accessors="true"{
 		,required numeric column
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setCellComment( argumentCollection=arguments );
+		variables.library.setCellComment( argumentCollection=arguments );
 		return this;
 	}
 
@@ -469,7 +472,7 @@ component accessors="true"{
 		,required numeric column
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setCellFormula( argumentCollection=arguments );
+		variables.library.setCellFormula( argumentCollection=arguments );
 		return this;
 	}
 
@@ -483,7 +486,7 @@ component accessors="true"{
 		,string tooltip //xlsx only, maybe MS Excel full version only
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setCellHyperlink( argumentCollection=arguments );
+		variables.library.setCellHyperlink( argumentCollection=arguments );
 		return this;
 	}
 
@@ -495,25 +498,25 @@ component accessors="true"{
 		,required numeric endColumn
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setCellRangeValue( argumentCollection=arguments );
+		variables.library.setCellRangeValue( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setCellValue( required value, required numeric row, required numeric column, string type ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setCellValue( argumentCollection=arguments );
+		variables.library.setCellValue( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setColumnWidth( required numeric column, required numeric width ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setColumnWidth( argumentCollection=arguments );
+		variables.library.setColumnWidth( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setFitToPage( required boolean state, numeric pagesWide, numeric pagesHigh ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setFitToPage( argumentCollection=arguments );
+		variables.library.setFitToPage( argumentCollection=arguments );
 		return this;
 	}
 
@@ -523,7 +526,7 @@ component accessors="true"{
 		,string rightFooter=""
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setFooter( argumentCollection=arguments );
+		variables.library.setFooter( argumentCollection=arguments );
 		return this;
 	}
 
@@ -533,7 +536,7 @@ component accessors="true"{
 		,string imageType
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setFooterImage( argumentCollection=arguments );
+		variables.library.setFooterImage( argumentCollection=arguments );
 		return this;
 	}
 
@@ -543,7 +546,7 @@ component accessors="true"{
 		,string rightHeader=""
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setHeader( argumentCollection=arguments );
+		variables.library.setHeader( argumentCollection=arguments );
 		return this;
 	}
 
@@ -553,109 +556,109 @@ component accessors="true"{
 		,string imageType
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setHeaderImage( argumentCollection=arguments );
+		variables.library.setHeaderImage( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setReadOnly( required string password ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setReadOnly( argumentCollection=arguments );
+		variables.library.setReadOnly( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setRecalculateFormulasOnNextOpen( boolean value=true ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setRecalculateFormulasOnNextOpen( argumentCollection=arguments );
+		variables.library.setRecalculateFormulasOnNextOpen( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setRepeatingColumns( required string columnRange ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setRepeatingColumns( argumentCollection=arguments );
+		variables.library.setRepeatingColumns( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setRepeatingRows( required string rowRange ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setRepeatingRows( argumentCollection=arguments );
+		variables.library.setRepeatingRows( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setRowHeight( required numeric row, required numeric height ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setRowHeight( argumentCollection=arguments );
+		variables.library.setRowHeight( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setSheetTopMargin( required numeric marginSize, string sheetName, numeric sheetNumber ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setSheetTopMargin( argumentCollection=arguments );
+		variables.library.setSheetTopMargin( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setSheetBottomMargin( required numeric marginSize, string sheetName, numeric sheetNumber ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setSheetBottomMargin( argumentCollection=arguments );
+		variables.library.setSheetBottomMargin( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setSheetLeftMargin( required numeric marginSize, string sheetName, numeric sheetNumber ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setSheetLeftMargin( argumentCollection=arguments );
+		variables.library.setSheetLeftMargin( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setSheetRightMargin( required numeric marginSize, string sheetName, numeric sheetNumber ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setSheetRightMargin( argumentCollection=arguments );
+		variables.library.setSheetRightMargin( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setSheetHeaderMargin( required numeric marginSize, string sheetName, numeric sheetNumber ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setSheetHeaderMargin( argumentCollection=arguments );
+		variables.library.setSheetHeaderMargin( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setSheetFooterMargin( required numeric marginSize, string sheetName, numeric sheetNumber ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setSheetFooterMargin( argumentCollection=arguments );
+		variables.library.setSheetFooterMargin( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function setSheetPrintOrientation( required string mode, string sheetName, numeric sheetNumber ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().setSheetPrintOrientation( argumentCollection=arguments );
+		variables.library.setSheetPrintOrientation( argumentCollection=arguments );
 		return this;
 	}
 
 	// Ends chain
 	public struct function sheetInfo( numeric sheetNumber ){
 		addWorkbookArgument( arguments );
-		return this.getLibrary().sheetInfo( argumentCollection=arguments );
+		return variables.library.sheetInfo( argumentCollection=arguments );
 	}
 
 	public SpreadsheetChainable function shiftColumns( required numeric start, numeric end=arguments.start, numeric offset=1 ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().shiftColumns( argumentCollection=arguments );
+		variables.library.shiftColumns( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function shiftRows( required numeric start, numeric end=arguments.start, numeric offset=1 ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().shiftRows( argumentCollection=arguments );
+		variables.library.shiftRows( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function showColumn( required numeric column ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().showColumn( argumentCollection=arguments );
+		variables.library.showColumn( argumentCollection=arguments );
 		return this;
 	}
 
 	public SpreadsheetChainable function showRow( required numeric row ){
 		addWorkbookArgument( arguments );
-		this.getLibrary().showRow( argumentCollection=arguments );
+		variables.library.showRow( argumentCollection=arguments );
 		return this;
 	}
 
@@ -666,7 +669,7 @@ component accessors="true"{
 		,string algorithm="agile"
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().write( argumentCollection=arguments );
+		variables.library.write( argumentCollection=arguments );
 		return this;
 	}
 
@@ -678,7 +681,7 @@ component accessors="true"{
 		,numeric headerRow=1
 	){
 		addWorkbookArgument( arguments );
-		this.getLibrary().writeToCsv( argumentCollection=arguments );
+		variables.library.writeToCsv( argumentCollection=arguments );
 		return this;
 	}
 
