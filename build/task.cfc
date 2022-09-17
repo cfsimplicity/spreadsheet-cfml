@@ -5,9 +5,11 @@ component{
 	property name="classpathDirectories";
 	property name="libPath";
 	property name="minimumSupportedJvmVersion" default="8";//update this as necessary
+	property name="ooxmlVersion" default="5.2.3";
 	property name="rootPath";
 	property name="srcPath";
 	property name="tempDirectoryPath";
+	property name="xmlBeansVersion" default="5.1.1";
 
 	void function run(){
 		variables.tempDirectoryPath = getCWD() & "temp/";
@@ -18,8 +20,8 @@ component{
 		variables.libPath = variables.rootPath & "lib/";
 		variables.classpathDirectories = [
 			variables.srcPath
-			,variables.libPath & "poi-ooxml-5.2.2.jar"
-			,variables.libPath & "xmlbeans-5.0.3.jar"
+			,variables.libPath & "poi-ooxml-" & variables.ooxmlVersion & ".jar"
+			,variables.libPath & "xmlbeans-" & variables.xmlBeansVersion & ".jar"
 		];
 		var jarFileName = "spreadsheet-cfml.jar";
 		var classNames = [ "HeaderImageVML" ]; //allows for more source files in future
