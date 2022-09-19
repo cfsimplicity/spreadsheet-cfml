@@ -1,3 +1,8 @@
+## 3.5.1 - 19 September 2022
+
+- \#298 Upgrade POI to 5.2.3
+- \#299 Upgrade excel-streaming-reader to 4.0.2
+
 ## 3.5.0 - 8 August 2022
 
 - Enhancements
