@@ -6,7 +6,7 @@ Whenever either the java in `/src` or the jars in `/lib` change, the `lib-osgi.j
 
 1. Edit `lib-osgi.mf` to increment the `Bundle-Version` and change the `Bundle-ClassPath` entries as required.
 2. Copy the new Bundle-Version to the `osgiLibBundleVersion` property at the top of `Spreadsheet.cfc`.
-3. Edit `task.cfc` if any of the `classpathDirectories` have changed
+3. Edit `task.cfc` if any of the `classpathDirectories` jar versions have changed
 4. Open CommandBox in the this `build` directory and execute:
 ```
 task run
