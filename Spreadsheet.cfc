@@ -389,17 +389,11 @@ component accessors="true"{
 		if( arguments.cellRange.IsEmpty() ){
 			//default to all columns in the first (default) or specified row
 			var rowIndex = ( Max( 0, arguments.row -1 ) );
-			var indices = {
-				startRow: rowIndex
-				,endRow: rowIndex
-				,startColumn: 0
-				,endColumn: ( getColumnCount( arguments.workbook ) -1 )
-			};
-			var cellRangeAddress = getCellHelper().getCellRangeAddressFromColumnAndRowIndices( indices );
+			var cellRangeAddress = getRangeHelper().getCellRangeAddressFromRowIndex( arguments.workbook, rowIndex );
 			getSheetHelper().getActiveSheet( arguments.workbook ).setAutoFilter( cellRangeAddress );
 			return this;
 		}
-		getSheetHelper().getActiveSheet( arguments.workbook ).setAutoFilter( getCellHelper().getCellRangeAddressFromReference( arguments.cellRange ) );
+		getSheetHelper().getActiveSheet( arguments.workbook ).setAutoFilter( getRangeHelper().getCellRangeAddressFromReference( arguments.cellRange ) );
 		return this;
 	}
 
@@ -1205,7 +1199,7 @@ component accessors="true"{
 			,startColumn: ( arguments.startColumn - 1 )
 			,endColumn: ( arguments.endColumn - 1 )
 		};
-		var cellRangeAddress = getCellHelper().getCellRangeAddressFromColumnAndRowIndices( indices );
+		var cellRangeAddress = getRangeHelper().getCellRangeAddressFromColumnAndRowIndices( indices );
 		getSheetHelper().getActiveSheet( arguments.workbook ).addMergedRegion( cellRangeAddress );
 		if( !arguments.emptyInvisibleCells )
 			return this;
@@ -1686,7 +1680,7 @@ component accessors="true"{
 		arguments.columnRange = arguments.columnRange.Trim();
 		if( !IsValid( "regex", arguments.columnRange, "[A-Za-z]:[A-Za-z]" ) )
 			Throw( type=this.getExceptionType(), message="Invalid columnRange argument", detail="The 'columnRange' argument should be in the form 'A:B'" );
-		var cellRangeAddress = getCellHelper().getCellRangeAddressFromReference( arguments.columnRange );
+		var cellRangeAddress = getRangeHelper().getCellRangeAddressFromReference( arguments.columnRange );
 		getSheetHelper().getActiveSheet( arguments.workbook ).setRepeatingColumns( cellRangeAddress );
 		return this;
 	}
@@ -1695,7 +1689,7 @@ component accessors="true"{
 		arguments.rowRange = arguments.rowRange.Trim();
 		if( !IsValid( "regex", arguments.rowRange,"\d+:\d+" ) )
 			Throw( type=this.getExceptionType(), message="Invalid rowRange argument", detail="The 'rowRange' argument should be in the form 'n:n', e.g. '1:5'" );
-		var cellRangeAddress = getCellHelper().getCellRangeAddressFromReference( arguments.rowRange );
+		var cellRangeAddress = getRangeHelper().getCellRangeAddressFromReference( arguments.rowRange );
 		getSheetHelper().getActiveSheet( arguments.workbook ).setRepeatingRows( cellRangeAddress );
 		return this;
 	}

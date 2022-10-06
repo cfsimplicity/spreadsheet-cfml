@@ -49,23 +49,6 @@ component extends="base" accessors="true"{
 		}
 	}
 
-	any function getCellRangeAddressFromColumnAndRowIndices( required struct indices ){
-		//index = 0 based
-		return getClassHelper().loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).init(
-			JavaCast( "int", arguments.indices.startRow )
-			,JavaCast( "int", arguments.indices.endRow )
-			,JavaCast( "int", arguments.indices.startColumn )
-			,JavaCast( "int", arguments.indices.endColumn )
-		);
-	}
-
-	any function getCellRangeAddressFromReference( required string rangeReference ){
-		/*
-		rangeReference = usually a standard area ref (e.g. "B1:D8"). May be a single cell ref (e.g. "B5") in which case the result is a 1 x 1 cell range. May also be a whole row range (e.g. "3:5"), or a whole column range (e.g. "C:F")
-		*/
-		return getClassHelper().loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String", arguments.rangeReference ) );
-	}
-
 	any function getCellValueAsType( required workbook, required cell ){
 		/*
 		Get the value of the cell based on the data type. The thing to worry about here is cell formulas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values.

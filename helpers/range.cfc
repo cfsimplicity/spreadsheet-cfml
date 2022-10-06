@@ -25,6 +25,33 @@ component extends="base" accessors="true"{
 		return result;
 	}
 
+	any function getCellRangeAddressFromColumnAndRowIndices( required struct indices ){
+		//index = 0 based
+		return getClassHelper().loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).init(
+			JavaCast( "int", arguments.indices.startRow )
+			,JavaCast( "int", arguments.indices.endRow )
+			,JavaCast( "int", arguments.indices.startColumn )
+			,JavaCast( "int", arguments.indices.endColumn )
+		);
+	}
+
+	any function getCellRangeAddressFromRowIndex( required workbook, required numeric rowIndex ){
+		var indices = {
+			startRow: arguments.rowIndex
+			,endRow: arguments.rowIndex
+			,startColumn: 0
+			,endColumn: ( library().getColumnCount( arguments.workbook ) -1 )
+		};
+		return getCellRangeAddressFromColumnAndRowIndices( indices );
+	}
+
+	any function getCellRangeAddressFromReference( required string rangeReference ){
+		/*
+		rangeReference = usually a standard area ref (e.g. "B1:D8"). May be a single cell ref (e.g. "B5") in which case the result is a 1 x 1 cell range. May also be a whole row range (e.g. "3:5"), or a whole column range (e.g. "C:F")
+		*/
+		return getClassHelper().loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String", arguments.rangeReference ) );
+	}
+
 	/* Private */
 	private string function removeAllWhiteSpaceFrom( required string value ){
 		return arguments.value.REReplace( "\s+", "", "ALL" );
