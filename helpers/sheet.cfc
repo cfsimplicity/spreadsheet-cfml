@@ -103,11 +103,13 @@ component extends="base" accessors="true"{
 			,displaysRowAndColumnHeadings: sheet.isDisplayRowColHeadings()
 			,displaysZeros: sheet.isDisplayZeros()
 			,hasComments: hasComments( sheet, isXlsx )
+			,hasDataValidations: BooleanFormat( sheet.getDataValidations().Len() )
 			,hasMergedRegions: BooleanFormat( sheet.getNumMergedRegions() )
 			,isCurrentActiveSheet: isActive( sheet, isXlsx )
 			,isHidden: !isVisible( argumentCollection=arguments )
 			,isRightToLeft: sheet.isRightToLeft()
 			,name: sheet.getSheetName()
+			,numberOfDataValidations: sheet.getDataValidations().Len()
 			,numberOfMergedRegions: sheet.getNumMergedRegions()
 			,printsFitToPage: sheet.getFitToPage()
 			,printsGridlines: sheet.isPrintGridlines()
@@ -221,7 +223,7 @@ component extends="base" accessors="true"{
 
 	any function validateSheetExistsWithName( required workbook, required string sheetName ){
 		if( !sheetExists( workbook=arguments.workbook, sheetName=arguments.sheetName ) )
-			Throw( type=library().getExceptionType(), message="Invalid sheet name [#arguments.sheetName#]", detail="The specified sheet was not found in the current workbook." );
+			Throw( type="#library().getExceptionType()#.invalidSheetName", message="Invalid sheet name [#arguments.sheetName#]", detail="The specified sheet was not found in the current workbook." );
 		return this;
 	}
 

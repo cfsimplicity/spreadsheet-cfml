@@ -52,6 +52,10 @@ component extends="base" accessors="true"{
 		return getClassHelper().loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String", arguments.rangeReference ) );
 	}
 
+	string function convertRangeReferenceToAbsoluteAddress( required string rangeReference ){
+		return arguments.rangeReference.REReplace( "([A-Za-z]+|\d+)", "$\1", "ALL" ).UCase();
+	}
+
 	/* Private */
 	private string function removeAllWhiteSpaceFrom( required string value ){
 		return arguments.value.REReplace( "\s+", "", "ALL" );

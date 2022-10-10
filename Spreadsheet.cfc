@@ -436,6 +436,11 @@ component accessors="true"{
 		return this;
 	}
 
+	public Spreadsheet function addDataValidation( required workbook, required DataValidation dataValidation ){
+		arguments.dataValidation.addToWorkbook( arguments.workbook );
+		return this;
+	}
+
 	public Spreadsheet function addFreezePane(
 		required workbook
 		,required numeric freezeColumn
@@ -1231,7 +1236,7 @@ component accessors="true"{
 	}
 
 	public any function newChainable( existingWorkbookOrNewWorkbookType="" ){
-		return New SpreadsheetChainable( this, arguments.existingWorkbookOrNewWorkbookType );
+		return New objects.SpreadsheetChainable( this, arguments.existingWorkbookOrNewWorkbookType );
 	}
 
 	public any function newStreamingXlsx( string sheetName="Sheet1", numeric streamingWindowSize=100 ){
@@ -1241,6 +1246,10 @@ component accessors="true"{
 			,streamingXml=true
 			,streamingWindowSize=arguments.streamingWindowSize
 		);
+	}
+
+	public any function newDataValidation(){
+		return New objects.DataValidation( this );
 	}
 
 	public any function newXls( string sheetName="Sheet1" ){

@@ -17,18 +17,18 @@ The following are the essential files/folders you will need depending on which C
 ### Lucee
 ```
 helpers/
+objects/
 lib-osgi.jar
 osgiLoader.cfc
 Spreadsheet.cfc
-SpreadsheetChainable.cfc
 ```
 ### Adobe ColdFusion
 ```
 helpers/
 javaLoader/
 lib/
+objects/
 Spreadsheet.cfc
-SpreadsheetChainable.cfc
 ```
 
 ## Usage

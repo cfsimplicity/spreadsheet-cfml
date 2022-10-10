@@ -66,6 +66,12 @@ component{
 		return this;
 	}
 
+	public SpreadsheetChainable function addDataValidation( required DataValidation dataValidation ){
+		addWorkbookArgument( arguments );
+		variables.library.addDataValidation( argumentCollection=arguments );
+		return this;
+	}
+
 	public SpreadsheetChainable function addFreezePane(
 		required numeric freezeColumn
 		,required numeric freezeRow
