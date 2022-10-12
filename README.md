@@ -118,6 +118,7 @@ You may wish to place the spreadsheet library files in a central location with a
 
 ### Extra functions not available in ColdFusion
 
+* [addDataValidation](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addDataValidation)
 * [addPrintGridlines](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addPrintGridlines)
 * [cleanUpStreamingXml](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/cleanUpStreamingXml)
 * [clearCell](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/clearCell)
