@@ -1,3 +1,8 @@
+## 3.6.0 - 12 October 2022
+
+- Enhancements
+	- \#300 Add support for creating DataValidation dropdowns
+
 ## 3.5.1 - 19 September 2022
 
 - \#298 Upgrade POI to 5.2.3

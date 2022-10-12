@@ -376,14 +376,14 @@ describe(
 			expect( function(){
 				var path = getTestFilePath( "nonexistent.xls" );
 				s.readLargeFile( src=path );
-			}).toThrow( regex="Non-existent file" );
+			}).toThrow( type="cfsimplicity.spreadsheet.nonExistentFile" );
 		});
 		
 		it( "the file to be read is not an XLSX type", function(){
 			expect( function(){
 				var path = getTestFilePath( "test.xls" );
 				s.readLargeFile( src=path );
-			}).toThrow( type="cfsimplicity.spreadsheet.invalidFile" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidSpreadsheetType" );
 		});
 
 		it( "both sheetName and sheetNumber arguments are specified", function(){
@@ -396,25 +396,25 @@ describe(
 		it( "the format argument is invalid", function(){
 			expect( function(){
 				s.readLargeFile( src=getTestFilePath( "large.xlsx" ), format="wrong" );
-			}).toThrow( regex="Invalid format" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidReadFormat" );
 		});
 
 		it( "the sheet name doesn't exist", function(){
 			expect( function(){
 				s.readLargeFile( src=getTestFilePath( "large.xlsx" ), sheetName="nonexistent" );
-			}).toThrow( regex="Invalid sheet" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetName" );
 		});
 
 		it( "the sheet number doesn't exist", function(){
 			expect( function(){
 				s.readLargeFile( src=getTestFilePath( "large.xlsx" ), sheetNumber=20 );
-			}).toThrow( regex="Invalid sheet|out of range" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetNumber" );
 		});
 
 		it( "the source file is not a spreadsheet", function(){
 			expect( function(){
 				s.readLargeFile( src=getTestFilePath( "notaspreadsheet.txt" ) );
-			}).toThrow( type="cfsimplicity.spreadsheet.invalidFile" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidSpreadsheetType" );
 		});
 
 	});

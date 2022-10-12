@@ -36,7 +36,7 @@ describe( "setActiveSheet", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.setActiveSheet( workbook=wb, sheetName="test" );
-				}).toThrow( regex="Invalid sheet" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetName" );
 			});
 		});
 
@@ -44,7 +44,7 @@ describe( "setActiveSheet", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.setActiveSheet( workbook=wb, sheetNumber=20 );
-				}).toThrow( regex="Invalid sheet" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetNumber" );
 			});
 		});
 

@@ -37,12 +37,12 @@ component{
 
 	private void function throwErrorIfWorkbookIsNull(){
 		if( IsNull( variables.workbook ) )
-			Throw( type=variables.library.getExceptionType(), message="Missing workbook", detail="No workbook object has been specified for this chained call. You can specify a new workbook type or pass in an existing object on initialisation, or read a file, query or csv on the second call after initialisation" );
+			Throw( type=variables.library.getExceptionType() & ".missingWorkbook", message="Missing workbook", detail="No workbook object has been specified for this chained call. You can specify a new workbook type or pass in an existing object on initialisation, or read a file, query or csv on the second call after initialisation" );
 	}
 
 	private void function throwErrorIfWorkbookIsInvalid(){
 		if( !variables.library.isSpreadsheetObject( variables.workbook ) )
-			Throw( type=variables.library.getExceptionType(), message="Invalid workbook", detail="The workbook specified in the chained call is not a valid spreadsheet object" );
+			Throw( type=variables.library.getExceptionType() & ".invalidWorkbook", message="Invalid workbook", detail="The workbook specified in the chained call is not a valid spreadsheet object" );
 	}
 
 	/* PUBLIC API */
@@ -63,6 +63,12 @@ component{
 	){
 		addWorkbookArgument( arguments );
 		variables.library.addColumn( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function addDataValidation( required DataValidation dataValidation ){
+		addWorkbookArgument( arguments );
+		variables.library.addDataValidation( argumentCollection=arguments );
 		return this;
 	}
 

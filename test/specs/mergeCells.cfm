@@ -47,10 +47,10 @@ describe( "mergeCells", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.mergeCells( wb, 0, 0, 1, 2 );
-				}).toThrow( regex="Invalid" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidStartOrEndRowArgument" );
 				expect( function(){
 					s.mergeCells( wb, 1, 2, 0, 0 );
-				}).toThrow( regex="Invalid" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidStartOrEndColumnArgument" );
 			});
 		});
 
@@ -58,10 +58,10 @@ describe( "mergeCells", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.mergeCells( wb, 2, 1, 1, 2 );
-				}).toThrow( regex="Invalid" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidStartOrEndRowArgument" );
 				expect( function(){
 					s.mergeCells( wb, 1, 2, 2, 1 );
-				}).toThrow( regex="Invalid" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidStartOrEndColumnArgument" );
 			});
 		});
 

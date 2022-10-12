@@ -34,7 +34,7 @@ describe( "deleteRow", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.deleteRow( workbook=wb, row=0 );
-				}).toThrow( regex="Invalid row" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidRowArgument" );
 			});
 		});
 

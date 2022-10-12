@@ -28,7 +28,7 @@ describe( "removeSheet", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.removeSheet( wb, "[]?*\/:" );
-				}).toThrow( regex="Invalid characters" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidCharacters" );
 			});
 		});
 
@@ -36,7 +36,7 @@ describe( "removeSheet", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.removeSheet( wb, "test" );
-				}).toThrow( regex="Invalid sheet" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetName" );
 			});
 		});
 

@@ -44,7 +44,7 @@ describe( "deleteColumns", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.deleteColumns( wb, "a-b" );
-				}).toThrow( regex="Invalid range" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidRange" );
 			});
 		});
 

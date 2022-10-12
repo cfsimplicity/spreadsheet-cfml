@@ -1,7 +1,7 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="3.5.1" setter="false";
+	property name="version" default="3.6.0" setter="false";
 	property name="osgiLibBundleVersion" default="5.2.3.1" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
@@ -190,12 +190,12 @@ component accessors="true"{
 		var csvIsString = arguments.csv.Len();
 		var csvIsFile = arguments.filepath.Len();
 		if( !csvIsString && !csvIsFile )
-			Throw( type=this.getExceptionType(), message="Missing required argument", detail="Please provide either a csv string (csv), or the path of a file containing one (filepath)." );
+			Throw( type=this.getExceptionType() & ".missingRequiredArgument", message="Missing required argument", detail="Please provide either a csv string (csv), or the path of a file containing one (filepath)." );
 		if( csvIsString && csvIsFile )
-			Throw( type=this.getExceptionType(), message="Mutually exclusive arguments: 'csv' and 'filepath'", detail="Only one of either 'filepath' or 'csv' arguments may be provided." );
+			Throw( type=this.getExceptionType() & ".invalidArgumentCombination", message="Mutually exclusive arguments: 'csv' and 'filepath'", detail="Only one of either 'filepath' or 'csv' arguments may be provided." );
 		var csvString = csvIsFile? getCsvHelper().readFile( arguments.filepath ): arguments.csv;
 		if( IsStruct( arguments.queryColumnTypes ) && !arguments.firstRowIsHeader && !arguments.KeyExists( "queryColumnNames" )  )
-			Throw( type=this.getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
+			Throw( type=this.getExceptionType() & ".invalidArgumentCombination", message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
 		if( arguments.trim )
 			csvString = csvString.Trim();
 		var format = arguments.KeyExists( "delimiter" )?
@@ -389,17 +389,11 @@ component accessors="true"{
 		if( arguments.cellRange.IsEmpty() ){
 			//default to all columns in the first (default) or specified row
 			var rowIndex = ( Max( 0, arguments.row -1 ) );
-			var indices = {
-				startRow: rowIndex
-				,endRow: rowIndex
-				,startColumn: 0
-				,endColumn: ( getColumnCount( arguments.workbook ) -1 )
-			};
-			var cellRangeAddress = getCellHelper().getCellRangeAddressFromColumnAndRowIndices( indices );
+			var cellRangeAddress = getRangeHelper().getCellRangeAddressFromRowIndex( arguments.workbook, rowIndex );
 			getSheetHelper().getActiveSheet( arguments.workbook ).setAutoFilter( cellRangeAddress );
 			return this;
 		}
-		getSheetHelper().getActiveSheet( arguments.workbook ).setAutoFilter( getCellHelper().getCellRangeAddressFromReference( arguments.cellRange ) );
+		getSheetHelper().getActiveSheet( arguments.workbook ).setAutoFilter( getRangeHelper().getCellRangeAddressFromReference( arguments.cellRange ) );
 		return this;
 	}
 
@@ -442,6 +436,11 @@ component accessors="true"{
 		return this;
 	}
 
+	public Spreadsheet function addDataValidation( required workbook, required DataValidation dataValidation ){
+		arguments.dataValidation.addToWorkbook( arguments.workbook );
+		return this;
+	}
+
 	public Spreadsheet function addFreezePane(
 		required workbook
 		,required numeric freezeColumn
@@ -477,7 +476,7 @@ component accessors="true"{
 	){
 		var numberOfAnchorElements = ListLen( arguments.anchor );
 		if( ( numberOfAnchorElements != 4 ) && ( numberOfAnchorElements != 8 ) )
-			Throw( type=this.getExceptionType(), message="Invalid anchor argument", detail="The anchor argument must be a comma-delimited list of integers with either 4 or 8 elements" );
+			Throw( type=this.getExceptionType() & ".invalidAnchorArgument", message="Invalid anchor argument", detail="The anchor argument must be a comma-delimited list of integers with either 4 or 8 elements" );
 		var args = {
 			workbook: arguments.workbook
 			,anchor: arguments.anchor
@@ -491,7 +490,7 @@ component accessors="true"{
 		if( arguments.KeyExists( "imageType" ) )
 			args.imageType = arguments.imageType;
 		if( !args.KeyExists( "image" ) )
-			Throw( type=this.getExceptionType(), message="Missing image path or object", detail="Please supply either the 'filepath' or 'imageData' argument" );
+			Throw( type=this.getExceptionType() & ".missingImageArgument", message="Missing image path or object", detail="Please supply either the 'filepath' or 'imageData' argument" );
 		var imageIndex = getImageHelper().addImageToWorkbook( argumentCollection=args );
 		var clientAnchorClass = isXmlFormat( arguments.workbook )
 				? "org.apache.poi.xssf.usermodel.XSSFClientAnchor"
@@ -533,7 +532,7 @@ component accessors="true"{
 		arguments.rowBreaks = Trim( arguments.rowBreaks ); //Don't use member function in case value is in fact numeric
 		arguments.columnBreaks = Trim( arguments.columnBreaks );
 		if( arguments.rowBreaks.IsEmpty() && arguments.columnBreaks.IsEmpty() )
-			Throw( type=this.getExceptionType(), message="Missing argument", detail="You must specify the rows and/or columns at which page breaks should be added." );
+			Throw( type=this.getExceptionType() & ".missingRowOrColumnBreaksArgument", message="Missing row or column breaks argument", detail="You must specify the rows and/or columns at which page breaks should be added." );
 		arguments.rowBreaks = arguments.rowBreaks.ListToArray();
 		arguments.columnBreaks = arguments.columnBreaks.ListToArray();
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
@@ -579,22 +578,22 @@ component accessors="true"{
 		,struct datatypes
 	){
 		if( arguments.KeyExists( "row" ) && ( arguments.row <= 0 ) )
-			Throw( type=this.getExceptionType(), message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
+			Throw( type=this.getExceptionType() & ".invalidRowArgument", message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
 		if( arguments.KeyExists( "column" ) && ( arguments.column <= 0 ) )
-			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
+			Throw( type=this.getExceptionType() & ".invalidColumnArgument", message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
 		if( !arguments.insert && !arguments.KeyExists( "row") )
-			Throw( type=this.getExceptionType(), message="Missing row value", detail="To replace a row using 'insert', please specify the row to replace." );
+			Throw( type=this.getExceptionType() & ".missingRowArgument", message="Missing row value", detail="To replace a row using 'insert', please specify the row to replace." );
 		var dataIsQuery = IsQuery( arguments.data );
 		var dataIsArray = IsArray( arguments.data );
 		if( !dataIsQuery && !dataIsArray )
-			Throw( type=this.getExceptionType(), message="Invalid data argument", detail="The data passed in must be either a query or an array of row arrays." );
+			Throw( type=this.getExceptionType() & ".invalidDataArgument", message="Invalid data argument", detail="The data passed in must be either a query or an array of row arrays." );
 		getDataTypeHelper().checkDataTypesArgument( arguments );
 		var totalRows = dataIsQuery? arguments.data.recordCount: arguments.data.Len();
 		if( totalRows == 0 )
 			return this;
 		// array data must be an array of arrays, not structs
 		if( dataIsArray && !IsArray( arguments.data[ 1 ] ) )
-			Throw( type=this.getExceptionType(), message="Invalid data argument", detail="Data passed as an array must be an array of arrays, one per row" );
+			Throw( type=this.getExceptionType() & ".invalidDataArgument", message="Invalid data argument", detail="Data passed as an array must be an array of arrays, one per row" );
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		var nextRowIndex = getSheetHelper().getNextEmptyRowIndex( sheet );
 		var insertAtRowIndex = arguments.KeyExists( "row" )? arguments.row -1: nextRowIndex;
@@ -681,7 +680,7 @@ component accessors="true"{
 
 	public Spreadsheet function autoSizeColumn( required workbook, required numeric column, boolean useMergedCells=false ){
 		if( arguments.column <= 0 )
-			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
+			Throw( type=this.getExceptionType() & ".invalidColumnArgument", message="Invalid column argument", detail="The value for column must be greater than or equal to 1." );
 		// Adjusts the width of the specified column to fit the contents. For performance reasons, this should normally be called only once per column.
 		var columnIndex = ( arguments.column -1 );
 		if( isStreamingXmlFormat( arguments.workbook ) )
@@ -740,7 +739,7 @@ component accessors="true"{
 		}
 		// sheet already exists with that name
 		if( !arguments.overwrite )
-			Throw( type=this.getExceptionType(), message="Sheet name already exists", detail="A sheet with the name '#sheetName#' already exists in this workbook" );
+			Throw( type=this.getExceptionType() & ".sheetNameAlreadyExists", message="Sheet name already exists", detail="A sheet with the name '#sheetName#' already exists in this workbook" );
 		// OK to replace the existing
 		var sheetIndexToReplace = arguments.workbook.getSheetIndex( JavaCast( "string", sheetName ) );
 		getSheetHelper().deleteSheetAtIndex( arguments.workbook, sheetIndexToReplace );
@@ -752,7 +751,7 @@ component accessors="true"{
 
 	public Spreadsheet function deleteColumn( required workbook, required numeric column ){
 		if( arguments.column <= 0 )
-			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
+			Throw( type=this.getExceptionType() & ".invalidColumnArgument", message="Invalid column argument", detail="The value for column must be greater than or equal to 1." );
 			// POI doesn't have remove column functionality, so iterate over all the rows and remove the column indicated
 		var rowIterator = getSheetHelper().getActiveSheet( arguments.workbook ).rowIterator();
 		var columnIndex = ( arguments.column -1 );
@@ -783,7 +782,7 @@ component accessors="true"{
 	public Spreadsheet function deleteRow( required workbook, required numeric row ){
 		// Deletes the data from a row. Does not physically delete the row
 		if( arguments.row <= 0 )
-			Throw( type=this.getExceptionType(), message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
+			Throw( type=this.getExceptionType() & ".invalidRowArgument", message="Invalid row argument", detail="The value for row must be greater than or equal to 1." );
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		var rowIndex = ( arguments.row -1 );
 		if(
@@ -865,7 +864,7 @@ component accessors="true"{
 	){
 		getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		if( arguments.column < 1 )
-			Throw( type=this.getExceptionType(), message="Invalid column value", detail="The column value must be greater than 0" );
+			Throw( type=this.getExceptionType() & ".invalidColumnArgument", message="Invalid column argument", detail="The column value must be greater than 0" );
 		var formatCellArgs = {
 			workbook: arguments.workbook
 			,format: arguments.format
@@ -958,9 +957,9 @@ component accessors="true"{
 	public any function getCellComment( required workbook, numeric row, numeric column ){
 		// returns struct OR array of structs
 		if( arguments.KeyExists( "row" ) && !arguments.KeyExists( "column" ) )
-			Throw( type=this.getExceptionType(), message="Invalid argument combination", detail="If you specify the row you must also specify the column" );
+			Throw( type=this.getExceptionType() & ".invalidArgumentCombination", message="Invalid argument combination", detail="If you specify the row you must also specify the column" );
 		if( arguments.KeyExists( "column" ) && !arguments.KeyExists( "row" ) )
-			Throw( type=this.getExceptionType(), message="Invalid argument combination", detail="If you specify the column you must also specify the row" );
+			Throw( type=this.getExceptionType() & ".invalidArgumentCombination", message="Invalid argument combination", detail="If you specify the column you must also specify the row" );
 		if( !arguments.KeyExists( "row" ) )
 			return getCellComments( arguments.workbook );// row and column weren't provided so return all the comments as an array of structs
 		var cell = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column );
@@ -993,7 +992,7 @@ component accessors="true"{
 
 	public struct function getCellFormat( required workbook, required numeric row, required numeric column ){
 		if( !getCellHelper().cellExists( arguments.workbook, arguments.row, arguments.column ) )
-			Throw( type=this.getExceptionType(), message="Invalid cell", detail="There doesn't appear to be a cell at row #row#, column #column#" );
+			Throw( type=this.getExceptionType() & ".invalidCell", message="Invalid cell", detail="There doesn't appear to be a cell at row #row#, column #column#" );
 		var cellStyle = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column ).getCellStyle();
 		var cellFont = arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() );
 		var rgb = isXmlFormat( arguments.workbook )?
@@ -1196,16 +1195,16 @@ component accessors="true"{
 		,boolean emptyInvisibleCells=false
 	){
 		if( arguments.startRow < 1 || arguments.startRow > arguments.endRow )
-			Throw( type=this.getExceptionType(), message="Invalid startRow or endRow", detail="Row values must be greater than 0 and the startRow cannot be greater than the endRow." );
+			Throw( type=this.getExceptionType() & ".invalidStartOrEndRowArgument", message="Invalid startRow or endRow", detail="Row values must be greater than 0 and the startRow cannot be greater than the endRow." );
 		if( arguments.startColumn < 1 || arguments.startColumn > arguments.endColumn )
-			Throw( type=this.getExceptionType(), message="Invalid startColumn or endColumn", detail="Column values must be greater than 0 and the startColumn cannot be greater than the endColumn." );
+			Throw( type=this.getExceptionType() & ".invalidStartOrEndColumnArgument", message="Invalid startColumn or endColumn", detail="Column values must be greater than 0 and the startColumn cannot be greater than the endColumn." );
 		var indices = {
 			startRow: ( arguments.startRow - 1 )
 			,endRow: ( arguments.endRow - 1 )
 			,startColumn: ( arguments.startColumn - 1 )
 			,endColumn: ( arguments.endColumn - 1 )
 		};
-		var cellRangeAddress = getCellHelper().getCellRangeAddressFromColumnAndRowIndices( indices );
+		var cellRangeAddress = getRangeHelper().getCellRangeAddressFromColumnAndRowIndices( indices );
 		getSheetHelper().getActiveSheet( arguments.workbook ).addMergedRegion( cellRangeAddress );
 		if( !arguments.emptyInvisibleCells )
 			return this;
@@ -1237,7 +1236,7 @@ component accessors="true"{
 	}
 
 	public any function newChainable( existingWorkbookOrNewWorkbookType="" ){
-		return New SpreadsheetChainable( this, arguments.existingWorkbookOrNewWorkbookType );
+		return New objects.SpreadsheetChainable( this, arguments.existingWorkbookOrNewWorkbookType );
 	}
 
 	public any function newStreamingXlsx( string sheetName="Sheet1", numeric streamingWindowSize=100 ){
@@ -1247,6 +1246,10 @@ component accessors="true"{
 			,streamingXml=true
 			,streamingWindowSize=arguments.streamingWindowSize
 		);
+	}
+
+	public any function newDataValidation(){
+		return New objects.DataValidation( this );
 	}
 
 	public any function newXls( string sheetName="Sheet1" ){
@@ -1306,7 +1309,7 @@ component accessors="true"{
 		,boolean makeColumnNamesSafe=false
 	){
 		if( arguments.KeyExists( "query" ) )
-			Throw( type=this.getExceptionType(), message="Invalid argument 'query'.", detail="Just use format='query' to return a query object" );
+			Throw( type=this.getExceptionType() & ".invalidQueryArgument", message="Invalid argument 'query'.", detail="Just use format='query' to return a query object" );
 		getExceptionHelper().throwExceptionIFreadFormatIsInvalid( argumentCollection=arguments );
 		getSheetHelper().throwErrorIFSheetNameAndNumberArgumentsBothPassed( argumentCollection=arguments );
 		getFileHelper().throwErrorIFfileNotExists( arguments.src );
@@ -1384,7 +1387,7 @@ component accessors="true"{
 		,struct streamingReaderOptions
 	){
 		if( this.getIsACF() ){
-			Throw( type="#this.getExceptionType()#.methodNotSupported", message="'readLargeFile()' is not supported with ColdFusion", detail="'readLargeFile()' currently only works with Lucee." );
+			Throw( type=this.getExceptionType() & ".methodNotSupported", message="'readLargeFile()' is not supported with ColdFusion", detail="'readLargeFile()' currently only works with Lucee." );
 		}
 		getFileHelper().throwErrorIFfileNotExists( arguments.src );
 		getExceptionHelper().throwExceptionIFreadFormatIsInvalid( argumentCollection=arguments );
@@ -1457,7 +1460,7 @@ component accessors="true"{
 		var sheetIndex = ( arguments.sheetNumber -1 );
 		var foundAt = arguments.workbook.getSheetIndex( JavaCast( "string", arguments.sheetName ) );
 		if( ( foundAt > 0 ) && ( foundAt != sheetIndex ) )
-			Throw( type=this.getExceptionType(), message="Invalid Sheet Name [#arguments.sheetName#]", detail="The workbook already contains a sheet named [#sheetName#]. Sheet names must be unique" );
+			Throw( type=this.getExceptionType() & ".invalidSheetName", message="Invalid Sheet Name [#arguments.sheetName#]", detail="The workbook already contains a sheet named [#sheetName#]. Sheet names must be unique" );
 		arguments.workbook.setSheetName( JavaCast( "int", sheetIndex ), JavaCast( "string", arguments.sheetName ) );
 		return this;
 	}
@@ -1554,9 +1557,9 @@ component accessors="true"{
 		arguments.type = arguments.type.UCase();
 		var validTypes = [ "URL", "EMAIL", "FILE", "DOCUMENT" ];
 		if( !validTypes.Find( arguments.type ) )
-			Throw( type=this.getExceptionType(), message="Invalid type parameter: '#arguments.type#'", detail="The type must be one of the following: #validTypes.ToList( ', ' )#." );
+			Throw( type=this.getExceptionType() & ".invalidTypeArgument", message="Invalid type argument: '#arguments.type#'", detail="The type must be one of the following: #validTypes.ToList( ', ' )#." );
 		if( arguments.KeyExists( "tooltip" ) && !isXmlFormat( arguments.workbook ) )
-			Throw( type=this.getExceptionType(), message="Invalid spreadsheet type", detail="Hyperlink tooltips can only be added to XLSX spreadsheets." );
+			Throw( type=this.getExceptionType() & ".invalidSpreadsheetType", message="Invalid spreadsheet type", detail="Hyperlink tooltips can only be added to XLSX spreadsheets." );
 		var cell = getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column );
 		var hyperlinkType = getClassHelper().loadClass( "org.apache.poi.common.usermodel.HyperlinkType" );
 		var hyperLink = arguments.workbook.getCreationHelper().createHyperlink( hyperlinkType[ arguments.type ] );
@@ -1671,7 +1674,7 @@ component accessors="true"{
 
 	public Spreadsheet function setReadOnly( required workbook, required string password ){
 		if( isXmlFormat( arguments.workbook ) )
-			Throw( type=this.getExceptionType(), message="setReadOnly not supported for XML workbooks", detail="The setReadOnly() method only works on binary 'xls' workbooks." );
+			Throw( type=this.getExceptionType() & ".invalidSpreadsheetType", message="setReadOnly not supported for XML workbooks", detail="The setReadOnly() method only works on binary 'xls' workbooks." );
 		// writeProtectWorkbook takes both a user name and a password, just making up a user name
 		arguments.workbook.writeProtectWorkbook( JavaCast( "string", arguments.password ), JavaCast( "string", "user" ) );
 		return this;
@@ -1685,8 +1688,8 @@ component accessors="true"{
 	public Spreadsheet function setRepeatingColumns( required workbook, required string columnRange ){
 		arguments.columnRange = arguments.columnRange.Trim();
 		if( !IsValid( "regex", arguments.columnRange, "[A-Za-z]:[A-Za-z]" ) )
-			Throw( type=this.getExceptionType(), message="Invalid columnRange argument", detail="The 'columnRange' argument should be in the form 'A:B'" );
-		var cellRangeAddress = getCellHelper().getCellRangeAddressFromReference( arguments.columnRange );
+			Throw( type=this.getExceptionType() & ".invalidColumnRangeArgument", message="Invalid columnRange argument", detail="The 'columnRange' argument should be in the form 'A:B'" );
+		var cellRangeAddress = getRangeHelper().getCellRangeAddressFromReference( arguments.columnRange );
 		getSheetHelper().getActiveSheet( arguments.workbook ).setRepeatingColumns( cellRangeAddress );
 		return this;
 	}
@@ -1694,8 +1697,8 @@ component accessors="true"{
 	public Spreadsheet function setRepeatingRows( required workbook, required string rowRange ){
 		arguments.rowRange = arguments.rowRange.Trim();
 		if( !IsValid( "regex", arguments.rowRange,"\d+:\d+" ) )
-			Throw( type=this.getExceptionType(), message="Invalid rowRange argument", detail="The 'rowRange' argument should be in the form 'n:n', e.g. '1:5'" );
-		var cellRangeAddress = getCellHelper().getCellRangeAddressFromReference( arguments.rowRange );
+			Throw( type=this.getExceptionType() & ".invalidRowRangeArgument", message="Invalid rowRange argument", detail="The 'rowRange' argument should be in the form 'n:n', e.g. '1:5'" );
+		var cellRangeAddress = getRangeHelper().getCellRangeAddressFromReference( arguments.rowRange );
 		getSheetHelper().getActiveSheet( arguments.workbook ).setRepeatingRows( cellRangeAddress );
 		return this;
 	}
@@ -1743,7 +1746,7 @@ component accessors="true"{
 
 	public Spreadsheet function setSheetPrintOrientation( required workbook, required string mode, string sheetName, numeric sheetNumber ){
 		if( !ListFindNoCase( "landscape,portrait", arguments.mode ) )
-			Throw( type=this.getExceptionType(), message="Invalid mode argument", detail="#mode# is not a valid 'mode' argument. Use 'portrait' or 'landscape'" );
+			Throw( type=this.getExceptionType() & ".invalidModeArgument", message="Invalid mode argument", detail="#mode# is not a valid 'mode' argument. Use 'portrait' or 'landscape'" );
 		var setToLandscape = ( LCase( arguments.mode ) == "landscape" );
 		var sheet = getSheetHelper().getSpecifiedOrActiveSheet( argumentCollection=arguments );
 		sheet.getPrintSetup().setLandscape( JavaCast( "boolean", setToLandscape ) );
@@ -1759,9 +1762,9 @@ component accessors="true"{
 			20210427 POI 4.x's sheet.shiftColumns() doesn't seem to work reliably: XSSF version doesn't delete columns that should be replaced. Both result in errors when writing
 		*/
 		if( arguments.start <= 0 )
-			Throw( type=this.getExceptionType(), message="Invalid start value", detail="The start value must be greater than or equal to 1" );
+			Throw( type=this.getExceptionType() & ".invalidStartArgument", message="Invalid start value", detail="The start value must be greater than or equal to 1" );
 		if( arguments.KeyExists( "end" ) && ( ( arguments.end <= 0 ) || ( arguments.end < arguments.start ) ) )
-			Throw( type=this.getExceptionType(), message="Invalid end value", detail="The end value must be greater than or equal to the start value" );
+			Throw( type=this.getExceptionType() & ".invalidEndArgument", message="Invalid end value", detail="The end value must be greater than or equal to the start value" );
 		var rowIterator = getSheetHelper().getActiveSheet( arguments.workbook ).rowIterator();
 		var startIndex = ( arguments.start -1 );
 		var endIndex = arguments.KeyExists( "end" )? ( arguments.end -1 ): startIndex;
@@ -1809,7 +1812,7 @@ component accessors="true"{
 			getExceptionHelper().throwFileExistsException( arguments.filepath );
 		var passwordProtect = ( arguments.KeyExists( "password" ) && !arguments.password.Trim().IsEmpty() );
 		if( passwordProtect && isBinaryFormat( arguments.workbook ) )
-			Throw( type=this.getExceptionType(), message="Whole file password protection is not supported for binary workbooks", detail="Password protection only works with XML ('xlsx') workbooks." );
+			Throw( type=this.getExceptionType() & ".invalidSpreadsheetType", message="Whole file password protection is not supported for binary workbooks", detail="Password protection only works with XML ('xlsx') workbooks." );
 		try{
 			lock name="#arguments.filepath#" timeout=5{
 				var outputStream = CreateObject( "java", "java.io.FileOutputStream" ).init( arguments.filepath );

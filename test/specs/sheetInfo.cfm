@@ -10,11 +10,13 @@ describe( "sheetInfo", function(){
 				,displaysRowAndColumnHeadings: true
 				,displaysZeros: true
 				,hasComments: false
+				,hasDataValidations: false
 				,hasMergedRegions: false
 				,isCurrentActiveSheet: true
 				,isHidden: false
 				,isRightToLeft: false
 				,name: "Sheet1"
+				,numberOfDataValidations: 0
 				,numberOfMergedRegions: 0
 				,printsFitToPage: ( type == "xls" )//xlsx=false xls=true
 				,printsGridlines: false

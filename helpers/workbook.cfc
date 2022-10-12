@@ -7,7 +7,7 @@ component extends="base" accessors="true"{
 			return getClassHelper().loadClass( library().getXSSFWorkbookClassName() ).init();
 		// Streaming Xlsx
 		if( !IsValid( "integer", arguments.streamingWindowSize ) || ( arguments.streamingWindowSize < 1 ) )
-			Throw( type=library().getExceptionType(), message="Invalid 'streamingWindowSize' argument", detail="'streamingWindowSize' must be an integer value greater than 1" );
+			Throw( type=library().getExceptionType() & ".invalidStreamingWindowSizeArgument", message="Invalid 'streamingWindowSize' argument", detail="'streamingWindowSize' must be an integer value greater than 1" );
 		return getClassHelper().loadClass( library().getSXSSFWorkbookClassName() ).init( JavaCast( "int", arguments.streamingWindowSize ) );
 	}
 

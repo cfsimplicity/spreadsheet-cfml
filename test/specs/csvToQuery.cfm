@@ -213,29 +213,29 @@ describe( "csvToQuery", function(){
 		it( "neither 'csv' nor 'filepath' are passed", function(){
 			expect( function(){
 				s.csvToQuery();
-			}).toThrow( regex="Missing required argument" );
+			}).toThrow( type="cfsimplicity.spreadsheet.missingRequiredArgument" );
 		});
 
 		it( "both 'csv' and 'filepath' are passed", function(){
 			expect( function(){
 				s.csvToQuery( csv="x", filepath="x" );
-			}).toThrow( regex="Mutually exclusive arguments" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidArgumentCombination" );
 			expect( function(){
 				s.csvToQuery( "x", "x" );
-			}).toThrow( regex="Mutually exclusive arguments" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidArgumentCombination" );
 		});
 
 		it( "a non-existent file is passed", function(){
 			expect( function(){
 				s.csvToQuery( filepath=ExpandPath( "missing.csv" ) );
-			}).toThrow( regex="Non-existent file" );
+			}).toThrow( type="cfsimplicity.spreadsheet.nonExistentFile" );
 		});
 
 		it( "a non text/csv file is passed", function(){
 			var path = getTestFilePath( "test.xls" );
 			expect( function(){
 				s.csvToQuery( filepath=path );
-			}).toThrow( regex="Invalid csv file" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidCsvFile" );
 		});
 
 		it( "queryColumnTypes is specified as a 'columnName/type' struct, but firstRowIsHeader is not set to true AND columnNames are not provided", function(){
@@ -243,7 +243,7 @@ describe( "csvToQuery", function(){
 				// using 'var' keyword here causes ACF2021 to throw exception
 				local.columnTypes = { col1: "Integer" };
 				local.q = s.csvToQuery( csv="1", queryColumnTypes=columnTypes );
-			}).toThrow( regex="Invalid argument" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidArgumentCombination" );
 		});
 
 	});

@@ -55,12 +55,12 @@ describe( "getColumnCount", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					var result=s.getColumnCount( wb, 2 );
-				}).toThrow( regex="Invalid sheet" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetNumber" );
 			});
 			workbooks.Each( function( wb ){
 				expect( function(){
 					var result=s.getColumnCount( wb, "test" );
-				}).toThrow( regex="Invalid sheet" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetName" );
 			});
 		});
 

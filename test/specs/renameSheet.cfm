@@ -27,7 +27,7 @@ describe( "renameSheet", function(){
 					s.createSheet( wb, "test" )
 						.createSheet( wb, "test2" )
 						.renameSheet( wb, "test2", 2 );
-				}).toThrow( regex="Invalid Sheet Name" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetName" );
 			});
 		});
 

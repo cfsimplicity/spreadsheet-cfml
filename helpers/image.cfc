@@ -8,12 +8,12 @@ component extends="base" accessors="true"{
 		// TODO image objects don't always work, depending on how they're created: POI accepts it but the image is not displayed (broken)
 		var imageArgumentIsObject = IsImage( arguments.image );
 		if( imageArgumentIsObject && !arguments.KeyExists( "imageType" ) )
-			Throw( type=library().getExceptionType(), message="Invalid argument combination", detail="If you specify an image object, you must also provide the imageType argument" );
+			Throw( type=library().getExceptionType() & ".invalidArgumentCombination", message="Invalid argument combination", detail="If you specify an image object, you must also provide the imageType argument" );
 		var imageArgumentIsFile = ( !imageArgumentIsObject && IsSimpleValue( arguments.image ) && FileExists( arguments.image ) );
 		if( !imageArgumentIsObject && IsSimpleValue( arguments.image ) && !imageArgumentIsFile )
 			getExceptionHelper().throwNonExistentFileException( arguments.image );
 		if( !imageArgumentIsObject && !imageArgumentIsFile )
-			Throw( type=library().getExceptionType(), message="Invalid image", detail="You must provide either a file path or an image object" );
+			Throw( type=library().getExceptionType() & ".invalidImage", message="Invalid image", detail="You must provide either a file path or an image object" );
 		if( imageArgumentIsFile ){
 			arguments.imageType = getFileHelper().getFileContentTypeFromPath( arguments.image );
 			if( arguments.imageType == "unknown" )
@@ -33,7 +33,7 @@ component extends="base" accessors="true"{
 			case "JPG":
 				return arguments.workbook.PICTURE_TYPE_JPEG;
 		}
-		Throw( type=library().getExceptionType(), message="Invalid Image Type", detail="Valid image types are DIB, EMF, JPG, JPEG, PICT, PNG, and WMF" );
+		Throw( type=library().getExceptionType() & ".invalidImageType", message="Invalid Image Type", detail="Valid image types are DIB, EMF, JPG, JPEG, PICT, PNG, and WMF" );
 	}
 
 }

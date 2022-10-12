@@ -12,7 +12,7 @@ component extends="base" accessors="true"{
 		for( var thisRange in ranges ){
 			thisRange = removeAllWhiteSpaceFrom( thisRange );
 			if( !thisRange.REFind( rangeTest ) )
-				Throw( type=library().getExceptionType(), message="Invalid range value", detail="The range value '#thisRange#' is not valid." );
+				Throw( type=library().getExceptionType() & ".invalidRange", message="Invalid range value", detail="The range value '#thisRange#' is not valid." );
 			thisRange = handleOpenEndedRange( thisRange, arguments.dimension, arguments.workbook );
 			var parts = ListToArray( thisRange, "-" );
 			//if this is a single number, the start/endAt values are the same
@@ -23,6 +23,37 @@ component extends="base" accessors="true"{
 			result.Append( range );
 		}
 		return result;
+	}
+
+	any function getCellRangeAddressFromColumnAndRowIndices( required struct indices ){
+		//index = 0 based
+		return getClassHelper().loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).init(
+			JavaCast( "int", arguments.indices.startRow )
+			,JavaCast( "int", arguments.indices.endRow )
+			,JavaCast( "int", arguments.indices.startColumn )
+			,JavaCast( "int", arguments.indices.endColumn )
+		);
+	}
+
+	any function getCellRangeAddressFromRowIndex( required workbook, required numeric rowIndex ){
+		var indices = {
+			startRow: arguments.rowIndex
+			,endRow: arguments.rowIndex
+			,startColumn: 0
+			,endColumn: ( library().getColumnCount( arguments.workbook ) -1 )
+		};
+		return getCellRangeAddressFromColumnAndRowIndices( indices );
+	}
+
+	any function getCellRangeAddressFromReference( required string rangeReference ){
+		/*
+		rangeReference = usually a standard area ref (e.g. "B1:D8"). May be a single cell ref (e.g. "B5") in which case the result is a 1 x 1 cell range. May also be a whole row range (e.g. "3:5"), or a whole column range (e.g. "C:F")
+		*/
+		return getClassHelper().loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String", arguments.rangeReference ) );
+	}
+
+	string function convertRangeReferenceToAbsoluteAddress( required string rangeReference ){
+		return arguments.rangeReference.REReplace( "([A-Za-z]+|\d+)", "$\1", "ALL" ).UCase();
 	}
 
 	/* Private */

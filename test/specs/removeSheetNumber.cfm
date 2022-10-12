@@ -28,7 +28,7 @@ describe( "removeSheetNumber", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.removeSheetNumber( wb, 20 );
-				}).toThrow( regex="Invalid sheet" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetNumber" );
 			});
 		});
 

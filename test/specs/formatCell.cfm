@@ -375,7 +375,7 @@ describe( "formatCell", function(){
 					var hex = "GGHHII";
 					var format = { color: hex, bottombordercolor: hex };
 					var cellFormat = setAndGetFormat( wb, format );
-				}).toThrow( regex="Invalid color" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidColor" );
 			});
 		});
 
@@ -384,7 +384,7 @@ describe( "formatCell", function(){
 				expect( function(){
 					var cellStyle = s.createCellStyle( wb, { bold: true } );
 					s.formatCell( workbook=wb, row=1, column=1, cellStyle=cellStyle, overwriteCurrentStyle=false );
-				}).toThrow( regex="Invalid arguments" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidArgumentCombination" );
 			});
 		});
 

@@ -70,7 +70,7 @@ describe( "chaining", function(){
 			it( "no workbook has been passed in, read or initialised", function(){
 				expect( function(){
 					s.newChainable().addRow( [ "a", "b", "c" ] );
-				}).toThrow( regex="Missing workbook" );
+				}).toThrow( type="cfsimplicity.spreadsheet.missingWorkbook" );
 			});
 
 			it( "the workbook is not a invalid object", function(){
@@ -78,7 +78,7 @@ describe( "chaining", function(){
 					s.newChainable()
 						.read( src=getTestFilePath( "test.xlsx" ), format="query" )
 						.addRow( [ "a", "b", "c" ] );
-				}).toThrow( regex="Invalid workbook" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidWorkbook" );
 			});
 
 		});

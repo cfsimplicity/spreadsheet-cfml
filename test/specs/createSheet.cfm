@@ -41,7 +41,7 @@ describe( "createSheet", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.createSheet( wb, filename );
-				}).toThrow( regex="too many" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetName" );
 			});
 		});
 
@@ -49,7 +49,7 @@ describe( "createSheet", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.createSheet( wb, "[]?*\/:" );
-				}).toThrow( regex="Invalid characters" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidCharacters" );
 			});
 		});
 
@@ -58,7 +58,7 @@ describe( "createSheet", function(){
 				expect( function(){
 					s.createSheet( wb, "test" )
 						.createSheet( wb, "test" );
-				}).toThrow( regex="already exists" );
+				}).toThrow( type="cfsimplicity.spreadsheet.sheetNameAlreadyExists" );
 			});
 		});
 

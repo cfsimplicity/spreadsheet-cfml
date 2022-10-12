@@ -88,7 +88,7 @@ describe( "cellComment", function(){
 				expect( function(){
 					s.getCellComment( workbook=wb, row=1 );
 					s.getCellComment( workbook=wb, column=1 );
-				}).toThrow( regex="Invalid argument combination" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidArgumentCombination" );
 			});
 		});
 

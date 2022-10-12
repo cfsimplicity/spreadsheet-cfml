@@ -121,14 +121,14 @@ describe( "cellHyperLinks", function(){
 				expect( function(){
 					var wb = s.newXls();
 					s.setCellHyperlink( workbook=wb, row=1, column=1, link="https://w3c.org", type="blah" );
-				}).toThrow( regex="Invalid type parameter" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidTypeArgument" );
 			});
 
 			it( "the workbook is XLS and a tooltip is specified", function(){
 				expect( function(){
 					var wb = s.newXls();
 					s.setCellHyperlink( workbook=wb, row=1, column=1, link=uri, tooltip="whatever" );
-				}).toThrow( regex="Invalid spreadsheet type" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidSpreadsheetType" );
 			});
 
 		});

@@ -35,7 +35,7 @@ component extends="base" accessors="true"{
 
 	any function checkDataTypesArgument( required struct args ){
 		if( arguments.args.KeyExists( "datatypes" ) && datatypeOverridesContainInvalidTypes( arguments.args.datatypes ) )
-			Throw( type=library().getExceptionType(), message="Invalid datatype(s)", detail="One or more of the datatypes specified is invalid. Valid types are #validCellOverrideTypes().ToList( ', ' )# and the columns they apply to should be passed as an array" );
+			Throw( type=library().getExceptionType() & ".invalidDatatype", message="Invalid datatype(s)", detail="One or more of the datatypes specified is invalid. Valid types are #validCellOverrideTypes().ToList( ', ' )# and the columns they apply to should be passed as an array" );
 		return this;
 	}
 

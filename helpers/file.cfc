@@ -11,7 +11,7 @@ component extends="base" accessors="true"{
 		// set up the encryptor with the chosen algo
 		var validAlgorithms = [ "agile", "standard", "binaryRC4" ];
 		if( !ArrayFindNoCase( validAlgorithms, arguments.algorithm ) )
-			Throw( type=library().getExceptionType(), message="Invalid algorithm", detail="'#arguments.algorithm#' is not a valid algorithm. Supported algorithms are: #validAlgorithms.ToList( ', ')#" );
+			Throw( type=library().getExceptionType() & ".invalidAlgorithm", message="Invalid algorithm", detail="'#arguments.algorithm#' is not a valid algorithm. Supported algorithms are: #validAlgorithms.ToList( ', ')#" );
 		lock name="#arguments.filepath#" timeout=5 {
 			var mode = getClassHelper().loadClass( "org.apache.poi.poifs.crypt.EncryptionMode" );
 			var info = getClassHelper().loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode[ arguments.algorithm ] );
@@ -91,7 +91,7 @@ component extends="base" accessors="true"{
 
 	any function throwErrorIFnotCsvOrTextFile( required string path ){
 		if( !isCsvTsvOrTextFile( arguments.path ) )
-			Throw( type=library().getExceptionType(), message="Invalid csv file", detail="#arguments.path# does not appear to be a csv/tsv/text file" );
+			Throw( type=library().getExceptionType() & ".invalidCsvFile", message="Invalid csv file", detail="#arguments.path# does not appear to be a csv/tsv/text file" );
 		return this;
 	}	
 

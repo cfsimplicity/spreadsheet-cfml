@@ -36,7 +36,7 @@ component extends="base" accessors="true"{
 		var findColor = arguments.colorName.Trim().UCase();
 		var color = CreateObject( "Java", "java.awt.Color" );
 		if( IsNull( color[ findColor ] ) || !IsInstanceOf( color[ findColor ], "java.awt.Color" ) )//don't use member functions on color
-			Throw( type=library().getExceptionType(), message="Invalid color", detail="The color provided (#arguments.colorName#) is not valid." );
+			Throw( type=library().getExceptionType() & ".invalidColor", message="Invalid color", detail="The color provided (#arguments.colorName#) is not valid." );
 		color = color[ findColor ];
 		var colorRGB = {
 			red: color.getRed()
@@ -117,7 +117,7 @@ component extends="base" accessors="true"{
 			return color.getIndex();
 		}
 		catch( any exception ){
-			Throw( type=library().getExceptionType(), message="Invalid Color", detail="The color provided (#arguments.colorName#) is not valid. Use getPresetColorNames() for a list of valid color names" );
+			Throw( type=library().getExceptionType() & ".invalidColor", message="Invalid Color", detail="The color provided (#arguments.colorName#) is not valid. Use getPresetColorNames() for a list of valid color names" );
 		}
 	}
 

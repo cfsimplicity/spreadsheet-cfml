@@ -103,11 +103,13 @@ component extends="base" accessors="true"{
 			,displaysRowAndColumnHeadings: sheet.isDisplayRowColHeadings()
 			,displaysZeros: sheet.isDisplayZeros()
 			,hasComments: hasComments( sheet, isXlsx )
+			,hasDataValidations: BooleanFormat( sheet.getDataValidations().Len() )
 			,hasMergedRegions: BooleanFormat( sheet.getNumMergedRegions() )
 			,isCurrentActiveSheet: isActive( sheet, isXlsx )
 			,isHidden: !isVisible( argumentCollection=arguments )
 			,isRightToLeft: sheet.isRightToLeft()
 			,name: sheet.getSheetName()
+			,numberOfDataValidations: sheet.getDataValidations().Len()
 			,numberOfMergedRegions: sheet.getNumMergedRegions()
 			,printsFitToPage: sheet.getFitToPage()
 			,printsGridlines: sheet.isPrintGridlines()
@@ -129,7 +131,7 @@ component extends="base" accessors="true"{
 		validateSheetNumber( arguments.workbook, arguments.sheetNumber );
 		var validStates = [ "HIDDEN", "VERY_HIDDEN", "VISIBLE" ];
 		if( !validStates.Find( arguments.visibility ) )
-			Throw( type=this.getExceptionType(), message="Invalid visibility parameter: '#arguments.visibility#'", detail="The visibility must be one of the following: #validStates.ToList( ', ' )#." );
+			Throw( type=this.getExceptionType() & ".invalidVisibilityArgument", message="Invalid visibility argument: '#arguments.visibility#'", detail="The visibility must be one of the following: #validStates.ToList( ', ' )#." );
 		var visibilityEnum = getClassHelper().loadClass( "org.apache.poi.ss.usermodel.SheetVisibility" )[ JavaCast( "string", arguments.visibility ) ];
 		var sheetIndex = ( arguments.sheetNumber -1 );
 		arguments.workbook.setSheetVisibility( sheetIndex, visibilityEnum );
@@ -221,14 +223,14 @@ component extends="base" accessors="true"{
 
 	any function validateSheetExistsWithName( required workbook, required string sheetName ){
 		if( !sheetExists( workbook=arguments.workbook, sheetName=arguments.sheetName ) )
-			Throw( type=library().getExceptionType(), message="Invalid sheet name [#arguments.sheetName#]", detail="The specified sheet was not found in the current workbook." );
+			Throw( type=library().getExceptionType() & ".invalidSheetName", message="Invalid sheet name [#arguments.sheetName#]", detail="The specified sheet was not found in the current workbook." );
 		return this;
 	}
 
 	any function validateSheetNumber( required workbook, required numeric sheetNumber ){
 		if( !sheetExists( workbook=arguments.workbook, sheetNumber=arguments.sheetNumber ) ){
 			var sheetCount = arguments.workbook.getNumberOfSheets();
-			Throw( type=library().getExceptionType(), message="Invalid sheet number [#arguments.sheetNumber#]", detail="The sheetNumber must a whole number between 1 and the total number of sheets in the workbook [#sheetCount#]" );
+			Throw( type=library().getExceptionType() & ".invalidSheetNumber", message="Invalid sheet number [#arguments.sheetNumber#]", detail="The sheetNumber must a whole number between 1 and the total number of sheets in the workbook [#sheetCount#]" );
 		}
 		return this;
 	}
@@ -236,17 +238,17 @@ component extends="base" accessors="true"{
 	any function validateSheetName( required string sheetName ){
 		var characterCount = Len( arguments.sheetName );
 		if( characterCount > 31 )
-			Throw( type=library().getExceptionType(), message="Invalid sheet name", detail="The sheetname contains too many characters [#characterCount#]. The maximum is 31." );
+			Throw( type=library().getExceptionType() & ".invalidSheetName", message="Invalid sheet name", detail="The sheetname contains too many characters [#characterCount#]. The maximum is 31." );
 		var poiTool = getClassHelper().loadClass( "org.apache.poi.ss.util.WorkbookUtil" );
 		try{
 			poiTool.validateSheetName( JavaCast( "String", arguments.sheetName ) );
 		}
 		catch( "java.lang.IllegalArgumentException" exception ){
-			Throw( type=library().getExceptionType(), message="Invalid characters in sheet name", detail=exception.message );
+			Throw( type=library().getExceptionType() & ".invalidCharacters", message="Invalid characters in sheet name", detail=exception.message );
 		}
 		catch( "java.lang.reflect.InvocationTargetException" exception ){
 			//ACF
-			Throw( type=library().getExceptionType(), message="Invalid characters in sheet name", detail=exception.message );
+			Throw( type=library().getExceptionType() & ".invalidCharacters", message="Invalid characters in sheet name", detail=exception.message );
 		}
 		return this;
 	}
@@ -314,7 +316,7 @@ component extends="base" accessors="true"{
 				return proposedName;
 		}
 		// this should never happen. but if for some reason it did, warn the action failed and abort
-		Throw( type=library().getExceptionType(), message="Unable to generate name", detail="Unable to generate a unique sheet name" );
+		Throw( type=library().getExceptionType() & ".uniqueNameGenerationFailure", message="Unable to generate name", detail="Unable to generate a unique sheet name" );
 	}
 
 	private numeric function getFirstVisibleSheetNumber( required workbook ){
@@ -375,7 +377,7 @@ component extends="base" accessors="true"{
 
 	private any function throwErrorIFSheetNameAndNumberArgumentsBothMissing(){
 		if( !sheetNameArgumentWasProvided( argumentCollection=arguments ) && !sheetNumberArgumentWasProvided( argumentCollection=arguments ) )
-			Throw( type=library().getExceptionType(), message="Missing Required Argument", detail="Either sheetName or sheetNumber must be provided" );
+			Throw( type=library().getExceptionType() & ".missingRequiredArgument", message="Missing Required Argument", detail="Either sheetName or sheetNumber must be provided" );
 		return this;
 	}
 

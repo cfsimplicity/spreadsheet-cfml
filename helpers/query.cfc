@@ -129,7 +129,7 @@ component extends="base" accessors="true"{
 
 	void function throwErrorIFinvalidQueryColumnTypesArgument( required queryColumnTypes ){
 		if( IsStruct( arguments.queryColumnTypes ) && !arguments.KeyExists( "headerRow" ) && !arguments.KeyExists( "columnNames" ) )
-			Throw( type=library().getExceptionType(), message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also specify the 'headerRow' or provide 'columnNames'" );
+			Throw( type=library().getExceptionType() & ".invalidQueryColumnTypesArgument", message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also specify the 'headerRow' or provide 'columnNames'" );
 	}
 
 	/* Private */

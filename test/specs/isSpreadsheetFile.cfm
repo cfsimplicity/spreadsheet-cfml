@@ -22,14 +22,14 @@ describe( "isSpreadsheetFile", function(){
 			expect( function(){
 				var path = getTestFilePath( "nonexistent.xls" );
 				s.isSpreadsheetFile( path );
-			}).toThrow( regex="Non-existent file" );
+			}).toThrow( type="cfsimplicity.spreadsheet.nonExistentFile" );
 		});
 
 		it( "the source file is in an old format not supported by POI", function(){
 			expect( function(){
 				var path = getTestFilePath( "oldformat.xls" );
 				s.isSpreadsheetFile( path );
-			}).toThrow( regex="Invalid spreadsheet format" );
+			}).toThrow( type="cfsimplicity.spreadsheet.oldExcelFormatException" );
 		});
 		
 	});

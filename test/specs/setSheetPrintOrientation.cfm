@@ -54,7 +54,7 @@ describe( "setSheetPrintOrientation", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.setSheetPrintOrientation( wb, "blah" );
-				}).toThrow( regex="Invalid mode" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidModeArgument" );
 			});
 		});
 
@@ -62,7 +62,7 @@ describe( "setSheetPrintOrientation", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.setSheetPrintOrientation( wb, "landscape", "test", 1 );
-				}).toThrow( regex="Invalid arguments" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidArguments" );
 			});
 		});
 
