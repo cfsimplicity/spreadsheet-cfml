@@ -25,9 +25,9 @@ component extends="base" accessors="true"{
 
 	any function checkFormatArguments( required workbook, boolean overwriteCurrentStyle=true ){
 		if( arguments.KeyExists( "cellStyle" ) && !arguments.overwriteCurrentStyle )
-			Throw( type=library().getExceptionType(), message="Invalid arguments", detail="If you supply a 'cellStyle' the 'overwriteCurrentStyle' cannot be false" );
+			Throw( type=library().getExceptionType() & ".invalidArgumentCombination", message="Invalid argument combination", detail="If you supply a 'cellStyle' the 'overwriteCurrentStyle' cannot be false" );
 		if( arguments.KeyExists( "cellStyle" ) && !isValidCellStyleObject( arguments.workbook, arguments.cellStyle ) )
-			Throw( type=library().getExceptionType(), message="Invalid argument", detail="The 'cellStyle' argument is not a valid POI cellStyle object" );
+			Throw( type=library().getExceptionType() & ".invalidCellStyleArgument", message="Invalid argument", detail="The 'cellStyle' argument is not a valid POI cellStyle object" );
 		return this;
 	}
 

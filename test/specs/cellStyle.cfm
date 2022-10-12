@@ -54,7 +54,7 @@ describe( "cellStyle", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.formatCell( workbook=wb, row=1, column=1, cellStyle="not a cellStyle object" );
-				}).toThrow( regex="Invalid argument*" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidCellStyleArgument" );
 			});
 		});
 

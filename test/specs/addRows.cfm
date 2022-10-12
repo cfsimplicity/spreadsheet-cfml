@@ -326,7 +326,7 @@ describe( "addRows", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.addRows( workbook=wb, data=data, datatypes=datatypes );
-				}).toThrow( regex="Invalid datatype\(s\)" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidDatatype" );
 			});
 		});
 
@@ -336,7 +336,7 @@ describe( "addRows", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.addRows( workbook=wb, data=data, datatypes=datatypes );
-				}).toThrow( regex="Invalid datatype\(s\)" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidDatatype" );
 			});
 		});
 
@@ -477,7 +477,7 @@ describe( "addRows", function(){
 					}
 					var data = QueryNew( "ID","Integer",rows );
 					variables.s.addRows( xls, data );
-				}).toThrow( regex="Too many rows" );
+				}).toThrow( type="cfsimplicity.spreadsheet.tooManyRows" );
 			},
 			skip=function(){
 				return s.getIsACF();
@@ -488,7 +488,7 @@ describe( "addRows", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.addRows( workbook=wb, data=data, row=0 );
-				}).toThrow( regex="Invalid row" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidRowArgument" );
 			});
 		});
 
@@ -496,7 +496,7 @@ describe( "addRows", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.addRows( workbook=wb, data=data, column=0 );
-				}).toThrow( regex="Invalid column" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidColumnArgument" );
 			});
 		});
 
@@ -504,7 +504,7 @@ describe( "addRows", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.addRows( workbook=wb, data=data, insert=false );
-				}).toThrow( regex="Missing row" );
+				}).toThrow( type="cfsimplicity.spreadsheet.missingRowArgument" );
 			});
 		});
 
@@ -512,7 +512,7 @@ describe( "addRows", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.addRows( wb, "string,list" );
-				}).toThrow( regex="Invalid data" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidDataArgument" );
 			});
 		});
 
@@ -520,7 +520,7 @@ describe( "addRows", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.addRows( wb, [ { col1: "a" }, { col2: "b" } ] );// array of structs
-				}).toThrow( regex="Invalid data" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidDataArgument" );
 			});
 		});
 

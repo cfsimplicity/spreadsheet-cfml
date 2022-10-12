@@ -669,7 +669,7 @@ describe( "read", function(){
 			expect( function(){
 				var columnTypes = { col1: "Integer" };
 				s.read( src=getTestFilePath( "test.xlsx" ), format="query", queryColumnTypes=columnTypes );
-			}).toThrow( regex="Invalid argument" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidQueryColumnTypesArgument" );
 		});
 
 		it( "a formula can't be evaluated", function(){
@@ -680,40 +680,40 @@ describe( "read", function(){
 				s.setCellFormula( workbook, theFormula, 3, 1 )
 					.write( workbook=workbook, filepath=tempXlsPath, overwrite=true )
 					.read( src=tempXlsPath, format="query" );
-			}).toThrow( regex="Failed to run formula" );
+			}).toThrow( type="cfsimplicity.spreadsheet.failedFormula" );
 		});
 
 		it( "the 'query' argument is passed", function(){
 			expect( function(){
 				s.read( src=tempXlsPath, query="q" );
-			}).toThrow( regex="Invalid argument" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidQueryArgument" );
 		});
 
 		it( "the format argument is invalid", function(){
 			expect( function(){
 				s.read( src=tempXlsPath, format="wrong" );
-			}).toThrow( regex="Invalid format" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidReadFormat" );
 		});
 
 		it( "the file doesn't exist", function(){
 			expect( function(){
 				var path = getTestFilePath( "nonexistent.xls" );
 				s.read( src=path );
-			}).toThrow( regex="Non-existent file" );
+			}).toThrow( type="cfsimplicity.spreadsheet.nonExistentFile" );
 		});
 
 		it( "the sheet name doesn't exist", function(){
 			expect( function(){
 				var path = getTestFilePath( "test.xls" );
 				s.read( src=path, format="query", sheetName="nonexistent" );
-			}).toThrow( regex="Invalid sheet" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetName" );
 		});
 
 		it( "the sheet number doesn't exist", function(){
 			expect( function(){
 				var path = getTestFilePath( "test.xls" );
 				s.read( src=path, format="query", sheetNumber=20 );
-			}).toThrow( regex="Invalid sheet|out of range" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetNumber" );
 		});
 
 		it( "both sheetName and sheetNumber arguments are specified", function(){
@@ -741,25 +741,25 @@ describe( "read", function(){
 			expect( function(){
 				var path = getTestFilePath( "notaspreadsheet.txt" );
 				s.read( src=path );
-			}).toThrow( regex="Invalid spreadsheet file" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidFile" );
 		});
 
 		it( "the source file appears to contain CSV or TSV, and suggests using 'csvToQuery'", function(){
 			expect( function(){
 				var path = getTestFilePath( "csv.xls" );
 				s.read( src=path );
-			}).toThrow( regex="may be a CSV" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidFile" );
 			expect( function(){
 				var path = getTestFilePath( "test.tsv" );
 				s.read( src=path );
-			}).toThrow( regex="may be a CSV" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidFile" );
 		});
 
 		it( "the source file is in an old format not supported by POI", function(){
 			expect( function(){
 				var path = getTestFilePath( "oldformat.xls" );
 				s.read( src=path );
-			}).toThrow( regex="Invalid spreadsheet format" );
+			}).toThrow( type="cfsimplicity.spreadsheet.oldExcelFormatException" );
 		});
 
 	});

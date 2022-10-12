@@ -78,18 +78,18 @@ describe( "getRowCount/getLastRowNumber", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					var result = s.getRowCount( wb, 2 );
-				}).toThrow( regex="Invalid sheet" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetNumber" );
 				expect( function(){
 					var result = s.getLastRowNumber( wb, 2 );
-				}).toThrow( regex="Invalid sheet" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetNumber" );
 			});
 			workbooks.Each( function( wb ){
 				expect( function(){
 					var result = s.getRowCount( wb, "test" );
-				}).toThrow( regex="Invalid sheet" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetName" );
 				expect( function(){
 					var result = s.getLastRowNumber( wb, "test" );
-				}).toThrow( regex="Invalid sheet" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetName" );
 			});
 		});
 

@@ -102,7 +102,7 @@ component extends="base" accessors="true"{
 				return "font-weight:" & ( arguments.styleValue? "bold;": "normal;" );
 			case "color":
 				if( !arguments.KeyExists( "workbook" ) )
-					Throw( type=library().getExceptionType(), message="The 'workbook' argument is required when generating color css styles" );
+					Throw( type=library().getExceptionType() & ".missingRequiredArgument", message="Missing required 'workbook' argument", detail="The 'workbook' argument is required when generating color css styles" );
 				//http://ragnarock99.blogspot.co.uk/2012/04/getting-hex-color-from-excel-cell.html
 				var rgb = arguments.workbook.getCustomPalette().getColor( arguments.styleValue ).getTriplet();
 				var javaColor = CreateObject( "Java", "java.awt.Color" ).init( JavaCast( "int", rgb[ 1 ] ), JavaCast( "int", rgb[ 2 ] ), JavaCast( "int", rgb[ 3 ] ) );
@@ -114,7 +114,7 @@ component extends="base" accessors="true"{
 			case "decoration":
 				return "text-decoration:#arguments.styleValue#;";//need to pass desired combination of "underline" and "line-through"
 		}
-		Throw( type=library().getExceptionType(), message="Unrecognised style for css conversion" );
+		Throw( type=library().getExceptionType() & ".unrecognisedStyle", message="Unrecognised style for css conversion" );
 	}
 
 	private numeric function getAWTFontStyle( required any poiFont ){

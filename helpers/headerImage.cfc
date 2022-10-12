@@ -10,7 +10,7 @@ component extends="base" accessors="true"{
 	){
 		var headerType = arguments.isHeader? "Header": "Footer";
 		if( !library().isXmlFormat( arguments.workbook ) )
-			Throw( type=library().getExceptionType(), message="Invalid spreadsheet type", detail="#headerType# images can only be added to XLSX spreadsheets." );
+			Throw( type=library().getExceptionType() & ".invalidSpreadsheetType", message="Invalid spreadsheet type", detail="#headerType# images can only be added to XLSX spreadsheets." );
 		var imageIndex = getImageHelper().addImageToWorkbook( argumentCollection=arguments );
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		var headerObject = arguments.isHeader? sheet.getHeader(): sheet.getFooter();
@@ -29,7 +29,7 @@ component extends="base" accessors="true"{
 				headerObject.setRight( "&G" );
 				var vmlPosition = "R#headerTypeInitialLetter#";
 				break;
-			default: Throw( type=library().getExceptionType(), message="Invalid #headerType.LCase()# position", detail="The 'position' argument '#arguments.position#' is invalid. Use 'left', 'center' or 'right'" );
+			default: Throw( type=library().getExceptionType() & ".invalidPositionArgument", message="Invalid #headerType.LCase()# position", detail="The 'position' argument '#arguments.position#' is invalid. Use 'left', 'center' or 'right'" );
 		}
 		// check for existing header/footer images
 		var existingRelation = getExistingHeaderFooterImageRelation( sheet, headerImagePartName );
@@ -42,7 +42,7 @@ component extends="base" accessors="true"{
 			catch( any exception ){
 				if( exception.message.Find( "getXml" ) )
 					// ...but won't work if file has been previously saved with a header/footer image
-					Throw( type=library().getExceptionType(), message="Spreadsheet contains an existing header or footer", detail="Header/footer images can't currently be added to spreadsheets read from disk that already have them." );
+					Throw( type=library().getExceptionType() & ".existingHeaderOrFooter", message="Spreadsheet contains an existing header or footer", detail="Header/footer images can't currently be added to spreadsheets read from disk that already have them." );
 					/*
 						TODO why won't this work? This is how to get the existing xml, but it won't save back modified to the vmlDrawing1.vml part for some reason
 						headerImageXML = sheet.getRelations()[ i ].getDocument().xmlText();

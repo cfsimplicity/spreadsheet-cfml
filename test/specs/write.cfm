@@ -80,7 +80,7 @@ describe( "write", function(){
 			var workbook = s.new();
 			expect( function(){
 				s.write( workbook, tempXlsPath, false );
-			}).toThrow( regex="File already exists" );
+			}).toThrow( type="cfsimplicity.spreadsheet.fileAlreadyExists" );
 		});
 
 		it( "the password encryption algorithm is not valid", function(){
@@ -89,7 +89,7 @@ describe( "write", function(){
 			s.addRows( workbook,data );
 			expect( function(){
 				s.write( workbook=workbook, filepath=tempXlsxPath, overwrite=true, password="pass", algorithm="blah" );
-			}).toThrow( regex="Invalid algorithm" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidAlgorithm" );
 		});
 
 	});	

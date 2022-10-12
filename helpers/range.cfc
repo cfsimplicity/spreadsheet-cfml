@@ -12,7 +12,7 @@ component extends="base" accessors="true"{
 		for( var thisRange in ranges ){
 			thisRange = removeAllWhiteSpaceFrom( thisRange );
 			if( !thisRange.REFind( rangeTest ) )
-				Throw( type=library().getExceptionType(), message="Invalid range value", detail="The range value '#thisRange#' is not valid." );
+				Throw( type=library().getExceptionType() & ".invalidRange", message="Invalid range value", detail="The range value '#thisRange#' is not valid." );
 			thisRange = handleOpenEndedRange( thisRange, arguments.dimension, arguments.workbook );
 			var parts = ListToArray( thisRange, "-" );
 			//if this is a single number, the start/endAt values are the same

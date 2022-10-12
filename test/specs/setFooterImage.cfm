@@ -46,20 +46,20 @@ describe( "setFooterImage", function(){
 		it( "the workbook is not XLSX", function(){
 			expect( function(){
 				s.setFooterImage( s.newXls(), "left", getTestFilePath( "test.png" ) );
-			}).toThrow( regex="Invalid spreadsheet type" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidSpreadsheetType" );
 		});
 
 		it( "the position argument is invalid", function(){
 			expect( function(){
 				s.setFooterImage( s.newXlsx(), "wrong", getTestFilePath( "test.png" ) );
-			}).toThrow( regex="Invalid footer position" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidPositionArgument" );
 		});
 
 		it( "the spreadsheet already has a header or footer image", function(){
 			expect( function(){
 				var wb = s.read( getTestFilePath( "hasHeaderImage.xlsx" ) );
 				s.setFooterImage( wb, "left", getTestFilePath( "test.png" ) );
-			}).toThrow( regex="Spreadsheet contains an existing header or footer" );
+			}).toThrow( type="cfsimplicity.spreadsheet.existingHeaderOrFooter" );
 		});
 
 	});	

@@ -31,7 +31,7 @@ describe( "autoSizeColumn", function(){
 		workbooks.Each( function( wb ){
 			expect( function(){
 				s.autoSizeColumn( wb, -1 );
-			}).toThrow( regex="Invalid column value" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidColumnArgument" );
 		});
 	});
 

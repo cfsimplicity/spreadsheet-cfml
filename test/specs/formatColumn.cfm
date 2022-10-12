@@ -51,7 +51,7 @@ describe( "formatColumn", function(){
 				expect( function(){
 					var format = { italic="true" };
 					s.formatColumn( wb, format,0 );
-				}).toThrow( regex="Invalid column" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidColumnArgument" );
 			});
 		});
 

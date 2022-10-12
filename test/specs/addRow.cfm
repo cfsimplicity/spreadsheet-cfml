@@ -216,7 +216,7 @@ describe( "addRow", function(){
 					var data = [ "a", "b" ];
 					var datatypes = { numeric: [ 1 ], varchar: [ 2 ] };
 					s.addRow( workbook=wb, data=data, datatypes=datatypes );
-				}).toThrow( regex="Invalid datatype\(s\)" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidDatatype" );
 			});
 		});
 
@@ -226,7 +226,7 @@ describe( "addRow", function(){
 					var data = [ "a", "b" ];
 					var datatypes = { numeric: "1", string: "2" };
 					s.addRow( workbook=wb, data=data, datatypes=datatypes );
-				}).toThrow( regex="Invalid datatype\(s\)" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidDatatype" );
 			});
 		});
 
@@ -277,7 +277,7 @@ describe( "addRow", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.addRow( workbook=wb, data=data, row=0 );
-				}).toThrow( regex="Invalid row" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidRowArgument" );
 			});
 		});
 
@@ -285,7 +285,7 @@ describe( "addRow", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.addRow( workbook=wb, data=data, column=0 );
-				}).toThrow( regex="Invalid column" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidColumnArgument" );
 			});
 		});
 
@@ -293,7 +293,7 @@ describe( "addRow", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.addRow( workbook=wb, data=data, insert=false );
-				}).toThrow( regex="Missing row" );
+				}).toThrow( type="cfsimplicity.spreadsheet.missingRowArgument" );
 			});
 		});
 

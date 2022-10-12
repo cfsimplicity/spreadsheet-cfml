@@ -43,7 +43,7 @@ component extends="base" accessors="true"{
 			}
 			catch( java.lang.IllegalArgumentException exception ){
 				if( exception.message.FindNoCase( "Invalid row number (65536)" ) )
-					Throw( type=library().getExceptionType(), message="Too many rows", detail="Binary spreadsheets are limited to 65535 rows. Consider using an XML format spreadsheet instead." );
+					Throw( type=library().getExceptionType() & ".tooManyRows", message="Too many rows", detail="Binary spreadsheets are limited to 65535 rows. Consider using an XML format spreadsheet instead." );
 				else
 					rethrow;
 			}

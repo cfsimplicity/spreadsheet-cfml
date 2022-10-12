@@ -35,7 +35,7 @@ component extends="base" accessors="true"{
 		var libraryInstanceFormats = library().getDateFormats();
 		for( var format in arguments.dateFormats ){
 			if( !libraryInstanceFormats.KeyExists( format ) )
-				Throw( type=library().getExceptionType(), message="Invalid date format key", detail="'#format#' is not a valid dateformat key. Valid keys are DATE, DATETIME, TIME and TIMESTAMP" );
+				Throw( type=library().getExceptionType() & ".invalidDateFormatKey", message="Invalid date format key", detail="'#format#' is not a valid dateformat key. Valid keys are DATE, DATETIME, TIME and TIMESTAMP" );
 			libraryInstanceFormats[ format ] = arguments.dateFormats[ format ];
 		}
 		return this;

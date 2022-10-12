@@ -31,7 +31,7 @@ component extends="base" accessors="true"{
 
 	any function getCellAt( required workbook, required numeric rowNumber, required numeric columnNumber ){
 		if( !cellExists( argumentCollection=arguments ) )
-			Throw( type=library().getExceptionType(), message="Invalid cell", detail="The requested cell [#arguments.rowNumber#,#arguments.columnNumber#] does not exist in the active sheet" );
+			Throw( type=library().getExceptionType() & ".invalidCell", message="Invalid cell", detail="The requested cell [#arguments.rowNumber#,#arguments.columnNumber#] does not exist in the active sheet" );
 		var columnIndex = ( arguments.columnNumber -1 );
 		return getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).getCell( JavaCast( "int", columnIndex ) );
 	}
@@ -45,7 +45,7 @@ component extends="base" accessors="true"{
 			return getFormatHelper().getDataFormatter().formatCellValue( arguments.cell, formulaEvaluator );
 		}
 		catch( any exception ){
-			Throw( type=library().getExceptionType(), message="Failed to run formula", detail="There is a problem with the formula in sheet #arguments.cell.getSheet().getSheetName()# row #( arguments.cell.getRowIndex() +1 )# column #( arguments.cell.getColumnIndex() +1 )#");
+			Throw( type=library().getExceptionType() & ".failedFormula", message="Failed to run formula", detail="There is a problem with the formula in sheet #arguments.cell.getSheet().getSheetName()# row #( arguments.cell.getRowIndex() +1 )# column #( arguments.cell.getColumnIndex() +1 )#");
 		}
 	}
 
@@ -83,7 +83,7 @@ component extends="base" accessors="true"{
 		if( !arguments.KeyExists( "type" ) ) //autodetect type
 			arguments.type = getDataTypeHelper().detectValueDataType( arguments.value );
 		else if( !validCellTypes.FindNoCase( arguments.type ) )
-			Throw( type=library().getExceptionType(), message="Invalid data type: '#arguments.type#'", detail="The data type must be one of the following: #validCellTypes.ToList( ', ' )#." );
+			Throw( type=library().getExceptionType() & ".invalidDatatype", message="Invalid data type: '#arguments.type#'", detail="The data type must be one of the following: #validCellTypes.ToList( ', ' )#." );
 		/* Note: To properly apply date/number formatting:
 			- cell type must be CELL_TYPE_NUMERIC (NB: POI5+ can't set cell types explicitly anymore: https://bz.apache.org/bugzilla/show_bug.cgi?id=63118 )
 			- cell value must be applied as a java.util.Date or java.lang.Double (NOT as a string)

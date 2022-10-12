@@ -26,16 +26,16 @@ describe( "new", function(){
 		it( "the sheet name contains invalid characters", function(){
 			expect( function(){
 				s.new( "[]?*\/:" );
-			}).toThrow( regex="Invalid characters" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidCharacters" );
 		});
 
 		it( "streaming XML is specified with an invalid streamingWindowSize", function(){
 			expect( function(){
 				s.new( xmlFormat=true, streamingXml=true, streamingWindowSize=1.2 );
-			}).toThrow( regex="Invalid 'streamingWindowSize' argument" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidStreamingWindowSizeArgument" );
 			expect( function(){
 				s.new( xmlFormat=true, streamingXml=true, streamingWindowSize=-1 );
-			}).toThrow( regex="Invalid 'streamingWindowSize' argument" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidStreamingWindowSizeArgument" );
 		});
 
 	});

@@ -224,7 +224,7 @@ describe( "cellValue", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.setCellValue( wb, "test", 1, 1, "blah" );
-				}).toThrow( regex="Invalid data type" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidDatatype" );
 			});
 		});
 

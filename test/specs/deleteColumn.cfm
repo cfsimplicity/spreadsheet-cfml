@@ -34,7 +34,7 @@ describe( "deleteColumn", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.deleteColumn( workbook=wb, column=0 );
-				}).toThrow( regex="Invalid column" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidColumnArgument" );
 			});
 		});
 

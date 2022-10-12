@@ -40,10 +40,10 @@ describe( "addPageBreaks", function(){
 		workbooks.Each( function( wb ) {
 			expect( function(){
 				s.addPageBreaks( wb );
-			}).toThrow( regex="Missing argument" );
+			}).toThrow( type="cfsimplicity.spreadsheet.missingRowOrColumnBreaksArgument" );
 			expect( function(){
 				s.addPageBreaks( wb, "" );
-			}).toThrow( regex="Missing argument" );
+			}).toThrow( type="cfsimplicity.spreadsheet.missingRowOrColumnBreaksArgument" );
 		});
 	});
 

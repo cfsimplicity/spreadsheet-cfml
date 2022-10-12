@@ -79,7 +79,7 @@ describe( "dateFormats customisability",function(){
 		it( "a passed format key is invalid",function() {
 			expect( function(){
 				local.s = newSpreadsheetInstance( dateFormats={ DAT="mm/dd/yyyy" } );
-			}).toThrow( regex="Invalid date format key" );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidDateFormatKey" );
 		});
 
 	});	

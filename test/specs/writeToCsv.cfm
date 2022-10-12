@@ -54,7 +54,7 @@ describe( "writeToCsv", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.writeToCsv( wb, tempCsvPath, false );
-				}).toThrow( regex="File already exists" );
+				}).toThrow( type="cfsimplicity.spreadsheet.fileAlreadyExists" );
 			});
 		});
 

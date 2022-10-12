@@ -58,7 +58,7 @@ describe( "formatColumns", function(){
 				expect( function(){
 					format = { font: "Courier" };
 					s.formatColumns( wb, format, "a-b" );
-				}).toThrow( regex="Invalid range" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidRange" );
 			});
 		});
 

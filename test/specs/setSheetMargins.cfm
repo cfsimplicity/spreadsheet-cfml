@@ -78,7 +78,7 @@ describe( "setSheetMargin methods", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					s.setSheetTopMargin( wb, 3, "test", 1 );
-				}).toThrow( regex="Invalid arguments" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidArguments" );
 			});
 		});
 

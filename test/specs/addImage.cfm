@@ -29,7 +29,7 @@ describe( "addImage", function(){
 			workbooks.Each( function( wb ) {
 				expect( function(){
 					s.addImage( workbook=wb, anchor="1,1,2,2" );
-				}).toThrow( regex="Missing image path or object" );
+				}).toThrow( type="cfsimplicity.spreadsheet.missingImageArgument" );
 			});
 		});
 
@@ -38,7 +38,7 @@ describe( "addImage", function(){
 				expect( function(){
 					var imageData = ImageRead( getTestFilePath( "test.png" ) );
 					s.addImage( workbook=wb, imageData=imageData, anchor="1,1,2,2" );
-				}).toThrow( regex="Invalid argument combination" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidArgumentCombination" );
 			});
 		});
 
@@ -47,7 +47,7 @@ describe( "addImage", function(){
 				expect( function(){
 					var imageData = {};
 					s.addImage( workbook=wb, imageData=imageData, imageType="png", anchor="1,1,2,2" );
-				}).toThrow( regex="Invalid image" );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidImage" );
 			});
 		});
 
