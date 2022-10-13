@@ -57,6 +57,23 @@ describe( "dataValidation", function(){
 		});
 	});
 
+	it( "can create a validation drop-down from values in other cells in a different sheet the name of which includes a space", function() {
+		var dv = s.newDataValidation()
+			.onCells( cellRange )
+			.withValuesFromSheetName( "towns and cities" )
+			.withValuesFromCells( "A1:A3" );
+		variables.spreadsheetTypes.Each( function( type ){
+			var chainable = s.newChainable( type )
+				.createSheet( "towns and cities" )
+				.setActiveSheetNumber( 2 )
+				.addColumn( data=validValues )
+				.setActiveSheetNumber( 1 )
+				.addDataValidation( dv );
+			expect( dv.targetCellRangeAppliedToSheet() ).toBe( cellRange );
+			expect( dv.sourceCellsReferenceAppliedToSheet() ).toBe( "'towns and cities'!$A$1:$A$3" );
+		});
+	});
+
 	it( "allows the validation error message to be customised", function() {
 		var errorTitle = "Wrong";
 		var errorMessage = "Think again, dude.";
