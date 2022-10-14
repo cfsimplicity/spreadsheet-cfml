@@ -125,8 +125,14 @@ component{
 	private any function getConstraintFromCells(){
 		var sheetName = determineSourceSheetName();
 		var cellReference = variables.library.getRangeHelper().convertRangeReferenceToAbsoluteAddress( variables.valuesSourceCellRange );
-		var sheetAndCellReference = sheetName & "!" & cellReference;
+		var sheetAndCellReference = quoteSheetNameIfRequired( sheetName ) & "!" & cellReference;
 		return variables.dataValidationHelper.createFormulaListConstraint( sheetAndCellReference );
+	}
+
+	private string function quoteSheetNameIfRequired( required string sheetName ){
+		if( arguments.sheetName.REFindNoCase( "\W" ) ) //any non word character: space, hyphen etc... (but not underscore)
+			return "'" & sheetName & "'";
+		return arguments.sheetName;
 	}
 
 	private string function determineSourceSheetName(){
