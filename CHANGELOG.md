@@ -1,3 +1,7 @@
+## 3.6.1 - 14 October 2022
+
+- \#301 DataValidation has incorrect values if pulled from a sheet name which includes a space
+
 ## 3.6.0 - 12 October 2022
 
 - Enhancements
