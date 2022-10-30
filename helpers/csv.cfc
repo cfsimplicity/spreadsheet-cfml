@@ -12,32 +12,6 @@ component extends="base" accessors="true"{
 			.withIgnoreSurroundingSpaces();//stop spaces between fields causing problems with embedded lines
 	}
 
-	string function readFile( required string filepath ){
-		getFileHelper()
-			.throwErrorIFfileNotExists( arguments.filepath )
-			.throwErrorIFnotCsvOrTextFile( arguments.filepath );
-		return FileRead( arguments.filepath );
-	}
-
-	struct function dataFromRecords( required array records ){
-		var result = {
-			data: []
-			,maxColumnCount: 0
-		};
-		for( var record in arguments.records ){
-			var row = [];
-			var columnNumber = 0;
-			var iterator = record.iterator();
-			while( iterator.hasNext() ){
-				columnNumber++;
-				result.maxColumnCount = Max( result.maxColumnCount, columnNumber );
-				row.Append( iterator.next() );
-			}
-			result.data.Append( row );
-		}
-		return result;
-	}
-
 	array function getColumnNames( required boolean firstRowIsHeader, required array data, required numeric maxColumnCount ){
 		var result = [];
 		if( arguments.firstRowIsHeader )
@@ -48,6 +22,44 @@ component extends="base" accessors="true"{
 				continue;
 			}
 			result.Append( "column#i#" );
+		}
+		return result;
+	}
+
+	struct function parseFromString( required string csvString, required boolean trim, required any format ){
+		if( arguments.trim )
+			arguments.csvString = arguments.csvString.Trim();
+		var parser = getClassHelper().loadClass( "org.apache.commons.csv.CSVParser" ).parse( csvString, format );
+		return dataFromParser( parser );
+	}
+
+	struct function parseFromFile( required string path, required any format ){
+		getFileHelper()
+			.throwErrorIFfileNotExists( arguments.path )
+			.throwErrorIFnotCsvOrTextFile( arguments.path );
+		var fileInput = CreateObject( "java", "java.io.FileReader" ).init( JavaCast( "string", arguments.path ) );
+		var parser = arguments.format.parse( fileInput ); //format includes a file parser
+		return dataFromParser( parser );
+	}
+
+	/* Private */
+
+	private struct function dataFromParser( required any parser ){
+		var result = {
+			data: []
+			,maxColumnCount: 0
+		};
+		var recordIterator = arguments.parser.iterator();
+		while( recordIterator.hasNext() ){
+			var row = [];
+			var columnNumber = 0;
+			var columnIterator = recordIterator.next().iterator();
+			while( columnIterator.hasNext() ){
+				columnNumber++;
+				result.maxColumnCount = Max( result.maxColumnCount, columnNumber );
+				row.Append( columnIterator.next() );
+			}
+			result.data.Append( row );
 		}
 		return result;
 	}

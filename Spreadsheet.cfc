@@ -193,19 +193,16 @@ component accessors="true"{
 			Throw( type=this.getExceptionType() & ".missingRequiredArgument", message="Missing required argument", detail="Please provide either a csv string (csv), or the path of a file containing one (filepath)." );
 		if( csvIsString && csvIsFile )
 			Throw( type=this.getExceptionType() & ".invalidArgumentCombination", message="Mutually exclusive arguments: 'csv' and 'filepath'", detail="Only one of either 'filepath' or 'csv' arguments may be provided." );
-		var csvString = csvIsFile? getCsvHelper().readFile( arguments.filepath ): arguments.csv;
 		if( IsStruct( arguments.queryColumnTypes ) && !arguments.firstRowIsHeader && !arguments.KeyExists( "queryColumnNames" )  )
 			Throw( type=this.getExceptionType() & ".invalidArgumentCombination", message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
-		if( arguments.trim )
-			csvString = csvString.Trim();
 		var format = arguments.KeyExists( "delimiter" )?
-			getCsvHelper().getCsvFormatForDelimiter( arguments.delimiter )
-			: getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
-		var parsed = getClassHelper().loadClass( "org.apache.commons.csv.CSVParser" ).parse( csvString, format );
-		var records = parsed.getRecords();
-		var dataFromRecords = getCsvHelper().dataFromRecords( records );
-		var data = dataFromRecords.data;
-		var maxColumnCount = dataFromRecords.maxColumnCount;
+			getCsvHelper().getCsvFormatForDelimiter( arguments.delimiter ):
+			getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
+		var parsed = csvIsFile?
+			getCsvHelper().parseFromFile( arguments.filepath, format ):
+			getCsvHelper().parseFromString( arguments.csv, arguments.trim, format );
+		var data = parsed.data;
+		var maxColumnCount = parsed.maxColumnCount;
 		if( arguments.KeyExists( "queryColumnNames" ) && arguments.queryColumnNames.Len() ){
 			var columnNames = arguments.queryColumnNames;
 			var parsedQueryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, columnNames, maxColumnCount, data );
