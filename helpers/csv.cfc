@@ -73,11 +73,11 @@ component extends="base" accessors="true"{
 		while( recordIterator.hasNext() ){
 			var row = [];
 			var columnNumber = 0;
-			var columnIterator = recordIterator.next().iterator();
-			while( columnIterator.hasNext() ){
+			var values = recordIterator.next().toList();
+			for( var value in values ){
 				columnNumber++;
 				result.maxColumnCount = Max( result.maxColumnCount, columnNumber );
-				row.Append( columnIterator.next() );
+				row.Append( value );
 			}
 			result.data.Append( row );
 		}
