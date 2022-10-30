@@ -49,17 +49,28 @@ component extends="base" accessors="true"{
 	struct function parseFromString( required string csvString, required boolean trim, required any format ){
 		if( arguments.trim )
 			arguments.csvString = arguments.csvString.Trim();
-		var parser = getClassHelper().loadClass( "org.apache.commons.csv.CSVParser" ).parse( csvString, format );
-		return dataFromParser( parser );
+		try{
+			var parser = getClassHelper().loadClass( "org.apache.commons.csv.CSVParser" ).parse( csvString, format );
+			return dataFromParser( parser );
+		}
+		finally{
+			parser.close();
+		}
 	}
 
 	struct function parseFromFile( required string path, required any format ){
 		getFileHelper()
 			.throwErrorIFfileNotExists( arguments.path )
 			.throwErrorIFnotCsvOrTextFile( arguments.path );
-		var fileInput = CreateObject( "java", "java.io.FileReader" ).init( JavaCast( "string", arguments.path ) );
-		var parser = arguments.format.parse( fileInput ); //format includes a file parser
-		return dataFromParser( parser );
+		try{
+			var fileInput = CreateObject( "java", "java.io.FileReader" ).init( JavaCast( "string", arguments.path ) );
+			var parser = arguments.format.parse( fileInput ); //format includes a file parser
+			return dataFromParser( parser );
+		}
+		finally{
+			fileInput.close();
+			parser.close();
+		}
 	}
 
 	/* Private */
