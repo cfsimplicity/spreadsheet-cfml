@@ -1258,22 +1258,7 @@ component accessors="true"{
 	}
 
 	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter="," ){
-		var data = [];
-		var columns = getQueryHelper()._QueryColumnArray( arguments.query );
-		if( arguments.includeHeaderRow )
-			data.Append( columns );
-		for( var row IN arguments.query ){
-			var rowValues = [];
-			for( var column IN columns ){
-				var cellValue = row[ column ];
-				if( getDateHelper().isDateObject( cellValue ) || getDateHelper()._IsDate( cellValue ) )
-					cellValue = DateTimeFormat( cellValue, this.getDateFormats().DATETIME );
-				if( IsValid( "integer", cellValue ) )
-					cellValue = JavaCast( "string", cellValue );// prevent CSV writer converting 1 to 1.0
-				rowValues.Append( cellValue );
-			}
-			data.Append( rowValues );
-		}
+		var data = getCsvHelper().queryToArrayForCsv( arguments.query, arguments.includeHeaderRow );
 		var builder = getStringHelper().newJavaStringBuilder();
 		var csvFormat = getCsvHelper().delimiterIsTab( arguments.delimiter )?
 			getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ]

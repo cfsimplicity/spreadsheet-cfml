@@ -26,6 +26,26 @@ component extends="base" accessors="true"{
 		return result;
 	}
 
+	array function queryToArrayForCsv( required query query, required boolean includeHeaderRow ){
+		var result = [];
+		var columns = getQueryHelper()._QueryColumnArray( arguments.query );
+		if( arguments.includeHeaderRow )
+			result.Append( columns );
+		for( var row IN arguments.query ){
+			var rowValues = [];
+			for( var column IN columns ){
+				var cellValue = row[ column ];
+				if( getDateHelper().isDateObject( cellValue ) || getDateHelper()._IsDate( cellValue ) )
+					cellValue = DateTimeFormat( cellValue, library().getDateFormats().DATETIME );
+				if( IsValid( "integer", cellValue ) )
+					cellValue = JavaCast( "string", cellValue );// prevent CSV writer converting 1 to 1.0
+				rowValues.Append( cellValue );
+			}
+			result.Append( rowValues );
+		}
+		return result;
+	}
+
 	struct function parseFromString( required string csvString, required boolean trim, required any format ){
 		if( arguments.trim )
 			arguments.csvString = arguments.csvString.Trim();
