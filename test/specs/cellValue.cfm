@@ -70,10 +70,21 @@ describe( "cellValue", function(){
 	it( "handles numbers with leading zeros correctly", function(){
 		var value = "0162220494";
 		workbooks.Each( function( wb ){
-		s.setCellValue( wb, value, 1, 1 );
+			s.setCellValue( wb, value, 1, 1 );
 			var actual = s.getCellValue( wb, 1, 1 );
 			expect( actual ).toBe( value );
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "string" );
+		});
+	});
+
+	it( "handles floating point numbers correctly", function(){
+		var value = "0.0000000001";
+		workbooks.Each( function( wb ){
+			s.setCellValue( wb, value, 1, 1 );
+			s.formatCell( wb, { dataformat: "0.0000000000" }, 1, 1 );
+			var actual = s.getCellValue( wb, 1, 1 );
+			expect( actual ).toBe( value );
+			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
 		});
 	});
 
