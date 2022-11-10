@@ -992,9 +992,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType() & ".invalidCell", message="Invalid cell", detail="There doesn't appear to be a cell at row #row#, column #column#" );
 		var cellStyle = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column ).getCellStyle();
 		var cellFont = arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() );
-		var rgb = isXmlFormat( arguments.workbook )?
-			getColorHelper().convertSignedRGBToPositiveTriplet( cellFont.getXSSFColor().getRGB() )
-			: IsNull( cellFont.getHSSFColor( arguments.workbook ) )? []: cellFont.getHSSFColor( arguments.workbook ).getTriplet();
+		var rgb = getColorHelper().getRGBFromCellFont( arguments.workbook, cellFont );
 		return {
 			alignment: cellStyle.getAlignment().toString()
 			,bold: cellFont.getBold()

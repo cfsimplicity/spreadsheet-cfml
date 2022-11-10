@@ -13,6 +13,12 @@ describe( "formatCell", function(){
 		return s.getCellFormat( wb, 1, 1 );
 	};
 
+	it( "can get the format of an unformatted cell", function(){
+		workbooks.Each( function( wb ){
+			expect( s.getCellFormat( wb, 1, 1 ) ).toBeTypeOf( "struct" );
+		});
+	});
+
 	it( "formatCell and getCellFormat are chainable", function(){
 		var format = { bold: true };
 		workbooks.Each( function( wb ){

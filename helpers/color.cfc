@@ -9,6 +9,12 @@ component extends="base" accessors="true"{
 		return result;
 	}
 
+	array function getRGBFromCellFont( required workbook, required any cellFont ){
+		if( library().isXmlFormat( arguments.workbook ) )
+			return getRGBFromXSSFCellFont( arguments.cellFont );
+		return arguments.cellFont.getHSSFColor( arguments.workbook )?.getTriplet()?:[];
+	}
+
 	any function getColor( required workbook, required string colorValue ){
 		/*
 			if colorValue is a preset name, returns the index
@@ -134,6 +140,12 @@ component extends="base" accessors="true"{
 			response.Append( InputBaseN( Mid( arguments.hexColor, i, 2 ), 16 ) );
 		}
 		return response.ToList();
+	}
+
+	private array function getRGBFromXSSFCellFont( required any cellFont ){
+		if( IsNull( arguments.cellFont.getXSSFColor()?.getRGB() ) )
+			return [];
+		return convertSignedRGBToPositiveTriplet( arguments.cellFont.getXSSFColor().getRGB() );
 	}
 
 }
