@@ -49,6 +49,10 @@ component extends="base" accessors="true"{
 		}
 	}
 
+	string function getFormattedCellValue( required any cell ){
+		return getFormatHelper().getDataFormatter().formatCellValue( arguments.cell );
+	}
+
 	any function getCellValueAsType( required workbook, required cell ){
 		/*
 		Get the value of the cell based on the data type. The thing to worry about here is cell formulas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values.
@@ -123,11 +127,11 @@ component extends="base" accessors="true"{
 	private any function getCellNumericOrDateValue( required any cell ){
 		// Get numeric cell data. This could be a standard number, could also be a date value.
 		if( !isCellDateFormated( arguments.cell ) )
-			return getFormatHelper().getDataFormatter().formatCellValue( arguments.cell );// use the formatted value to avoid scientific notation issues
+			return getFormattedCellValue( arguments.cell );// use the formatted value to avoid scientific notation issues
 		getDateHelper().matchPoiTimeZoneToEngine();
 		var cellValue = arguments.cell.getDateCellValue();
 		if( getDateHelper().isTimeOnlyValue( cellValue ) )
-			return getFormatHelper().getDataFormatter().formatCellValue( arguments.cell );//return as a time formatted string to avoid default epoch date 1899-12-31
+			return getFormattedCellValue( arguments.cell );//return as a time formatted string to avoid default epoch date 1899-12-31
 		return cellValue;
 	}
 

@@ -1040,21 +1040,17 @@ component accessors="true"{
 	public string function getCellType( required workbook, required numeric row, required numeric column ){
 		if( !getCellHelper().cellExists( arguments.workbook, arguments.row, arguments.column ) )
 			return "";
-		var rowObject = getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row );
-		var columnIndex = ( arguments.column -1 );
-		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
+		var cell = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column );
 		return cell.getCellType().toString();
 	}
 
-	public any function getCellValue( required workbook, required numeric row, required numeric column ){
+	public any function getCellValue( required workbook, required numeric row, required numeric column, boolean returnVisibleValue=true ){
 		if( !getCellHelper().cellExists( arguments.workbook, arguments.row, arguments.column ) )
 			return "";
-		var rowObject = getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row );
-		var columnIndex = ( arguments.column -1 );
-		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
-		if( getCellHelper().cellIsOfType( cell, "FORMULA" ) )
-			return getCellHelper().getCellFormulaValue( arguments.workbook, cell );
-		return getFormatHelper().getDataFormatter().formatCellValue( cell );
+		var cell = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column );
+		if( arguments.returnVisibleValue && !getCellHelper().cellIsOfType( cell, "FORMULA" ) )
+			return getCellHelper().getFormattedCellValue( cell );
+		return getCellHelper().getCellValueAsType( arguments.workbook, cell );
 	}
 
 	public numeric function getColumnCount( required workbook, sheetNameOrNumber ){

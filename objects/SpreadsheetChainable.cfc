@@ -342,7 +342,7 @@ component{
 	}
 
 	// Ends chain
-	public any function getCellValue( required numeric row, required numeric column ){
+	public any function getCellValue( required numeric row, required numeric column, boolean returnVisibleValue=true ){
 		addWorkbookArgument( arguments );
 		return variables.library.getCellValue( argumentCollection=arguments );
 	}
