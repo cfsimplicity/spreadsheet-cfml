@@ -127,7 +127,7 @@ component extends="base" accessors="true"{
 	private any function getCellNumericOrDateValue( required any cell ){
 		// Get numeric cell data. This could be a standard number, could also be a date value.
 		if( !isCellDateFormated( arguments.cell ) )
-			return getFormattedCellValue( arguments.cell );// use the formatted value to avoid scientific notation issues
+			return arguments.cell.getNumericCellValue();// raw, unformatted value
 		getDateHelper().matchPoiTimeZoneToEngine();
 		var cellValue = arguments.cell.getDateCellValue();
 		if( getDateHelper().isTimeOnlyValue( cellValue ) )

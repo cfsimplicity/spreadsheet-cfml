@@ -1283,6 +1283,7 @@ component accessors="true"{
 		,string csvDelimiter=","
 		,any queryColumnTypes //'auto', list of types, or struct of column names/types mapping. Null means no types are specified.
 		,boolean makeColumnNamesSafe=false
+		,boolean returnVisibleValues=false
 	){
 		if( arguments.KeyExists( "query" ) )
 			Throw( type=this.getExceptionType() & ".invalidQueryArgument", message="Invalid argument 'query'.", detail="Just use format='query' to return a query object" );
@@ -1322,6 +1323,7 @@ component accessors="true"{
 		args.includeHiddenRows = arguments.includeHiddenRows;
 		args.includeRichTextFormatting = arguments.includeRichTextFormatting;
 		args.makeColumnNamesSafe = arguments.makeColumnNamesSafe;
+		args.returnVisibleValues = arguments.returnVisibleValues;
 		var generatedQuery = getSheetHelper().sheetToQuery( argumentCollection=args );
 		if( arguments.format == "query" )
 			return generatedQuery;
@@ -1361,6 +1363,7 @@ component accessors="true"{
 		,string password
 		,string csvDelimiter=","
 		,struct streamingReaderOptions
+		,boolean returnVisibleValues=false
 	){
 		if( this.getIsACF() ){
 			Throw( type=this.getExceptionType() & ".methodNotSupported", message="'readLargeFile()' is not supported with ColdFusion", detail="'readLargeFile()' currently only works with Lucee." );
@@ -1376,6 +1379,7 @@ component accessors="true"{
 			,includeHiddenColumns: arguments.includeHiddenColumns
 			,includeHiddenRows: arguments.includeHiddenRows
 			,makeColumnNamesSafe: arguments.makeColumnNamesSafe
+			,returnVisibleValues = arguments.returnVisibleValues
 		};
 		if( arguments.KeyExists( "sheetName" ) )
 			sheetToQueryArgs.sheetName = arguments.sheetName;
