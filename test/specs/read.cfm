@@ -30,6 +30,14 @@ describe( "read", function(){
 		expect( s.isXmlFormat( workbook ) ).toBeTrue();
 	});
 
+	it( "Ends the chain and returns the import result if format is specified", function(){
+		variables.spreadsheetTypes.Each( function( type ){
+			var path = getTestFilePath( "test.#type#" );
+			var data = s.newChainable().read( path, "query" );
+			expect( IsQuery( data ) ).toBeTrue();
+		});
+	});
+
 	it( "Can read a traditional XLS file into a query", function(){
 		var path = getTestFilePath( "test.xls" );
 		var expected = querySim(
