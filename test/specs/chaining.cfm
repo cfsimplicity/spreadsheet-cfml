@@ -75,8 +75,8 @@ describe( "chaining", function(){
 
 			it( "the workbook is not a invalid object", function(){
 				expect( function(){
-					s.newChainable()
-						.read( src=getTestFilePath( "test.xlsx" ), format="query" )
+					var invalidWorkbookObject = QueryNew( "" );
+					s.newChainable( invalidWorkbookObject )
 						.addRow( [ "a", "b", "c" ] );
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidWorkbook" );
 			});

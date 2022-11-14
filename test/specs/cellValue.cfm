@@ -70,7 +70,7 @@ describe( "cellValue", function(){
 	it( "handles numbers with leading zeros correctly", function(){
 		var value = "0162220494";
 		workbooks.Each( function( wb ){
-		s.setCellValue( wb, value, 1, 1 );
+			s.setCellValue( wb, value, 1, 1 );
 			var actual = s.getCellValue( wb, 1, 1 );
 			expect( actual ).toBe( value );
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "string" );
@@ -123,6 +123,33 @@ describe( "cellValue", function(){
 				.getCellValue( 1, 1 );
 			expect( actual ).toBe( value );
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "string" );
+		});
+	});
+
+	it( "returns the visible/formatted value by default", function(){
+		var value = 0.000011;
+		workbooks.Each( function( wb ){
+			s.setCellValue( wb, value, 1, 1 );
+			s.formatCell( wb, { dataformat: "0.00000" }, 1, 1 );
+			var actual = s.getCellValue( wb, 1, 1 );
+			expect( actual ).toBe( 0.00001 );
+			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
+			var decimalHasBeenOutputInScientificNotation = ( Trim( actual ).FindNoCase( "E" ) > 0 );
+			expect( decimalHasBeenOutputInScientificNotation ).toBeFalse();
+		});
+	});
+
+	it( "can return the raw (unformatted) value", function(){
+		var value = 0.000011;
+		workbooks.Each( function( wb ){
+			s.setCellValue( wb, value, 1, 1 );
+			s.formatCell( wb, { dataformat: "0.00000" }, 1, 1 );
+			var actual = s.getCellValue( wb, 1, 1, false );
+			expect( actual ).toBe( value );
+			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
+			// chainable
+			var actual = s.newChainable( wb ).getCellValue( 1, 1, false );
+			expect( actual ).toBe( value );
 		});
 	});
 

@@ -30,6 +30,14 @@ describe( "read", function(){
 		expect( s.isXmlFormat( workbook ) ).toBeTrue();
 	});
 
+	it( "Ends the chain and returns the import result if format is specified", function(){
+		variables.spreadsheetTypes.Each( function( type ){
+			var path = getTestFilePath( "test.#type#" );
+			var data = s.newChainable().read( path, "query" );
+			expect( IsQuery( data ) ).toBeTrue();
+		});
+	});
+
 	it( "Can read a traditional XLS file into a query", function(){
 		var path = getTestFilePath( "test.xls" );
 		var expected = querySim(
@@ -185,20 +193,51 @@ describe( "read", function(){
 		});
 	});
 
-	it( "Writes and reads numeric, boolean, date and leading zero values correctly", function(){
+	it( "Reads values of different types correctly, by default returning the raw values", function(){
+		var numericValue = 2;
 		var dateValue = CreateDate( 2015, 04, 12 );
-		var data = QueryNew( "column1,column2,column3,column4,column5", "Integer,Integer,Bit,Date,VarChar", [ [ 2, 0, true, dateValue, "01" ] ] );
-		var workbook = s.new();
-		s.addRows( workbook, data )
-			.write( workbook, tempXlsPath, true );
-		var expected = data;
-		var actual = s.getSheetHelper().sheetToQuery( workbook );
-		expect( actual ).toBe( expected );
-		expect( IsNumeric( s.getCellValue( workbook, 1, 1 ) ) ).tobeTrue();
-		expect( s.getCellValue( workbook, 1, 2 ) ).tobe( 0 );
-		expect( IsBoolean( s.getCellValue( workbook, 1, 3 ) ) ).tobeTrue();
-		expect( IsDate( s.getCellValue( workbook, 1, 4 ) ) ).tobeTrue();
+		var rawDecimalValue = 0.000011;
+		var leadingZeroValue = "01";
+		var columnNames = [ "numeric", "zero", "decimal", "boolean", "date", "leadingZero" ];
+		var data = QueryNew( columnNames.ToList(), "Integer,Integer,Decimal,Bit,Date,VarChar", [ [ numericValue, 0, rawDecimalValue, true, dateValue, leadingZeroValue ] ] );
+		variables.spreadsheetTypes.Each( function( type ){
+			var path = ( type == "xls" )? tempXlsPath: tempXlsxPath;
+			s.newChainable( type )
+				.addRows( data )
+				.formatCell( { dataformat: "0.00000" }, 1, 3 )
+				.write( path );
+			var actual = s.read( src=path, format="query", columnNames=columnNames );
+			expect( actual ).toBe( data );
+		});
 	});
+
+	
+	it( "Can return the visible/formatted values rather than raw values", function(){
+		var numericValue = 2;
+		var dateValue = CreateDate( 2015, 04, 12 );
+		var rawDecimalValue = 0.000011;
+		var visibleDecimalValue = 0.00001;
+		var leadingZeroValue = "01";
+		var columnNames = [ "numeric", "zero", "decimal", "boolean", "date", "leadingZero" ];
+		var data = QueryNew( columnNames.ToList(), "Integer,Integer,Decimal,Bit,Date,VarChar", [ [ numericValue, 0, rawDecimalValue, true, dateValue, leadingZeroValue ] ] );
+		variables.spreadsheetTypes.Each( function( type ){
+			var path = ( type == "xls" )? tempXlsPath: tempXlsxPath;
+			s.newChainable( type )
+				.addRows( data )
+				.formatCell( { dataformat: "0.00000" }, 1, 3 )
+				.write( path );
+			var actual = s.read( src=path, format="query", columnNames=columnNames, returnVisibleValues=true );
+			expect( actual.numeric ).toBe( numericValue );
+			expect( actual.zero ).toBe( 0 );
+			expect( actual.decimal ).toBe( visibleDecimalValue );
+			expect( actual.boolean ).toBeTrue();
+			expect( actual.date ).toBe( dateValue );
+			expect( actual.leadingZero ).toBe( leadingZeroValue );
+			var decimalHasBeenOutputInScientificNotation = ( Trim( actual.decimal ).FindNoCase( "E" ) > 0 );
+			expect( decimalHasBeenOutputInScientificNotation ).toBeFalse();
+		});
+	});
+	
 
 	it( "Can fill each of the empty cells in merged regions with the visible merged cell value without conflicting with includeBlankRows=true", function(){
 		var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ], [ "", "" ] ] );

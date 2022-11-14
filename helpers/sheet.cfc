@@ -171,6 +171,7 @@ component extends="base" accessors="true"{
 		,any columnNames //list or array
 		,any queryColumnTypes="" //'auto', single default type e.g. 'VARCHAR', or list of types, or struct of column names/types mapping. Empty means no types are specified.
 		,boolean makeColumnNamesSafe=false
+		,boolean returnVisibleValues=false
 	){
 		var sheet = {
 			includeHeaderRow: arguments.includeHeaderRow
@@ -205,10 +206,11 @@ component extends="base" accessors="true"{
 				,sheet: sheet
 				,fillMergedCellsWithVisibleValue: arguments.fillMergedCellsWithVisibleValue
 				,includeRichTextFormatting: arguments.includeRichTextFormatting
+				,returnVisibleValues: arguments.returnVisibleValues
 			};
 			if( arguments.KeyExists( "rows" ) )
 				populateDataArgs.rows = arguments.rows;
-			populateSheetData( argumentCollection= populateDataArgs );
+			populateSheetData( argumentCollection=populateDataArgs );
 		}
 		generateQueryColumnNames( arguments.workbook, sheet );
 		arguments.queryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, sheet.columnNames, sheet.totalColumnCount, sheet.data );
@@ -400,13 +402,20 @@ component extends="base" accessors="true"{
 		,required sheet
 		,required boolean fillMergedCellsWithVisibleValue
 		,required boolean includeRichTextFormatting
+		,required boolean returnVisibleValues
 	){
+		var addRowToSheetDataArgs = {
+			workbook: arguments.workbook
+			,sheet: arguments.sheet
+			,includeRichTextFormatting: arguments.includeRichTextFormatting
+			,returnVisibleValues: arguments.returnVisibleValues
+		};
 		if( getStreamingReaderHelper().isStreamingReaderFormat( arguments.workbook ) ){
 			var rowIterator = arguments.sheet.object.rowIterator();
 			while( rowIterator.hasNext() ){
-				var rowObject = rowIterator.next();
-				var rowIndex = rowObject.getRowNum();
-				getRowHelper().addRowToSheetData( arguments.workbook, arguments.sheet, rowIndex, arguments.includeRichTextFormatting, rowObject );
+				addRowToSheetDataArgs.rowObject = rowIterator.next();
+				addRowToSheetDataArgs.rowIndex = addRowToSheetDataArgs.rowObject.getRowNum();
+				getRowHelper().addRowToSheetData( argumentCollection=addRowToSheetDataArgs );
 			}
 			return;
 		}
@@ -416,15 +425,17 @@ component extends="base" accessors="true"{
 			var allRanges = getRangeHelper().extractRanges( arguments.rows, arguments.workbook );
 			for( var thisRange in allRanges ){
 				for( var rowNumber = thisRange.startAt; rowNumber <= thisRange.endAt; rowNumber++ ){
-					var rowIndex = ( rowNumber -1 );
-					getRowHelper().addRowToSheetData( arguments.workbook, arguments.sheet, rowIndex, arguments.includeRichTextFormatting );
+					addRowToSheetDataArgs.rowIndex = ( rowNumber -1 );
+					getRowHelper().addRowToSheetData( argumentCollection=addRowToSheetDataArgs );
 				}
 			}
 		}
 		else{
 			var lastRowIndex = arguments.sheet.object.getLastRowNum();// zero based
-			for( var rowIndex = 0; rowIndex <= lastRowIndex; rowIndex++ )
-				getRowHelper().addRowToSheetData( arguments.workbook, arguments.sheet, rowIndex, arguments.includeRichTextFormatting );
+			for( var rowIndex = 0; rowIndex <= lastRowIndex; rowIndex++ ){
+				addRowToSheetDataArgs.rowIndex = rowIndex;
+				getRowHelper().addRowToSheetData( argumentCollection=addRowToSheetDataArgs );
+			}
 		}
 	}
 

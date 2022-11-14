@@ -6,6 +6,7 @@ component extends="base" accessors="true"{
 		,required numeric rowIndex
 		,boolean includeRichTextFormatting=false
 		,any rowObject
+		,boolean returnVisibleValues=false
 	){
 		if( ( arguments.rowIndex == arguments.sheet.headerRowIndex ) && !arguments.sheet.includeHeaderRow ){
 			var row = arguments.rowObject?: arguments.sheet.object.getRow( JavaCast( "int", arguments.rowIndex ) );
@@ -23,7 +24,13 @@ component extends="base" accessors="true"{
 			return this;
 		if( rowIsHidden( row ) && !arguments.sheet.includeHiddenRows )
 			return this;
-		rowData = getRowData( arguments.workbook, row, arguments.sheet.columnRanges, arguments.includeRichTextFormatting );
+		rowData = getRowData(
+			arguments.workbook
+			,row
+			,arguments.sheet.columnRanges
+			,arguments.includeRichTextFormatting
+			,arguments.returnVisibleValues
+		);
 		arguments.sheet.data.Append( rowData );
 		setSheetColumnCountFromRow( row, arguments.sheet );
 		return this;
@@ -58,7 +65,13 @@ component extends="base" accessors="true"{
 		return arguments.row.getLastCellNum();
 	}
 
-	array function getRowData( required workbook, required row, array columnRanges=[], boolean includeRichTextFormatting=false ){
+	array function getRowData(
+		required workbook
+		,required row
+		,array columnRanges=[]
+		,boolean includeRichTextFormatting=false
+		,boolean returnVisibleValues=false
+	){
 		var result = [];
 		if( !arguments.columnRanges.Len() ){
 			var columnRange = {
@@ -75,7 +88,10 @@ component extends="base" accessors="true"{
 					result.Append( "" );
 					continue;
 				}
-				var cellValue = getCellHelper().getCellValueAsType( arguments.workbook, cell );
+				if( arguments.returnVisibleValues && !getCellHelper().cellIsOfType( cell, "FORMULA" ) )
+					var cellValue = getCellHelper().getFormattedCellValue( cell );
+				else
+					var cellValue = getCellHelper().getCellValueAsType( arguments.workbook, cell );
 				if( arguments.includeRichTextFormatting && getCellHelper().cellIsOfType( cell, "STRING" ) )
 					cellValue = getFormatHelper().richStringCellValueToHtml( arguments.workbook, cell,cellValue );
 				result.Append( cellValue );

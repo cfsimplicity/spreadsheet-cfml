@@ -1,8 +1,8 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="3.6.1" setter="false";
-	property name="osgiLibBundleVersion" default="5.2.3.1" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="version" default="3.7.0" setter="false";
+	property name="osgiLibBundleVersion" default="5.2.3.2" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
 	//commonly invoked POI class names
@@ -193,19 +193,16 @@ component accessors="true"{
 			Throw( type=this.getExceptionType() & ".missingRequiredArgument", message="Missing required argument", detail="Please provide either a csv string (csv), or the path of a file containing one (filepath)." );
 		if( csvIsString && csvIsFile )
 			Throw( type=this.getExceptionType() & ".invalidArgumentCombination", message="Mutually exclusive arguments: 'csv' and 'filepath'", detail="Only one of either 'filepath' or 'csv' arguments may be provided." );
-		var csvString = csvIsFile? getCsvHelper().readFile( arguments.filepath ): arguments.csv;
 		if( IsStruct( arguments.queryColumnTypes ) && !arguments.firstRowIsHeader && !arguments.KeyExists( "queryColumnNames" )  )
 			Throw( type=this.getExceptionType() & ".invalidArgumentCombination", message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
-		if( arguments.trim )
-			csvString = csvString.Trim();
 		var format = arguments.KeyExists( "delimiter" )?
-			getCsvHelper().getCsvFormatForDelimiter( arguments.delimiter )
-			: getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
-		var parsed = getClassHelper().loadClass( "org.apache.commons.csv.CSVParser" ).parse( csvString, format );
-		var records = parsed.getRecords();
-		var dataFromRecords = getCsvHelper().dataFromRecords( records );
-		var data = dataFromRecords.data;
-		var maxColumnCount = dataFromRecords.maxColumnCount;
+			getCsvHelper().getCsvFormatForDelimiter( arguments.delimiter ):
+			getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
+		var parsed = csvIsFile?
+			getCsvHelper().parseFromFile( arguments.filepath, format ):
+			getCsvHelper().parseFromString( arguments.csv, arguments.trim, format );
+		var data = parsed.data;
+		var maxColumnCount = parsed.maxColumnCount;
 		if( arguments.KeyExists( "queryColumnNames" ) && arguments.queryColumnNames.Len() ){
 			var columnNames = arguments.queryColumnNames;
 			var parsedQueryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, columnNames, maxColumnCount, data );
@@ -995,9 +992,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType() & ".invalidCell", message="Invalid cell", detail="There doesn't appear to be a cell at row #row#, column #column#" );
 		var cellStyle = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column ).getCellStyle();
 		var cellFont = arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() );
-		var rgb = isXmlFormat( arguments.workbook )?
-			getColorHelper().convertSignedRGBToPositiveTriplet( cellFont.getXSSFColor().getRGB() )
-			: IsNull( cellFont.getHSSFColor( arguments.workbook ) )? []: cellFont.getHSSFColor( arguments.workbook ).getTriplet();
+		var rgb = getColorHelper().getRGBFromCellFont( arguments.workbook, cellFont );
 		return {
 			alignment: cellStyle.getAlignment().toString()
 			,bold: cellFont.getBold()
@@ -1045,21 +1040,17 @@ component accessors="true"{
 	public string function getCellType( required workbook, required numeric row, required numeric column ){
 		if( !getCellHelper().cellExists( arguments.workbook, arguments.row, arguments.column ) )
 			return "";
-		var rowObject = getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row );
-		var columnIndex = ( arguments.column -1 );
-		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
+		var cell = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column );
 		return cell.getCellType().toString();
 	}
 
-	public any function getCellValue( required workbook, required numeric row, required numeric column ){
+	public any function getCellValue( required workbook, required numeric row, required numeric column, boolean returnVisibleValue=true ){
 		if( !getCellHelper().cellExists( arguments.workbook, arguments.row, arguments.column ) )
 			return "";
-		var rowObject = getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row );
-		var columnIndex = ( arguments.column -1 );
-		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
-		if( getCellHelper().cellIsOfType( cell, "FORMULA" ) )
-			return getCellHelper().getCellFormulaValue( arguments.workbook, cell );
-		return getFormatHelper().getDataFormatter().formatCellValue( cell );
+		var cell = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column );
+		if( arguments.returnVisibleValue && !getCellHelper().cellIsOfType( cell, "FORMULA" ) )
+			return getCellHelper().getFormattedCellValue( cell );
+		return getCellHelper().getCellValueAsType( arguments.workbook, cell );
 	}
 
 	public numeric function getColumnCount( required workbook, sheetNameOrNumber ){
@@ -1261,22 +1252,7 @@ component accessors="true"{
 	}
 
 	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter="," ){
-		var data = [];
-		var columns = getQueryHelper()._QueryColumnArray( arguments.query );
-		if( arguments.includeHeaderRow )
-			data.Append( columns );
-		for( var row IN arguments.query ){
-			var rowValues = [];
-			for( var column IN columns ){
-				var cellValue = row[ column ];
-				if( getDateHelper().isDateObject( cellValue ) || getDateHelper()._IsDate( cellValue ) )
-					cellValue = DateTimeFormat( cellValue, this.getDateFormats().DATETIME );
-				if( IsValid( "integer", cellValue ) )
-					cellValue = JavaCast( "string", cellValue );// prevent CSV writer converting 1 to 1.0
-				rowValues.Append( cellValue );
-			}
-			data.Append( rowValues );
-		}
+		var data = getCsvHelper().queryToArrayForCsv( arguments.query, arguments.includeHeaderRow );
 		var builder = getStringHelper().newJavaStringBuilder();
 		var csvFormat = getCsvHelper().delimiterIsTab( arguments.delimiter )?
 			getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ]
@@ -1307,6 +1283,7 @@ component accessors="true"{
 		,string csvDelimiter=","
 		,any queryColumnTypes //'auto', list of types, or struct of column names/types mapping. Null means no types are specified.
 		,boolean makeColumnNamesSafe=false
+		,boolean returnVisibleValues=false
 	){
 		if( arguments.KeyExists( "query" ) )
 			Throw( type=this.getExceptionType() & ".invalidQueryArgument", message="Invalid argument 'query'.", detail="Just use format='query' to return a query object" );
@@ -1346,6 +1323,7 @@ component accessors="true"{
 		args.includeHiddenRows = arguments.includeHiddenRows;
 		args.includeRichTextFormatting = arguments.includeRichTextFormatting;
 		args.makeColumnNamesSafe = arguments.makeColumnNamesSafe;
+		args.returnVisibleValues = arguments.returnVisibleValues;
 		var generatedQuery = getSheetHelper().sheetToQuery( argumentCollection=args );
 		if( arguments.format == "query" )
 			return generatedQuery;
@@ -1385,6 +1363,7 @@ component accessors="true"{
 		,string password
 		,string csvDelimiter=","
 		,struct streamingReaderOptions
+		,boolean returnVisibleValues=false
 	){
 		if( this.getIsACF() ){
 			Throw( type=this.getExceptionType() & ".methodNotSupported", message="'readLargeFile()' is not supported with ColdFusion", detail="'readLargeFile()' currently only works with Lucee." );
@@ -1400,6 +1379,7 @@ component accessors="true"{
 			,includeHiddenColumns: arguments.includeHiddenColumns
 			,includeHiddenRows: arguments.includeHiddenRows
 			,makeColumnNamesSafe: arguments.makeColumnNamesSafe
+			,returnVisibleValues = arguments.returnVisibleValues
 		};
 		if( arguments.KeyExists( "sheetName" ) )
 			sheetToQueryArgs.sheetName = arguments.sheetName;

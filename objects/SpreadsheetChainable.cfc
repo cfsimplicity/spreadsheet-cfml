@@ -19,19 +19,25 @@ component{
 			return;
 		}
 		var newWorkbookType = arguments[ 1 ];
-		switch( newWorkbookType ){
-			case "xls": variables.workbook = variables.library.newXls();
-				return;
-			case "xlsx": variables.workbook = variables.library.newXlsx();
-				return;
-			case "streamingXlsx": case "streamingXml":
-				variables.workbook = variables.library.newStreamingXlsx();
+		if( IsSimpleValue( newWorkbookType ) ){
+			switch( newWorkbookType ){
+				case "xls": variables.workbook = variables.library.newXls();
+					return;
+				case "xlsx": variables.workbook = variables.library.newXlsx();
+					return;
+				case "streamingXlsx": case "streamingXml":
+					variables.workbook = variables.library.newStreamingXlsx();
+					return;
+				case "": //allowed so workbook can be read post-init()
+					return;
+			}
 		}
+		// anything else is not valid
+		throwErrorIfWorkbookIsInvalid();
 	}
 
 	private void function addWorkbookArgument( required args ){
 		throwErrorIfWorkbookIsNull();
-		throwErrorIfWorkbookIsInvalid();
 		arguments.args.workbook = variables.workbook;
 	}
 
@@ -41,7 +47,7 @@ component{
 	}
 
 	private void function throwErrorIfWorkbookIsInvalid(){
-		if( !variables.library.isSpreadsheetObject( variables.workbook ) )
+		if( !variables.library.isSpreadsheetObject( variables.workbook?:"" ) )
 			Throw( type=variables.library.getExceptionType() & ".invalidWorkbook", message="Invalid workbook", detail="The workbook specified in the chained call is not a valid spreadsheet object" );
 	}
 
@@ -342,7 +348,7 @@ component{
 	}
 
 	// Ends chain
-	public any function getCellValue( required numeric row, required numeric column ){
+	public any function getCellValue( required numeric row, required numeric column, boolean returnVisibleValue=true ){
 		addWorkbookArgument( arguments );
 		return variables.library.getCellValue( argumentCollection=arguments );
 	}
@@ -392,7 +398,6 @@ component{
 	// Ends chain
 	public struct function info(){
 		// argument name is workbookOrPath not workbook so custom handling
-		throwErrorIfWorkbookIsNull();
 		throwErrorIfWorkbookIsInvalid();
 		return variables.library.info( workbookOrPath=variables.workbook );
 	}
@@ -409,7 +414,29 @@ component{
 		return this;
 	}
 
-	public SpreadsheetChainable function read(){
+	public any function read(
+		required string src
+		,string format
+		,string columns
+		,any columnNames //list or array
+		,numeric headerRow
+		,string rows
+		,string sheetName
+		,numeric sheetNumber // 1-based
+		,boolean includeHeaderRow=false
+		,boolean includeBlankRows=false
+		,boolean fillMergedCellsWithVisibleValue=false
+		,boolean includeHiddenColumns=true
+		,boolean includeHiddenRows=true
+		,boolean includeRichTextFormatting=false
+		,string password
+		,string csvDelimiter=","
+		,any queryColumnTypes //'auto', list of types, or struct of column names/types mapping. Null means no types are specified.
+		,boolean makeColumnNamesSafe=false
+		,boolean returnVisibleValues=false
+	){
+		if( arguments.KeyExists( "format" ) )
+			return variables.library.read( argumentCollection=arguments );
 		variables.workbook = variables.library.read( argumentCollection=arguments );
 		return this;
 	}

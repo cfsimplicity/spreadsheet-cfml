@@ -238,6 +238,27 @@ describe(
 		expect( actual ).toBe( expected );
 	});
 
+	it( "Returns raw cell values by default", function() {
+		var rawValue = 0.000011;
+		s.newChainable( "xlsx" )
+			.setCellValue( rawValue, 1, 1, "numeric" )
+			.formatCell( { dataformat: "0.00000" }, 1, 1 )
+			.write( tempXlsxPath, true );
+		var actual = s.readLargeFile( tempXlsxPath );
+		expect( actual.column1 ).toBe( rawValue );
+	});
+
+	it( "Can return visible/formatted values rather than raw values", function() {
+		var rawValue = 0.000011;
+		var visibleValue = 0.00001;
+		s.newChainable( "xlsx" )
+			.setCellValue( rawValue, 1, 1, "numeric" )
+			.formatCell( { dataformat: "0.00000" }, 1, 1 )
+			.write( tempXlsxPath, true );
+		var actual = s.readLargeFile( src=tempXlsxPath, returnVisibleValues=true );
+		expect( actual.column1 ).toBe( visibleValue );
+	});
+
 	describe( "query column name setting", function() {
 
 		it( "Allows column names to be specified as a list when reading a sheet into a query", function(){
