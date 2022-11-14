@@ -1,3 +1,16 @@
+## 3.7.0 - 14 November 2022
+
+- Enhancements
+	- \#304 Improve csvToQuery() performance
+	- \#308 Add option to return visible or raw value from getCellValue()
+	- \#309 Add option to return visible values from read() and readLargeFile()
+
+- Fixes
+	- \#306 Chainable read() method should return the data if format specified
+	- \#307 getCellFormat() throws error if XLSX cellFont has no colour value
+
+- \#310 Upgrade excel-streaming-reader to 4.0.4
+
 ## 3.6.1 - 14 October 2022
 
 - \#301 DataValidation has incorrect values if pulled from a sheet name which includes a space
