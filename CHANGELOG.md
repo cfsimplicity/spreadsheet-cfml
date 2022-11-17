@@ -1,3 +1,7 @@
+## 3.7.1 - 17 November 2022
+
+- \#311 csvToQuery(): No need to close csv reader in addition to parser
+
 ## 3.7.0 - 14 November 2022
 
 - Enhancements

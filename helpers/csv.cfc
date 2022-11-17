@@ -63,13 +63,13 @@ component extends="base" accessors="true"{
 			.throwErrorIFfileNotExists( arguments.path )
 			.throwErrorIFnotCsvOrTextFile( arguments.path );
 		try{
-			var fileInput = CreateObject( "java", "java.io.FileReader" ).init( JavaCast( "string", arguments.path ) );
-			var parser = arguments.format.parse( fileInput ); //format includes a file parser
+			var fileReader = CreateObject( "java", "java.io.FileReader" ).init( JavaCast( "string", arguments.path ) );
+			var parser = arguments.format.parse( fileReader ); //format includes a file parser
 			return dataFromParser( parser );
 		}
 		finally{
-			fileInput.close();
-			parser.close();
+			if( local.KeyExists( "parser" ) )
+				parser.close();
 		}
 	}
 
