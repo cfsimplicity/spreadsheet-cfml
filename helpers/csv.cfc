@@ -54,7 +54,8 @@ component extends="base" accessors="true"{
 			return dataFromParser( parser );
 		}
 		finally{
-			parser.close();
+			if( local.KeyExists( "parser" ) )
+				parser.close();
 		}
 	}
 
@@ -62,15 +63,7 @@ component extends="base" accessors="true"{
 		getFileHelper()
 			.throwErrorIFfileNotExists( arguments.path )
 			.throwErrorIFnotCsvOrTextFile( arguments.path );
-		try{
-			var fileReader = CreateObject( "java", "java.io.FileReader" ).init( JavaCast( "string", arguments.path ) );
-			var parser = arguments.format.parse( fileReader ); //format includes a file parser
-			return dataFromParser( parser );
-		}
-		finally{
-			if( local.KeyExists( "parser" ) )
-				parser.close();
-		}
+		return parseFromString( FileRead( arguments.path ), false, arguments.format );
 	}
 
 	/* Private */

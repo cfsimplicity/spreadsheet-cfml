@@ -4,7 +4,7 @@ component{
     this.author = "Julian Halliwell";
     this.webURL = "https://github.com/cfsimplicity/spreadsheet-cfml";
     this.description = "CFML Spreadsheet Library";
-    this.version = "3.7.1";
+    this.version = "3.7.2";
     this.autoMapModels = false;
 
     function configure(){
