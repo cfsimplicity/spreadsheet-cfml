@@ -21,6 +21,15 @@ describe( "csvToQuery", function(){
 		expect( actual ).toBe( basicExpectedQuery ); 
 	});
 
+	it( "can read the csv from a VFS file", function(){
+		var path = "ram:///test.csv";
+		FileCopy( getTestFilePath( "test.csv" ), path );
+		var actual = s.csvToQuery( filepath=path );
+		expect( actual ).toBe( basicExpectedQuery );
+		if( FileExists( path ) )
+			FileDelete( path );
+	});
+
 	it( "can read the csv from a text file with an .xls extension", function(){
 		var path = getTestFilePath( "csv.xls" );
 		var actual = s.csvToQuery( filepath=path );
