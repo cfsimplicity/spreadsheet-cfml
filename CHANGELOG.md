@@ -1,6 +1,6 @@
-## 3.7.1 - 17 November 2022
+## 3.7.2 - 17 November 2022
 
-- \#311 csvToQuery(): No need to close csv reader in addition to parser
+- \#311 Regression: csvToQuery() no longer works when file path is VFS
 
 ## 3.7.0 - 14 November 2022
 
