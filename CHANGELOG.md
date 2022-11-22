@@ -1,3 +1,7 @@
+## 3.7.3 - 22 November 2022
+
+- \#312 Move hosted files to forgebox, github is blocking download access preventing box install
+
 ## 3.7.2 - 17 November 2022
 
 - \#311 Regression: csvToQuery() no longer works when file path is VFS
