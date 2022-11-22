@@ -1,0 +1,22 @@
+name: Run test suite
+
+on:
+  workflow_dispatch:
+
+jobs:
+  testbox:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cfengine: [ "lucee@5", "adobe@2016", "adobe@2018", "adobe@2021" ]
+    container:
+      image: foundeo/cfml-ci-tools:latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+    - name: Install dependencies
+      run: box install
+    - name: Start a server
+      run: box server start cfengine=${{ matrix.cfengine }} port=8080
+    - name: Run TestBox Tests
+      run: box testbox run "http://localhost:8080/test/index.cfm"
