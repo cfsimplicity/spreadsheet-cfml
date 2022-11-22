@@ -1,0 +1,10 @@
+name: Pull Requests
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  tests:
+    uses: cfsimplicity/spreadsheet-cfml/.github/workflows/tests.yml@develop
