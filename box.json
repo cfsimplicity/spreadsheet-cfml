@@ -30,5 +30,5 @@
     "type" : "modules",
     "keywords" : [ "cfspreadsheet", "coldfusion", "lucee", "module", "spreadsheet" ],
     "private" : "false",
-    "ignore" : [ "build", "src", "test" ]
+    "ignore" : [ ".github", "build", "src", "test", ".gitattributes", "CHANGELOG.md", "README.md" ]
 }
