@@ -471,13 +471,11 @@ component accessors="true"{
 		,string imageType
 		,required string anchor
 	){
-		var numberOfAnchorElements = ListLen( arguments.anchor );
-		if( ( numberOfAnchorElements != 4 ) && ( numberOfAnchorElements != 8 ) )
+		var anchorCoordinates = arguments.anchor.ListToArray();
+		var numberOfAnchorCoordinates = anchorCoordinates.Len();
+		if( ( numberOfAnchorCoordinates != 4 ) && ( numberOfAnchorCoordinates != 8 ) )
 			Throw( type=this.getExceptionType() & ".invalidAnchorArgument", message="Invalid anchor argument", detail="The anchor argument must be a comma-delimited list of integers with either 4 or 8 elements" );
-		var args = {
-			workbook: arguments.workbook
-			,anchor: arguments.anchor
-		};
+		var args = { workbook: arguments.workbook };
 		if( arguments.KeyExists( "image" ) )
 			args.image = arguments.image;//new alias instead of filepath/imageData
 		if( arguments.KeyExists( "filepath" ) )
@@ -489,29 +487,9 @@ component accessors="true"{
 		if( !args.KeyExists( "image" ) )
 			Throw( type=this.getExceptionType() & ".missingImageArgument", message="Missing image path or object", detail="Please supply either the 'filepath' or 'imageData' argument" );
 		var imageIndex = getImageHelper().addImageToWorkbook( argumentCollection=args );
-		var clientAnchorClass = isXmlFormat( arguments.workbook )
-				? "org.apache.poi.xssf.usermodel.XSSFClientAnchor"
-				: "org.apache.poi.hssf.usermodel.HSSFClientAnchor";
-		var theAnchor = getClassHelper().loadClass( clientAnchorClass ).init();
-		if( numberOfAnchorElements == 4 ){
-			theAnchor.setRow1( JavaCast( "int", ListFirst( arguments.anchor ) -1 ) );
-			theAnchor.setCol1( JavaCast( "int", ListGetAt( arguments.anchor, 2 ) -1 ) );
-			theAnchor.setRow2( JavaCast( "int", ListGetAt( arguments.anchor, 3 ) -1 ) );
-			theAnchor.setCol2( JavaCast( "int", ListLast( arguments.anchor ) -1 ) );
-		}
-		else if( numberOfAnchorElements == 8 ){
-			theAnchor.setDx1( JavaCast( "int", ListFirst( arguments.anchor ) ) );
-			theAnchor.setDy1( JavaCast( "int", ListGetAt( arguments.anchor, 2 ) ) );
-			theAnchor.setDx2( JavaCast( "int", ListGetAt( arguments.anchor, 3 ) ) );
-			theAnchor.setDy2( JavaCast( "int", ListGetAt( arguments.anchor, 4 ) ) );
-			theAnchor.setRow1( JavaCast( "int", ListGetAt( arguments.anchor, 5 ) -1 ) );
-			theAnchor.setCol1( JavaCast( "int", ListGetAt( arguments.anchor, 6 ) -1 ) );
-			theAnchor.setRow2( JavaCast( "int", ListGetAt( arguments.anchor, 7 ) -1 ) );
-			theAnchor.setCol2( JavaCast( "int", ListLast( arguments.anchor ) -1 ) );
-		}
+		var anchorObject = getImageHelper().createAnchor( arguments.workbook, anchorCoordinates );
 		/* (legacy note from spreadsheet extension) TODO: need to look into createDrawingPatriarch() vs. getDrawingPatriarch() since create will kill any existing images. getDrawingPatriarch() throws  a null pointer exception when an attempt is made to add a second image to the spreadsheet  */
-		var drawingPatriarch = getSheetHelper().getActiveSheet( arguments.workbook ).createDrawingPatriarch();
-		var picture = drawingPatriarch.createPicture( theAnchor, imageIndex );
+		getSheetHelper().getActiveSheet( arguments.workbook ).createDrawingPatriarch().createPicture( anchorObject, imageIndex );
 		return this;
 	}
 
@@ -1497,7 +1475,7 @@ component accessors="true"{
 		var factory = arguments.workbook.getCreationHelper();
 		var commentString = factory.createRichTextString( JavaCast( "string", arguments.comment.comment ) );
 		var cellAddress = { row: arguments.row, column: arguments.column };
-		var anchor = getCommentHelper().createCommentAnchor( factory, arguments.comment, cellAddress );
+		var anchor = getCommentHelper().createAnchor( factory, arguments.comment, cellAddress );
 		var drawingPatriarch = getSheetHelper().getActiveSheet( arguments.workbook ).createDrawingPatriarch();
 		var commentObject = drawingPatriarch.createCellComment( anchor );
 		if( arguments.comment.KeyExists( "author" ) )

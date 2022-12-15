@@ -24,6 +24,29 @@ component extends="base" accessors="true"{
 		return arguments.workbook.addPicture( bytes, JavaCast( "int", imageTypeIndex ) );// returns 1-based integer index
 	}
 
+	any function createAnchor( required workbook, required array anchorCoordinates ){
+		var clientAnchorClass = library().isXmlFormat( arguments.workbook )
+				? "org.apache.poi.xssf.usermodel.XSSFClientAnchor"
+				: "org.apache.poi.hssf.usermodel.HSSFClientAnchor";
+		var anchor = getClassHelper().loadClass( clientAnchorClass ).init();
+		if( arguments.anchorCoordinates.Len() == 4 ){
+			anchor.setRow1( JavaCast( "int", arguments.anchorCoordinates[ 1 ] -1 ) );
+			anchor.setCol1( JavaCast( "int", arguments.anchorCoordinates[ 2 ] -1 ) );
+			anchor.setRow2( JavaCast( "int", arguments.anchorCoordinates[ 3 ] -1 ) );
+			anchor.setCol2( JavaCast( "int", arguments.anchorCoordinates[ 4 ] -1 ) );
+			return anchor;
+		}
+		anchor.setDx1( JavaCast( "int", arguments.anchorCoordinates[ 1 ] ) );
+		anchor.setDy1( JavaCast( "int", arguments.anchorCoordinates[ 2 ] ) );
+		anchor.setDx2( JavaCast( "int", arguments.anchorCoordinates[ 3 ] ) );
+		anchor.setDy2( JavaCast( "int", arguments.anchorCoordinates[ 4 ] ) );
+		anchor.setRow1( JavaCast( "int", arguments.anchorCoordinates[ 5 ] -1 ) );
+		anchor.setCol1( JavaCast( "int", arguments.anchorCoordinates[ 6 ] -1 ) );
+		anchor.setRow2( JavaCast( "int", arguments.anchorCoordinates[ 7 ] -1 ) );
+		anchor.setCol2( JavaCast( "int", arguments.anchorCoordinates[ 8 ] -1 ) );
+		return anchor;
+	}
+
 	/* Private */
 
 	private numeric function getImageTypeIndex( required workbook, required string imageType ){
