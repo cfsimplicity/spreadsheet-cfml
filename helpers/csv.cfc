@@ -35,7 +35,7 @@ component extends="base" accessors="true"{
 			var rowValues = [];
 			for( var column IN columns ){
 				var cellValue = row[ column ];
-				if( getDateHelper().isDateObject( cellValue ) || getDateHelper()._IsDate( cellValue ) )
+				if( getDateHelper().isDateObject( cellValue ) )
 					cellValue = DateTimeFormat( cellValue, library().getDateFormats().DATETIME );
 				if( IsValid( "integer", cellValue ) )
 					cellValue = JavaCast( "string", cellValue );// prevent CSV writer converting 1 to 1.0

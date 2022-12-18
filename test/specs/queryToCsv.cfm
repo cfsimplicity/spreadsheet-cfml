@@ -46,5 +46,19 @@ describe( "queryToCsv", function(){
 		expect( s.queryToCsv( data ) ).toBe( expected );
 	});
 
+	it( "outputs date objects using the instance's specified DATETIME format", function(){
+		var nowAsText = DateTimeFormat( Now(), s.getDateFormats().DATETIME );
+		var data = QueryNew( "column1", "Timestamp", [ [ ParseDateTime( nowAsText ) ] ] );
+		var expected = '#nowAsText#';
+		expect( s.queryToCsv( data ) ).toBe( expected );
+	});
+
+	it( "does NOT treat date strings as date objects to be formatted using the DATETIME format", function(){
+		var dateString = "2022-12-18";
+		var data = QueryNew( "column1", "VarChar", [ [ dateString ] ] );
+		var expected = '#dateString#';
+		expect( s.queryToCsv( data ) ).toBe( expected );
+	});
+
 });
 </cfscript>
