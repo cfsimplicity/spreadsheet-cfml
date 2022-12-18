@@ -1,3 +1,7 @@
+## 3.7.4 - 18 December 2022
+
+- \#313 queryToCsv() should not treat date strings in the data as date objects to be formatted
+
 ## 3.7.3 - 22 November 2022
 
 - \#312 Move hosted files to forgebox, github is blocking download access preventing box install

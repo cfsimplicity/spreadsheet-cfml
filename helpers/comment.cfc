@@ -1,6 +1,6 @@
 component extends="base" accessors="true"{
 
-	any function createCommentAnchor( required factory, required struct comment, required struct cellAddress ){
+	any function createAnchor( required factory, required struct comment, required struct cellAddress ){
 		var anchor = arguments.factory.createClientAnchor();
 		var positionSpecified = arguments.comment.KeyExists( "anchor" );
 		if( positionSpecified )

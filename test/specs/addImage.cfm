@@ -8,6 +8,7 @@ describe( "addImage", function(){
 			s.addImage( workbook=wb, filepath=imagePath, anchor="1,1,2,2" );
 			var imageData = ImageNew( "", 10, 10, "rgb", "blue" );
 			s.addImage( workbook=wb, imageData=imageData, imageType="png", anchor="1,2,2,3" );
+			expect( wb.getAllPictures() ).toHaveLength( 2 );
 		});
 	});
 
