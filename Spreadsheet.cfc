@@ -405,26 +405,19 @@ component accessors="true"{
 	){
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		var rowIndex = arguments.KeyExists( "startRow" )? ( arguments.startRow -1 ): 0;
-		var cellIndex = 0;
-		if( arguments.KeyExists( "startColumn" ) )
-			cellIndex = ( arguments.startColumn -1 );
-		else{
-			var row = sheet.getRow( rowIndex );
-			if( !IsNull( row ) && getRowHelper().rowHasCells( row ) )
-				cellIndex = getRowHelper().getNextEmptyCellIndexFromRow( row );// append the new column to the existing columns
-		}
+		var columnIndex = getColumnHelper().getNewColumnIndex( sheet, rowIndex, arguments.startColumn?:0 );
 		if( arguments.autoSize )
-			var columnNumber = ( cellIndex +1 ); //stash the starting column number
+			var columnNumber = ( columnIndex +1 ); //stash the starting column number
 		var columnData = IsArray( arguments.data )? arguments.data: ListToArray( arguments.data, arguments.delimiter );//Don't use ListToArray() member function: value may not support it
 		for( var cellValue in columnData ){
 			var row = sheet.getRow( rowIndex );
 			if( rowIndex > getSheetHelper().getLastRowIndex( sheet ) || IsNull( row ) )
 				row = getRowHelper().createRow( arguments.workbook, rowIndex );
 			// NB: row.getLastCellNum() returns the cell index PLUS ONE or -1 if not found
-			var insertRequired = ( arguments.KeyExists( "startColumn" ) && arguments.insert && ( cellIndex < row.getLastCellNum() ) );
+			var insertRequired = ( arguments.KeyExists( "startColumn" ) && arguments.insert && ( columnIndex < row.getLastCellNum() ) );
 			if( insertRequired )
-				getColumnHelper().shiftColumnsRightStartingAt( cellIndex, row, arguments.workbook );
-			var cell = getCellHelper().createCell( row, cellIndex );
+				getColumnHelper().shiftColumnsRightStartingAt( columnIndex, row, arguments.workbook );
+			var cell = getCellHelper().createCell( row, columnIndex );
 			getCellHelper().setCellValueAsType( arguments.workbook, cell, cellValue );
 			rowIndex++;
 		}
