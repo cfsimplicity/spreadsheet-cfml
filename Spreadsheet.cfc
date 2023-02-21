@@ -195,9 +195,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType() & ".invalidArgumentCombination", message="Mutually exclusive arguments: 'csv' and 'filepath'", detail="Only one of either 'filepath' or 'csv' arguments may be provided." );
 		if( IsStruct( arguments.queryColumnTypes ) && !arguments.firstRowIsHeader && !arguments.KeyExists( "queryColumnNames" )  )
 			Throw( type=this.getExceptionType() & ".invalidArgumentCombination", message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
-		var format = arguments.KeyExists( "delimiter" )?
-			getCsvHelper().getCsvFormatForDelimiter( arguments.delimiter ):
-			getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
+		var format = getCsvHelper().getFormat( arguments.delimiter?:"" );
 		var parsed = csvIsFile?
 			getCsvHelper().parseFromFile( arguments.filepath, format ):
 			getCsvHelper().parseFromString( arguments.csv, arguments.trim, format );
