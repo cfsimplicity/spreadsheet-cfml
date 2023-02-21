@@ -753,11 +753,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType() & ".invalidRowArgument", message="Invalid row argument", detail="The value for row must be greater than or equal to 1." );
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		var rowIndex = ( arguments.row -1 );
-		if(
-				( rowIndex < getSheetHelper().getFirstRowIndex( sheet ) )
-				||
-				( rowIndex > getSheetHelper().getLastRowIndex( sheet ) )
-			) //invalid
+		if( !getRowHelper().rowExists( rowIndex, sheet ) )
 			return this;
 		sheet.removeRow( sheet.getRow( rowIndex ) );
 		return this;
@@ -1121,7 +1117,8 @@ component accessors="true"{
 	}
 
 	public boolean function isRowHidden( required workbook, required numeric row ){
-		return getRowHelper().isRowHidden( arguments.workbook, arguments.row );
+		var rowObject = getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row );
+		return getRowHelper().rowIsHidden( rowObject );
 	}
 
 	public boolean function isSpreadsheetFile( required string path ){

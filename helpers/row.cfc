@@ -227,6 +227,22 @@ component extends="base" accessors="true"{
 		return ( arguments.row.getLastCellNum() > 0 );
 	}
 
+	boolean function rowExists( required numeric rowIndex, required sheet ){
+		return
+			( arguments.rowIndex >= getSheetHelper().getFirstRowIndex( arguments.sheet ) )
+			&&
+			( arguments.rowIndex <= getSheetHelper().getLastRowIndex( arguments.sheet ) );
+	}
+
+	boolean function rowIsHidden( required row ){
+		return arguments.row.getZeroHeight() || ( arguments.row.getHeight() == 0 );
+	}
+
+	any function toggleRowHidden( required workbook, required numeric rowNumber, required boolean state ){
+		getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).setZeroHeight( JavaCast( "boolean", arguments.state ) );
+		return this;
+	}
+
 	any function shiftOrDeleteRow(
 		required workbook
 		,required row
@@ -241,15 +257,6 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
-	boolean function isRowHidden( required workbook, required numeric row ){
-		return rowIsHidden( getRowFromActiveSheet( arguments.workbook, arguments.row ) );
-	}
-
-	any function toggleRowHidden( required workbook, required numeric rowNumber, required boolean state ){
-		getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).setZeroHeight( JavaCast( "boolean", arguments.state ) );
-		return this;
-	}
-
 	/* Private */
 
 	private boolean function rowIsEmpty( required row ){
@@ -259,10 +266,6 @@ component extends="base" accessors="true"{
 	    	return false;
 	  }
 	  return true;
-	}
-
-	private boolean function rowIsHidden( required row ){
-		return arguments.row.getZeroHeight() || arguments.row.getHeight() == 0;
 	}
 
 	private void function setSheetColumnCountFromRow( required any row, required struct sheet ){
