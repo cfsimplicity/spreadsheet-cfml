@@ -350,57 +350,23 @@ component accessors="true"{
 		if( arguments.autoSizeColumns && isStreamingXmlFormat( arguments.workbook ) )
 			getSheetHelper().getActiveSheet( arguments.workbook ).trackAllColumnsForAutoSizing();
 			/* this will affect performance but is needed for autoSizeColumns to work properly with SXSSF: https://poi.apache.org/apidocs/dev/org/apache/poi/xssf/streaming/SXSSFSheet.html#trackAllColumnsForAutoSizing */
+		var addRowsArgs = {
+			workbook: arguments.workbook
+			,data: arguments.data
+			,column: arguments.column
+			,includeQueryColumnNames: arguments.includeQueryColumnNames
+			,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
+			,autoSizeColumns: arguments.autoSizeColumns
+			,currentRowIndex: currentRowIndex
+			,overrideDataTypes: overrideDataTypes
+		};
+		if( overrideDataTypes )
+			addRowsArgs.datatypes = arguments.datatypes;
 		if( dataIsQuery ){
-			var queryColumns = getQueryHelper().getQueryColumnTypeToCellTypeMappings( arguments.data );
-			var cellIndex = ( arguments.column -1 );
-			if( arguments.includeQueryColumnNames ){
-				var columnNames = getQueryHelper()._QueryColumnArray( arguments.data );
-				addRow( workbook=arguments.workbook, data=columnNames, row=currentRowIndex +1, column=arguments.column );
-				currentRowIndex++;
-			}
-			if( overrideDataTypes ){
-				param local.columnNames = getQueryHelper()._QueryColumnArray( arguments.data );
-				getDataTypeHelper().convertDataTypeOverrideColumnNamesToNumbers( arguments.datatypes, columnNames );
-			}
-			for( var rowData in arguments.data ){
-				var newRow = getRowHelper().createRow( arguments.workbook, currentRowIndex, false );
-				cellIndex = ( arguments.column -1 );//reset for this row
-				var populateRowArgs = {
-					workbook: arguments.workbook
-					,newRow: newRow
-					,rowData: rowData
-					,queryColumns: queryColumns
-					,firstCellIndex: cellIndex
-					,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
-				};
-				if( overrideDataTypes )
-					populateRowArgs.datatypes = arguments.datatypes;
-				getRowHelper().populateFromQueryRow( argumentCollection=populateRowArgs );
-	   		currentRowIndex++;
-			}
-			if( arguments.autoSizeColumns )
-				getColumnHelper()._autoSizeColumns( workbook, arguments.column, queryColumns.Len() );
+			getRowHelper().addRowsFromQuery( argumentCollection=addRowsArgs );
 			return this;
 		}
-		//data is an array
-		var columnCount = 0;
-		for( var rowData in arguments.data ){
-			var newRow = getRowHelper().createRow( arguments.workbook, currentRowIndex, false );
-			var cellIndex = ( arguments.column -1 );
-   		var populateRowArgs = {
-				workbook: arguments.workbook
-				,newRow: newRow
-				,rowData: rowData
-				,firstCellIndex: cellIndex
-				,currentMaxColumnCount: columnCount
-			};
-			if( overrideDataTypes )
-				populateRowArgs.datatypes = arguments.datatypes;
-   		columnCount = getRowHelper().populateFromArray( argumentCollection=populateRowArgs );
-			currentRowIndex++;
-   	}
-   	if( arguments.autoSizeColumns )
-			getColumnHelper()._autoSizeColumns( workbook, arguments.column, columnCount );
+		getRowHelper().addRowsFromArray( argumentCollection=addRowsArgs );
    	return this;
 	}
 
