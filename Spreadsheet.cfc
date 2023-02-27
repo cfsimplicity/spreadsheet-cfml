@@ -159,226 +159,6 @@ component accessors="true"{
 
 	/* MAIN PUBLIC API */
 
-	/* Convenenience */
-
-	public binary function binaryFromQuery(
-		required query data
-		,boolean addHeaderRow=true
-		,boolean boldHeaderRow=true
-		,boolean xmlFormat=false
-		,boolean streamingXml=false
-		,numeric streamingWindowSize=100
-		,boolean ignoreQueryColumnDataTypes=false
-		,struct datatypes
-	){
-		var workbook = workbookFromQuery( argumentCollection=arguments );
-		var binary = readBinary( workbook );
-		cleanUpStreamingXml( workbook );
-		return binary;
-	}
-
-	public query function csvToQuery(
-		string csv=""
-		,string filepath=""
-		,boolean firstRowIsHeader=false
-		,boolean trim=true
-		,string delimiter
-		,array queryColumnNames
-		,any queryColumnTypes="" //'auto', single default type e.g. 'VARCHAR', or list of types, or struct of column names/types mapping. Empty means no types are specified.
-		,boolean makeColumnNamesSafe=false
-	){
-		var csvIsString = arguments.csv.Len();
-		var csvIsFile = arguments.filepath.Len();
-		if( !csvIsString && !csvIsFile )
-			Throw( type=this.getExceptionType() & ".missingRequiredArgument", message="Missing required argument", detail="Please provide either a csv string (csv), or the path of a file containing one (filepath)." );
-		if( csvIsString && csvIsFile )
-			Throw( type=this.getExceptionType() & ".invalidArgumentCombination", message="Mutually exclusive arguments: 'csv' and 'filepath'", detail="Only one of either 'filepath' or 'csv' arguments may be provided." );
-		if( IsStruct( arguments.queryColumnTypes ) && !arguments.firstRowIsHeader && !arguments.KeyExists( "queryColumnNames" )  )
-			Throw( type=this.getExceptionType() & ".invalidArgumentCombination", message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
-		var format = getCsvHelper().getFormat( arguments.delimiter?:"" );
-		var parsed = csvIsFile?
-			getCsvHelper().parseFromFile( arguments.filepath, format ):
-			getCsvHelper().parseFromString( arguments.csv, arguments.trim, format );
-		var data = parsed.data;
-		var maxColumnCount = parsed.maxColumnCount;
-		if( arguments.KeyExists( "queryColumnNames" ) && arguments.queryColumnNames.Len() ){
-			var columnNames = arguments.queryColumnNames;
-			var parsedQueryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, columnNames, maxColumnCount, data );
-			return getQueryHelper()._QueryNew( columnNames, parsedQueryColumnTypes, data, arguments.makeColumnNamesSafe );
-		}
-		var columnNames = getCsvHelper().getColumnNames( arguments.firstRowIsHeader, data, maxColumnCount );
-		if( arguments.firstRowIsHeader )
-			data.DeleteAt( 1 );
-		var parsedQueryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, columnNames, maxColumnCount, data );
-		return getQueryHelper()._QueryNew( columnNames, parsedQueryColumnTypes, data, arguments.makeColumnNamesSafe );
-	}
-
-	public void function download( required workbook, required string filename, string contentType ){
-		var safeFilename = getFileHelper().filenameSafe( arguments.filename );
-		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$", "" );
-		var extension = isXmlFormat( arguments.workbook )? "xlsx": "xls";
-		arguments.filename = filenameWithoutExtension & "." & extension;
-		var binary = readBinary( arguments.workbook );
-		cleanUpStreamingXml( arguments.workbook );
-		if( !arguments.KeyExists( "contentType" ) )
-			arguments.contentType = isXmlFormat( arguments.workbook )? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/msexcel";
-		getFileHelper().downloadBinaryVariable( binary, arguments.filename, arguments.contentType );
-	}
-
-	public void function downloadFileFromQuery(
-		required query data
-		,required string filename
-		,boolean addHeaderRow=true
-		,boolean boldHeaderRow=true
-		,boolean xmlFormat=false
-		,string contentType
-		,boolean streamingXml=false
-		,numeric streamingWindowSize=100
-		,boolean ignoreQueryColumnDataTypes=false
-		,struct datatypes
-	){
-		var safeFilename = getFileHelper().filenameSafe( arguments.filename );
-		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$","" );
-		var extension = ( arguments.xmlFormat || arguments.streamingXml )? "xlsx": "xls";
-		arguments.filename = filenameWithoutExtension & "." & extension;
-		var binaryFromQueryArgs = {
-			data: arguments.data
-			,addHeaderRow: arguments.addHeaderRow
-			,boldHeaderRow: arguments.boldHeaderRow
-			,xmlFormat: arguments.xmlFormat
-			,streamingXml: arguments.streamingXml
-			,streamingWindowSize: arguments.streamingWindowSize
-			,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
-		};
-		if( arguments.KeyExists( "datatypes" ) )
-			binaryFromQueryArgs.datatypes = arguments.datatypes;
-		var binary = binaryFromQuery( argumentCollection=binaryFromQueryArgs );
-		if( !arguments.KeyExists( "contentType" ) )
-			arguments.contentType = arguments.xmlFormat? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/msexcel";
-		getFileHelper().downloadBinaryVariable( binary, arguments.filename, arguments.contentType );
-	}
-
-	public void function downloadCsvFromFile(
-		required string src
-		,required string filename
-		,string contentType="text/csv"
-		,string columns
-		,string columnNames
-		,numeric headerRow
-		,string rows
-		,string sheetName
-		,numeric sheetNumber // 1-based
-		,boolean includeHeaderRow=false
-		,boolean includeBlankRows=false
-		,boolean fillMergedCellsWithVisibleValue=false
-		,string delimiter=","
-	){
-		arguments.format = "csv";
-		arguments.csvDelimiter = arguments.delimiter;
-		var csv = read( argumentCollection=arguments );
-		var binary = ToBinary( ToBase64( csv.Trim() ) );
-		var safeFilename = getFileHelper().filenameSafe( arguments.filename );
-		var filenameWithoutExtension = safeFilename.REReplace( "\.csv$","" );
-		var extension = "csv";
-		arguments.filename = filenameWithoutExtension & "." & extension;
-		getFileHelper().downloadBinaryVariable( binary, arguments.filename, arguments.contentType );
-	}
-
-	public any function workbookFromCsv(
-		string csv
-		,string filepath
-		,boolean firstRowIsHeader=false
-		,boolean boldHeaderRow=true
-		,boolean trim=true
-		,boolean xmlFormat=false
-		,string delimiter
-	){
-		var conversionArgs = {
-			firstRowIsHeader: arguments.firstRowIsHeader
-			,trim: arguments.trim
-		};
-		if( arguments.KeyExists( "csv" ) )
-			conversionArgs.csv = arguments.csv;
-		if( arguments.KeyExists( "filepath" ) )
-			conversionArgs.filepath = arguments.filepath;
-		if( arguments.KeyExists( "delimiter" ) )
-			conversionArgs.delimiter = arguments.delimiter;
-		var data = csvToQuery( argumentCollection=conversionArgs );
-		return workbookFromQuery(
-			data=data
-			,addHeaderRow=arguments.firstRowIsHeader
-			,boldHeaderRow=arguments.boldHeaderRow
-			,xmlFormat=arguments.xmlFormat
-		);
-	}
-
-	public any function workbookFromQuery(
-		required query data
-		,boolean addHeaderRow=true
-		,boolean boldHeaderRow=true
-		,boolean xmlFormat=false
-		,boolean streamingXml=false
-		,numeric streamingWindowSize=100
-		,boolean ignoreQueryColumnDataTypes=false
-		,struct datatypes
-		,boolean autoSizeColumns=false
-	){
-		var workbook = new( xmlFormat=arguments.xmlFormat, streamingXml=arguments.streamingXml, streamingWindowSize=arguments.streamingWindowSize );
-		var addRowsArgs = {
-			workbook: workbook
-			,data: arguments.data
-			,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
-			,autoSizeColumns: arguments.autoSizeColumns
-		};
-		if( arguments.KeyExists( "datatypes" ) )
-			addRowsArgs.datatypes = arguments.datatypes;
-		if( arguments.addHeaderRow ){
-			var columns = getQueryHelper()._QueryColumnArray( arguments.data );
-			addRow( workbook, columns );
-			if( arguments.boldHeaderRow )
-				formatRow( workbook, { bold: true }, 1 );
-			addRowsArgs.row = 2;
-			addRowsArgs.column = 1;
-		}
-		addRows( argumentCollection=addRowsArgs );
-		return workbook;
-	}
-
-	public Spreadsheet function writeFileFromQuery(
-		required query data
-		,required string filepath
-		,boolean overwrite=false
-		,boolean addHeaderRow=true
-		,boolean boldHeaderRow=true
-		,boolean xmlFormat=false
-		,boolean streamingXml=false
-		,numeric streamingWindowSize=100
-		,boolean ignoreQueryColumnDataTypes=false
-		,struct datatypes
-	){
-		if( !arguments.xmlFormat && ( ListLast( arguments.filepath, "." ) == "xlsx" ) )
-			arguments.xmlFormat = true;
-		var workbookFromQueryArgs = {
-			data: arguments.data
-			,addHeaderRow: arguments.addHeaderRow
-			,boldHeaderRow: arguments.boldHeaderRow
-			,xmlFormat: arguments.xmlFormat
-			,streamingXml: arguments.streamingXml
-			,streamingWindowSize: arguments.streamingWindowSize
-			,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
-		};
-		if( arguments.KeyExists( "datatypes" ) )
-			workbookFromQueryArgs.datatypes = arguments.datatypes;
-		var workbook = workbookFromQuery( argumentCollection=workbookFromQueryArgs );
-		// force to .xlsx if appropriate
-		if( arguments.xmlFormat && ( ListLast( arguments.filepath, "." ) == "xls" ) )
-			arguments.filepath &= "x";
-		write( workbook=workbook, filepath=arguments.filepath, overwrite=arguments.overwrite );
-		return this;
-	}
-
-	/* End convenience methods */
-
 	public Spreadsheet function addAutofilter( required workbook, string cellRange="", numeric row=1 ){
 		arguments.cellRange = arguments.cellRange.Trim();
 		if( arguments.cellRange.IsEmpty() ){
@@ -656,6 +436,22 @@ component accessors="true"{
 		return this;
 	}
 
+	public binary function binaryFromQuery(
+		required query data
+		,boolean addHeaderRow=true
+		,boolean boldHeaderRow=true
+		,boolean xmlFormat=false
+		,boolean streamingXml=false
+		,numeric streamingWindowSize=100
+		,boolean ignoreQueryColumnDataTypes=false
+		,struct datatypes
+	){
+		var workbook = workbookFromQuery( argumentCollection=arguments );
+		var binary = readBinary( workbook );
+		cleanUpStreamingXml( workbook );
+		return binary;
+	}
+
 	public Spreadsheet function cleanUpStreamingXml( required workbook ){
 		// SXSSF uses temporary files which MUST be cleaned up, see http://poi.apache.org/components/spreadsheet/how-to.html#sxssf
 		if( isStreamingXmlFormat( arguments.workbook ) )
@@ -715,6 +511,42 @@ component accessors="true"{
 		return this;
 	}
 
+	public query function csvToQuery(
+		string csv=""
+		,string filepath=""
+		,boolean firstRowIsHeader=false
+		,boolean trim=true
+		,string delimiter
+		,array queryColumnNames
+		,any queryColumnTypes="" //'auto', single default type e.g. 'VARCHAR', or list of types, or struct of column names/types mapping. Empty means no types are specified.
+		,boolean makeColumnNamesSafe=false
+	){
+		var csvIsString = arguments.csv.Len();
+		var csvIsFile = arguments.filepath.Len();
+		if( !csvIsString && !csvIsFile )
+			Throw( type=this.getExceptionType() & ".missingRequiredArgument", message="Missing required argument", detail="Please provide either a csv string (csv), or the path of a file containing one (filepath)." );
+		if( csvIsString && csvIsFile )
+			Throw( type=this.getExceptionType() & ".invalidArgumentCombination", message="Mutually exclusive arguments: 'csv' and 'filepath'", detail="Only one of either 'filepath' or 'csv' arguments may be provided." );
+		if( IsStruct( arguments.queryColumnTypes ) && !arguments.firstRowIsHeader && !arguments.KeyExists( "queryColumnNames" )  )
+			Throw( type=this.getExceptionType() & ".invalidArgumentCombination", message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
+		var format = getCsvHelper().getFormat( arguments.delimiter?:"" );
+		var parsed = csvIsFile?
+			getCsvHelper().parseFromFile( arguments.filepath, format ):
+			getCsvHelper().parseFromString( arguments.csv, arguments.trim, format );
+		var data = parsed.data;
+		var maxColumnCount = parsed.maxColumnCount;
+		if( arguments.KeyExists( "queryColumnNames" ) && arguments.queryColumnNames.Len() ){
+			var columnNames = arguments.queryColumnNames;
+			var parsedQueryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, columnNames, maxColumnCount, data );
+			return getQueryHelper()._QueryNew( columnNames, parsedQueryColumnTypes, data, arguments.makeColumnNamesSafe );
+		}
+		var columnNames = getCsvHelper().getColumnNames( arguments.firstRowIsHeader, data, maxColumnCount );
+		if( arguments.firstRowIsHeader )
+			data.DeleteAt( 1 );
+		var parsedQueryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, columnNames, maxColumnCount, data );
+		return getQueryHelper()._QueryNew( columnNames, parsedQueryColumnTypes, data, arguments.makeColumnNamesSafe );
+	}
+
 	public Spreadsheet function deleteColumn( required workbook, required numeric column ){
 		if( arguments.column <= 0 )
 			Throw( type=this.getExceptionType() & ".invalidColumnArgument", message="Invalid column argument", detail="The value for column must be greater than or equal to 1." );
@@ -769,6 +601,77 @@ component accessors="true"{
 				deleteRow( arguments.workbook, rowNumber );
 		}
 		return this;
+	}
+
+	public void function download( required workbook, required string filename, string contentType ){
+		var safeFilename = getFileHelper().filenameSafe( arguments.filename );
+		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$", "" );
+		var extension = isXmlFormat( arguments.workbook )? "xlsx": "xls";
+		arguments.filename = filenameWithoutExtension & "." & extension;
+		var binary = readBinary( arguments.workbook );
+		cleanUpStreamingXml( arguments.workbook );
+		if( !arguments.KeyExists( "contentType" ) )
+			arguments.contentType = isXmlFormat( arguments.workbook )? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/msexcel";
+		getFileHelper().downloadBinaryVariable( binary, arguments.filename, arguments.contentType );
+	}
+
+	public void function downloadCsvFromFile(
+		required string src
+		,required string filename
+		,string contentType="text/csv"
+		,string columns
+		,string columnNames
+		,numeric headerRow
+		,string rows
+		,string sheetName
+		,numeric sheetNumber // 1-based
+		,boolean includeHeaderRow=false
+		,boolean includeBlankRows=false
+		,boolean fillMergedCellsWithVisibleValue=false
+		,string delimiter=","
+	){
+		arguments.format = "csv";
+		arguments.csvDelimiter = arguments.delimiter;
+		var csv = read( argumentCollection=arguments );
+		var binary = ToBinary( ToBase64( csv.Trim() ) );
+		var safeFilename = getFileHelper().filenameSafe( arguments.filename );
+		var filenameWithoutExtension = safeFilename.REReplace( "\.csv$","" );
+		var extension = "csv";
+		arguments.filename = filenameWithoutExtension & "." & extension;
+		getFileHelper().downloadBinaryVariable( binary, arguments.filename, arguments.contentType );
+	}
+
+	public void function downloadFileFromQuery(
+		required query data
+		,required string filename
+		,boolean addHeaderRow=true
+		,boolean boldHeaderRow=true
+		,boolean xmlFormat=false
+		,string contentType
+		,boolean streamingXml=false
+		,numeric streamingWindowSize=100
+		,boolean ignoreQueryColumnDataTypes=false
+		,struct datatypes
+	){
+		var safeFilename = getFileHelper().filenameSafe( arguments.filename );
+		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$","" );
+		var extension = ( arguments.xmlFormat || arguments.streamingXml )? "xlsx": "xls";
+		arguments.filename = filenameWithoutExtension & "." & extension;
+		var binaryFromQueryArgs = {
+			data: arguments.data
+			,addHeaderRow: arguments.addHeaderRow
+			,boldHeaderRow: arguments.boldHeaderRow
+			,xmlFormat: arguments.xmlFormat
+			,streamingXml: arguments.streamingXml
+			,streamingWindowSize: arguments.streamingWindowSize
+			,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
+		};
+		if( arguments.KeyExists( "datatypes" ) )
+			binaryFromQueryArgs.datatypes = arguments.datatypes;
+		var binary = binaryFromQuery( argumentCollection=binaryFromQueryArgs );
+		if( !arguments.KeyExists( "contentType" ) )
+			arguments.contentType = arguments.xmlFormat? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/msexcel";
+		getFileHelper().downloadBinaryVariable( binary, arguments.filename, arguments.contentType );
 	}
 
 	public Spreadsheet function formatCell(
@@ -1747,6 +1650,66 @@ component accessors="true"{
 		return this;
 	}
 
+	public any function workbookFromCsv(
+		string csv
+		,string filepath
+		,boolean firstRowIsHeader=false
+		,boolean boldHeaderRow=true
+		,boolean trim=true
+		,boolean xmlFormat=false
+		,string delimiter
+	){
+		var conversionArgs = {
+			firstRowIsHeader: arguments.firstRowIsHeader
+			,trim: arguments.trim
+		};
+		if( arguments.KeyExists( "csv" ) )
+			conversionArgs.csv = arguments.csv;
+		if( arguments.KeyExists( "filepath" ) )
+			conversionArgs.filepath = arguments.filepath;
+		if( arguments.KeyExists( "delimiter" ) )
+			conversionArgs.delimiter = arguments.delimiter;
+		var data = csvToQuery( argumentCollection=conversionArgs );
+		return workbookFromQuery(
+			data=data
+			,addHeaderRow=arguments.firstRowIsHeader
+			,boldHeaderRow=arguments.boldHeaderRow
+			,xmlFormat=arguments.xmlFormat
+		);
+	}
+
+	public any function workbookFromQuery(
+		required query data
+		,boolean addHeaderRow=true
+		,boolean boldHeaderRow=true
+		,boolean xmlFormat=false
+		,boolean streamingXml=false
+		,numeric streamingWindowSize=100
+		,boolean ignoreQueryColumnDataTypes=false
+		,struct datatypes
+		,boolean autoSizeColumns=false
+	){
+		var workbook = new( xmlFormat=arguments.xmlFormat, streamingXml=arguments.streamingXml, streamingWindowSize=arguments.streamingWindowSize );
+		var addRowsArgs = {
+			workbook: workbook
+			,data: arguments.data
+			,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
+			,autoSizeColumns: arguments.autoSizeColumns
+		};
+		if( arguments.KeyExists( "datatypes" ) )
+			addRowsArgs.datatypes = arguments.datatypes;
+		if( arguments.addHeaderRow ){
+			var columns = getQueryHelper()._QueryColumnArray( arguments.data );
+			addRow( workbook, columns );
+			if( arguments.boldHeaderRow )
+				formatRow( workbook, { bold: true }, 1 );
+			addRowsArgs.row = 2;
+			addRowsArgs.column = 1;
+		}
+		addRows( argumentCollection=addRowsArgs );
+		return workbook;
+	}
+
 	public Spreadsheet function write(
 		required workbook
 		,required string filepath
@@ -1773,6 +1736,39 @@ component accessors="true"{
 		}
 		if( passwordProtect )
 			getFileHelper().encryptFile( arguments.filepath, arguments.password, arguments.algorithm );
+		return this;
+	}
+
+	public Spreadsheet function writeFileFromQuery(
+		required query data
+		,required string filepath
+		,boolean overwrite=false
+		,boolean addHeaderRow=true
+		,boolean boldHeaderRow=true
+		,boolean xmlFormat=false
+		,boolean streamingXml=false
+		,numeric streamingWindowSize=100
+		,boolean ignoreQueryColumnDataTypes=false
+		,struct datatypes
+	){
+		if( !arguments.xmlFormat && ( ListLast( arguments.filepath, "." ) == "xlsx" ) )
+			arguments.xmlFormat = true;
+		var workbookFromQueryArgs = {
+			data: arguments.data
+			,addHeaderRow: arguments.addHeaderRow
+			,boldHeaderRow: arguments.boldHeaderRow
+			,xmlFormat: arguments.xmlFormat
+			,streamingXml: arguments.streamingXml
+			,streamingWindowSize: arguments.streamingWindowSize
+			,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
+		};
+		if( arguments.KeyExists( "datatypes" ) )
+			workbookFromQueryArgs.datatypes = arguments.datatypes;
+		var workbook = workbookFromQuery( argumentCollection=workbookFromQueryArgs );
+		// force to .xlsx if appropriate
+		if( arguments.xmlFormat && ( ListLast( arguments.filepath, "." ) == "xls" ) )
+			arguments.filepath &= "x";
+		write( workbook=workbook, filepath=arguments.filepath, overwrite=arguments.overwrite );
 		return this;
 	}
 
