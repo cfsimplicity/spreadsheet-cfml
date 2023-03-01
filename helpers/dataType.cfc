@@ -1,5 +1,9 @@
 component extends="base" accessors="true"{
 
+	public array function validCellOverrideTypes(){
+		return [ "auto", "boolean", "date", "email", "file", "numeric", "string", "time", "url" ];
+	}
+
 	string function detectValueDataType( required value ){
 		// Numeric must precede date test
 		// Golden default rule: treat numbers with leading zeros as STRINGS: not numbers (lucee) or dates (ACF);
@@ -105,10 +109,6 @@ component extends="base" accessors="true"{
 
 	private boolean function isValidCellOverrideType( required string type ){
 		return validCellOverrideTypes().FindNoCase( arguments.type );
-	}
-
-	private array function validCellOverrideTypes(){
-		return [ "numeric", "string", "date", "time", "boolean", "auto" ];
 	}
 
 	private boolean function valueCanBeSetAsType( required value, required type ){

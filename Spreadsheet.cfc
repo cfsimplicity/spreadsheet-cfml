@@ -33,6 +33,7 @@ component accessors="true"{
 	property name="fontHelper" setter="false";
 	property name="formatHelper" setter="false";
 	property name="headerImageHelper" setter="false";
+	property name="hyperLinkHelper" setter="false";
 	property name="imageHelper" setter="false";
 	property name="infoHelper" setter="false";
 	property name="queryHelper" setter="false";
@@ -75,6 +76,7 @@ component accessors="true"{
 		variables.fontHelper = New helpers.font( this );
 		variables.formatHelper = New helpers.format( this );
 		variables.headerImageHelper = New helpers.headerImage( this );
+		variables.hyperLinkHelper = New helpers.hyperLink( this );
 		variables.imageHelper = New helpers.image( this );
 		variables.infoHelper = New helpers.info( this );
 		variables.queryHelper = New helpers.query( this );
@@ -1370,18 +1372,10 @@ component accessors="true"{
 		,string tooltip //xlsx only, maybe MS Excel full version only
 	){
 		arguments.type = arguments.type.UCase();
-		var validTypes = [ "URL", "EMAIL", "FILE", "DOCUMENT" ];
-		if( !validTypes.Find( arguments.type ) )
-			Throw( type=this.getExceptionType() & ".invalidTypeArgument", message="Invalid type argument: '#arguments.type#'", detail="The type must be one of the following: #validTypes.ToList( ', ' )#." );
-		if( arguments.KeyExists( "tooltip" ) && !isXmlFormat( arguments.workbook ) )
-			Throw( type=this.getExceptionType() & ".invalidSpreadsheetType", message="Invalid spreadsheet type", detail="Hyperlink tooltips can only be added to XLSX spreadsheets." );
+		getHyperLinkHelper().throwErrorIfTypeIsInvalid( arguments.type );
+		getHyperLinkHelper().throwErrorIfTooltipAndWorkbookIsXls( argumentCollection=arguments );
 		var cell = getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column );
-		var hyperlinkType = getClassHelper().loadClass( "org.apache.poi.common.usermodel.HyperlinkType" );
-		var hyperLink = arguments.workbook.getCreationHelper().createHyperlink( hyperlinkType[ arguments.type ] );
-		hyperLink.setAddress( JavaCast( "string", arguments.link ) );
-		if( arguments.KeyExists( "tooltip" ) )
-			hyperLink.setTooltip( JavaCast( "string", arguments.tooltip ) );
-		cell.setHyperlink( hyperLink );
+		getHyperLinkHelper().addHyperLinkToCell( cell=cell, argumentCollection=arguments );
 		if( arguments.KeyExists( "cellValue" ) )
 			getCellHelper().setCellValueAsType( arguments.workbook, cell, arguments.cellValue );
 		if( !arguments.format.IsEmpty() )
