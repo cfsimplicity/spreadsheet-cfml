@@ -1,9 +1,12 @@
 <cfscript>
 describe( "cellHyperLinks", function(){
 
-	it( "setCellHyperLink and getCellHyperLink are chainable", function(){
+	beforeEach( function(){
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
-		var uri = "https://w3c.org";
+		variables.uri = "https://w3c.org";
+	});
+
+	it( "setCellHyperLink and getCellHyperLink are chainable", function(){
 		workbooks.Each( function( wb ){
 			var actual = s.newChainable( wb )
 				.setCellHyperlink( uri, 1, 1 )
@@ -14,13 +17,8 @@ describe( "cellHyperLinks", function(){
 
 	describe( "getCellHyperlink", function(){
 
-		beforeEach( function(){
-			variables.workbooks = [ s.newXls(), s.newXlsx() ];
-		});
-
 		it( "returns the address/URL of a cell's hyperlink", function(){
 			workbooks.Each( function( wb ){
-				var uri = "https://w3c.org";
 				s.setCellHyperlink( wb, uri, 1, 1 );
 				expect( s.getCellHyperlink( wb, 1, 1 ) ).toBe( uri );
 			});
@@ -35,11 +33,6 @@ describe( "cellHyperLinks", function(){
 	});
 
 	describe( "setHyperlink", function(){
-
-		beforeEach( function(){
-			variables.workbooks = [ s.newXls(), s.newXlsx() ];
-			variables.uri = "https://w3c.org";
-		});
 
 		it( "adds a hyperlink to a cell", function(){
 			workbooks.Each( function( wb ){
@@ -119,15 +112,13 @@ describe( "cellHyperLinks", function(){
 
 			it( "an invalid type value is specified", function(){
 				expect( function(){
-					var wb = s.newXls();
-					s.setCellHyperlink( workbook=wb, row=1, column=1, link="https://w3c.org", type="blah" );
+					s.setCellHyperlink( workbook=variables.workbooks[ 1 ], row=1, column=1, link="https://w3c.org", type="blah" );
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidTypeArgument" );
 			});
 
 			it( "the workbook is XLS and a tooltip is specified", function(){
 				expect( function(){
-					var wb = s.newXls();
-					s.setCellHyperlink( workbook=wb, row=1, column=1, link=uri, tooltip="whatever" );
+					s.setCellHyperlink( workbook=variables.workbooks[ 1 ], row=1, column=1, link=uri, tooltip="whatever" );
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidSpreadsheetType" );
 			});
 
