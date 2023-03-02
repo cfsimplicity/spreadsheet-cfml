@@ -23,12 +23,18 @@ component extends="base" accessors="true"{
 		return ( arguments.object.getClass().getCanonicalName() == "org.apache.poi.xssf.usermodel.XSSFCellStyle" );
 	}
 
-	any function checkFormatArguments( required workbook, boolean overwriteCurrentStyle=true ){
-		if( arguments.KeyExists( "cellStyle" ) && !arguments.overwriteCurrentStyle )
+	struct function checkFormatArguments( required workbook, boolean overwriteCurrentStyle=true ){
+		if( !arguments.KeyExists( "format" ) && !arguments.KeyExists( "cellStyle" ) )
+			Throw( type=library().getExceptionType() & ".missingRequiredArgument", message="Missing argument: 'format'", detail="The 'format' argument is required" );
+		if( arguments.KeyExists( "format" ) && IsStruct( arguments.format ) )
+			return arguments;
+		if( !arguments.KeyExists( "cellStyle" ) )
+			arguments.cellStyle = arguments.format;//assume format is a cellStyle object
+		if( !arguments.overwriteCurrentStyle )
 			Throw( type=library().getExceptionType() & ".invalidArgumentCombination", message="Invalid argument combination", detail="If you supply a 'cellStyle' the 'overwriteCurrentStyle' cannot be false" );
-		if( arguments.KeyExists( "cellStyle" ) && !isValidCellStyleObject( arguments.workbook, arguments.cellStyle ) )
-			Throw( type=library().getExceptionType() & ".invalidCellStyleArgument", message="Invalid argument", detail="The 'cellStyle' argument is not a valid POI cellStyle object" );
-		return this;
+		if( !isValidCellStyleObject( arguments.workbook, arguments.cellStyle ) )
+			Throw( type=library().getExceptionType() & ".invalidCellStyleArgument", message="Invalid argument", detail="The 'cellStyle' supplied is not a valid POI cellStyle object" );
+		return arguments;
 	}
 
 	any function addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed(

@@ -88,6 +88,17 @@ describe( "cellHyperLinks", function(){
 			});
 		});
 
+		it( "allows hyperlink formatting to be overridden using a re-usable cellStyle", function(){
+			workbooks.Each( function( wb ){
+				var format = { color: "RED", underline: false };
+				var cellStyle = s.createCellStyle( wb, format );
+				s.setCellHyperlink( workbook=wb, row=1, column=1, link=uri, format=cellStyle );
+				var cellFormat = s.getCellFormat( wb, 1, 1 );
+				expect( cellFormat.underline ).toBe( "none" );
+				expect( cellFormat.color ).toBe( "255,0,0" );
+			});
+		});
+
 		it( "Allows email links to be added", function(){
 			workbooks.Each( function( wb ){
 				var email = "mailto:test@example.com";

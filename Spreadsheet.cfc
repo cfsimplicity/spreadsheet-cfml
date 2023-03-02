@@ -644,13 +644,12 @@ component accessors="true"{
 
 	public Spreadsheet function formatCell(
 		required workbook
-		,struct format={}
+		,any format //struct or cellStyle
 		,required numeric row
 		,required numeric column
 		,boolean overwriteCurrentStyle=true
-		,any cellStyle
 	){
-		getFormatHelper().checkFormatArguments( argumentCollection=arguments );
+		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		var cell = getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column );
 		if( arguments.KeyExists( "cellStyle" ) ){
 			cell.setCellStyle( arguments.cellStyle );
@@ -666,7 +665,7 @@ component accessors="true"{
 
 	public Spreadsheet function formatCellRange(
 		required workbook
-		,struct format={}
+		,any format //struct or cellStyle
 		,required numeric startRow
 		,required numeric endRow
 		,required numeric startColumn
@@ -674,7 +673,7 @@ component accessors="true"{
 		,boolean overwriteCurrentStyle=true
 		,any cellStyle
 	){
-		getFormatHelper().checkFormatArguments( argumentCollection=arguments );
+		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		var formatCellArgs = {
 			workbook: arguments.workbook
 			,format: arguments.format
@@ -690,12 +689,12 @@ component accessors="true"{
 
 	public Spreadsheet function formatColumn(
 		required workbook
-		,struct format={}
+		,any format //struct or cellStyle
 		,required numeric column
 		,boolean overwriteCurrentStyle=true
 		,any cellStyle
 	){
-		getFormatHelper().checkFormatArguments( argumentCollection=arguments );
+		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		if( arguments.column < 1 )
 			Throw( type=this.getExceptionType() & ".invalidColumnArgument", message="Invalid column argument", detail="The column value must be greater than 0" );
 		var formatCellArgs = {
@@ -715,12 +714,12 @@ component accessors="true"{
 
 	public Spreadsheet function formatColumns(
 		required workbook
-		,struct format={}
+		,any format //struct or cellStyle
 		,required string range
 		,boolean overwriteCurrentStyle=true
 		,any cellStyle
 	){
-		getFormatHelper().checkFormatArguments( argumentCollection=arguments );
+		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		// Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen.
 		var allRanges = getRangeHelper().extractRanges( arguments.range, arguments.workbook, "column" );
 		var formatColumnArgs = {
@@ -739,12 +738,12 @@ component accessors="true"{
 
 	public Spreadsheet function formatRow(
 		required workbook
-		,struct format={}
+		,any format //struct or cellStyle
 		,required numeric row
 		,boolean overwriteCurrentStyle=true
 		,any cellStyle
 	){
-		getFormatHelper().checkFormatArguments( argumentCollection=arguments );
+		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		var theRow = getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row );
 		if( IsNull( theRow ) )
 			return this;
@@ -765,12 +764,12 @@ component accessors="true"{
 
 	public Spreadsheet function formatRows(
 		required workbook
-		,struct format={}
+		,any format //struct or cellStyle
 		,required string range
 		,boolean overwriteCurrentStyle=true
 		,any cellStyle
 	){
-		getFormatHelper().checkFormatArguments( argumentCollection=arguments );
+		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		// Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen.
 		var allRanges = getRangeHelper().extractRanges( arguments.range, arguments.workbook );
 		var formatRowArgs = {
@@ -1368,7 +1367,7 @@ component accessors="true"{
 		,required numeric column
 		,any cellValue
 		,string type="URL"
-		,struct format
+		,any format //struct or cellStyle object
 		,string tooltip //xlsx only, maybe MS Excel full version only
 	){
 		arguments.type = arguments.type.UCase();

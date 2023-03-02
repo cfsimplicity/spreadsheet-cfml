@@ -368,12 +368,24 @@ describe( "formatCell", function(){
 		workbooks.Each( function( wb ){
 			expect( s.getCellFormat( wb, 1, 1 ).bold ).toBeFalse();
 			var cellStyle = s.createCellStyle( wb, { bold: true } );
+			// format argument may be a cellStyle object instead of a struct
+			s.formatCell( wb, cellStyle, 1, 1 );
+			expect( s.getCellFormat( wb, 1, 1 ).bold ).toBeTrue();
+			// support previous separate cellStyle argument without format
 			s.formatCell( workbook=wb, row=1, column=1, cellStyle=cellStyle );
 			expect( s.getCellFormat( wb, 1, 1 ).bold ).toBeTrue();
 		});
 	});
 
 	describe( "formatCell throws an exception if", function(){
+
+		it( "neither a format struct nor a cellStyle are passed", function(){
+			workbooks.Each( function( wb ){
+				expect( function(){
+					s.formatCell( workbook=wb, row=1, column=1 );
+				}).toThrow( type="cfsimplicity.spreadsheet.missingRequiredArgument" );
+			});
+		});
 
 		it( "an invalid hex value is passed", function(){
 			workbooks.Each( function( wb ){
