@@ -1368,7 +1368,7 @@ component accessors="true"{
 		,required numeric column
 		,any cellValue
 		,string type="URL"
-		,struct format={ color: "BLUE", underline: true }
+		,struct format
 		,string tooltip //xlsx only, maybe MS Excel full version only
 	){
 		arguments.type = arguments.type.UCase();
@@ -1378,8 +1378,10 @@ component accessors="true"{
 		getHyperLinkHelper().addHyperLinkToCell( cell=cell, argumentCollection=arguments );
 		if( arguments.KeyExists( "cellValue" ) )
 			getCellHelper().setCellValueAsType( arguments.workbook, cell, arguments.cellValue );
-		if( !arguments.format.IsEmpty() )
+		if( arguments.KeyExists( "format" ) )
 			formatCell( arguments.workbook, arguments.format, arguments.row, arguments.column );
+		else
+			getHyperLinkHelper().setHyperLinkDefaultStyle( arguments.workbook, cell );
 		return this;
 	}
 

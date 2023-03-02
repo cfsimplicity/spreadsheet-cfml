@@ -59,6 +59,21 @@ describe( "cellHyperLinks", function(){
 			});
 		});
 
+		it( "by default re-uses the default hyperlink cell style across multiple calls", function(){
+			workbooks.Each( function( wb ){
+				//baseline
+				var expectedNumberOfStyles = s.isXmlFormat( wb )? 1: 21;
+				expect( s.getWorkbookCellStylesTotal( wb ) ).toBe( expectedNumberOfStyles );
+				// first call
+				s.setCellHyperlink( wb, uri, 1, 1 );
+				expectedNumberOfStyles = s.isXmlFormat( wb )? 2: 22;
+				expect( s.getWorkbookCellStylesTotal( wb ) ).toBe( expectedNumberOfStyles );
+				// second call
+				s.setCellHyperlink( wb, uri, 1, 2 );
+				expect( s.getWorkbookCellStylesTotal( wb ) ).toBe( expectedNumberOfStyles );
+			});
+		});
+
 		it( "allows hyperlink formatting to be overridden", function(){
 			workbooks.Each( function( wb ){
 				var format = { color: "RED", underline: false };

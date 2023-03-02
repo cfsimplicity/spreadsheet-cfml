@@ -37,7 +37,7 @@ component extends="base" accessors="true"{
 		return variables.cachedDefaultStyleObjects[ spreadsheetType ];
 	}
 
- 	void function setHyperLinkStyle( required workbook, required cell ){
+ 	void function setHyperLinkDefaultStyle( required workbook, required cell ){
 		var defaultHyperLinkStyle = defaultCellStyle( arguments.workbook );
 		try{
 			arguments.cell.setCellStyle( defaultHyperLinkStyle );

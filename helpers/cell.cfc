@@ -188,19 +188,19 @@ component extends="base" accessors="true"{
 	private void function setUrlHyperLinkValue( required workbook, required cell, required value ){
 		getHyperLinkHelper().addHyperLinkToCell( arguments.cell, arguments.workbook, arguments.value, "URL" );
 		setStringValue( arguments.cell, arguments.value );
-		getHyperLinkHelper().setHyperLinkStyle( argumentCollection=arguments );
+		getHyperLinkHelper().setHyperLinkDefaultStyle( argumentCollection=arguments );
 	}
 
 	private void function setEmailHyperLinkValue( required workbook, required cell, required value ){
 		getHyperLinkHelper().addHyperLinkToCell( arguments.cell, arguments.workbook, "mailto:" & arguments.value, "EMAIL" );
 		setStringValue( arguments.cell, arguments.value );
-		getHyperLinkHelper().setHyperLinkStyle( argumentCollection=arguments );
+		getHyperLinkHelper().setHyperLinkDefaultStyle( argumentCollection=arguments );
 	}
 
 	private void function setFileHyperLinkValue( required workbook, required cell, required value ){
 		getHyperLinkHelper().addHyperLinkToCell( arguments.cell, arguments.workbook, arguments.value, "FILE" );
 		setStringValue( arguments.cell, arguments.value );
-		getHyperLinkHelper().setHyperLinkStyle( argumentCollection=arguments );
+		getHyperLinkHelper().setHyperLinkDefaultStyle( argumentCollection=arguments );
 	}
 
 	private any function setEmptyValue( required any cell ){
