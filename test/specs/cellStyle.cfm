@@ -36,13 +36,13 @@ describe( "cellStyle", function(){
 			var expected = s.isXmlFormat( wb )? 1: 21;
 			expect( s.getWorkbookCellStylesTotal( wb ) ).toBe( expected );
 			var style = s.createCellStyle( wb, format );
-			s.formatCell( workbook=wb, row=1, column=1, cellStyle=style )
-				.formatCell( workbook=wb, row=1, column=2, cellStyle=style )
+			s.formatCell( workbook=wb, format=style, row=1, column=1 )
+				.formatCell( workbook=wb, format=style, row=1, column=2 )
 				.createSheet( wb )
 				.setActiveSheetNumber( wb, 2 )
 				.addRows( wb, data )
-				.formatCell( workbook=wb, row=1, column=1, cellStyle=style )
-				.formatCell( workbook=wb, row=1, column=2, cellStyle=style );
+				.formatCell( workbook=wb, format=style, row=1, column=1 )
+				.formatCell( workbook=wb, format=style, row=1, column=2 );
 			expected = s.isXmlFormat( wb )? 2: 22;
 			expect( s.getWorkbookCellStylesTotal( wb ) ).toBe( expected );
 		});
@@ -53,7 +53,7 @@ describe( "cellStyle", function(){
 		it( "the cellStyle argument is present but invalid", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
-					s.formatCell( workbook=wb, row=1, column=1, cellStyle="not a cellStyle object" );
+					s.formatCell( workbook=wb, format="not a cellStyle object", row=1, column=1 );
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidCellStyleArgument" );
 			});
 		});

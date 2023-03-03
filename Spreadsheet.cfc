@@ -671,7 +671,6 @@ component accessors="true"{
 		,required numeric startColumn
 		,required numeric endColumn
 		,boolean overwriteCurrentStyle=true
-		,any cellStyle
 	){
 		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		var formatCellArgs = {
@@ -692,7 +691,6 @@ component accessors="true"{
 		,any format //struct or cellStyle
 		,required numeric column
 		,boolean overwriteCurrentStyle=true
-		,any cellStyle
 	){
 		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		if( arguments.column < 1 )
@@ -717,7 +715,6 @@ component accessors="true"{
 		,any format //struct or cellStyle
 		,required string range
 		,boolean overwriteCurrentStyle=true
-		,any cellStyle
 	){
 		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		// Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen.
@@ -741,7 +738,6 @@ component accessors="true"{
 		,any format //struct or cellStyle
 		,required numeric row
 		,boolean overwriteCurrentStyle=true
-		,any cellStyle
 	){
 		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		var theRow = getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row );
@@ -767,7 +763,6 @@ component accessors="true"{
 		,any format //struct or cellStyle
 		,required string range
 		,boolean overwriteCurrentStyle=true
-		,any cellStyle
 	){
 		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		// Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen.

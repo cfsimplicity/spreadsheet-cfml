@@ -397,11 +397,11 @@ describe( "formatCell", function(){
 			});
 		});
 
-		it( "an invalid hex value is passed", function(){
+		it( "a cellStyle object is passed with the overwriteCurrentStyle flag set to false", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					var cellStyle = s.createCellStyle( wb, { bold: true } );
-					s.formatCell( workbook=wb, row=1, column=1, cellStyle=cellStyle, overwriteCurrentStyle=false );
+					s.formatCell( workbook=wb, format=cellStyle, row=1, column=1, overwriteCurrentStyle=false );
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidArgumentCombination" );
 			});
 		});
