@@ -4,12 +4,10 @@ component extends="base" accessors="true"{
 		return ArrayFindNoCase( [ "#Chr( 9 )#", "\t", "tab" ], arguments.delimiter );//CF2016 doesn't support [].FindNoCase( needle )
 	}
 
-	any function getCsvFormatForDelimiter( required string delimiter ){
-		if( delimiterIsTab( arguments.delimiter ) )
-			return getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ];
-		return getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ]
-			.withDelimiter( JavaCast( "char", arguments.delimiter ) )
-			.withIgnoreSurroundingSpaces();//stop spaces between fields causing problems with embedded lines
+	any function getFormat( required string delimiter ){
+		if( arguments.delimiter.Len() )
+			return getCsvFormatForDelimiter( arguments.delimiter );
+		return getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
 	}
 
 	array function getColumnNames( required boolean firstRowIsHeader, required array data, required numeric maxColumnCount ){
@@ -67,6 +65,14 @@ component extends="base" accessors="true"{
 	}
 
 	/* Private */
+
+	private any function getCsvFormatForDelimiter( required string delimiter ){
+		if( delimiterIsTab( arguments.delimiter ) )
+			return getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ];
+		return getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ]
+			.withDelimiter( JavaCast( "char", arguments.delimiter ) )
+			.withIgnoreSurroundingSpaces();//stop spaces between fields causing problems with embedded lines
+	}
 
 	private struct function dataFromParser( required any parser ){
 		var result = {

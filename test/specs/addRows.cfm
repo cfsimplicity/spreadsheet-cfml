@@ -320,7 +320,7 @@ describe( "addRows", function(){
 
 	describe( "addRows() data type overriding", function(){
 
-		it( "throws an error if invalid types are specified in the datatype struct", function(){
+		it( "throws an error if invalid types are specified in the datatypes struct", function(){
 			var data = [ [ "a", "b" ] ];
 			var datatypes = { numeric: [ 1 ], varchar: [ 2 ] };
 			workbooks.Each( function( wb ){
@@ -330,7 +330,7 @@ describe( "addRows", function(){
 			});
 		});
 
-		it( "throws an error if columns to override are not specified as arrays in the datatype struct", function(){
+		it( "throws an error if columns to override are not specified as arrays in the datatypes struct", function(){
 			var data = [ [ "a", "b" ] ];
 			var datatypes = { numeric: "1", string: "2" };
 			workbooks.Each( function( wb ){
@@ -459,6 +459,38 @@ describe( "addRows", function(){
 				expect( s.getCellType( wb, 1, 2 ) ).toBe( "string" );
 				expect( s.getCellType( wb, 2, 1 ) ).toBe( "numeric" );
 				expect( s.getCellType( wb, 2, 2 ) ).toBe( "string" );
+			});
+		});
+
+		it( "Supports url, email and file types, converting them to hyperlinks", function(){
+			var testUri = "https://w3c.org";
+			var testEmail = "test@test.com";
+			var testFilePath = "test.xlsx";
+			var data = QueryNew( "urls,emails,files", "VarChar,VarChar,VarChar", [ [ testUri, testEmail, testFilePath ] ] );
+			var datatypes = { url: [ "urls" ], email: [ "emails" ], file: [ "files" ] };
+			workbooks.Each( function( wb ){
+				s.addRows( workbook=wb, data=data, datatypes=datatypes );
+				expect( s.getCellHyperlink( wb, 1, 1 ) ).toBe( testUri );
+				expect( s.getCellValue( wb, 1, 1 ) ).toBe( testUri );
+				expect( s.getCellHyperlink( wb, 1, 2 ) ).toBe( "mailto:" & testEmail );
+				expect( s.getCellValue( wb, 1, 2 ) ).toBe( testEmail );
+				expect( s.getCellHelper().getCellAt( wb, 1, 2 ).getHyperLink().getType().name() ).toBe( "EMAIL" );
+				expect( s.getCellHyperlink( wb, 1, 3 ) ).toBe( testFilePath );
+				expect( s.getCellValue( wb, 1, 3 ) ).toBe( testFilePath );
+				expect( s.getCellHelper().getCellAt( wb, 1, 3 ).getHyperLink().getType().name() ).toBe( "FILE" );
+			});
+		});
+
+		it( "Adds invalid url and email values as strings", function(){
+			var invalidValue = "not a link";
+			var data = QueryNew( "Urls,emails", "VarChar,VarChar", [ [ invalidValue, invalidValue ] ] );
+			var datatypes = { url: [ "Urls" ], email: [ "Emails" ] };
+			workbooks.Each( function( wb ){
+				s.addRows( workbook=wb, data=data, datatypes=datatypes );
+				expect( s.getCellHyperlink( wb, 1, 1 ) ).toBeEmpty();
+				expect( s.getCellValue( wb, 1, 1 ) ).toBe( invalidValue );
+				expect( s.getCellHyperlink( wb, 1, 2 ) ).toBeEmpty();
+				expect( s.getCellValue( wb, 1, 2 ) ).toBe( invalidValue );
 			});
 		});
 

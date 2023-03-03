@@ -1,3 +1,15 @@
+## 3.8.0 - 3 March 2023
+
+- Enhancements
+	- \#316 Support new override data types: url, email and file to auto-create hyperlinks when adding data
+	- \#318 Allow the format argument of formatting methods to be a re-usable cellStyle object instead of a struct
+
+- Fixes
+  - \#317 setCellHyperlink() should re-use a single cell style over multiple calls by default
+
+- Maintenance
+  - \#319 Upgrade excel-streaming-reader to 4.0.5
+
 ## 3.7.4 - 18 December 2022
 
 - \#313 queryToCsv() should not treat date strings in the data as date objects to be formatted

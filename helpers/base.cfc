@@ -65,6 +65,10 @@ component accessors="true"{
 		return library().getHeaderImageHelper();
 	}
 
+	any function getHyperLinkHelper(){
+		return library().getHyperLinkHelper();
+	}
+
 	any function getImageHelper(){
 		return library().getImageHelper();
 	}

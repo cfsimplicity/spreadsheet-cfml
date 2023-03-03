@@ -26,4 +26,13 @@ component extends="base" accessors="true"{
 		return this;
 	}
 
+	numeric function getNewColumnIndex( required sheet, required numeric rowIndex, required numeric startColumn ){
+		if( arguments.startColumn > 0 )
+			return ( arguments.startColumn -1 );
+		var row = arguments.sheet.getRow( arguments.rowIndex );
+		if( !IsNull( row ) && getRowHelper().rowHasCells( row ) )
+			return getRowHelper().getNextEmptyCellIndexFromRow( row );// append the new column to the existing columns
+		return 0;
+	}
+
 }

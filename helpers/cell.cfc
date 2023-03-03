@@ -83,7 +83,7 @@ component extends="base" accessors="true"{
 	}
 
 	any function setCellValueAsType( required workbook, required cell, required value, string type ){
-		var validCellTypes = [ "string", "numeric", "date", "time", "boolean", "blank" ];
+		var validCellTypes = getDataTypeHelper().validCellOverrideTypes().Append( "blank" );
 		if( !arguments.KeyExists( "type" ) ) //autodetect type
 			arguments.type = getDataTypeHelper().detectValueDataType( arguments.value );
 		else if( !validCellTypes.FindNoCase( arguments.type ) )
@@ -102,6 +102,16 @@ component extends="base" accessors="true"{
 				return setBooleanValue( argumentCollection=arguments );
 			case "blank":
 				return setEmptyValue( argumentCollection=arguments );
+			case "url":
+				if( IsValid( "url", arguments.value ) )
+					return setUrlHyperLinkValue( argumentCollection=arguments );
+				break;
+			case "email":
+				if( IsValid( "email", arguments.value ) )
+					return setEmailHyperLinkValue( argumentCollection=arguments );
+				break;
+			case "file":
+				return setFileHyperLinkValue( argumentCollection=arguments );
 		}
 		return setStringValue( argumentCollection=arguments );
 	}
@@ -173,6 +183,24 @@ component extends="base" accessors="true"{
 		}
 		arguments.cell.setCellValue( JavaCast( "boolean", arguments.value ) );
 		return this;
+	}
+
+	private void function setUrlHyperLinkValue( required workbook, required cell, required value ){
+		getHyperLinkHelper().addHyperLinkToCell( arguments.cell, arguments.workbook, arguments.value, "URL" );
+		setStringValue( arguments.cell, arguments.value );
+		getHyperLinkHelper().setHyperLinkDefaultStyle( argumentCollection=arguments );
+	}
+
+	private void function setEmailHyperLinkValue( required workbook, required cell, required value ){
+		getHyperLinkHelper().addHyperLinkToCell( arguments.cell, arguments.workbook, "mailto:" & arguments.value, "EMAIL" );
+		setStringValue( arguments.cell, arguments.value );
+		getHyperLinkHelper().setHyperLinkDefaultStyle( argumentCollection=arguments );
+	}
+
+	private void function setFileHyperLinkValue( required workbook, required cell, required value ){
+		getHyperLinkHelper().addHyperLinkToCell( arguments.cell, arguments.workbook, arguments.value, "FILE" );
+		setStringValue( arguments.cell, arguments.value );
+		getHyperLinkHelper().setHyperLinkDefaultStyle( argumentCollection=arguments );
 	}
 
 	private any function setEmptyValue( required any cell ){

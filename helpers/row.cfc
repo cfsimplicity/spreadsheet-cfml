@@ -1,5 +1,76 @@
 component extends="base" accessors="true"{
 
+	void function addRowsFromQuery(
+		required workbook
+		,required query data
+		,required numeric column
+		,required boolean includeQueryColumnNames
+		,required boolean ignoreQueryColumnDataTypes
+		,required boolean autoSizeColumns
+		,required numeric currentRowIndex
+		,required boolean overrideDataTypes
+		,struct datatypes
+	){
+		var queryColumns = getQueryHelper().getQueryColumnTypeToCellTypeMappings( arguments.data );
+		var cellIndex = ( arguments.column -1 );
+		if( arguments.includeQueryColumnNames ){
+			var columnNames = getQueryHelper()._QueryColumnArray( arguments.data );
+			library().addRow( workbook=arguments.workbook, data=columnNames, row=arguments.currentRowIndex +1, column=arguments.column );
+			arguments.currentRowIndex++;
+		}
+		if( arguments.overrideDataTypes ){
+			param local.columnNames = getQueryHelper()._QueryColumnArray( arguments.data );
+			getDataTypeHelper().convertDataTypeOverrideColumnNamesToNumbers( arguments.datatypes, columnNames );
+		}
+		for( var rowData in arguments.data ){
+			var newRow = createRow( arguments.workbook, arguments.currentRowIndex, false );
+			cellIndex = ( arguments.column -1 );//reset for this row
+			var populateRowArgs = {
+				workbook: arguments.workbook
+				,newRow: newRow
+				,rowData: rowData
+				,queryColumns: queryColumns
+				,firstCellIndex: cellIndex
+				,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
+			};
+			if( arguments.overrideDataTypes )
+				populateRowArgs.datatypes = arguments.datatypes;
+			populateFromQueryRow( argumentCollection=populateRowArgs );
+   		arguments.currentRowIndex++;
+		}
+		if( arguments.autoSizeColumns )
+			getColumnHelper()._autoSizeColumns( arguments.workbook, arguments.column, queryColumns.Len() );
+	}
+
+	void function addRowsFromArray(
+		required workbook
+		,required array data
+		,required numeric column
+		,required boolean autoSizeColumns
+		,required numeric currentRowIndex
+		,required boolean overrideDataTypes
+		,struct datatypes
+	){
+		var columnCount = 0;
+		for( var rowData in arguments.data ){
+			var newRow = createRow( arguments.workbook, arguments.currentRowIndex, false );
+			var cellIndex = ( arguments.column -1 );
+   		var populateRowArgs = {
+				workbook: arguments.workbook
+				,newRow: newRow
+				,rowData: rowData
+				,firstCellIndex: cellIndex
+				,currentMaxColumnCount: columnCount
+			};
+			if( arguments.overrideDataTypes )
+				populateRowArgs.datatypes = arguments.datatypes;
+   		columnCount = populateFromArray( argumentCollection=populateRowArgs );
+			arguments.currentRowIndex++;
+   	}
+   	if( arguments.autoSizeColumns )
+			getColumnHelper()._autoSizeColumns( workbook, arguments.column, columnCount );
+	}
+
 	any function addRowToSheetData(
 		required workbook
 		,required struct sheet
@@ -170,7 +241,43 @@ component extends="base" accessors="true"{
 	  return values;
 	}
 
-	any function populateFromQueryRow(
+	boolean function rowHasCells( required row ){
+		return ( arguments.row.getLastCellNum() > 0 );
+	}
+
+	boolean function rowExists( required numeric rowIndex, required sheet ){
+		return
+			( arguments.rowIndex >= getSheetHelper().getFirstRowIndex( arguments.sheet ) )
+			&&
+			( arguments.rowIndex <= getSheetHelper().getLastRowIndex( arguments.sheet ) );
+	}
+
+	boolean function rowIsHidden( required row ){
+		return arguments.row.getZeroHeight() || ( arguments.row.getHeight() == 0 );
+	}
+
+	any function toggleRowHidden( required workbook, required numeric rowNumber, required boolean state ){
+		getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).setZeroHeight( JavaCast( "boolean", arguments.state ) );
+		return this;
+	}
+
+	any function shiftOrDeleteRow(
+		required workbook
+		,required row
+		,required lastRow
+		,required boolean insert
+	){
+		if( arguments.insert ){
+			library().shiftRows( arguments.workbook, arguments.row, arguments.lastRow, 1 );//shift the existing rows down (by one row)
+			return this;
+		}
+		library().deleteRow( arguments.workbook, arguments.row );//otherwise, clear the entire row
+		return this;
+	}
+
+	/* Private */
+
+	private any function populateFromQueryRow(
 		required workbook
 		,required newRow
 		,required rowData
@@ -201,7 +308,7 @@ component extends="base" accessors="true"{
  		return this;
 	}
 
-	numeric function populateFromArray(
+	private numeric function populateFromArray(
 		required workbook
 		,required newRow
 		,required array rowData
@@ -223,35 +330,6 @@ component extends="base" accessors="true"{
 		return columnCount;
 	}
 
-	boolean function rowHasCells( required row ){
-		return ( arguments.row.getLastCellNum() > 0 );
-	}
-
-	any function shiftOrDeleteRow(
-		required workbook
-		,required row
-		,required lastRow
-		,required boolean insert
-	){
-		if( arguments.insert ){
-			library().shiftRows( arguments.workbook, arguments.row, arguments.lastRow, 1 );//shift the existing rows down (by one row)
-			return this;
-		}
-		library().deleteRow( arguments.workbook, arguments.row );//otherwise, clear the entire row
-		return this;
-	}
-
-	boolean function isRowHidden( required workbook, required numeric row ){
-		return rowIsHidden( getRowFromActiveSheet( arguments.workbook, arguments.row ) );
-	}
-
-	any function toggleRowHidden( required workbook, required numeric rowNumber, required boolean state ){
-		getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).setZeroHeight( JavaCast( "boolean", arguments.state ) );
-		return this;
-	}
-
-	/* Private */
-
 	private boolean function rowIsEmpty( required row ){
 		for( var i = arguments.row.getFirstCellNum(); i < arguments.row.getLastCellNum(); i++ ){
 	    var cell = arguments.row.getCell( i );
@@ -259,10 +337,6 @@ component extends="base" accessors="true"{
 	    	return false;
 	  }
 	  return true;
-	}
-
-	private boolean function rowIsHidden( required row ){
-		return arguments.row.getZeroHeight() || arguments.row.getHeight() == 0;
 	}
 
 	private void function setSheetColumnCountFromRow( required any row, required struct sheet ){
