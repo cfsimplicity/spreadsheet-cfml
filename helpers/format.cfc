@@ -1,6 +1,6 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
-	property name="dataFormatter" getter="false" setter="false";
+	property name="dataFormatter";
 
 	any function getDataFormatter(){
 		if( IsNull( variables.dataFormatter ) )

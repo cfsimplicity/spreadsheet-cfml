@@ -1,4 +1,4 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
 	void function downloadBinaryVariable( required binaryVariable, required string filename, required contentType ){
 		cfheader( name="Content-Disposition", value='attachment; filename="#arguments.filename#"' );

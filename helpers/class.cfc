@@ -1,4 +1,4 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
 	void function dumpPathToClassNoOsgi( required string className ){
 		var classLoader = loadClass( arguments.className ).getClass().getClassLoader();
@@ -33,7 +33,7 @@ component extends="base" accessors="true"{
 		try{
 			return library().getOsgiLoader().loadClass(
 				className: arguments.javaclass
-				,bundlePath: this.getRootPath() & "lib-osgi.jar"
+				,bundlePath: variables.rootPath & "lib-osgi.jar"
 				,bundleSymbolicName: library().getOsgiLibBundleSymbolicName()
 				,bundleVersion: library().getOsgiLibBundleVersion()
 			);

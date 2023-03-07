@@ -1,4 +1,4 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
 	string function createOrValidateSheetName( required workbook ){
 		if( !arguments.KeyExists( "sheetName" ) )

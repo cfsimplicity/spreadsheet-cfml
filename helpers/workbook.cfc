@@ -1,4 +1,4 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
 	any function createWorkBook( string type, numeric streamingWindowSize=100 ){
 		if( arguments.type == "xls" )

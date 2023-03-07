@@ -1,4 +1,4 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
 	array function convertSignedRGBToPositiveTriplet( required any signedRGB ){
 		// When signed, values of 128+ are negative: convert then to positive values

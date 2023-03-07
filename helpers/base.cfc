@@ -1,16 +1,16 @@
-component accessors="true"{
+component{
 
 	property name="libraryInstance";
 	property name="rootPath";
 
 	any function init( required Spreadsheet libraryInstance ){
-		this.setLibraryInstance( arguments.libraryInstance );
-		this.setRootPath( GetDirectoryFromPath( GetCurrentTemplatePath() ) & "../" );
+		variables.libraryInstance = arguments.libraryInstance;
+		variables.rootPath = GetDirectoryFromPath( GetCurrentTemplatePath() ) & "../";
 		return this;
 	}
 
 	Spreadsheet function library(){
-		return this.getLibraryInstance();
+		return variables.libraryInstance;
 	}
 
 	any function getCellHelper(){

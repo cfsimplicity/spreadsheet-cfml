@@ -377,6 +377,21 @@ describe( "formatCell", function(){
 		});
 	});
 
+	it( "caches and re-uses indentical formats passed as a struct over the life of the library to avoid cell style duplication", function(){
+		variables.data = [ [ "x", "y" ] ];
+		variables.format = { bold: true };
+		workbooks.Each( function( wb ){
+			s.addRows( wb, data );
+			var expected = s.isXmlFormat( wb )? 1: 21;
+			expect( s.getWorkbookCellStylesTotal( wb ) ).toBe( expected );
+			cfloop( from=1, to=2, index="local.row" ){
+				s.formatCell( wb, format, row, 1 );
+			}
+			expected = s.isXmlFormat( wb )? 2: 22;
+			expect( s.getWorkbookCellStylesTotal( wb ) ).toBe( expected );
+		});
+	});
+
 	describe( "formatCell throws an exception if", function(){
 
 		it( "neither a format struct nor a cellStyle are passed", function(){

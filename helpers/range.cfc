@@ -1,4 +1,4 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
 	array function extractRanges( required string rangeList, required workbook, string dimension="row" ){
 		/*
