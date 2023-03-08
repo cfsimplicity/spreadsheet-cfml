@@ -1,11 +1,55 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
-	property name="dataFormatter" getter="false" setter="false";
+	property name="dataFormatter";
+	property name="cachedCellStyles" type="struct";//avoid duplication of cellStyles by caching and re-using them for the life of the library
+
+	format function init( required Spreadsheet libraryInstance ){
+		initCellStyleCache();
+		return super.init( arguments.libraryInstance );
+	}
+
+	struct function getCachedCellStyles(){
+		return variables.cachedCellStyles;
+	}
+
+	format function initCellStyleCache(){
+		variables.cachedCellStyles = { xls: {}, xlsx: {} };
+		return this;
+	}
 
 	any function getDataFormatter(){
 		if( IsNull( variables.dataFormatter ) )
 			variables.dataFormatter = getClassHelper().loadClass( "org.apache.poi.ss.usermodel.DataFormatter" ).init();
 		return variables.dataFormatter;
+	}
+
+	any function setCellStyle( required cell, required cellStyle, struct format ){
+		try{
+			arguments.cell.setCellStyle( arguments.cellStyle );
+		}
+		catch( any exception ){
+			if( !exception.message CONTAINS "Style does not belong to the supplied Workbook" )
+				rethrow;
+			var workbook = arguments.cell.getSheet().getWorkbook();
+			var newCellStyleForThisWorkbook = workbook.createCellStyle();
+			newCellStyleForThisWorkbook.cloneStyleFrom( arguments.cellStyle );
+			arguments.cell.setCellStyle( newCellStyleForThisWorkbook );
+			if( !arguments.KeyExists( "format" ) || StructIsEmpty( arguments.format ) )
+				return;
+			var spreadsheetType = library().isXmlFormat( workbook )? "xlsx": "xls";
+			var cellStyleID = getCellStyleIDfromFormat( arguments.format );
+			cacheCellStyle( cellStyleID, spreadsheetType, newCellStyleForThisWorkbook );
+		}
+	}
+
+	any function getCachedCellStyle( required workbook, required struct format ){
+		var spreadsheetType = library().isXmlFormat( arguments.workbook )? "xlsx": "xls";
+		var cellStyleID = getCellStyleIDfromFormat( arguments.format );
+		if( !variables.cachedCellStyles[ spreadsheetType ].KeyExists( cellStyleID ) ){
+			var cellStyle = buildCellStyle( workbook, format );
+			cacheCellStyle( cellStyleID, spreadsheetType, cellStyle );
+		}
+		return variables.cachedCellStyles[ spreadsheetType ][ cellStyleID ];
 	}
 
 	any function buildCellStyle( required workbook, required struct format, existingStyle ){
@@ -28,24 +72,14 @@ component extends="base" accessors="true"{
 			Throw( type=library().getExceptionType() & ".missingRequiredArgument", message="Missing argument: 'format'", detail="The 'format' argument is required" );
 		if( arguments.KeyExists( "format" ) && IsStruct( arguments.format ) )
 			return arguments;
-		if( !arguments.KeyExists( "cellStyle" ) )
-			arguments.cellStyle = arguments.format;//assume format is a cellStyle object
+		//assume a cellStyle object has been supplied either as cellStyle or format
 		if( !arguments.overwriteCurrentStyle )
 			Throw( type=library().getExceptionType() & ".invalidArgumentCombination", message="Invalid argument combination", detail="If you supply a 'cellStyle' the 'overwriteCurrentStyle' cannot be false" );
+		if( !arguments.KeyExists( "cellStyle" ) )
+			arguments.cellStyle = arguments.format;
 		if( !isValidCellStyleObject( arguments.workbook, arguments.cellStyle ) )
 			Throw( type=library().getExceptionType() & ".invalidCellStyleArgument", message="Invalid argument", detail="The 'cellStyle' supplied is not a valid POI cellStyle object" );
 		return arguments;
-	}
-
-	any function addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed(
-		required workbook
-		,required boolean overwriteCurrentStyle
-		,required struct formatMethodArgs
-		,required struct format
-	){
-		if( arguments.overwriteCurrentStyle )
-			arguments.formatMethodArgs.cellStyle = arguments.cellStyle?: buildCellStyle( arguments.workbook, arguments.format );
-		return this;
 	}
 
 	string function lookupUnderlineFormatCode( required cellFont ){
@@ -94,6 +128,14 @@ component extends="base" accessors="true"{
 	}
 
 	/* Private */
+
+	private string function getCellStyleIDfromFormat( required struct format ){
+		return Hash( arguments.format.toString() );
+	}
+
+	private void function cacheCellStyle( required string ID, required string spreadsheetType, required cellStyle ){
+		variables.cachedCellStyles[ arguments.spreadsheetType ][ arguments.ID ] = arguments.cellStyle;
+	}
 
 	private any function setCellStyleFromFormatSetting(
 		required workbook

@@ -1,4 +1,4 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
 	void function addRowsFromQuery(
 		required workbook

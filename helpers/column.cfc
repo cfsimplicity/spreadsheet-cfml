@@ -1,4 +1,4 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
 	// underscore prefix because otherwise errors: "no matching function [autoSizeColumns]"
 	void function _autoSizeColumns( required workbook, required numeric startColumnNumber, required numeric endColumnNumber ){

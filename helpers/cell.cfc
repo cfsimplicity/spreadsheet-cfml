@@ -1,6 +1,6 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
-	property name="cellUtil" getter="false" setter="false";
+	property name="cellUtil";
 
 	any function getCellUtil(){
 		if( IsNull( variables.cellUtil ) )

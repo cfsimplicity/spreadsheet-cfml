@@ -2,6 +2,7 @@
 describe( "formatRow", function(){
 
 	beforeEach( function(){
+		s.clearCellStyleCache();
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( function( wb ){
 			s.addRow( wb, [ "a1", "b1" ] );

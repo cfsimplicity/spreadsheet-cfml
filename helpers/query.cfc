@@ -1,4 +1,4 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
 	array function _QueryColumnArray( required query q ){
 		try{

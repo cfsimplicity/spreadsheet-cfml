@@ -1,4 +1,4 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
 	void function addInfoBinary( required workbook, required struct info ){
 		arguments.workbook.createInformationProperties(); // creates the following if missing

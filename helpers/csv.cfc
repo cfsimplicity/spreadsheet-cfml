@@ -1,4 +1,4 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
 	boolean function delimiterIsTab( required string delimiter ){
 		return ArrayFindNoCase( [ "#Chr( 9 )#", "\t", "tab" ], arguments.delimiter );//CF2016 doesn't support [].FindNoCase( needle )

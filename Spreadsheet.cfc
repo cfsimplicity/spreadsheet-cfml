@@ -1,7 +1,7 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="3.8.0" setter="false";
+	property name="version" default="3.8.1" setter="false";
 	property name="osgiLibBundleVersion" default="5.2.3.3" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
@@ -88,7 +88,21 @@ component accessors="true"{
 		variables.workbookHelper = New helpers.workbook( this );
 	}
 
-	/* Meta utilities */
+	/* Utilities */
+
+	public struct function getEnvironment(){
+		return {
+			dateFormats: this.getDateFormats()
+			,engine: server.coldfusion.productname & " " & ( this.getIsACF()? server.coldfusion.productversion: ( server.lucee.version?: "?" ) )
+			,javaLoaderDotPath: this.getJavaLoaderDotPath()
+			,javaClassesLastLoadedVia: this.getJavaClassesLastLoadedVia()
+			,javaLoaderName: this.getJavaLoaderName()
+			,requiresJavaLoader: this.getRequiresJavaLoader()
+			,version: this.getVersion()
+			,poiVersion: this.getPoiVersion()
+			,osgiLibBundleVersion: this.getOsgiLibBundleVersion()
+		};
+	}
 
 	private void function detectEngineProperties(){
 		variables.isACF = ( server.coldfusion.productname == "ColdFusion Server" );
@@ -129,22 +143,6 @@ component accessors="true"{
 		return this;
 	}
 
-	public struct function getEnvironment(){
-		return {
-			dateFormats: this.getDateFormats()
-			,engine: server.coldfusion.productname & " " & ( this.getIsACF()? server.coldfusion.productversion: ( server.lucee.version?: "?" ) )
-			,javaLoaderDotPath: this.getJavaLoaderDotPath()
-			,javaClassesLastLoadedVia: this.getJavaClassesLastLoadedVia()
-			,javaLoaderName: this.getJavaLoaderName()
-			,requiresJavaLoader: this.getRequiresJavaLoader()
-			,version: this.getVersion()
-			,poiVersion: this.getPoiVersion()
-			,osgiLibBundleVersion: this.getOsgiLibBundleVersion()
-		};
-	}
-
-	/* Diagnostic tools */
-
 	/* check physical path of a specific class */
 	public void function dumpPathToClass( required string className ){
 		if( IsNull( getOsgiLoader() ) )
@@ -157,6 +155,15 @@ component accessors="true"{
 
 	public numeric function getWorkbookCellStylesTotal( required workbook ){
 		return arguments.workbook.getNumCellStyles(); // limit is 4K xls/64K xlsx
+	}
+
+	public Spreadsheet function clearCellStyleCache(){
+		getFormatHelper().initCellStyleCache();
+		return this;
+	}
+
+	public struct function getCellStyleCache(){
+		return getFormatHelper().getCachedCellStyles();
 	}
 
 	/* MAIN PUBLIC API */
@@ -429,7 +436,6 @@ component accessors="true"{
 
 	public Spreadsheet function clearCell( required workbook, required numeric row, required numeric column ){
 		// Clears the specified cell of all styles and values
-		var defaultStyle = arguments.workbook.getCellStyleAt( JavaCast( "short", 0 ) );
 		var rowObject = getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row );
 		if( IsNull( rowObject ) )
 			return this;
@@ -437,6 +443,7 @@ component accessors="true"{
 		var cell = rowObject.getCell( JavaCast( "int", columnIndex ) );
 		if( IsNull( cell ) )
 			return this;
+		var defaultStyle = arguments.workbook.getCellStyleAt( JavaCast( "short", 0 ) );
 		cell.setCellStyle( defaultStyle );
 		cell.setBlank();
 		return this;
@@ -652,14 +659,13 @@ component accessors="true"{
 		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		var cell = getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column );
 		if( arguments.KeyExists( "cellStyle" ) ){
-			cell.setCellStyle( arguments.cellStyle );
+			getFormatHelper().setCellStyle( cell, arguments.cellStyle );
 			return this;
 		}
-		if( arguments.overwriteCurrentStyle ){
-			cell.setCellStyle( getFormatHelper().buildCellStyle( arguments.workbook, arguments.format ) );
-			return this;
-		}
-		cell.setCellStyle( getFormatHelper().buildCellStyle( arguments.workbook, arguments.format, cell.getCellStyle() ) );
+		var cellStyle = arguments.overwriteCurrentStyle?
+			getFormatHelper().getCachedCellStyle( arguments.workbook, arguments.format ):
+			getFormatHelper().buildCellStyle( arguments.workbook, arguments.format, cell.getCellStyle() );
+		getFormatHelper().setCellStyle( cell, cellStyle, arguments.format );
 		return this;
 	}
 
@@ -671,15 +677,13 @@ component accessors="true"{
 		,required numeric startColumn
 		,required numeric endColumn
 		,boolean overwriteCurrentStyle=true
-		,any cellStyle
 	){
 		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		var formatCellArgs = {
 			workbook: arguments.workbook
-			,format: arguments.format
+			,format: arguments.format?:arguments?.cellStyle
 			,overwriteCurrentStyle: arguments.overwriteCurrentStyle
 		};
-		getFormatHelper().addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed( argumentCollection=arguments, formatMethodArgs=formatCellArgs );
 		for( var rowNumber = arguments.startRow; rowNumber <= arguments.endRow; rowNumber++ ){
 			for( var columnNumber = arguments.startColumn; columnNumber <= arguments.endColumn; columnNumber++ )
 				formatCell( argumentCollection=formatCellArgs, row=rowNumber, column=columnNumber );
@@ -692,18 +696,16 @@ component accessors="true"{
 		,any format //struct or cellStyle
 		,required numeric column
 		,boolean overwriteCurrentStyle=true
-		,any cellStyle
 	){
 		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		if( arguments.column < 1 )
 			Throw( type=this.getExceptionType() & ".invalidColumnArgument", message="Invalid column argument", detail="The column value must be greater than 0" );
 		var formatCellArgs = {
 			workbook: arguments.workbook
-			,format: arguments.format
+			,format: arguments.format?:arguments?.cellStyle
 			,column: arguments.column
 			,overwriteCurrentStyle: arguments.overwriteCurrentStyle
 		};
-		getFormatHelper().addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed( argumentCollection=arguments, formatMethodArgs=formatCellArgs );
 		var rowIterator = getSheetHelper().getActiveSheet( arguments.workbook ).rowIterator();
 		while( rowIterator.hasNext() ){
 			var rowNumber = rowIterator.next().getRowNum() + 1;
@@ -717,17 +719,15 @@ component accessors="true"{
 		,any format //struct or cellStyle
 		,required string range
 		,boolean overwriteCurrentStyle=true
-		,any cellStyle
 	){
 		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		// Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen.
 		var allRanges = getRangeHelper().extractRanges( arguments.range, arguments.workbook, "column" );
 		var formatColumnArgs = {
 			workbook: arguments.workbook
-			,format: arguments.format
+			,format: arguments.format?:arguments?.cellStyle
 			,overwriteCurrentStyle: arguments.overwriteCurrentStyle
 		};
-		getFormatHelper().addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed( argumentCollection=arguments, formatMethodArgs=formatColumnArgs );
 		for( var thisRange in allRanges ){
 			for( var columnNumber = thisRange.startAt; columnNumber <= thisRange.endAt; columnNumber++ ){
 				formatColumn( argumentCollection=formatColumnArgs, column=columnNumber );
@@ -741,7 +741,6 @@ component accessors="true"{
 		,any format //struct or cellStyle
 		,required numeric row
 		,boolean overwriteCurrentStyle=true
-		,any cellStyle
 	){
 		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		var theRow = getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row );
@@ -749,11 +748,10 @@ component accessors="true"{
 			return this;
 		var formatCellArgs = {
 			workbook: arguments.workbook
-			,format: arguments.format
+			,format: arguments.format?:arguments?.cellStyle
 			,row: arguments.row
 			,overwriteCurrentStyle: arguments.overwriteCurrentStyle
 		};
-		getFormatHelper().addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed( argumentCollection=arguments, formatMethodArgs=formatCellArgs );
 		var cellIterator = theRow.cellIterator();
 		while( cellIterator.hasNext() ){
 			var columnNumber = ( cellIterator.next().getColumnIndex() +1 );
@@ -767,17 +765,15 @@ component accessors="true"{
 		,any format //struct or cellStyle
 		,required string range
 		,boolean overwriteCurrentStyle=true
-		,any cellStyle
 	){
 		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		// Validate and extract the ranges. Range is a comma-delimited list of ranges, and each value can be either a single number or a range of numbers with a hyphen.
 		var allRanges = getRangeHelper().extractRanges( arguments.range, arguments.workbook );
 		var formatRowArgs = {
 			workbook: arguments.workbook
-			,format: arguments.format
+			,format: arguments.format?:arguments?.cellStyle
 			,overwriteCurrentStyle: arguments.overwriteCurrentStyle
 		};
-		getFormatHelper().addCellStyleToFormatMethodArgsIfStyleOverwriteAllowed( argumentCollection=arguments, formatMethodArgs=formatRowArgs );
 		for( var thisRange in allRanges ){
 			for( var rowNumber = thisRange.startAt; rowNumber <= thisRange.endAt; rowNumber++ ){
 				formatRow( argumentCollection=formatRowArgs, row=rowNumber );
@@ -1367,7 +1363,7 @@ component accessors="true"{
 		,required numeric column
 		,any cellValue
 		,string type="URL"
-		,any format //struct or cellStyle object
+		,any format={ color: "0000ff", underline: true } //struct or cellStyle object
 		,string tooltip //xlsx only, maybe MS Excel full version only
 	){
 		arguments.type = arguments.type.UCase();
@@ -1377,10 +1373,7 @@ component accessors="true"{
 		getHyperLinkHelper().addHyperLinkToCell( cell=cell, argumentCollection=arguments );
 		if( arguments.KeyExists( "cellValue" ) )
 			getCellHelper().setCellValueAsType( arguments.workbook, cell, arguments.cellValue );
-		if( arguments.KeyExists( "format" ) )
-			formatCell( arguments.workbook, arguments.format, arguments.row, arguments.column );
-		else
-			getHyperLinkHelper().setHyperLinkDefaultStyle( arguments.workbook, cell );
+		formatCell( arguments.workbook, arguments.format, arguments.row, arguments.column );
 		return this;
 	}
 

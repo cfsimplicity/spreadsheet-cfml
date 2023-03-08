@@ -1,4 +1,4 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
 	public array function validCellOverrideTypes(){
 		return [ "auto", "boolean", "date", "email", "file", "numeric", "string", "time", "url" ];

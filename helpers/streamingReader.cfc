@@ -1,4 +1,4 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
 	boolean function isStreamingReaderFormat( required workbook ){
 		return arguments.workbook.getClass().getCanonicalName() == "com.github.pjfanning.xlsx.impl.StreamingWorkbook";

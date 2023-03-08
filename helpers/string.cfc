@@ -1,4 +1,4 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
 	any function newJavaStringBuilder(){
 		return CreateObject( "Java", "java.lang.StringBuilder" ).init();

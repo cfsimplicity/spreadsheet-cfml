@@ -1,3 +1,7 @@
+## 3.8.1 - 8 March 2023
+
+- \#320 Avoid cellStyle duplication when formatting cells from a struct over multiple calls
+
 ## 3.8.0 - 3 March 2023
 
 - Enhancements

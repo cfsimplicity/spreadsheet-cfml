@@ -1,4 +1,4 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
 	any function createAnchor( required factory, required struct comment, required struct cellAddress ){
 		var anchor = arguments.factory.createClientAnchor();

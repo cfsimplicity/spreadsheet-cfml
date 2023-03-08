@@ -1,4 +1,4 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
 	/* Common exceptions */
 	void function throwOldExcelFormatException( required string path ){

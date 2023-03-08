@@ -1,4 +1,4 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
 	string function baseFontToHtml( required workbook, required contents, required baseFont ){
 		/*

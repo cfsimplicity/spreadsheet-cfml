@@ -1,6 +1,6 @@
-component extends="base" accessors="true"{
+component extends="base"{
 
-	property name="dateUtil" getter="false" setter="false";
+	property name="dateUtil";
 
 	any function getDateUtil(){
 		if( IsNull( variables.dateUtil ) )

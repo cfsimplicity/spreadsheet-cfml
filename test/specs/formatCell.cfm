@@ -2,6 +2,7 @@
 describe( "formatCell", function(){
 
 	beforeEach( function(){
+		s.clearCellStyleCache();
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( function( wb ){
 			s.addColumn( wb, [ "a1", "a2" ] );
@@ -372,8 +373,24 @@ describe( "formatCell", function(){
 			s.formatCell( wb, cellStyle, 1, 1 );
 			expect( s.getCellFormat( wb, 1, 1 ).bold ).toBeTrue();
 			// support previous separate cellStyle argument without format
-			s.formatCell( workbook=wb, row=1, column=1, cellStyle=cellStyle );
-			expect( s.getCellFormat( wb, 1, 1 ).bold ).toBeTrue();
+			expect( s.getCellFormat( wb, 2, 1 ).bold ).toBeFalse();
+			s.formatCell( workbook=wb, row=2, column=1, cellStyle=cellStyle );
+			expect( s.getCellFormat( wb, 2, 1 ).bold ).toBeTrue();
+		});
+	});
+
+	it( "caches and re-uses indentical formats passed as a struct over the life of the library to avoid cell style duplication", function(){
+		variables.data = [ [ "x", "y" ] ];
+		variables.format = { bold: true };
+		workbooks.Each( function( wb ){
+			s.addRows( wb, data );
+			var expected = s.isXmlFormat( wb )? 1: 21;
+			expect( s.getWorkbookCellStylesTotal( wb ) ).toBe( expected );
+			cfloop( from=1, to=2, index="local.row" ){
+				s.formatCell( wb, format, row, 1 );
+			}
+			expected = s.isXmlFormat( wb )? 2: 22;
+			expect( s.getWorkbookCellStylesTotal( wb ) ).toBe( expected );
 		});
 	});
 
@@ -397,11 +414,11 @@ describe( "formatCell", function(){
 			});
 		});
 
-		it( "an invalid hex value is passed", function(){
+		it( "a cellStyle object is passed with the overwriteCurrentStyle flag set to false", function(){
 			workbooks.Each( function( wb ){
 				expect( function(){
 					var cellStyle = s.createCellStyle( wb, { bold: true } );
-					s.formatCell( workbook=wb, row=1, column=1, cellStyle=cellStyle, overwriteCurrentStyle=false );
+					s.formatCell( workbook=wb, format=cellStyle, row=1, column=1, overwriteCurrentStyle=false );
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidArgumentCombination" );
 			});
 		});
