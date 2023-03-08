@@ -2,6 +2,7 @@
 describe( "formatColumn", function(){
 
 	beforeEach( function(){
+		s.clearCellStyleCache();
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( function( wb ){
 			s.addColumn( wb, [ "a1", "a2" ] );

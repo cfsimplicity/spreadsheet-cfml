@@ -7,13 +7,9 @@ describe( "cellStyle", function(){
 		variables.data = [ [ "x", "y" ] ];
 	});
 
-	it( "can return the total number of registered workbook cell styles", function(){
+	it( "can create a valid POI CellStyle object from a given format", function(){
 		workbooks.Each( function( wb ){
-			var expected = s.isXmlFormat( wb )? 1: 21;
-			expect( s.getWorkbookCellStylesTotal( wb ) ).toBe( expected );
-			s.formatColumns( wb, format, 1 );
-			expected = s.isXmlFormat( wb )? 2: 22;
-			expect( s.getWorkbookCellStylesTotal( wb ) ).toBe( expected );
+			expect( s.getFormatHelper().isValidCellStyleObject( wb, s.createCellStyle( wb, format ) ) ).toBeTrue();
 		});
 	});
 
@@ -21,12 +17,6 @@ describe( "cellStyle", function(){
 		workbooks.Each( function( wb ){
 			var style = s.newChainable( wb ).createCellStyle( format );
 			expect( s.getFormatHelper().isValidCellStyleObject( wb, style ) ).toBeTrue();
-		});
-	});
-
-	it( "can create a valid POI CellStyle object from a given format", function(){
-		workbooks.Each( function( wb ){
-			expect( s.getFormatHelper().isValidCellStyleObject( wb, s.createCellStyle( wb, format ) ) ).toBeTrue();
 		});
 	});
 
@@ -46,6 +36,36 @@ describe( "cellStyle", function(){
 			expected = s.isXmlFormat( wb )? 2: 22;
 			expect( s.getWorkbookCellStylesTotal( wb ) ).toBe( expected );
 		});
+	});
+
+	describe( "cellStyle utilities", function(){
+
+		it( "can return the total number of registered workbook cell styles", function(){
+			workbooks.Each( function( wb ){
+				s.addRows( wb, data );
+				var expected = s.isXmlFormat( wb )? 1: 21;
+				expect( s.getWorkbookCellStylesTotal( wb ) ).toBe( expected );
+				s.formatColumns( wb, format, 1 );
+				expected = s.isXmlFormat( wb )? 2: 22;
+				expect( s.getWorkbookCellStylesTotal( wb ) ).toBe( expected );
+			});
+		});
+
+		it( "can clear the cellStyle object cache", function(){
+			s.clearCellStyleCache();
+			expect( s.getCellStyleCache().xls ).toBeEmpty();
+			expect( s.getCellStyleCache().xlsx ).toBeEmpty();
+			spreadsheetTypes.Each( function( type ){
+				s.newChainable( type )
+					.addRows( data )
+					.formatRow( { bold: true }, 1 );
+				expect( s.getCellStyleCache()[ type ] ).notToBeEmpty();
+			});
+			s.clearCellStyleCache();
+			expect( s.getCellStyleCache().xls ).toBeEmpty();
+			expect( s.getCellStyleCache().xlsx ).toBeEmpty();
+		});
+
 	});
 
 	describe( "format functions throw an exception if", function(){

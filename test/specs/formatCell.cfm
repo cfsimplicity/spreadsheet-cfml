@@ -2,6 +2,7 @@
 describe( "formatCell", function(){
 
 	beforeEach( function(){
+		s.clearCellStyleCache();
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( function( wb ){
 			s.addColumn( wb, [ "a1", "a2" ] );
@@ -372,8 +373,9 @@ describe( "formatCell", function(){
 			s.formatCell( wb, cellStyle, 1, 1 );
 			expect( s.getCellFormat( wb, 1, 1 ).bold ).toBeTrue();
 			// support previous separate cellStyle argument without format
-			s.formatCell( workbook=wb, row=1, column=1, cellStyle=cellStyle );
-			expect( s.getCellFormat( wb, 1, 1 ).bold ).toBeTrue();
+			expect( s.getCellFormat( wb, 2, 1 ).bold ).toBeFalse();
+			s.formatCell( workbook=wb, row=2, column=1, cellStyle=cellStyle );
+			expect( s.getCellFormat( wb, 2, 1 ).bold ).toBeTrue();
 		});
 	});
 

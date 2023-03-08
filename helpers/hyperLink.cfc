@@ -1,12 +1,5 @@
 component extends="base"{
 
-	property name="cachedDefaultStyleObjects" type="struct";
-
-	hyperLink function init( required Spreadsheet libraryInstance ){
-		variables.cachedDefaultStyleObjects = {};
-		return super.init( arguments.libraryInstance );
-	}
-
 	any function throwErrorIfTypeIsInvalid( required string type ){
 		var validTypes = validTypes();
 		if( !validTypes.Find( arguments.type ) )
@@ -31,39 +24,17 @@ component extends="base"{
 	}
 
 	any function defaultCellStyle( required workbook ){
-		var spreadsheetType = library().isXmlFormat( arguments.workbook )? "xlsx": "xls";
-		if( !variables.cachedDefaultStyleObjects.KeyExists( spreadsheetType ) )
-			cacheDefaultCellStyle( arguments.workbook, spreadsheetType );
-		return variables.cachedDefaultStyleObjects[ spreadsheetType ];
+		return getFormatHelper().getCachedCellStyle( arguments.workbook, { color: "0000ff", underline: true } );
 	}
 
  	void function setHyperLinkDefaultStyle( required workbook, required cell ){
-		var defaultHyperLinkStyle = defaultCellStyle( arguments.workbook );
-		try{
-			arguments.cell.setCellStyle( defaultHyperLinkStyle );
-		}
-		catch( any exception ){
-			if( exception.message CONTAINS "Style does not belong to the supplied Workbook" ){
-				var newDefaultHyperLinkCellStyleForThisWorkbook = arguments.workbook.createCellStyle();
-				newDefaultHyperLinkCellStyleForThisWorkbook.cloneStyleFrom( defaultHyperLinkStyle );
-				arguments.cell.setCellStyle( newDefaultHyperLinkCellStyleForThisWorkbook );
-				// cache for future use
-				var spreadsheetType = library().isXmlFormat( arguments.workbook )? "xlsx": "xls";
-				variables.cachedDefaultStyleObjects[ spreadsheetType ] = newDefaultHyperLinkCellStyleForThisWorkbook;
-			}
-			else
-				rethrow;
-		}
+		getFormatHelper().setCellStyle( arguments.cell, defaultCellStyle( arguments.workbook ) );
 	}
 
 	/* PRIVATE */
 
 	private array function validTypes(){
 		return [ "URL", "EMAIL", "FILE", "DOCUMENT" ];
-	}
-
-	private void function cacheDefaultCellStyle( required workbook, required string spreadsheetType ){
-		variables.cachedDefaultStyleObjects[ arguments.spreadsheetType ] = getFormatHelper().buildCellStyle( arguments.workbook, { color: "0000ff", underline: true } );
 	}
 
 }
