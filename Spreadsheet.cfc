@@ -522,7 +522,7 @@ component accessors="true"{
 		if( arguments.column <= 0 )
 			Throw( type=this.getExceptionType() & ".invalidColumnArgument", message="Invalid column argument", detail="The value for column must be greater than or equal to 1." );
 			// POI doesn't have remove column functionality, so iterate over all the rows and remove the column indicated
-		var rowIterator = getSheetHelper().getActiveSheet( arguments.workbook ).rowIterator();
+		var rowIterator = getSheetHelper().getActiveSheetRowIterator( arguments.workbook );
 		var columnIndex = ( arguments.column -1 );
 		while( rowIterator.hasNext() ){
 			var row = rowIterator.next();
@@ -702,7 +702,7 @@ component accessors="true"{
 			,column: arguments.column
 			,overwriteCurrentStyle: arguments.overwriteCurrentStyle
 		};
-		var rowIterator = getSheetHelper().getActiveSheet( arguments.workbook ).rowIterator();
+		var rowIterator = getSheetHelper().getActiveSheetRowIterator( arguments.workbook );
 		while( rowIterator.hasNext() ){
 			var rowNumber = rowIterator.next().getRowNum() + 1;
 			formatCell( argumentCollection=formatCellArgs, row=rowNumber );
@@ -884,7 +884,7 @@ component accessors="true"{
 		if( arguments.KeyExists( "sheetNameOrNumber" ) )
 			getSheetHelper().setActiveSheetNameOrNumber( argumentCollection=arguments );
 		var result = 0;
-		var rowIterator = getSheetHelper().getActiveSheet( arguments.workbook ).rowIterator();
+		var rowIterator = getSheetHelper().getActiveSheetRowIterator( arguments.workbook );
 		while( rowIterator.hasNext() ){
 			var row = rowIterator.next();
 			result = Max( result, row.getLastCellNum() );
@@ -1564,7 +1564,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType() & ".invalidStartArgument", message="Invalid start value", detail="The start value must be greater than or equal to 1" );
 		if( arguments.KeyExists( "end" ) && ( ( arguments.end <= 0 ) || ( arguments.end < arguments.start ) ) )
 			Throw( type=this.getExceptionType() & ".invalidEndArgument", message="Invalid end value", detail="The end value must be greater than or equal to the start value" );
-		var rowIterator = getSheetHelper().getActiveSheet( arguments.workbook ).rowIterator();
+		var rowIterator = getSheetHelper().getActiveSheetRowIterator( arguments.workbook );
 		var startIndex = ( arguments.start -1 );
 		var endIndex = arguments.KeyExists( "end" )? ( arguments.end -1 ): startIndex;
 		while( rowIterator.hasNext() ){

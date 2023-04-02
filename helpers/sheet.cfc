@@ -39,8 +39,12 @@ component extends="base"{
 		return this;
 	}
 
+	any function getActiveSheetRowIterator( required workbook ){
+		return getActiveSheet( arguments.workbook ).rowIterator();
+	}
+
 	array function getAllSheetFormulas( required workbook ){
-		var rowIterator = getActiveSheet( arguments.workbook ).rowIterator();
+		var rowIterator = getActiveSheetRowIterator( arguments.workbook );
 		var formulas = [];
 		while( rowIterator.hasNext() ){
 			var cellIterator = rowIterator.next().cellIterator();
