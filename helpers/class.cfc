@@ -1,5 +1,14 @@
 component extends="base"{
 
+	// common class name references
+	string function getClassName( required string objectName ){
+		switch( arguments.objectName ){
+			case "HSSFWorkbook": return "org.apache.poi.hssf.usermodel.HSSFWorkbook";
+			case "XSSFWorkbook": return "org.apache.poi.xssf.usermodel.XSSFWorkbook";
+			case "SXSSFWorkbook": return "org.apache.poi.xssf.streaming.SXSSFWorkbook";
+		}
+	}
+
 	void function dumpPathToClassNoOsgi( required string className ){
 		var classLoader = loadClass( arguments.className ).getClass().getClassLoader();
 		var path = classLoader.getResource( arguments.className.Replace( ".", "/", "all" ) & ".class" ).getPath();

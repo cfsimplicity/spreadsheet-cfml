@@ -5,10 +5,6 @@ component accessors="true"{
 	property name="osgiLibBundleVersion" default="5.2.3.3" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
-	//commonly invoked POI class names
-	property name="HSSFWorkbookClassName" default="org.apache.poi.hssf.usermodel.HSSFWorkbook" setter="false";
-	property name="XSSFWorkbookClassName" default="org.apache.poi.xssf.usermodel.XSSFWorkbook" setter="false";
-	property name="SXSSFWorkbookClassName" default="org.apache.poi.xssf.streaming.SXSSFWorkbook" setter="false";
 	//configurable
 	property name="dateFormats" type="struct" setter="false";
 	property name="javaLoaderDotPath" default="javaLoader.JavaLoader" setter="false";
@@ -973,7 +969,7 @@ component accessors="true"{
 	}
 
 	public boolean function isBinaryFormat( required workbook ){
-		return arguments.workbook.getClass().getCanonicalName() == this.getHSSFWorkbookClassName();
+		return arguments.workbook.getClass().getCanonicalName() == getClassHelper().getClassName( "HSSFWorkbook" );
 	}
 
 	public boolean function isColumnHidden( required workbook, required numeric column ){
@@ -1002,11 +998,11 @@ component accessors="true"{
 
 	public boolean function isXmlFormat( required workbook ){
 		//CF2016 doesn't support [].Find( needle ) in all contexts;
-		return ArrayFind( [ this.getXSSFWorkbookClassName(), this.getSXSSFWorkbookClassName() ], arguments.workbook.getClass().getCanonicalName() );
+		return ArrayFind( [ getClassHelper().getClassName( "XSSFWorkbook" ), getClassHelper().getClassName( "SXSSFWorkbook" ) ], arguments.workbook.getClass().getCanonicalName() );
 	}
 
 	public boolean function isStreamingXmlFormat( required workbook ){
-		return arguments.workbook.getClass().getCanonicalName() == this.getSXSSFWorkbookClassName();
+		return arguments.workbook.getClass().getCanonicalName() == getClassHelper().getClassName( "SXSSFWorkbook" );
 	}
 
 	public Spreadsheet function mergeCells(

@@ -2,13 +2,13 @@ component extends="base"{
 
 	any function createWorkBook( string type, numeric streamingWindowSize=100 ){
 		if( arguments.type == "xls" )
-			return getClassHelper().loadClass( library().getHSSFWorkbookClassName() ).init();
+			return getClassHelper().loadClass( getClassHelper().getClassName( "HSSFWorkbook" ) ).init();
 		if( arguments.type == "xlsx" )
-			return getClassHelper().loadClass( library().getXSSFWorkbookClassName() ).init();
+			return getClassHelper().loadClass( getClassHelper().getClassName( "XSSFWorkbook" ) ).init();
 		// Streaming Xlsx
 		if( !IsValid( "integer", arguments.streamingWindowSize ) || ( arguments.streamingWindowSize < 1 ) )
 			Throw( type=library().getExceptionType() & ".invalidStreamingWindowSizeArgument", message="Invalid 'streamingWindowSize' argument", detail="'streamingWindowSize' must be an integer value greater than 1" );
-		return getClassHelper().loadClass( library().getSXSSFWorkbookClassName() ).init( JavaCast( "int", arguments.streamingWindowSize ) );
+		return getClassHelper().loadClass( getClassHelper().getClassName( "SXSSFWorkbook" ) ).init( JavaCast( "int", arguments.streamingWindowSize ) );
 	}
 
 	any function workbookFromFile( required string path, string password ){
