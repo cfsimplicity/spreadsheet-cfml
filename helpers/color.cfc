@@ -71,7 +71,7 @@ component extends="base"{
 			,JavaCast( "int", arguments.rgb[ 3 ] )
 		];
 		try{
-			return getClassHelper().loadClass( "org.apache.poi.xssf.usermodel.XSSFColor" ).init( JavaCast( "byte[]", rgbBytes ), JavaCast( "null", 0 ) );
+			return library().createJavaObject( "org.apache.poi.xssf.usermodel.XSSFColor" ).init( JavaCast( "byte[]", rgbBytes ), JavaCast( "null", 0 ) );
 		}
 		//ACF doesn't handle signed java byte values the same way as Lucee: see https://www.bennadel.com/blog/2689-creating-signed-java-byte-values-using-coldfusion-numbers.htm
 		catch( any exception ){
@@ -87,7 +87,7 @@ component extends="base"{
 				value = BitOr( negativeMask, value );//value greater than 127
 				rgbBytes.Append( JavaCast( "byte", value ) );
 			}
-			return getClassHelper().loadClass( "org.apache.poi.xssf.usermodel.XSSFColor" ).init( JavaCast( "byte[]", rgbBytes ), JavaCast( "null", 0 ) );
+			return library().createJavaObject( "org.apache.poi.xssf.usermodel.XSSFColor" ).init( JavaCast( "byte[]", rgbBytes ), JavaCast( "null", 0 ) );
 		}
 	}
 
@@ -117,7 +117,7 @@ component extends="base"{
 		var deprecatedNames = [ "BLACK1", "WHITE1", "RED1", "BRIGHT_GREEN1", "BLUE1", "YELLOW1", "PINK1", "TURQUOISE1", "LIGHT_TURQUOISE1" ];
 		if( ArrayFind( deprecatedNames, findColor ) )
 			findColor = findColor.Left( findColor.Len() - 1 );
-		var indexedColors = getClassHelper().loadClass( "org.apache.poi.hssf.util.HSSFColor$HSSFColorPredefined" );
+		var indexedColors = library().createJavaObject( "org.apache.poi.hssf.util.HSSFColor$HSSFColorPredefined" );
 		try{
 			var color = indexedColors.valueOf( JavaCast( "string", findColor ) );
 			return color.getIndex();

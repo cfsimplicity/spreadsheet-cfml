@@ -19,7 +19,7 @@ component extends="base"{
 
 	any function getDataFormatter(){
 		if( IsNull( variables.dataFormatter ) )
-			variables.dataFormatter = getClassHelper().loadClass( "org.apache.poi.ss.usermodel.DataFormatter" ).init();
+			variables.dataFormatter = library().createJavaObject( "org.apache.poi.ss.usermodel.DataFormatter" ).init();
 		return variables.dataFormatter;
 	}
 

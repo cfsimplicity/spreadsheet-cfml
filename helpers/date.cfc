@@ -4,7 +4,7 @@ component extends="base"{
 
 	any function getDateUtil(){
 		if( IsNull( variables.dateUtil ) )
-			variables.dateUtil = getClassHelper().loadClass( "org.apache.poi.ss.usermodel.DateUtil" );
+			variables.dateUtil = library().createJavaObject( "org.apache.poi.ss.usermodel.DateUtil" );
 		return variables.dateUtil;
 	}
 
@@ -64,7 +64,7 @@ component extends="base"{
 	}
 
 	string function getPoiTimeZone(){
-		return getClassHelper().loadClass( "org.apache.poi.util.LocaleUtil" ).getUserTimeZone();
+		return library().createJavaObject( "org.apache.poi.util.LocaleUtil" ).getUserTimeZone();
 	}
 
 	any function matchPoiTimeZoneToEngine(){
@@ -74,7 +74,7 @@ component extends="base"{
 		if( getPoiTimeZone() == GetTimezone() )
 			return this;
 		//Make POI match the Lucee timezone for the duration of the current thread
-		getClassHelper().loadClass( "org.apache.poi.util.LocaleUtil" ).setUserTimeZone( GetTimezone() );
+		library().createJavaObject( "org.apache.poi.util.LocaleUtil" ).setUserTimeZone( GetTimezone() );
 		return this;
 	}
 

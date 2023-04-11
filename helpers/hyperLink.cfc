@@ -14,7 +14,7 @@ component extends="base"{
 	}
 
 	any function addHyperLinkToCell( required cell, required workbook, required string link, required string type, string tooltip ){
-		var hyperlinkType = getClassHelper().loadClass( "org.apache.poi.common.usermodel.HyperlinkType" );
+		var hyperlinkType = library().createJavaObject( "org.apache.poi.common.usermodel.HyperlinkType" );
 		var hyperLink = arguments.workbook.getCreationHelper().createHyperlink( hyperlinkType[ arguments.type ] );
 		hyperLink.setAddress( JavaCast( "string", arguments.link ) );
 		if( arguments.KeyExists( "tooltip" ) )

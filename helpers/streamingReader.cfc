@@ -27,7 +27,7 @@ component extends="base"{
 	// NB: called from tests
 	any function getBuilder( required struct options ){
 		var passwordProtected = ( arguments.options.KeyExists( "password") && arguments.options.password.Trim().Len() );
-		var builder = getClassHelper().loadClass( "com.github.pjfanning.xlsx.StreamingReader" ).builder()
+		var builder = library().createJavaObject( "com.github.pjfanning.xlsx.StreamingReader" ).builder()
 			.setFullFormatRichText( JavaCast( "boolean", true ) ); //some sheet methods e.g. getLastRowNum() may error if not set to true!
 		if( passwordProtected )
 			builder.password( JavaCast( "string", arguments.options.password ) );

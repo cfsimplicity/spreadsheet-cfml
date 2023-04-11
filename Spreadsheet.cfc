@@ -105,7 +105,7 @@ component accessors="true"{
 	}
 
 	public string function getPoiVersion(){
-		return getClassHelper().loadClass( "org.apache.poi.Version" ).getVersion();
+		return createJavaObject( "org.apache.poi.Version" ).getVersion();
 	}
 
 	public JavaLoader function getJavaLoaderInstance(){
@@ -139,12 +139,16 @@ component accessors="true"{
 		return this;
 	}
 
+	public any function createJavaObject( required string className ){
+		return getClassHelper().loadClass( arguments.className );
+	}
+
 	/* check physical path of a specific class */
 	public void function dumpPathToClass( required string className ){
 		if( IsNull( getOsgiLoader() ) )
 			return getClassHelper().dumpPathToClassNoOsgi( arguments.className );
 		var bundle = getOsgiLoader().getBundle( this.getOsgiLibBundleSymbolicName(), this.getOsgiLibBundleVersion() );
-		var poi = getClassHelper().loadClass( "org.apache.poi.Version" );
+		var poi = createJavaObject( "org.apache.poi.Version" );
 		var path = BundleInfo( poi ).location & "!" &  bundle.getResource( arguments.className.Replace( ".", "/", "all" ) & ".class" ).getPath();
 		WriteDump( path );
 	}
@@ -911,7 +915,7 @@ component accessors="true"{
 	}
 
 	public array function getPresetColorNames(){
-		var presetEnum = getClassHelper().loadClass( "org.apache.poi.hssf.util.HSSFColor$HSSFColorPredefined" );
+		var presetEnum = createJavaObject( "org.apache.poi.hssf.util.HSSFColor$HSSFColorPredefined" );
 		var result = [];
 		for( var value in presetEnum.values() )
 			result.Append( value.name() );
@@ -1083,10 +1087,10 @@ component accessors="true"{
 		var data = getCsvHelper().queryToArrayForCsv( arguments.query, arguments.includeHeaderRow );
 		var builder = getStringHelper().newJavaStringBuilder();
 		var csvFormat = getCsvHelper().delimiterIsTab( arguments.delimiter )?
-			getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ]
-			: getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "EXCEL" ) ]
+			createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ]
+			: createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "EXCEL" ) ]
 				.withDelimiter( JavaCast( "char", arguments.delimiter ) );
-		getClassHelper().loadClass( "org.apache.commons.csv.CSVPrinter" )
+		createJavaObject( "org.apache.commons.csv.CSVPrinter" )
 			.init( builder, csvFormat )
 			.printRecords( data );
 		return builder.toString().Trim();
@@ -1169,7 +1173,7 @@ component accessors="true"{
 	}
 
 	public binary function readBinary( required workbook ){
-		var baos = getClassHelper().loadClass( "org.apache.commons.io.output.ByteArrayOutputStream" ).init();
+		var baos = createJavaObject( "org.apache.commons.io.output.ByteArrayOutputStream" ).init();
 		arguments.workbook.write( baos );
 		baos.flush();
 		return baos.toByteArray();
@@ -1276,7 +1280,7 @@ component accessors="true"{
 	public Spreadsheet function setActiveCell( required workbook, required numeric row, required numeric column ){
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		var cell = getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column );
-		var cellAddress = getClassHelper().loadClass( "org.apache.poi.ss.util.CellAddress" ).init( cell );
+		var cellAddress = createJavaObject( "org.apache.poi.ss.util.CellAddress" ).init( cell );
 		sheet.setActiveCell( cellAddress );
 		return this;
 	}

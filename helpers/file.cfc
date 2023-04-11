@@ -13,13 +13,13 @@ component extends="base"{
 		if( !ArrayFindNoCase( validAlgorithms, arguments.algorithm ) )
 			Throw( type=library().getExceptionType() & ".invalidAlgorithm", message="Invalid algorithm", detail="'#arguments.algorithm#' is not a valid algorithm. Supported algorithms are: #validAlgorithms.ToList( ', ')#" );
 		lock name="#arguments.filepath#" timeout=5 {
-			var mode = getClassHelper().loadClass( "org.apache.poi.poifs.crypt.EncryptionMode" );
-			var info = getClassHelper().loadClass( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode[ arguments.algorithm ] );
+			var mode = library().createJavaObject( "org.apache.poi.poifs.crypt.EncryptionMode" );
+			var info = library().createJavaObject( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode[ arguments.algorithm ] );
 			var encryptor = info.getEncryptor();
 			encryptor.confirmPassword( JavaCast( "string", arguments.password ) );
 			try{
 				// set up a POI filesystem object
-				var poifs = getClassHelper().loadClass( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
+				var poifs = library().createJavaObject( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
 				try{
 					// set up an encrypted stream within the POI filesystem
 					// ACF gets confused by encryptor.getDataStream( POIFSFileSystem ) signature. Using getRoot() means getDataStream( DirectoryNode ) will be used

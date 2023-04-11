@@ -4,7 +4,7 @@ component extends="base"{
 
 	any function getCellUtil(){
 		if( IsNull( variables.cellUtil ) )
-			variables.cellUtil = getClassHelper().loadClass( "org.apache.poi.ss.util.CellUtil" );
+			variables.cellUtil = library().createJavaObject( "org.apache.poi.ss.util.CellUtil" );
 		return variables.cellUtil;
 	}
 

@@ -66,7 +66,7 @@ component{
 		variables.sheet = variables.library.getSheetHelper().getActiveSheet( variables.workbook );
 		variables.dataValidationHelper = variables.sheet.getDataValidationHelper();
 		variables.cellRangeAddress = variables.library.getRangeHelper().getCellRangeAddressFromReference( variables.cellRange );
-		var addressList = variables.library.getClassHelper().loadClass( "org.apache.poi.ss.util.CellRangeAddressList" );
+		var addressList = variables.library.createJavaObject( "org.apache.poi.ss.util.CellRangeAddressList" );
 		addressList.addCellRangeAddress( cellRangeAddress );
 		// passed array will trump values in other cells if both provided
 		variables.validationConstraint = IsArray( variables.validValues?:"" )? getConstraintFromArray(): getConstraintFromCells();

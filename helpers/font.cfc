@@ -118,7 +118,7 @@ component extends="base"{
 	}
 
 	private numeric function getAWTFontStyle( required any poiFont ){
-		var font = getClassHelper().loadClass( "java.awt.Font" );
+		var font = library().createJavaObject( "java.awt.Font" );
 		var isBold = arguments.poiFont.getBold();
 		if( isBold && arguments.poiFont.getItalic() )
 			return BitOr( font.BOLD, font.ITALIC );
@@ -136,7 +136,7 @@ component extends="base"{
 		*/
 		var defaultFont = arguments.workbook.getFontAt( 0 );
 		var style = getAWTFontStyle( defaultFont );
-		var font = getClassHelper().loadClass( "java.awt.Font" );
+		var font = library().createJavaObject( "java.awt.Font" );
 		var javaFont = font.init( defaultFont.getFontName(), style, defaultFont.getFontHeightInPoints() );
 		var transform = CreateObject( "java", "java.awt.geom.AffineTransform" );
 		var fontContext = CreateObject( "java", "java.awt.font.FontRenderContext" ).init( transform, true, true );
