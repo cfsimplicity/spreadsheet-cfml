@@ -386,6 +386,19 @@ describe( "addRows", function(){
 			});
 		});
 
+		it( "check multiple datatypes of the same type", function(){
+			var testUri = "https://w3c.org";
+			var data = QueryNew( "urls,urls2", "VarChar,VarChar", [ [ testUri, testUri ] ] );
+			var datatypes = { url: [ "urls", "urls2" ] };
+			workbooks.Each( function( wb ){
+				s.addRows( workbook=wb, data=data, datatypes=datatypes );
+				expect( s.getCellHyperlink( wb, 1, 1 ) ).toBe( testUri );
+				expect( s.getCellValue( wb, 1, 1 ) ).toBe( testUri );
+				expect( s.getCellHyperlink( wb, 1, 2 ) ).toBe( testUri );
+				expect( s.getCellValue( wb, 1, 2 ) ).toBe( testUri );
+			});
+		});
+
 		it( "Values in array data fall back to the autodetected type if they don't match the overridden type", function(){
 			var data = [ [ "01234", "alpha", "alpha", "alpha", "alpha" ] ];
 			var datatypes = { numeric: [ 1, 2 ], date: [ 3 ], time: [ 4 ], boolean: [ 5 ] };

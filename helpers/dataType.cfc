@@ -46,15 +46,14 @@ component extends="base"{
 	any function convertDataTypeOverrideColumnNamesToNumbers( required struct datatypeOverrides, required array columnNames ){
 		for( var type in arguments.datatypeOverrides ){
 			var columnRefs = arguments.datatypeOverrides[ type ];
-			//NB: DO NOT SCOPE datatypeOverrides and columnNames vars inside closure!!
-			columnRefs.Each( function( value, index ){
-				if( IsNumeric( value ) )
-					return;
-				var columnNumber = ArrayFindNoCase( columnNames, value );//ACF won't accept member function on this array for some reason
-				columnRefs.DeleteAt( index );
-				columnRefs.Append( columnNumber );
-				datatypeOverrides[ type ] = columnRefs;
-			});
+			var totalColumnRefs = columnRefs.Len();
+			cfloop( from=1, to=totalColumnRefs, index="local.index" ){
+				if( IsNumeric( columnRefs[ index ] ) ) //position already given
+					continue;
+				var columnNumber = ArrayFindNoCase( columnNames, columnRefs[ index ] );//ACF won't accept member function on this array for some reason
+				columnRefs[ index ] = columnNumber;
+			}
+			arguments.datatypeOverrides[ type ] = columnRefs;
 		}
 		return this;
 	}
