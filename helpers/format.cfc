@@ -82,8 +82,33 @@ component extends="base"{
 		return arguments;
 	}
 
-	string function lookupUnderlineFormatCode( required cellFont ){
-		switch( arguments.cellFont.getUnderline() ){
+	string function patternNameFromIndex( required numeric index ){
+		switch( arguments.index ){
+			case 0: return "NO_FILL";
+			case 1: return "SOLID_FOREGROUND";
+			case 2: return "FINE_DOTS";
+			case 3: return "ALT_BARS";
+			case 4: return "SPARSE_DOTS";
+			case 5: return "THICK_HORZ_BANDS";
+			case 6: return "THICK_VERT_BANDS";
+			case 7: return "THICK_BACKWARD_DIAG";
+			case 8: return "THICK_FORWARD_DIAG";
+			case 9: return "BIG_SPOTS";
+			case 10: return "BRICKS";
+			case 11: return "THIN_HORZ_BANDS";
+			case 12: return "THIN_VERT_BANDS";
+			case 13: return "THIN_BACKWARD_DIAG";
+			case 14: return "THIN_FORWARD_DIAG";
+			case 15: return "SQUARES";
+			case 16: return "DIAMONDS";
+			case 17: return "LESS_DOTS";
+			case 18: return "LEAST_DOTS";
+			default: return "unknown";
+		}
+	}
+
+	string function underlineNameFromIndex( required numeric index ){
+		switch( arguments.index ){
 			case 0: return "none";
 			case 1: return "single";
 			case 2: return "double";
@@ -91,6 +116,19 @@ component extends="base"{
 			case 34: return "double accounting";
 			default: return "unknown";
 		}
+	}
+
+	numeric function underlineIndexFromValue( required any value ){
+		switch( arguments.value ){
+			case "none": return 0;
+			case "single": return 1;
+			case "double": return 2;
+			case "single accounting": return 33;
+			case "double accounting": return 34;
+		}
+		if( IsBoolean( arguments.value ) )
+			return arguments.value? 1: 0;
+		return -1;
 	}
 
 	string function richStringCellValueToHtml( required workbook, required cell, required cellValue ){
@@ -250,7 +288,7 @@ component extends="base"{
 				arguments.cellStyle.setTopBorderColor( getColorHelper().getColor( arguments.workbook, settingValue ) );
 			return this;
 			case "underline":
-				var underlineType = lookupUnderlineFormat( settingValue );
+				var underlineType = underlineIndexFromValue( settingValue );
 				if( underlineType == -1 )
 					return this;
 				font = getFontHelper().cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndexAsInt() ) );
@@ -262,19 +300,6 @@ component extends="base"{
 				arguments.cellStyle.setVerticalAlignment( alignment );
 		}
 		return this;
-	}
-
-	private numeric function lookupUnderlineFormat( required any formatSettingValue ){
-		switch( arguments.formatSettingValue ){
-			case "none": return 0;
-			case "single": return 1;
-			case "double": return 2;
-			case "single accounting": return 33;
-			case "double accounting": return 34;
-		}
-		if( IsBoolean( arguments.formatSettingValue ) )
-			return arguments.formatSettingValue? 1: 0;
-		return -1;
 	}
 
 }

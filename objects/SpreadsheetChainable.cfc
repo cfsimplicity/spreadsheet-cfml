@@ -72,6 +72,12 @@ component{
 		return this;
 	}
 
+	public SpreadsheetChainable function addConditionalFormatting( required ConditionalFormatting conditionalFormatting ){
+		addWorkbookArgument( arguments );
+		variables.library.addConditionalFormatting( argumentCollection=arguments );
+		return this;
+	}
+
 	public SpreadsheetChainable function addDataValidation( required DataValidation dataValidation ){
 		addWorkbookArgument( arguments );
 		variables.library.addDataValidation( argumentCollection=arguments );

@@ -59,8 +59,13 @@ component extends="base"{
 		// HSSF will return an empty string rather than a null if the color doesn't exist
 		if( IsNull( colorObject ) || IsSimpleValue( colorObject) )
 			return "";
-		var rgbTriplet = isXlsx? convertSignedRGBToPositiveTriplet( colorObject.getRGB() ): colorObject.getTriplet();
-		return ArrayToList( rgbTriplet );
+		return getRGBStringFromColorObject( colorObject );
+	}
+
+	string function getRGBStringFromColorObject( required colorObject ){
+		if( arguments.colorObject.getClass().getSimpleName() == "XSSFColor" )
+			return ArrayToList( convertSignedRGBToPositiveTriplet( arguments.colorObject.getRGB() ) );
+		return ArrayToList( arguments.colorObject.getTriplet() );
 	}
 	
 	/* Private */

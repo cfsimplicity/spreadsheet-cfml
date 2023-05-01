@@ -213,6 +213,11 @@ component accessors="true"{
 		return this;
 	}
 
+	public Spreadsheet function addConditionalFormatting( required workbook, required ConditionalFormatting conditionalFormatting ){
+		arguments.conditionalFormatting.addToWorkbook( arguments.workbook );
+		return this;
+	}
+
 	public Spreadsheet function addDataValidation( required workbook, required DataValidation dataValidation ){
 		arguments.dataValidation.addToWorkbook( arguments.workbook );
 		return this;
@@ -847,7 +852,7 @@ component accessors="true"{
 			,textwrap: cellStyle.getWrapText()
 			,topborder: cellStyle.getBorderTop().toString()
 			,topbordercolor: getColorHelper().getRgbTripletForStyleColorFormat( arguments.workbook, cellStyle, "topbordercolor" )
-			,underline: getFormatHelper().lookupUnderlineFormatCode( cellFont )
+			,underline: getFormatHelper().underlineNameFromIndex( cellFont.getUnderline() )
 			,verticalalignment: cellStyle.getVerticalAlignment().toString()
 		};
 	}
@@ -1069,6 +1074,10 @@ component accessors="true"{
 			,streamingXml=true
 			,streamingWindowSize=arguments.streamingWindowSize
 		);
+	}
+
+	public any function newConditionalFormatting(){
+		return New objects.ConditionalFormatting( this );
 	}
 
 	public any function newDataValidation(){
