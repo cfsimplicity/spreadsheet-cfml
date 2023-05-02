@@ -2,13 +2,13 @@ component extends="base"{
 
 	any function createWorkBook( string type, numeric streamingWindowSize=100 ){
 		if( arguments.type == "xls" )
-			return getClassHelper().loadClass( library().getHSSFWorkbookClassName() ).init();
+			return library().createJavaObject( getClassHelper().getClassName( "HSSFWorkbook" ) ).init();
 		if( arguments.type == "xlsx" )
-			return getClassHelper().loadClass( library().getXSSFWorkbookClassName() ).init();
+			return library().createJavaObject( getClassHelper().getClassName( "XSSFWorkbook" ) ).init();
 		// Streaming Xlsx
 		if( !IsValid( "integer", arguments.streamingWindowSize ) || ( arguments.streamingWindowSize < 1 ) )
 			Throw( type=library().getExceptionType() & ".invalidStreamingWindowSizeArgument", message="Invalid 'streamingWindowSize' argument", detail="'streamingWindowSize' must be an integer value greater than 1" );
-		return getClassHelper().loadClass( library().getSXSSFWorkbookClassName() ).init( JavaCast( "int", arguments.streamingWindowSize ) );
+		return library().createJavaObject( getClassHelper().getClassName( "SXSSFWorkbook" ) ).init( JavaCast( "int", arguments.streamingWindowSize ) );
 	}
 
 	any function workbookFromFile( required string path, string password ){
@@ -17,7 +17,7 @@ component extends="base"{
 		// 20210322 using File doesn't seem to improve memory usage anyway.
 		lock name="#arguments.path#" timeout=5 {
 			try{
-				var factory = getClassHelper().loadClass( "org.apache.poi.ss.usermodel.WorkbookFactory" );
+				var factory = library().createJavaObject( "org.apache.poi.ss.usermodel.WorkbookFactory" );
 				var file = CreateObject( "java", "java.io.FileInputStream" ).init( arguments.path );
 				if( arguments.KeyExists( "password" ) )
 					return factory.create( file, arguments.password );

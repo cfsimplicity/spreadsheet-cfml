@@ -53,19 +53,19 @@ component extends="base"{
 		}
 		else{
 			var OPCPackage = workbook.getPackage();
-			var partName = getClassHelper().loadClass( "org.apache.poi.openxml4j.opc.PackagingURIHelper" ).createPartName( headerImagePartName );
+			var partName = library().createJavaObject( "org.apache.poi.openxml4j.opc.PackagingURIHelper" ).createPartName( headerImagePartName );
 			var part = OPCPackage.createPart( partName, "application/vnd.openxmlformats-officedocument.vmlDrawing" );
 			var headerImageXML = getNewHeaderImageXML();
 		}
-		var headerImageVml = getClassHelper().loadClass( "spreadsheetCFML.HeaderImageVML" ).init( part );
+		var headerImageVml = library().createJavaObject( "spreadsheetCFML.HeaderImageVML" ).init( part );
 		//create the relation to the picture
 		var pictureData = arguments.workbook.getAllPictures().get( imageIndex );
-		var xssfImageRelation = getClassHelper().loadClass( "org.apache.poi.xssf.usermodel.XSSFRelation" ).IMAGES;
+		var xssfImageRelation = library().createJavaObject( "org.apache.poi.xssf.usermodel.XSSFRelation" ).IMAGES;
 		var pictureRelationID = headerImageVml.addRelation( JavaCast( "null", 0 ), xssfImageRelation, pictureData ).getRelationship().getId();
 		//get image dimension
 		try{
 			var imageInputStream = CreateObject( "java", "java.io.ByteArrayInputStream" ).init( pictureData.getData() );
-			var imageUtils = getClassHelper().loadClass( "org.apache.poi.ss.util.ImageUtils" );
+			var imageUtils = library().createJavaObject( "org.apache.poi.ss.util.ImageUtils" );
 			var imageDimension = imageUtils.getImageDimension( imageInputStream, pictureData.getPictureType() );
 		}
 		catch( any exception ){
@@ -78,7 +78,7 @@ component extends="base"{
 		headerImageXML = headerImageXML.ReReplaceNoCase( "(<\/[\w:]*xml>)", newShapeElement & "\1" );
 		headerImageVml.setXml( headerImageXML );
 	  //create the sheet/vml relation
-	  var xssfVmlRelation = getClassHelper().loadClass( "org.apache.poi.xssf.usermodel.XSSFRelation" ).VML_DRAWINGS;
+	  var xssfVmlRelation = library().createJavaObject( "org.apache.poi.xssf.usermodel.XSSFRelation" ).VML_DRAWINGS;
   	var sheetVmlRelationID = sheet.addRelation( JavaCast( "null", 0 ), xssfVmlRelation, headerImageVml ).getRelationship().getId();
   	//create the <legacyDrawingHF r:id="..."/> in /xl/worksheets/sheetN.xml
   	if( !sheetHasExistingHeaderFooterImages )

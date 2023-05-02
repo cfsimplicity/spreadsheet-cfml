@@ -28,7 +28,7 @@ component extends="base"{
 		var clientAnchorClass = library().isXmlFormat( arguments.workbook )
 				? "org.apache.poi.xssf.usermodel.XSSFClientAnchor"
 				: "org.apache.poi.hssf.usermodel.HSSFClientAnchor";
-		var anchor = getClassHelper().loadClass( clientAnchorClass ).init();
+		var anchor = library().createJavaObject( clientAnchorClass ).init();
 		if( arguments.anchorCoordinates.Len() == 4 ){
 			anchor.setRow1( JavaCast( "int", arguments.anchorCoordinates[ 1 ] -1 ) );
 			anchor.setCol1( JavaCast( "int", arguments.anchorCoordinates[ 2 ] -1 ) );

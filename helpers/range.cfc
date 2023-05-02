@@ -27,7 +27,7 @@ component extends="base"{
 
 	any function getCellRangeAddressFromColumnAndRowIndices( required struct indices ){
 		//index = 0 based
-		return getClassHelper().loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).init(
+		return library().createJavaObject( "org.apache.poi.ss.util.CellRangeAddress" ).init(
 			JavaCast( "int", arguments.indices.startRow )
 			,JavaCast( "int", arguments.indices.endRow )
 			,JavaCast( "int", arguments.indices.startColumn )
@@ -49,7 +49,7 @@ component extends="base"{
 		/*
 		rangeReference = usually a standard area ref (e.g. "B1:D8"). May be a single cell ref (e.g. "B5") in which case the result is a 1 x 1 cell range. May also be a whole row range (e.g. "3:5"), or a whole column range (e.g. "C:F")
 		*/
-		return getClassHelper().loadClass( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String", arguments.rangeReference ) );
+		return library().createJavaObject( "org.apache.poi.ss.util.CellRangeAddress" ).valueOf( JavaCast( "String", arguments.rangeReference ) );
 	}
 
 	string function convertRangeReferenceToAbsoluteAddress( required string rangeReference ){

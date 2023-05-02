@@ -39,8 +39,12 @@ component extends="base"{
 		return this;
 	}
 
+	any function getActiveSheetRowIterator( required workbook ){
+		return getActiveSheet( arguments.workbook ).rowIterator();
+	}
+
 	array function getAllSheetFormulas( required workbook ){
-		var rowIterator = getActiveSheet( arguments.workbook ).rowIterator();
+		var rowIterator = getActiveSheetRowIterator( arguments.workbook );
 		var formulas = [];
 		while( rowIterator.hasNext() ){
 			var cellIterator = rowIterator.next().cellIterator();
@@ -132,7 +136,7 @@ component extends="base"{
 		var validStates = [ "HIDDEN", "VERY_HIDDEN", "VISIBLE" ];
 		if( !validStates.Find( arguments.visibility ) )
 			Throw( type=this.getExceptionType() & ".invalidVisibilityArgument", message="Invalid visibility argument: '#arguments.visibility#'", detail="The visibility must be one of the following: #validStates.ToList( ', ' )#." );
-		var visibilityEnum = getClassHelper().loadClass( "org.apache.poi.ss.usermodel.SheetVisibility" )[ JavaCast( "string", arguments.visibility ) ];
+		var visibilityEnum = library().createJavaObject( "org.apache.poi.ss.usermodel.SheetVisibility" )[ JavaCast( "string", arguments.visibility ) ];
 		var sheetIndex = ( arguments.sheetNumber -1 );
 		arguments.workbook.setSheetVisibility( sheetIndex, visibilityEnum );
 	}
@@ -241,7 +245,7 @@ component extends="base"{
 		var characterCount = Len( arguments.sheetName );
 		if( characterCount > 31 )
 			Throw( type=library().getExceptionType() & ".invalidSheetName", message="Invalid sheet name", detail="The sheetname contains too many characters [#characterCount#]. The maximum is 31." );
-		var poiTool = getClassHelper().loadClass( "org.apache.poi.ss.util.WorkbookUtil" );
+		var poiTool = library().createJavaObject( "org.apache.poi.ss.util.WorkbookUtil" );
 		try{
 			poiTool.validateSheetName( JavaCast( "String", arguments.sheetName ) );
 		}

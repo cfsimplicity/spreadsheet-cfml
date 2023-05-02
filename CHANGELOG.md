@@ -1,3 +1,12 @@
+## 3.9.0 - 2 May 2023
+
+- Enhancements
+	- \#321 Add createJavaObject() to support creating POI and other objects from the bundled jars
+	- \#323 Add basic support for conditional formatting
+
+- Fixes
+  - \#322 Some values are not converted to hyperlinks when using URL datatype
+
 ## 3.8.1 - 8 March 2023
 
 - \#320 Avoid cellStyle duplication when formatting cells from a struct over multiple calls

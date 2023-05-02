@@ -1,14 +1,10 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="3.8.1" setter="false";
+	property name="version" default="3.9.0" setter="false";
 	property name="osgiLibBundleVersion" default="5.2.3.3" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
-	//commonly invoked POI class names
-	property name="HSSFWorkbookClassName" default="org.apache.poi.hssf.usermodel.HSSFWorkbook" setter="false";
-	property name="XSSFWorkbookClassName" default="org.apache.poi.xssf.usermodel.XSSFWorkbook" setter="false";
-	property name="SXSSFWorkbookClassName" default="org.apache.poi.xssf.streaming.SXSSFWorkbook" setter="false";
 	//configurable
 	property name="dateFormats" type="struct" setter="false";
 	property name="javaLoaderDotPath" default="javaLoader.JavaLoader" setter="false";
@@ -109,7 +105,7 @@ component accessors="true"{
 	}
 
 	public string function getPoiVersion(){
-		return getClassHelper().loadClass( "org.apache.poi.Version" ).getVersion();
+		return createJavaObject( "org.apache.poi.Version" ).getVersion();
 	}
 
 	public JavaLoader function getJavaLoaderInstance(){
@@ -143,12 +139,16 @@ component accessors="true"{
 		return this;
 	}
 
+	public any function createJavaObject( required string className ){
+		return getClassHelper().loadClass( arguments.className );
+	}
+
 	/* check physical path of a specific class */
 	public void function dumpPathToClass( required string className ){
 		if( IsNull( getOsgiLoader() ) )
 			return getClassHelper().dumpPathToClassNoOsgi( arguments.className );
 		var bundle = getOsgiLoader().getBundle( this.getOsgiLibBundleSymbolicName(), this.getOsgiLibBundleVersion() );
-		var poi = getClassHelper().loadClass( "org.apache.poi.Version" );
+		var poi = createJavaObject( "org.apache.poi.Version" );
 		var path = BundleInfo( poi ).location & "!" &  bundle.getResource( arguments.className.Replace( ".", "/", "all" ) & ".class" ).getPath();
 		WriteDump( path );
 	}
@@ -210,6 +210,11 @@ component accessors="true"{
 		}
 		if( arguments.autoSize )
 			autoSizeColumn( arguments.workbook, columnNumber );
+		return this;
+	}
+
+	public Spreadsheet function addConditionalFormatting( required workbook, required ConditionalFormatting conditionalFormatting ){
+		arguments.conditionalFormatting.addToWorkbook( arguments.workbook );
 		return this;
 	}
 
@@ -526,7 +531,7 @@ component accessors="true"{
 		if( arguments.column <= 0 )
 			Throw( type=this.getExceptionType() & ".invalidColumnArgument", message="Invalid column argument", detail="The value for column must be greater than or equal to 1." );
 			// POI doesn't have remove column functionality, so iterate over all the rows and remove the column indicated
-		var rowIterator = getSheetHelper().getActiveSheet( arguments.workbook ).rowIterator();
+		var rowIterator = getSheetHelper().getActiveSheetRowIterator( arguments.workbook );
 		var columnIndex = ( arguments.column -1 );
 		while( rowIterator.hasNext() ){
 			var row = rowIterator.next();
@@ -706,7 +711,7 @@ component accessors="true"{
 			,column: arguments.column
 			,overwriteCurrentStyle: arguments.overwriteCurrentStyle
 		};
-		var rowIterator = getSheetHelper().getActiveSheet( arguments.workbook ).rowIterator();
+		var rowIterator = getSheetHelper().getActiveSheetRowIterator( arguments.workbook );
 		while( rowIterator.hasNext() ){
 			var rowNumber = rowIterator.next().getRowNum() + 1;
 			formatCell( argumentCollection=formatCellArgs, row=rowNumber );
@@ -847,7 +852,7 @@ component accessors="true"{
 			,textwrap: cellStyle.getWrapText()
 			,topborder: cellStyle.getBorderTop().toString()
 			,topbordercolor: getColorHelper().getRgbTripletForStyleColorFormat( arguments.workbook, cellStyle, "topbordercolor" )
-			,underline: getFormatHelper().lookupUnderlineFormatCode( cellFont )
+			,underline: getFormatHelper().underlineNameFromIndex( cellFont.getUnderline() )
 			,verticalalignment: cellStyle.getVerticalAlignment().toString()
 		};
 	}
@@ -888,7 +893,7 @@ component accessors="true"{
 		if( arguments.KeyExists( "sheetNameOrNumber" ) )
 			getSheetHelper().setActiveSheetNameOrNumber( argumentCollection=arguments );
 		var result = 0;
-		var rowIterator = getSheetHelper().getActiveSheet( arguments.workbook ).rowIterator();
+		var rowIterator = getSheetHelper().getActiveSheetRowIterator( arguments.workbook );
 		while( rowIterator.hasNext() ){
 			var row = rowIterator.next();
 			result = Max( result, row.getLastCellNum() );
@@ -915,7 +920,7 @@ component accessors="true"{
 	}
 
 	public array function getPresetColorNames(){
-		var presetEnum = getClassHelper().loadClass( "org.apache.poi.hssf.util.HSSFColor$HSSFColorPredefined" );
+		var presetEnum = createJavaObject( "org.apache.poi.hssf.util.HSSFColor$HSSFColorPredefined" );
 		var result = [];
 		for( var value in presetEnum.values() )
 			result.Append( value.name() );
@@ -973,7 +978,7 @@ component accessors="true"{
 	}
 
 	public boolean function isBinaryFormat( required workbook ){
-		return arguments.workbook.getClass().getCanonicalName() == this.getHSSFWorkbookClassName();
+		return arguments.workbook.getClass().getCanonicalName() == getClassHelper().getClassName( "HSSFWorkbook" );
 	}
 
 	public boolean function isColumnHidden( required workbook, required numeric column ){
@@ -1002,11 +1007,11 @@ component accessors="true"{
 
 	public boolean function isXmlFormat( required workbook ){
 		//CF2016 doesn't support [].Find( needle ) in all contexts;
-		return ArrayFind( [ this.getXSSFWorkbookClassName(), this.getSXSSFWorkbookClassName() ], arguments.workbook.getClass().getCanonicalName() );
+		return ArrayFind( [ getClassHelper().getClassName( "XSSFWorkbook" ), getClassHelper().getClassName( "SXSSFWorkbook" ) ], arguments.workbook.getClass().getCanonicalName() );
 	}
 
 	public boolean function isStreamingXmlFormat( required workbook ){
-		return arguments.workbook.getClass().getCanonicalName() == this.getSXSSFWorkbookClassName();
+		return arguments.workbook.getClass().getCanonicalName() == getClassHelper().getClassName( "SXSSFWorkbook" );
 	}
 
 	public Spreadsheet function mergeCells(
@@ -1071,6 +1076,10 @@ component accessors="true"{
 		);
 	}
 
+	public any function newConditionalFormatting(){
+		return New objects.ConditionalFormatting( this );
+	}
+
 	public any function newDataValidation(){
 		return New objects.DataValidation( this );
 	}
@@ -1087,10 +1096,10 @@ component accessors="true"{
 		var data = getCsvHelper().queryToArrayForCsv( arguments.query, arguments.includeHeaderRow );
 		var builder = getStringHelper().newJavaStringBuilder();
 		var csvFormat = getCsvHelper().delimiterIsTab( arguments.delimiter )?
-			getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ]
-			: getClassHelper().loadClass( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "EXCEL" ) ]
+			createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ]
+			: createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "EXCEL" ) ]
 				.withDelimiter( JavaCast( "char", arguments.delimiter ) );
-		getClassHelper().loadClass( "org.apache.commons.csv.CSVPrinter" )
+		createJavaObject( "org.apache.commons.csv.CSVPrinter" )
 			.init( builder, csvFormat )
 			.printRecords( data );
 		return builder.toString().Trim();
@@ -1173,7 +1182,7 @@ component accessors="true"{
 	}
 
 	public binary function readBinary( required workbook ){
-		var baos = getClassHelper().loadClass( "org.apache.commons.io.output.ByteArrayOutputStream" ).init();
+		var baos = createJavaObject( "org.apache.commons.io.output.ByteArrayOutputStream" ).init();
 		arguments.workbook.write( baos );
 		baos.flush();
 		return baos.toByteArray();
@@ -1280,7 +1289,7 @@ component accessors="true"{
 	public Spreadsheet function setActiveCell( required workbook, required numeric row, required numeric column ){
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		var cell = getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column );
-		var cellAddress = getClassHelper().loadClass( "org.apache.poi.ss.util.CellAddress" ).init( cell );
+		var cellAddress = createJavaObject( "org.apache.poi.ss.util.CellAddress" ).init( cell );
 		sheet.setActiveCell( cellAddress );
 		return this;
 	}
@@ -1568,7 +1577,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType() & ".invalidStartArgument", message="Invalid start value", detail="The start value must be greater than or equal to 1" );
 		if( arguments.KeyExists( "end" ) && ( ( arguments.end <= 0 ) || ( arguments.end < arguments.start ) ) )
 			Throw( type=this.getExceptionType() & ".invalidEndArgument", message="Invalid end value", detail="The end value must be greater than or equal to the start value" );
-		var rowIterator = getSheetHelper().getActiveSheet( arguments.workbook ).rowIterator();
+		var rowIterator = getSheetHelper().getActiveSheetRowIterator( arguments.workbook );
 		var startIndex = ( arguments.start -1 );
 		var endIndex = arguments.KeyExists( "end" )? ( arguments.end -1 ): startIndex;
 		while( rowIterator.hasNext() ){
