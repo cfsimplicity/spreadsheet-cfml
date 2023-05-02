@@ -1,7 +1,7 @@
 {
     "name" : "Spreadsheet CFML",
     "slug" : "spreadsheet-cfml",
-    "version" : "3.8.1",
+    "version" : "3.9.0",
     "shortDescription" : "CFML spreadsheet library",
     "author" : "Julian Halliwell",
     "location" : "forgeboxStorage",
