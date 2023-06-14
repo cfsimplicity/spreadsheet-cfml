@@ -26,4 +26,8 @@ component extends="base"{
 		Throw( type=library().getExceptionType() & ".invalidSpreadsheetType", message="Invalid spreadsheet file", detail="readLargeFile() can only be used with XLSX files. The file you are trying to read does not appear to be an XLSX file." );
 	}
 
+	void function throwNonExistentRowException( required numeric rowNumber ){
+		Throw( type=library().getExceptionType() & ".nonExistentRow", message="Non-existent row", detail="Row #arguments.rowNumber# doesn't exist. You may need to create the row first by adding data to it." );
+	}
+
 }

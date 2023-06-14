@@ -1516,7 +1516,10 @@ component accessors="true"{
 	}
 
 	public Spreadsheet function setRowHeight( required workbook, required numeric row, required numeric height ){
-		getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row ).setHeightInPoints( JavaCast( "int", arguments.height ) );
+		var rowObject = getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row );
+		if( IsNull( rowObject ) )
+			getExceptionHelper().throwNonExistentRowException( arguments.row );
+		rowObject.setHeightInPoints( JavaCast( "int", arguments.height ) );
 		return this;
 	}
 

@@ -25,5 +25,17 @@ describe( "setRowHeight", function(){
 		});
 	});
 
+	describe( "setRowHeight throws an exception if", function(){
+
+		it( "the specified row doesn't exist", function(){
+			workbooks.Each( function( wb ){
+				expect( function(){
+					s.setRowHeight( wb, 10, newHeight );
+				}).toThrow( type="cfsimplicity.spreadsheet.nonExistentRow" );
+			});
+		});
+
+	});
+
 });	
 </cfscript>
