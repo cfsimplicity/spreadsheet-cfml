@@ -179,6 +179,7 @@ You may wish to place the spreadsheet library files in a central location with a
 * [newXls](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/newXls)
 * [newXlsx](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/newXlsx)
 * [queryToCsv](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/queryToCsv)
+* [setDateFormats](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setDateFormats)
 * [workbookFromCsv](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/workbookFromCsv)
 * [workbookFromQuery](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/workbookFromQuery)
 * [writeFileFromQuery](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/writeFileFromQuery)
@@ -234,7 +235,14 @@ NB: _Do not confuse `DATETIME` and `TIMESTAMP`._ In general you should override 
 Each of these can be overridden by passing in a struct including the value(s) to be overridden when instantiating the Spreadsheet component. For example:
 ```
 <cfscript>
-spreadsheet = New spreadsheetLibrary.spreadsheet( dateFormats={ DATE: "mm/dd/yyyy" } );
+spreadsheet = New spreadsheetLibrary.Spreadsheet( dateFormats={ DATE: "mm/dd/yyyy" } );
+</cfscript>
+```
+Or by using the `setDateFormats()` method on an existing instance.
+```
+<cfscript>
+spreadsheet = New spreadsheetLibrary.Spreadsheet();
+spreadsheet.setDateFormats( { DATE: "mm/dd/yyyy" } );
 </cfscript>
 ```
 While the above will set the library defaults, you can format cells with specific masks using the `dataFormat` attribute which can be passed to [formatCell](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/formatCell) and the other [formatting](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/Formatting-options) methods, as part of the `format` argument:

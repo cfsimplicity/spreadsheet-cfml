@@ -1,7 +1,7 @@
 <cfscript>
 describe( "dateFormats customisability",function(){
 
-	it( "the default dateFormats can be overridden individually",function() {
+	it( "the default dateFormats can be overridden individually on init", function() {
 		local.s = newSpreadsheetInstance();
 		var expected = {
 			DATE: "yyyy-mm-dd"
@@ -9,17 +9,38 @@ describe( "dateFormats customisability",function(){
 			,TIME: "hh:mm:ss"
 			,TIMESTAMP: "yyyy-mm-dd hh:mm:ss"
 		};
-		var actual = s.getDateFormats();
+		var actual = local.s.getDateFormats();
 		expect( actual ).toBe( expected );
-		local.s = newSpreadsheetInstance( dateFormats={ DATE="mm/dd/yyyy" } );
+		local.s = newSpreadsheetInstance( dateFormats={ DATE: "mm/dd/yyyy" } );
 		expected = {
 			DATE: "mm/dd/yyyy"
 			,DATETIME: "yyyy-mm-dd HH:nn:ss"
 			,TIME: "hh:mm:ss"
 			,TIMESTAMP: "yyyy-mm-dd hh:mm:ss"
 		};
-		actual = s.getDateFormats();
+		actual = local.s.getDateFormats();
 		expect( actual ).toBe( expected );
+	});
+
+	it( "the dateFormats can be set post-init", function() {
+		local.s = newSpreadsheetInstance();
+		var expected = {
+			DATE: "yyyy-mm-dd"
+			,DATETIME: "yyyy-mm-dd HH:nn:ss"
+			,TIME: "hh:mm:ss"
+			,TIMESTAMP: "yyyy-mm-dd hh:mm:ss"
+		};
+		var actual = local.s.getDateFormats();
+		expect( actual ).toBe( expected );
+		var customDateFormats = { DATE: "mm/dd/yyyy" };
+		local.s.setDateFormats( customDateFormats );
+		expected = {
+			DATE: "mm/dd/yyyy"
+			,DATETIME: "yyyy-mm-dd HH:nn:ss"
+			,TIME: "hh:mm:ss"
+			,TIMESTAMP: "yyyy-mm-dd hh:mm:ss"
+		};
+		expect( local.s.getDateFormats() ).toBe( expected );
 	});
 
 	it( "allows the format of date and time values to be customised", function() {

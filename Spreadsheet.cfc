@@ -45,7 +45,7 @@ component accessors="true"{
 		loadHelpers();
 		variables.dateFormats = getDateHelper().defaultFormats();
 		if( arguments.KeyExists( "dateFormats" ) )
-			getDateHelper().setCustomFormats( arguments.dateFormats );
+			setDateFormats( arguments.dateFormats );
 		variables.requiresJavaLoader = this.getIsACF() || ( arguments.KeyExists( "requiresJavaLoader" ) && arguments.requiresJavaLoader );
 		if( !this.getRequiresJavaLoader() ){
 			variables.osgiLoader = New osgiLoader();
@@ -1416,6 +1416,11 @@ component accessors="true"{
 	public Spreadsheet function setColumnWidth( required workbook, required numeric column, required numeric width ){
 		var columnIndex = ( arguments.column -1 );
 		getSheetHelper().getActiveSheet( arguments.workbook ).setColumnWidth( JavaCast( "int", columnIndex ), JavaCast( "int", ( arguments.width * 256 ) ) );
+		return this;
+	}
+
+	public Spreadsheet function setDateFormats( required struct dateFormats ){
+		getDateHelper().setCustomFormats( arguments.dateFormats );
 		return this;
 	}
 
