@@ -40,7 +40,7 @@ component accessors="true"{
 	property name="stringHelper" setter="false";
 	property name="workbookHelper" setter="false";
 
-	public function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader ){
+	public Spreadsheet function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader ){
 		detectEngineProperties();
 		loadHelpers();
 		variables.dateFormats = getDateHelper().defaultFormats();
