@@ -11,10 +11,36 @@ Whenever either the java in `/src` or the jars in `/lib` change, the `lib-osgi.j
 ```
 task run
 ```
-## Note on `poi-ooxml` jars
+## POI binaries
 
-The POI binary distribution includes two jar files:
+From version 5.2.4 a binary distribution (zip) is no longer provided. This means the POI, POI OOXML and POI OOXML-FULL jars need to be downloaded individually from
 
-`poi-ooxml-lite-VERSION.jar` and `poi-ooxml-full-VERSION.jar`
+https://repo1.maven.org/maven2/org/apache/poi/
 
-Only the *full* version is needed. Delete the lite version if copied to `/lib`
+Dependencies and versions are given in the .pom files in the /poi, /poi-ooxml and /poi-ooxml-full directories. These jars can be downloaded by searching:
+
+https://mvnrepository.com
+
+Here is the current list of required jars:
+
+* commons-codec
+* commons-collections4
+* commons-compress
+* commons-io
+* commons-math3
+* log4j-api
+* poi
+* poi-ooxml
+* poi-ooxml-full
+* SparseBitSet
+* xmlbeans
+
+## Other dependency binaries
+
+The following jars are not POI dependencies but are required by the Spreadsheet Library:
+
+* commons-csv
+* excel-streaming-reader
+* slf4j-api
+
+All available from https://mvnrepository.com
