@@ -1,3 +1,13 @@
+## 3.10.0 - 29 September 2023
+
+- Maintenance
+  - \#334 Upgrade POI to 5.2.4 and excel-streaming-reader to 4.1.2
+  - \#324 Upgrade Commons CSV to 1.10.0
+
+- Enhancements
+	- \#331 Allow custom date formats to be set on an instance post-init()
+	- \#328 Improve exception message when setRowHeight() is used with a non-existent row
+
 ## 3.9.0 - 2 May 2023
 
 - Enhancements
