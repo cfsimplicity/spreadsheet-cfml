@@ -5,7 +5,7 @@ component{
 	property name="classpathDirectories";
 	property name="libPath";
 	property name="minimumSupportedJvmVersion" default="8";//update this as necessary
-	property name="ooxmlVersion" default="5.2.3";
+	property name="ooxmlVersion" default="5.2.4";
 	property name="rootPath";
 	property name="srcPath";
 	property name="tempDirectoryPath";

@@ -1,8 +1,8 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="3.9.0" setter="false";
-	property name="osgiLibBundleVersion" default="5.2.3.3" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="version" default="3.10.0" setter="false";
+	property name="osgiLibBundleVersion" default="5.2.4.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
 	//configurable
@@ -40,12 +40,12 @@ component accessors="true"{
 	property name="stringHelper" setter="false";
 	property name="workbookHelper" setter="false";
 
-	public function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader ){
+	public Spreadsheet function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader ){
 		detectEngineProperties();
 		loadHelpers();
 		variables.dateFormats = getDateHelper().defaultFormats();
 		if( arguments.KeyExists( "dateFormats" ) )
-			getDateHelper().setCustomFormats( arguments.dateFormats );
+			setDateFormats( arguments.dateFormats );
 		variables.requiresJavaLoader = this.getIsACF() || ( arguments.KeyExists( "requiresJavaLoader" ) && arguments.requiresJavaLoader );
 		if( !this.getRequiresJavaLoader() ){
 			variables.osgiLoader = New osgiLoader();
@@ -1419,6 +1419,11 @@ component accessors="true"{
 		return this;
 	}
 
+	public Spreadsheet function setDateFormats( required struct dateFormats ){
+		getDateHelper().setCustomFormats( arguments.dateFormats );
+		return this;
+	}
+
 	public Spreadsheet function setFitToPage( required workbook, required boolean state, numeric pagesWide, numeric pagesHigh ){
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		sheet.setFitToPage( JavaCast( "boolean", arguments.state ) );
@@ -1516,7 +1521,10 @@ component accessors="true"{
 	}
 
 	public Spreadsheet function setRowHeight( required workbook, required numeric row, required numeric height ){
-		getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row ).setHeightInPoints( JavaCast( "int", arguments.height ) );
+		var rowObject = getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.row );
+		if( IsNull( rowObject ) )
+			getExceptionHelper().throwNonExistentRowException( arguments.row );
+		rowObject.setHeightInPoints( JavaCast( "int", arguments.height ) );
 		return this;
 	}
 
