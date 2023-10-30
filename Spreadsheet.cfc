@@ -1092,8 +1092,9 @@ component accessors="true"{
 		return new( sheetName=arguments.sheetName, xmlFormat=true );
 	}
 
-	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter="," ){
-		var data = getCsvHelper().queryToArrayForCsv( arguments.query, arguments.includeHeaderRow );
+	/* row order is not guaranteed if using more than one thread */
+	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter=",", numeric threads=1 ){
+		var data = getCsvHelper().queryToArrayForCsv( arguments.query, arguments.includeHeaderRow, arguments.threads );
 		var builder = getStringHelper().newJavaStringBuilder();
 		var csvFormat = getCsvHelper().delimiterIsTab( arguments.delimiter )?
 			createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ]

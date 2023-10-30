@@ -24,23 +24,24 @@ component extends="base"{
 		return result;
 	}
 
-	array function queryToArrayForCsv( required query query, required boolean includeHeaderRow ){
+	/* row order is not guaranteed if using more than one thread */
+	array function queryToArrayForCsv( required query query, required boolean includeHeaderRow, numeric threads=1){
 		var result = [];
 		var columns = getQueryHelper()._QueryColumnArray( arguments.query );
 		if( arguments.includeHeaderRow )
 			result.Append( columns );
-		for( var row IN arguments.query ){
+		queryEach(arguments.query, function(row){
 			var rowValues = [];
-			for( var column IN columns ){
+			arrayEach(columns, function(column){
 				var cellValue = row[ column ];
 				if( getDateHelper().isDateObject( cellValue ) )
 					cellValue = DateTimeFormat( cellValue, library().getDateFormats().DATETIME );
 				if( IsValid( "integer", cellValue ) )
 					cellValue = JavaCast( "string", cellValue );// prevent CSV writer converting 1 to 1.0
 				rowValues.Append( cellValue );
-			}
+			});
 			result.Append( rowValues );
-		}
+		}, arguments.threads gt 1, arguments.threads)
 		return result;
 	}
 
