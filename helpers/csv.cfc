@@ -25,23 +25,26 @@ component extends="base"{
 	}
 
 	/* row order is not guaranteed if using more than one thread */
-	array function queryToArrayForCsv( required query query, required boolean includeHeaderRow, numeric threads=1){
+	array function queryToArrayForCsv( required query query, required boolean includeHeaderRow, numeric threads=1 ){
 		var result = [];
 		var columns = getQueryHelper()._QueryColumnArray( arguments.query );
 		if( arguments.includeHeaderRow )
 			result.Append( columns );
-		queryEach(arguments.query, function(row){
-			var rowValues = [];
-			arrayEach(columns, function(column){
-				var cellValue = row[ column ];
-				if( getDateHelper().isDateObject( cellValue ) )
-					cellValue = DateTimeFormat( cellValue, library().getDateFormats().DATETIME );
-				if( IsValid( "integer", cellValue ) )
-					cellValue = JavaCast( "string", cellValue );// prevent CSV writer converting 1 to 1.0
-				rowValues.Append( cellValue );
-			});
-			result.Append( rowValues );
-		}, arguments.threads gt 1, arguments.threads)
+		if( ( arguments.threads > 1 ) && !library().engineSupportsParallelLoopProcessing() )
+			getExceptionHelper().throwParallelOptionNotSupportedException();
+		if( arguments.threads > 1 ){
+			arguments.query.Each(
+				function( row ){
+					result.Append( getQueryRowValues( row, columns ) );
+				}
+				,true
+				,arguments.threads
+			);
+			return result;			
+		}
+		for( var row IN arguments.query ){
+			result.Append( getQueryRowValues( row, columns ) );
+		}
 		return result;
 	}
 
@@ -93,6 +96,19 @@ component extends="base"{
 			result.data.Append( row );
 		}
 		return result;
+	}
+
+	private array function getQueryRowValues( required row, required array columns ){
+		var rowValues = [];
+		for( var column IN arguments.columns ){
+			var cellValue = arguments.row[ column ];
+			if( getDateHelper().isDateObject( cellValue ) )
+				cellValue = DateTimeFormat( cellValue, library().getDateFormats().DATETIME );
+			if( IsValid( "integer", cellValue ) )
+				cellValue = JavaCast( "string", cellValue );// prevent CSV writer converting 1 to 1.0
+			rowValues.Append( cellValue );
+		};
+		return rowValues;
 	}
 
 }

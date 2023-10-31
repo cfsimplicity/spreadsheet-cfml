@@ -60,5 +60,36 @@ describe( "queryToCsv", function(){
 		expect( s.queryToCsv( data ) ).toBe( expected );
 	});
 
+	it(
+		title="can process rows in parallel if the engine supports it"
+		,body=function(){
+			//can't test if using threads, just that there are no errors
+			var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "a" ], [ "a", "a" ] ] );
+			var expected = 'a,a#crlf#a,a';//same values because order is not guaranteed
+			expect( s.queryToCsv( query=data, threads=2 ) ).toBe( expected );
+		}
+		,skip=function(){
+			//20231031: ACF 2021 and 2023 won't run the whole suite if this test is included: testbox errors thrown
+			//running just the queryToCsv tests works fine though. Lucee is fine with the whole suite.
+			return s.getIsACF();
+		}
+	);
+
+	describe( "queryToCsv throws an exception if", function(){
+
+		it(
+			title="parallel threads are specified and the engine does not support it"
+			,body=function(){
+				expect( function(){
+					s.queryToCsv( query=data, threads=2 );
+				}).toThrow( type="cfsimplicity.spreadsheet.parallelOptionNotSupported" );
+			}
+			,skip=function(){
+				return s.engineSupportsParallelLoopProcessing();
+			}
+		);
+
+	});
+
 });
 </cfscript>
