@@ -103,6 +103,43 @@ describe( "csvToQuery", function(){
 		expect( actual.getColumnNames()[ 1 ] ).toBeWithCase( "1st Name" );
 	});
 
+	describe( "trimming", function(){
+
+		it( "will trim the csv string by default", function(){
+			var csv = crlf & '"Frumpo McNugget",12345' & crlf;
+			var actual = s.csvToQuery( csv );
+			expect( actual ).toBe( basicExpectedQuery ); 
+		});
+
+		it( "will trim the csv file by default", function(){
+			var csv = crlf & '"Frumpo McNugget",12345' & crlf;
+			FileWrite( tempCsvPath, csv );
+			var actual = s.csvToQuery( filepath: tempCsvPath );
+			expect( actual ).toBe( basicExpectedQuery ); 
+		});
+
+		it( "can preserve a string's leading/trailing space", function(){
+			var csv = crlf & '"Frumpo McNugget",12345' & crlf;
+			var actual = s.csvToQuery( csv: csv, trim: false );
+			expected = QueryNew( "column1,column2", "", [ [ "", "" ], [ "Frumpo McNugget", "12345" ] ] );
+			expect( actual ).toBe( expected ); 
+		});
+
+		it( "can preserve a file's leading/trailing space", function(){
+			var csv = crlf & '"Frumpo McNugget",12345' & crlf;
+			FileWrite( tempCsvPath, csv );
+			var actual = s.csvToQuery( filepath: tempCsvPath, trim: false );
+			expected = QueryNew( "column1,column2", "", [ [ "", "" ], [ "Frumpo McNugget", "12345" ] ] );
+			expect( actual ).toBe( expected ); 
+		});
+
+		afterEach( function(){
+			if( FileExists( tempCsvPath ) )
+				FileDelete( tempCsvPath );
+		});
+
+	});
+
 	describe( "delimiter handling", function(){
 
 		it( "can accept an alternative delimiter", function(){

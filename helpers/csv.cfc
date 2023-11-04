@@ -61,11 +61,11 @@ component extends="base"{
 		}
 	}
 
-	struct function parseFromFile( required string path, required any format ){
+	struct function parseFromFile( required string path, required boolean trim, required any format ){
 		getFileHelper()
 			.throwErrorIFfileNotExists( arguments.path )
 			.throwErrorIFnotCsvOrTextFile( arguments.path );
-		return parseFromString( FileRead( arguments.path ), false, arguments.format );
+		return parseFromString( FileRead( arguments.path ), arguments.trim, arguments.format );
 	}
 
 	/* Private */

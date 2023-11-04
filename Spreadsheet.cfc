@@ -515,7 +515,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType() & ".invalidArgumentCombination", message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
 		var format = getCsvHelper().getFormat( arguments.delimiter?:"" );
 		var parsed = csvIsFile?
-			getCsvHelper().parseFromFile( arguments.filepath, format ):
+			getCsvHelper().parseFromFile( arguments.filepath, arguments.trim, format ):
 			getCsvHelper().parseFromString( arguments.csv, arguments.trim, format );
 		var data = parsed.data;
 		var maxColumnCount = parsed.maxColumnCount;
