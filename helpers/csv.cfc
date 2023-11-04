@@ -85,15 +85,9 @@ component extends="base"{
 		};
 		var recordIterator = arguments.parser.iterator();
 		while( recordIterator.hasNext() ){
-			var row = [];
-			var columnNumber = 0;
-			var values = recordIterator.next().toList();
-			for( var value in values ){
-				columnNumber++;
-				result.maxColumnCount = Max( result.maxColumnCount, columnNumber );
-				row.Append( value );
-			}
-			result.data.Append( row );
+			var record = recordIterator.next();
+			result.maxColumnCount = Max( result.maxColumnCount, record.size() );
+			ArrayAppend( result.data, record.toList() );
 		}
 		return result;
 	}
