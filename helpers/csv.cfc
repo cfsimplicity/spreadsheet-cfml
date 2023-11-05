@@ -1,5 +1,9 @@
 component extends="base"{
 
+	any function getFormatObject( string type="DEFAULT" ){
+		return library().createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", arguments.type ) ];	
+	}
+
 	boolean function delimiterIsTab( required string delimiter ){
 		return ArrayFindNoCase( [ "#Chr( 9 )#", "\t", "tab" ], arguments.delimiter );//CF2016 doesn't support [].FindNoCase( needle )
 	}
@@ -7,7 +11,7 @@ component extends="base"{
 	any function getFormat( required string delimiter ){
 		if( arguments.delimiter.Len() )
 			return getCsvFormatForDelimiter( arguments.delimiter );
-		var format = library().createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ];
+		var format = getFormatObject( "RFC4180" );
 		return format.builder()
 				.setIgnoreSurroundingSpaces( JavaCast( "boolean", true ) )
 				.build();
@@ -15,8 +19,8 @@ component extends="base"{
 
 	any function getFormatForPrinting( required string delimiter ){
 		if( delimiterIsTab( arguments.delimiter ) )
-			return library().createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ];
-		var format = library().createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "EXCEL" ) ];
+			return getFormatObject( "TDF" );
+		var format = getFormatObject( "EXCEL" );
 		return format.builder().setDelimiter( arguments.delimiter ).build();
 	}
 
@@ -79,11 +83,10 @@ component extends="base"{
 	}
 
 	/* Private */
-
 	private any function getCsvFormatForDelimiter( required string delimiter ){
 		if( delimiterIsTab( arguments.delimiter ) )
-			return library().createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ];
-		var format = library().createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ];
+			return getFormatObject( "TDF" );
+		var format = getFormatObject( "RFC4180" );
 		return format.builder()
 			.setDelimiter( arguments.delimiter )
 			.setIgnoreSurroundingSpaces( JavaCast( "boolean", true ) )//stop spaces between fields causing problems with embedded lines
