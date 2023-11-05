@@ -7,7 +7,17 @@ component extends="base"{
 	any function getFormat( required string delimiter ){
 		if( arguments.delimiter.Len() )
 			return getCsvFormatForDelimiter( arguments.delimiter );
-		return library().createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ].withIgnoreSurroundingSpaces();
+		var format = library().createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ];
+		return format.builder()
+				.setIgnoreSurroundingSpaces( JavaCast( "boolean", true ) )
+				.build();
+	}
+
+	any function getFormatForPrinting( required string delimiter ){
+		if( delimiterIsTab( arguments.delimiter ) )
+			return library().createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ];
+		var format = library().createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "EXCEL" ) ];
+		return format.builder().setDelimiter( arguments.delimiter ).build();
 	}
 
 	array function getColumnNames( required boolean firstRowIsHeader, required array data, required numeric maxColumnCount ){
@@ -73,9 +83,11 @@ component extends="base"{
 	private any function getCsvFormatForDelimiter( required string delimiter ){
 		if( delimiterIsTab( arguments.delimiter ) )
 			return library().createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ];
-		return library().createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ]
-			.withDelimiter( JavaCast( "char", arguments.delimiter ) )
-			.withIgnoreSurroundingSpaces();//stop spaces between fields causing problems with embedded lines
+		var format = library().createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "RFC4180" ) ];
+		return format.builder()
+			.setDelimiter( arguments.delimiter )
+			.setIgnoreSurroundingSpaces( JavaCast( "boolean", true ) )//stop spaces between fields causing problems with embedded lines
+			.build();
 	}
 
 	private struct function dataFromParser( required any parser ){

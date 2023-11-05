@@ -1100,10 +1100,7 @@ component accessors="true"{
 	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter=",", numeric threads=1 ){
 		var data = getCsvHelper().queryToArrayForCsv( arguments.query, arguments.includeHeaderRow, arguments.threads );
 		var builder = getStringHelper().newJavaStringBuilder();
-		var csvFormat = getCsvHelper().delimiterIsTab( arguments.delimiter )?
-			createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ]
-			: createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "EXCEL" ) ]
-				.withDelimiter( JavaCast( "char", arguments.delimiter ) );
+		var csvFormat = getCsvHelper().getFormatForPrinting( arguments.delimiter );
 		createJavaObject( "org.apache.commons.csv.CSVPrinter" )
 			.init( builder, csvFormat )
 			.printRecords( data );
