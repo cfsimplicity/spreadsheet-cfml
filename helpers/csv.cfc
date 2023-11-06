@@ -102,7 +102,9 @@ component extends="base"{
 		while( recordIterator.hasNext() ){
 			var record = recordIterator.next();
 			result.maxColumnCount = Max( result.maxColumnCount, record.size() );
-			ArrayAppend( result.data, record.toList() );
+			//ACF can't handle native arrays in QueryNew()
+			var values = ( library().getIsACF() )? record.toList(): record.values();
+			ArrayAppend( result.data, values );
 		}
 		return result;
 	}
