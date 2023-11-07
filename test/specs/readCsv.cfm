@@ -103,6 +103,20 @@ describe( "readCsv", function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "allows rows to be filtered out of processing using a passed filter UDF", function(){
+		var csv = '"Frumpo McNugget",12345#crlf#"Skip",12345#crlf#"Susi Sorglos",67890';
+		var expected = [ [ "Frumpo McNugget", "12345" ], [ "Susi Sorglos", "67890" ] ];
+		FileWrite( tempCsvPath, csv );
+		var filter = function( rowValues ){
+			return !ArrayFindNoCase( rowValues, "skip" );
+		};
+		var actual = s.readCsv( tempCsvPath )
+			.intoAnArray()
+			.withRowFilter( filter )
+			.execute();
+		expect( actual ).toBe( expected );
+	});
+
 	afterEach( function(){
 		if( FileExists( tempCsvPath ) )
 			FileDelete( tempCsvPath );

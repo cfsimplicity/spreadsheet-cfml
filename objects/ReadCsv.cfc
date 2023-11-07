@@ -3,6 +3,7 @@ component accessors="true"{
 	property name="filepath";
 	property name="numberOfRowsToSkip" default=0;
 	property name="returnFormat" default="none";
+	property name="rowFilter";
 	/* Java objects */
 	property name="format"; //org.apache.commons.csv.CSVFormat
 	/* Internal */
@@ -124,17 +125,15 @@ component accessors="true"{
 		return this;
 	}
 
-	// final execution
-
-	public any function execute(){
-		if( variables.returnFormat == "array" )
-			return parseFileToArray();
+	public ReadCsv function withRowFilter( required function rowFilter ){
+		variables.rowFilter = arguments.rowFilter;
 		return this;
 	}
 
-	/* Private */
-	private array function parseFileToArray(){
-		var result = [];
+	// final execution
+	public any function execute(){
+		if( variables.returnFormat == "array" )
+			var result = [];
 		try {
 			var parser = variables.library.createJavaObject( "org.apache.commons.csv.CSVParser" )
 				.parse(
@@ -145,15 +144,23 @@ component accessors="true"{
 			var recordIterator = parser.iterator();
 			while( recordIterator.hasNext() ) {
 				skipFirstRowsIfRequired( recordIterator );
-				result.Append( recordIterator.next().values() );
+				var values = recordIterator.next().values();
+				if( !IsNull( variables.rowFilter ) && !variables.rowFilter( values ) )
+					continue;
+				if( variables.returnFormat == "array" )
+					result.Append( values );
 			}
-			return result;
 		}
 		finally {
 			if( local.KeyExists( "parser" ) )
 				parser.close();
 		}
+		if( variables.returnFormat == "array" )
+			return result;
+		return this;
 	}
+
+	/* Private */
 
 	private void function skipFirstRowsIfRequired( required any recordIterator ){
 		if( !variables.numberOfRowsToSkip )
