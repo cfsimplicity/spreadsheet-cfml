@@ -1190,6 +1190,10 @@ component accessors="true"{
 		return baos.toByteArray();
 	}
 
+	public any function readCsv( required string filepath ){
+		return New objects.ReadCsv( this, arguments.filepath );
+	}
+
 	public any function readLargeFile(
 		required string src
 		,string format="query"
