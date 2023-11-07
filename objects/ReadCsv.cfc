@@ -1,6 +1,7 @@
 component accessors="true"{
 
 	property name="filepath";
+	property name="numberOfRowsToSkip" default=0;
 	property name="returnFormat" default="none";
 	/* Java objects */
 	property name="format"; //org.apache.commons.csv.CSVFormat
@@ -115,6 +116,14 @@ component accessors="true"{
 		return this;
 	}
 
+	// additional features
+	public ReadCsv function skippingFirstRows( required numeric numberOfRowsToSkip ){
+		if( !IsValid( "integer", arguments.numberOfRowsToSkip ) || ( arguments.numberOfRowsToSkip < 0 ) )
+			Throw( type=variables.library.getExceptionType() & ".invalidArgument", message="Invalid argument to method skippingFirstRows()", detail="'#arguments.numberOfRowsToSkip#' is not a valid argument to skippingFirstRows(). Please specify zero or a positive integer" );
+		variables.numberOfRowsToSkip = arguments.numberOfRowsToSkip;
+		return this;
+	}
+
 	// final execution
 
 	public any function execute(){
@@ -135,6 +144,7 @@ component accessors="true"{
 				);
 			var recordIterator = parser.iterator();
 			while( recordIterator.hasNext() ) {
+				skipFirstRowsIfRequired( recordIterator );
 				result.Append( recordIterator.next().values() );
 			}
 			return result;
@@ -142,6 +152,14 @@ component accessors="true"{
 		finally {
 			if( local.KeyExists( "parser" ) )
 				parser.close();
+		}
+	}
+
+	private void function skipFirstRowsIfRequired( required any recordIterator ){
+		if( !variables.numberOfRowsToSkip )
+			return;
+		cfloop( from=1, to=variables.numberOfRowsToSkip, index="local.i" ){
+			arguments.recordIterator.next();
 		}
 	}
 

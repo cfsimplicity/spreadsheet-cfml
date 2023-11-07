@@ -92,9 +92,30 @@ describe( "readCsv", function(){
 		}
 	});
 
+	it( "allows N rows to be skipped at the start of the file", function(){
+		var csv = 'Skip this line#crlf#skip this line too#crlf#"Frumpo McNugget",12345';
+		var expected = [ [ "Frumpo McNugget", "12345" ] ];
+		FileWrite( tempCsvPath, csv );
+		var actual = s.readCsv( tempCsvPath )
+			.intoAnArray()
+			.skippingFirstRows( 2 )
+			.execute();
+		expect( actual ).toBe( expected );
+	});
+
 	afterEach( function(){
 		if( FileExists( tempCsvPath ) )
 			FileDelete( tempCsvPath );
+	});
+
+	describe( "throws an exception if", function(){
+
+		it( "a zero or positive integer is not passed to skippingFirstRows()", function(){
+			expect( function(){
+				var actual = s.readCsv( getTestFilePath( "test.csv" ) ).skippingFirstRows( -1 );
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidArgument" );
+		});
+
 	});
 
 });
