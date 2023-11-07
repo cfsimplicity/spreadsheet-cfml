@@ -118,9 +118,9 @@ component accessors="true"{
 	}
 
 	// additional features
-	public ReadCsv function skippingFirstRows( required numeric numberOfRowsToSkip ){
+	public ReadCsv function withSkipFirstRows( required numeric numberOfRowsToSkip ){
 		if( !IsValid( "integer", arguments.numberOfRowsToSkip ) || ( arguments.numberOfRowsToSkip < 0 ) )
-			Throw( type=variables.library.getExceptionType() & ".invalidArgument", message="Invalid argument to method skippingFirstRows()", detail="'#arguments.numberOfRowsToSkip#' is not a valid argument to skippingFirstRows(). Please specify zero or a positive integer" );
+			Throw( type=variables.library.getExceptionType() & ".invalidArgument", message="Invalid argument to method withSkipFirstRows()", detail="'#arguments.numberOfRowsToSkip#' is not a valid argument to withSkipFirstRows(). Please specify zero or a positive integer" );
 		variables.numberOfRowsToSkip = arguments.numberOfRowsToSkip;
 		return this;
 	}
