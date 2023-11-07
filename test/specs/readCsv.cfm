@@ -117,6 +117,39 @@ describe( "readCsv", function(){
 		expect( actual ).toBe( expected );
 	});
 
+	it( "allows rows to be processed using a passed UDF and the processed values returned", function(){
+		var csv = '"Frumpo McNugget",12345#crlf#"Susi Sorglos",67890';
+		var expected = [ [ "XFrumpo McNugget", "X12345" ], [ "XSusi Sorglos", "X67890" ] ];
+		FileWrite( tempCsvPath, csv );
+		var processor = function( rowValues ){
+			//NB: rowValues is a java native array. Array member functions won't work therefore.
+			return ArrayMap( rowValues, function( value ){
+				return "X" & value;
+			});
+		};
+		var actual = s.readCsv( tempCsvPath )
+			.intoAnArray()
+			.withRowProcessor( processor )
+			.execute();
+		expect( actual ).toBe( expected );
+	});
+
+	it( "allows rows to be processed using a passed UDF without returning any data", function(){
+		var csv = '10#crlf#10';
+		var expected = 20;
+		FileWrite( tempCsvPath, csv );
+		variables.tempTotal = 0;
+		var processor = function( rowValues ){
+			ArrayEach( rowValues, function( value ){
+				tempTotal = ( tempTotal + value );
+			});
+		};
+		s.readCsv( tempCsvPath )
+			.withRowProcessor( processor )
+			.execute();
+		expect( tempTotal ).toBe( expected );
+	});
+
 	afterEach( function(){
 		if( FileExists( tempCsvPath ) )
 			FileDelete( tempCsvPath );
@@ -124,7 +157,7 @@ describe( "readCsv", function(){
 
 	describe( "throws an exception if", function(){
 
-		it( "a zero or positive integer is not passed to skippingFirstRows()", function(){
+		it( "a zero or positive integer is not passed to withSkipFirstRows()", function(){
 			expect( function(){
 				var actual = s.readCsv( getTestFilePath( "test.csv" ) ).withSkipFirstRows( -1 );
 			}).toThrow( type="cfsimplicity.spreadsheet.invalidArgument" );

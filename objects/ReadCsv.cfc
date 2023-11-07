@@ -4,6 +4,7 @@ component accessors="true"{
 	property name="numberOfRowsToSkip" default=0;
 	property name="returnFormat" default="none";
 	property name="rowFilter";
+	property name="rowProcessor";
 	/* Java objects */
 	property name="format"; //org.apache.commons.csv.CSVFormat
 	/* Internal */
@@ -130,6 +131,11 @@ component accessors="true"{
 		return this;
 	}
 
+	public ReadCsv function withRowProcessor( required function rowProcessor ){
+		variables.rowProcessor = arguments.rowProcessor;
+		return this;
+	}
+
 	// final execution
 	public any function execute(){
 		if( variables.returnFormat == "array" )
@@ -147,6 +153,8 @@ component accessors="true"{
 				var values = recordIterator.next().values();
 				if( !IsNull( variables.rowFilter ) && !variables.rowFilter( values ) )
 					continue;
+				if( !IsNull( variables.rowProcessor ) )
+					values = variables.rowProcessor( values );
 				if( variables.returnFormat == "array" )
 					result.Append( values );
 			}
