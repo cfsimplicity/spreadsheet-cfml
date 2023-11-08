@@ -71,6 +71,18 @@ describe( "readCsv", function(){
 			expect( actual ).toBe( expected );
 		});
 
+		it( "adds a manually specified header row to the columns result", function(){
+			var csv = 'name,number#crlf#"Frumpo McNugget",12345';
+			var expected = { columns: [ "name", "number" ], data: [ [ "Frumpo McNugget", "12345" ] ] };
+			FileWrite( tempCsvPath, csv );
+			var actual = s.readCsv( tempCsvPath )
+				.intoAnArray()
+				.withHeader( [ "name", "number" ] )
+				.withSkipHeaderRecord( true )
+				.execute();
+			expect( actual ).toBe( expected );
+		});
+
 	});
 
 	it( "allows rows to be filtered out of processing using a passed filter UDF", function(){

@@ -181,7 +181,7 @@ component accessors="true"{
 				parser.close();
 		}
 		if( variables.returnFormat == "array" ){
-			param result.columns=[];
+			param result.columns = variables.format.getHeader()?:[];
 			return result;
 		}
 		return this;
