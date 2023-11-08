@@ -2,6 +2,7 @@ component accessors="true"{
 
 	property name="filepath";
 	property name="firstRowIsHeader" type="boolean" default=false;
+	property name="headerValues" type="array";
 	property name="numberOfRowsToSkip" default=0;
 	property name="returnFormat" default="none";
 	property name="rowFilter";
@@ -70,6 +71,7 @@ component accessors="true"{
 	}
 
 	public ReadCsv function withHeader( required array header ){
+		variables.headerValues = arguments.header;
 		variables.format = variables.format.builder().setHeader( JavaCast( "string[]", arguments.header ) ).build();
 		return this;
 	}
@@ -144,11 +146,8 @@ component accessors="true"{
 
 	// final execution
 	public any function execute(){
-		if( variables.returnFormat == "array" ){
-			var result = {
-				data: []
-			};
-		}
+		if( variables.returnFormat == "array" )
+			var result = [ columns: [], data: [] ];//ordered struct
 		var skippedRecords = 0;
 		try {
 			var parser = variables.library.createJavaObject( "org.apache.commons.csv.CSVParser" )
@@ -164,7 +163,8 @@ component accessors="true"{
 					skippedRecords++;
 					continue;
 				}
-				if( variables.firstRowIsHeader && !StructKeyExists( result, "columns" ) ){
+				if( variables.firstRowIsHeader && IsNull( variables.headerValues ) ){
+					variables.headerValues = values;
 					result.columns = values;
 					continue;
 				}
@@ -181,13 +181,18 @@ component accessors="true"{
 				parser.close();
 		}
 		if( variables.returnFormat == "array" ){
-			param result.columns = variables.format.getHeader()?:[];
+			useManuallySpecifiedHeaderForColumnsIfRequired( result );
 			return result;
 		}
 		return this;
 	}
 
 	/* Private */
+	private void function useManuallySpecifiedHeaderForColumnsIfRequired( required struct result ){
+		if( ArrayLen( arguments.result.columns ) || IsNull( variables.format.getHeader() ) )
+			return;
+		arguments.result.columns = variables.format.getHeader();
+	}
 
 	private boolean function skipThisRecord( required numeric skippedRecords ){
 		return variables.numberOfRowsToSkip && ( arguments.skippedRecords < variables.numberOfRowsToSkip );
