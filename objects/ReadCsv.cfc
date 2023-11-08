@@ -138,8 +138,12 @@ component accessors="true"{
 
 	// final execution
 	public any function execute(){
-		if( variables.returnFormat == "array" )
-			var result = [];
+		if( variables.returnFormat == "array" ){
+			var result = {
+				columns: []
+				,data: []
+			};
+		}
 		try {
 			var parser = variables.library.createJavaObject( "org.apache.commons.csv.CSVParser" )
 				.parse(
@@ -156,7 +160,7 @@ component accessors="true"{
 				if( !IsNull( variables.rowProcessor ) )
 					values = variables.rowProcessor( values );
 				if( variables.returnFormat == "array" )
-					result.Append( values );
+					result.data.Append( values );
 			}
 		}
 		finally {
