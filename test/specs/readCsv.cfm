@@ -46,6 +46,33 @@ describe( "readCsv", function(){
 		expect( actual ).toBe( expected );
 	});
 
+	describe( "auto header/column handling", function(){
+
+		it( "can auto extract the column names from first row if specified", function(){
+			var csv = 'name,number#crlf#"Frumpo McNugget",12345';
+			var expected = { columns: [ "name", "number" ], data: [ [ "Frumpo McNugget", "12345" ] ] };
+			FileWrite( tempCsvPath, csv );
+			var actual = s.readCsv( tempCsvPath )
+				.intoAnArray()
+				.withFirstRowIsHeader( true )
+				.execute();
+			expect( actual ).toBe( expected );
+		});
+
+		it( "auto extraction treats the first non-skipped row as the header", function(){
+			var csv = 'Skip this line#crlf#name,number#crlf#"Frumpo McNugget",12345';
+			var expected = { columns: [ "name", "number" ], data: [ [ "Frumpo McNugget", "12345" ] ] };
+			FileWrite( tempCsvPath, csv );
+			var actual = s.readCsv( tempCsvPath )
+				.intoAnArray()
+				.withSkipFirstRows( 1 )
+				.withFirstRowIsHeader( true )
+				.execute();
+			expect( actual ).toBe( expected );
+		});
+
+	});
+
 	it( "allows rows to be filtered out of processing using a passed filter UDF", function(){
 		var csv = '"Frumpo McNugget",12345#crlf#"Skip",12345#crlf#"Susi Sorglos",67890';
 		var expected = { columns: [], data: [ [ "Frumpo McNugget", "12345" ], [ "Susi Sorglos", "67890" ] ] };

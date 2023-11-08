@@ -1,6 +1,7 @@
 component accessors="true"{
 
 	property name="filepath";
+	property name="firstRowIsHeader" type="boolean" default=false;
 	property name="numberOfRowsToSkip" default=0;
 	property name="returnFormat" default="none";
 	property name="rowFilter";
@@ -119,6 +120,11 @@ component accessors="true"{
 	}
 
 	// additional features
+	public ReadCsv function withFirstRowIsHeader( boolean state=true ){
+		variables.firstRowIsHeader = arguments.state;
+		return this;
+	}
+
 	public ReadCsv function withSkipFirstRows( required numeric numberOfRowsToSkip ){
 		if( !IsValid( "integer", arguments.numberOfRowsToSkip ) || ( arguments.numberOfRowsToSkip < 0 ) )
 			Throw( type=variables.library.getExceptionType() & ".invalidArgument", message="Invalid argument to method withSkipFirstRows()", detail="'#arguments.numberOfRowsToSkip#' is not a valid argument to withSkipFirstRows(). Please specify zero or a positive integer" );
@@ -140,10 +146,10 @@ component accessors="true"{
 	public any function execute(){
 		if( variables.returnFormat == "array" ){
 			var result = {
-				columns: []
-				,data: []
+				data: []
 			};
 		}
+		var skippedRecords = 0;
 		try {
 			var parser = variables.library.createJavaObject( "org.apache.commons.csv.CSVParser" )
 				.parse(
@@ -153,8 +159,15 @@ component accessors="true"{
 				);
 			var recordIterator = parser.iterator();
 			while( recordIterator.hasNext() ) {
-				skipFirstRowsIfRequired( recordIterator );
 				var values = recordIterator.next().values();
+				if( skipThisRecord( skippedRecords ) ){
+					skippedRecords++;
+					continue;
+				}
+				if( variables.firstRowIsHeader && !StructKeyExists( result, "columns" ) ){
+					result.columns = values;
+					continue;
+				}
 				if( !IsNull( variables.rowFilter ) && !variables.rowFilter( values ) )
 					continue;
 				if( !IsNull( variables.rowProcessor ) )
@@ -167,19 +180,17 @@ component accessors="true"{
 			if( local.KeyExists( "parser" ) )
 				parser.close();
 		}
-		if( variables.returnFormat == "array" )
+		if( variables.returnFormat == "array" ){
+			param result.columns=[];
 			return result;
+		}
 		return this;
 	}
 
 	/* Private */
 
-	private void function skipFirstRowsIfRequired( required any recordIterator ){
-		if( !variables.numberOfRowsToSkip )
-			return;
-		cfloop( from=1, to=variables.numberOfRowsToSkip, index="local.i" ){
-			arguments.recordIterator.next();
-		}
+	private boolean function skipThisRecord( required numeric skippedRecords ){
+		return variables.numberOfRowsToSkip && ( arguments.skippedRecords < variables.numberOfRowsToSkip );
 	}
 
 	private any function createPredefinedFormat( string type="DEFAULT" ){
