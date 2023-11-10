@@ -149,6 +149,7 @@ component accessors="true"{
 		if( variables.returnFormat == "array" )
 			var result = [ columns: [], data: [] ];//ordered struct
 		var skippedRecords = 0;
+		var currentRecordNumber = 0;
 		try {
 			var parser = variables.library.createJavaObject( "org.apache.commons.csv.CSVParser" )
 				.parse(
@@ -171,7 +172,7 @@ component accessors="true"{
 				if( !IsNull( variables.rowFilter ) && !variables.rowFilter( values ) )
 					continue;
 				if( !IsNull( variables.rowProcessor ) )
-					values = variables.rowProcessor( values );
+					values = variables.rowProcessor( values, ++currentRecordNumber );
 				if( variables.returnFormat == "array" )
 					result.data.Append( values );
 			}

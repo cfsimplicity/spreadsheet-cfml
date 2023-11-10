@@ -85,51 +85,69 @@ describe( "readCsv", function(){
 
 	});
 
-	it( "allows rows to be filtered out of processing using a passed filter UDF", function(){
-		var csv = '"Frumpo McNugget",12345#crlf#"Skip",12345#crlf#"Susi Sorglos",67890';
-		var expected = { columns: [], data: [ [ "Frumpo McNugget", "12345" ], [ "Susi Sorglos", "67890" ] ] };
-		FileWrite( tempCsvPath, csv );
-		var filter = function( rowValues ){
-			return !ArrayFindNoCase( rowValues, "skip" );
-		};
-		var actual = s.readCsv( tempCsvPath )
-			.intoAnArray()
-			.withRowFilter( filter )
-			.execute();
-		expect( actual ).toBe( expected );
-	});
+	describe( "passing UDFs to readCsv", function(){
 
-	it( "allows rows to be processed using a passed UDF and the processed values returned", function(){
-		var csv = '"Frumpo McNugget",12345#crlf#"Susi Sorglos",67890';
-		var expected = { columns: [], data: [ [ "XFrumpo McNugget", "X12345" ], [ "XSusi Sorglos", "X67890" ] ] };
-		FileWrite( tempCsvPath, csv );
-		var processor = function( rowValues ){
-			//NB: rowValues is a java native array. Array member functions won't work therefore.
-			return ArrayMap( rowValues, function( value ){
-				return "X" & value;
-			});
-		};
-		var actual = s.readCsv( tempCsvPath )
-			.intoAnArray()
-			.withRowProcessor( processor )
-			.execute();
-		expect( actual ).toBe( expected );
-	});
+		it( "allows rows to be filtered out of processing using a passed filter UDF", function(){
+			var csv = '"Frumpo McNugget",12345#crlf#"Skip",12345#crlf#"Susi Sorglos",67890';
+			var expected = { columns: [], data: [ [ "Frumpo McNugget", "12345" ], [ "Susi Sorglos", "67890" ] ] };
+			FileWrite( tempCsvPath, csv );
+			var filter = function( rowValues ){
+				return !ArrayFindNoCase( rowValues, "skip" );
+			};
+			var actual = s.readCsv( tempCsvPath )
+				.intoAnArray()
+				.withRowFilter( filter )
+				.execute();
+			expect( actual ).toBe( expected );
+		});
 
-	it( "allows rows to be processed using a passed UDF without returning any data", function(){
-		var csv = '10#crlf#10';
-		var expected = 20;
-		FileWrite( tempCsvPath, csv );
-		variables.tempTotal = 0;
-		var processor = function( rowValues ){
-			ArrayEach( rowValues, function( value ){
-				tempTotal = ( tempTotal + value );
-			});
-		};
-		s.readCsv( tempCsvPath )
-			.withRowProcessor( processor )
-			.execute();
-		expect( tempTotal ).toBe( expected );
+		it( "allows rows to be processed using a passed UDF and the processed values returned", function(){
+			var csv = '"Frumpo McNugget",12345#crlf#"Susi Sorglos",67890';
+			var expected = { columns: [], data: [ [ "XFrumpo McNugget", "X12345" ], [ "XSusi Sorglos", "X67890" ] ] };
+			FileWrite( tempCsvPath, csv );
+			var processor = function( rowValues ){
+				//NB: rowValues is a java native array. Array member functions won't work therefore.
+				return ArrayMap( rowValues, function( value ){
+					return "X" & value;
+				});
+			};
+			var actual = s.readCsv( tempCsvPath )
+				.intoAnArray()
+				.withRowProcessor( processor )
+				.execute();
+			expect( actual ).toBe( expected );
+		});
+
+		it( "allows rows to be processed using a passed UDF without returning any data", function(){
+			var csv = '10#crlf#10';
+			var expected = 20;
+			FileWrite( tempCsvPath, csv );
+			variables.tempTotal = 0;
+			var processor = function( rowValues ){
+				ArrayEach( rowValues, function( value ){
+					tempTotal = ( tempTotal + value );
+				});
+			};
+			s.readCsv( tempCsvPath )
+				.withRowProcessor( processor )
+				.execute();
+			expect( tempTotal ).toBe( expected );
+		});
+
+		it( "passes the current record number to the processor UDF", function(){
+			var csv = '"Frumpo McNugget",12345#crlf#"Susi Sorglos",67890';
+			var expected = [ 1, 2 ];
+			FileWrite( tempCsvPath, csv );
+			variables.temp = [];
+			var processor = function( rowValues, rowNumber ){
+				temp.Append( rowNumber );
+			};
+			s.readCsv( tempCsvPath )
+				.withRowProcessor( processor )
+				.execute();
+			expect( temp ).toBe( expected );
+		});
+
 	});
 
 	it( "allows Commons CSV format options to be applied", function(){
@@ -194,7 +212,7 @@ describe( "readCsv", function(){
 			FileDelete( tempCsvPath );
 	});
 
-	describe( "throws an exception if", function(){
+	describe( "readCsv() throws an exception if", function(){
 
 		it( "a zero or positive integer is not passed to withSkipFirstRows()", function(){
 			expect( function(){
