@@ -182,7 +182,7 @@ component extends="base"{
 		,required string setting
 	){
 		var font = 0;
-		var settingValue = arguments.format[ setting ];
+		var settingValue = arguments.format[ arguments.setting ];
 		switch( arguments.setting ){
 			case "alignment":
 				var alignment = arguments.cellStyle.getAlignment()[ JavaCast( "string", UCase( settingValue ) ) ];

@@ -1,8 +1,8 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="3.10.0" setter="false";
-	property name="osgiLibBundleVersion" default="5.2.4.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="version" default="3.11.0" setter="false";
+	property name="osgiLibBundleVersion" default="5.2.4.1" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
 	//configurable
@@ -164,6 +164,10 @@ component accessors="true"{
 
 	public struct function getCellStyleCache(){
 		return getFormatHelper().getCachedCellStyles();
+	}
+
+	public boolean function engineSupportsParallelLoopProcessing(){
+		return ( !this.getIsACF() || ( this.getIsACF() && ( server.coldfusion.productVersion.ListFirst() >= 2021 ) ) );
 	}
 
 	/* MAIN PUBLIC API */
@@ -511,7 +515,7 @@ component accessors="true"{
 			Throw( type=this.getExceptionType() & ".invalidArgumentCombination", message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also set the 'firstRowIsHeader' argument to true OR provide 'queryColumnNames'" );
 		var format = getCsvHelper().getFormat( arguments.delimiter?:"" );
 		var parsed = csvIsFile?
-			getCsvHelper().parseFromFile( arguments.filepath, format ):
+			getCsvHelper().parseFromFile( arguments.filepath, arguments.trim, format ):
 			getCsvHelper().parseFromString( arguments.csv, arguments.trim, format );
 		var data = parsed.data;
 		var maxColumnCount = parsed.maxColumnCount;
@@ -1092,13 +1096,11 @@ component accessors="true"{
 		return new( sheetName=arguments.sheetName, xmlFormat=true );
 	}
 
-	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter="," ){
-		var data = getCsvHelper().queryToArrayForCsv( arguments.query, arguments.includeHeaderRow );
+	/* row order is not guaranteed if using more than one thread */
+	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter=",", numeric threads=1 ){
+		var data = getCsvHelper().queryToArrayForCsv( arguments.query, arguments.includeHeaderRow, arguments.threads );
 		var builder = getStringHelper().newJavaStringBuilder();
-		var csvFormat = getCsvHelper().delimiterIsTab( arguments.delimiter )?
-			createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "TDF" ) ]
-			: createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", "EXCEL" ) ]
-				.withDelimiter( JavaCast( "char", arguments.delimiter ) );
+		var csvFormat = getCsvHelper().getFormatForPrinting( arguments.delimiter );
 		createJavaObject( "org.apache.commons.csv.CSVPrinter" )
 			.init( builder, csvFormat )
 			.printRecords( data );
@@ -1186,6 +1188,10 @@ component accessors="true"{
 		arguments.workbook.write( baos );
 		baos.flush();
 		return baos.toByteArray();
+	}
+
+	public any function readCsv( required string filepath ){
+		return New objects.ReadCsv( this, arguments.filepath );
 	}
 
 	public any function readLargeFile(

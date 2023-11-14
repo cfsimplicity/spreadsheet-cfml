@@ -147,7 +147,7 @@ component extends="base"{
 		cfloop( from=1, to=arguments.columnCount, index="local.colNum" ){
 			types[ colNum ] = "";
 			for( var row in arguments.data ){
-				if( row.IsEmpty() || ( row.Len() < colNum ) )
+				if( ArrayLen( row ) < colNum )
 					continue;//next column (ACF: empty values are sometimes just missing from the array??)
 				var value = row[ colNum ];
 				var detectedType = getDataTypeHelper().detectValueDataType( value );

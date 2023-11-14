@@ -30,4 +30,10 @@ component extends="base"{
 		Throw( type=library().getExceptionType() & ".nonExistentRow", message="Non-existent row", detail="Row #arguments.rowNumber# doesn't exist. You may need to create the row first by adding data to it." );
 	}
 
+	void function throwParallelOptionNotSupportedException(){
+		Throw( type=library().getExceptionType() & ".parallelOptionNotSupported", message="Parallel threads option not supported", detail="Your ColdFusion engine does not support parallel processing of loops via threads" );
+	}
+
+	
+
 }
