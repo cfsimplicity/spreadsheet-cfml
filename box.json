@@ -1,7 +1,7 @@
 {
     "name" : "Spreadsheet CFML",
     "slug" : "spreadsheet-cfml",
-    "version" : "3.10.0",
+    "version" : "3.11.0",
     "shortDescription" : "CFML spreadsheet library",
     "author" : "Julian Halliwell",
     "location" : "forgeboxStorage",
@@ -28,7 +28,7 @@
         "testbox":"test/testbox/"
     },
     "type" : "modules",
-    "keywords" : [ "cfspreadsheet", "coldfusion", "lucee", "module", "spreadsheet" ],
+    "keywords" : [ "cfspreadsheet", "coldfusion", "lucee", "module", "spreadsheet", "csv" ],
     "private" : "false",
     "ignore" : [ ".github", "build", "src", "test", ".gitattributes", "CHANGELOG.md", "README.md" ]
 }

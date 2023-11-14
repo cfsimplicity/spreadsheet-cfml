@@ -1,3 +1,15 @@
+## 3.11.0 - 14 November 2023
+
+- Enhancements
+	- \#340 Add readCsv() for large file/advanced csv processing
+	- \#336 Add parallelization option to queryToCsv()
+
+- Fixes
+  - \#339 csvToQuery() ignores trim setting when reading from file
+
+- Maintenance
+  - \#334 Upgrade excel-streaming-reader to 4.2.0
+
 ## 3.10.0 - 29 September 2023
 
 - Maintenance
