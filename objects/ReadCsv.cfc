@@ -35,12 +35,12 @@ component accessors="true"{
 	}
 
 	/* Format configuration */
-	public ReadCsv function withAllowMissingColumnNames( required boolean state ){
+	public ReadCsv function withAllowMissingColumnNames( boolean state=true ){
 		variables.format = variables.format.builder().setAllowMissingColumnNames( JavaCast( "boolean", arguments.state ) ).build();
 		return this;
 	}
 
-	public ReadCsv function withAutoFlush( required boolean state ){
+	public ReadCsv function withAutoFlush( boolean state=true ){
 		variables.format = variables.format.builder().setAutoFlush( JavaCast( "boolean", arguments.state ) ).build();
 		return this;
 	}
@@ -81,17 +81,17 @@ component accessors="true"{
 		return this;
 	}
 
-	public ReadCsv function withIgnoreEmptyLines( required boolean state ){
+	public ReadCsv function withIgnoreEmptyLines( boolean state=true ){
 		variables.format = variables.format.builder().setIgnoreEmptyLines( JavaCast( "boolean", arguments.state ) ).build();
 		return this;
 	}
 
-	public ReadCsv function withIgnoreHeaderCase( required boolean state ){
+	public ReadCsv function withIgnoreHeaderCase( boolean state=true ){
 		variables.format = variables.format.builder().setIgnoreHeaderCase( JavaCast( "boolean", arguments.state ) ).build();
 		return this;
 	}
 
-	public ReadCsv function withIgnoreSurroundingSpaces( required boolean state ){
+	public ReadCsv function withIgnoreSurroundingSpaces( boolean state=true ){
 		variables.format = variables.format.builder().setIgnoreSurroundingSpaces( JavaCast( "boolean", arguments.state ) ).build();
 		return this;
 	}
@@ -106,17 +106,17 @@ component accessors="true"{
 		return this;
 	}
 
-	public ReadCsv function withSkipHeaderRecord( required boolean state ){
+	public ReadCsv function withSkipHeaderRecord( boolean state=true ){
 		variables.format = variables.format.builder().setSkipHeaderRecord( JavaCast( "boolean", arguments.state ) ).build();
 		return this;
 	}
 
-	public ReadCsv function withTrailingDelimiter( required boolean state ){
+	public ReadCsv function withTrailingDelimiter( boolean state=true ){
 		variables.format = variables.format.builder().setTrailingDelimiter( JavaCast( "boolean", arguments.state ) ).build();
 		return this;
 	}
 
-	public ReadCsv function withTrim( required boolean state ){
+	public ReadCsv function withTrim( boolean state=true ){
 		variables.format = variables.format.builder().setTrim( JavaCast( "boolean", arguments.state ) ).build();
 		return this;
 	}

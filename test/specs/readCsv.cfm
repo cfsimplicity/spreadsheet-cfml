@@ -153,22 +153,22 @@ describe( "readCsv", function(){
 	it( "allows Commons CSV format options to be applied", function(){
 		var path = getTestFilePath( "test.csv" );
 		var object = s.readCsv( path )
-			.withAllowMissingColumnNames( true )
-			.withAutoFlush( true )
+			.withAllowMissingColumnNames()
+			.withAutoFlush()
 			.withCommentMarker( "##" )
 			.withDelimiter( "|" )
 			.withDuplicateHeaderMode( "ALLOW_EMPTY" )
 			.withEscapeCharacter( "\" )
 			.withHeader( [ "Name", "Number" ] )
 			.withHeaderComments( [ "comment1", "comment2" ] )
-			.withIgnoreEmptyLines( true )
-			.withIgnoreHeaderCase( true )
-			.withIgnoreSurroundingSpaces( true )
+			.withIgnoreEmptyLines()
+			.withIgnoreHeaderCase()
+			.withIgnoreSurroundingSpaces()
 			.withNullString( "" )
 			.withQuoteCharacter( "'" )
-			.withSkipHeaderRecord( true )
-			.withTrailingDelimiter( true )
-			.withTrim( true );
+			.withSkipHeaderRecord()
+			.withTrailingDelimiter()
+			.withTrim();
 		expect( object.getFormat().getAllowMissingColumnNames() ).toBeTrue();
 		expect( object.getFormat().getAutoFlush() ).toBeTrue();
 		expect( object.getFormat().getCommentMarker() ).toBe( "##" );
