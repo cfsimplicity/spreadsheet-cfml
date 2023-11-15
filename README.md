@@ -1,6 +1,6 @@
 # Spreadsheet CFML
 
-Standalone library for working with spreadsheets in CFML ([Lucee](http://lucee.org/) and Adobe ColdFusion), supporting all of ColdFusion's native spreadsheet functionality and much more besides.
+Standalone library for working with spreadsheets and CSV in CFML ([Lucee](http://lucee.org/) and Adobe ColdFusion), supporting all of ColdFusion's native spreadsheet functionality and much more besides.
 
 ## Minimum Requirements
 
