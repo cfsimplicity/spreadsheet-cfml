@@ -1,6 +1,11 @@
+## 3.11.1 - 15 November 2023
+
+- \#345 readCsv(): Commons CSV boolean options should default to true 
+
 ## 3.11.0 - 14 November 2023
 
 - Enhancements
+	- \#343 Improve csvToQuery() performance
 	- \#340 Add readCsv() for large file/advanced csv processing
 	- \#336 Add parallelization option to queryToCsv()
 
