@@ -70,8 +70,7 @@ component extends="base"{
 			return dataFromParser( parser );
 		}
 		finally{
-			if( local.KeyExists( "parser" ) )
-				parser.close();
+			getFileHelper().closeLocalFileOrStream( local, "parser" );
 		}
 	}
 

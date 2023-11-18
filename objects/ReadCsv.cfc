@@ -178,8 +178,7 @@ component accessors="true"{
 			}
 		}
 		finally {
-			if( local.KeyExists( "parser" ) )
-				parser.close();
+			variables.library.getFileHelper().closeLocalFileOrStream( local, "parser" );
 		}
 		if( variables.returnFormat == "array" ){
 			useManuallySpecifiedHeaderForColumnsIfRequired( result );
