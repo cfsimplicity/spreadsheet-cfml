@@ -2,7 +2,7 @@
 describe( "write", function(){
 
 	beforeEach( function(){
-		sleep( 5 );// allow time for file operations to complete
+		Sleep( 5 );// allow time for file operations to complete
 	});
 
 	it( "Writes an XLS object correctly", function(){
@@ -95,8 +95,10 @@ describe( "write", function(){
 	});	
 
 	afterEach( function(){
-		if( FileExists( variables.tempXlsPath ) ) FileDelete( variables.tempXlsPath );
-		if( FileExists( variables.tempXlsxPath ) ) FileDelete( variables.tempXlsxPath );
+		if( FileExists( variables.tempXlsPath ) )
+			FileDelete( variables.tempXlsPath );
+		if( FileExists( variables.tempXlsxPath ) )
+			FileDelete( variables.tempXlsxPath );
 	});
 	
 });	

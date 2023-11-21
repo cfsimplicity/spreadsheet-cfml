@@ -29,7 +29,8 @@ describe( "info", function(){
 	it( "Adds and can get back info", function(){
 		workbooks.Each( function( wb ){
 			s.addInfo( wb, infoToAdd );
-			if( s.isXmlFormat( wb ) ) infoToBeReturned.spreadSheetType = "Excel (2007)";
+			if( s.isXmlFormat( wb ) )
+				infoToBeReturned.spreadSheetType = "Excel (2007)";
 			var expected = infoToBeReturned;
 			var actual = s.info( wb );
 			actual.creationDate = DateFormat( Now(), "yyyymmdd" );// Doesn't return this value so mock
@@ -51,7 +52,8 @@ describe( "info", function(){
 
 	it( "Can accept a file path instead of a workbook", function(){
 		workbooks.Each( function( wb ){
-			if( s.isXmlFormat( wb ) ) infoToBeReturned.spreadSheetType = "Excel (2007)";
+			if( s.isXmlFormat( wb ) )
+				infoToBeReturned.spreadSheetType = "Excel (2007)";
 			var tempPath = s.isXmlFormat( wb )? tempXlsxPath: tempXlsPath;
 			s.addInfo( wb, infoToAdd )
 				.write( wb, tempPath, true );
@@ -67,7 +69,8 @@ describe( "info", function(){
 			var actual = s.newChainable( wb )
 				.addInfo( infoToAdd )
 				.info();
-			if( s.isXmlFormat( wb ) ) infoToBeReturned.spreadSheetType = "Excel (2007)";
+			if( s.isXmlFormat( wb ) )
+				infoToBeReturned.spreadSheetType = "Excel (2007)";
 			var expected = infoToBeReturned;
 			actual.creationDate = DateFormat( Now(), "yyyymmdd" );// Doesn't return this value so mock
 			expect( actual ).toBe( expected );
@@ -75,8 +78,10 @@ describe( "info", function(){
 	});
 
 	afterEach( function(){
-		if( FileExists( variables.tempXlsPath ) ) FileDelete( variables.tempXlsPath );
-		if( FileExists( variables.tempXlsxPath ) ) FileDelete( variables.tempXlsxPath );
+		if( FileExists( variables.tempXlsPath ) )
+			FileDelete( variables.tempXlsPath );
+		if( FileExists( variables.tempXlsxPath ) )
+			FileDelete( variables.tempXlsxPath );
 	});
 
 });	

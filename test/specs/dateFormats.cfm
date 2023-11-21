@@ -90,7 +90,7 @@ describe( "dateFormats customisability",function(){
 		var actual = s.read( src=path, format="html" );
 		var expected = "<tbody><tr><td>a</td><td>b</td></tr><tr><td>1</td><td>04/01/2015 12:0:0</td></tr><tr><td>04/01/2015 1:1:1</td><td>2</td></tr></tbody>";
 		expect( actual ).toBe( expected );
-		expected = 'a,b#crlf#1,04/01/2015 12:0:0#crlf#04/01/2015 1:1:1,2';
+		expected = 'a,b#newline#1,04/01/2015 12:0:0#newline#04/01/2015 1:1:1,2';
 		actual = s.read( src=path, format="csv" );
 		expect( actual ).toBe( expected );
 	});

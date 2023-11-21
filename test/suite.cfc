@@ -9,12 +9,14 @@ component extends="testbox.system.BaseSpec"{
 	variables.s = newSpreadsheetInstance();
 	
 	function beforeAll(){
-		if( !s.getIsACF() ) s.flushOsgiBundle();
-		if( server.KeyExists( s.getJavaLoaderName() ) ) server.delete( s.getJavaLoaderName() );
+		if( !s.getIsACF() )
+			s.flushOsgiBundle();
+		if( server.KeyExists( s.getJavaLoaderName() ) )
+			server.delete( s.getJavaLoaderName() );
 	  variables.tempXlsPath = ExpandPath( "temp.xls" );
 	  variables.tempXlsxPath = ExpandPath( "temp.xlsx" );
 	  variables.tempCsvPath = ExpandPath( "temp.csv" );
-	  variables.crlf = Chr( 13 ) & Chr( 10 );
+	  variables.newline = Chr( 13 ) & Chr( 10 );
 	  variables.spreadsheetTypes = [ "Xls", "Xlsx" ];
 	}
 

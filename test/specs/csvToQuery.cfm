@@ -67,21 +67,21 @@ describe( "csvToQuery", function(){
 	});
 
 	it( "can handle empty cells", function(){
-		var csv = 'Frumpo,McNugget#crlf#Susi#crlf#Susi,#crlf#,Sorglos#crlf#		';
+		var csv = 'Frumpo,McNugget#newline#Susi#newline#Susi,#newline#,Sorglos#newline#		';
 		var expected = QueryNew( "column1,column2", "", [ [ "Frumpo", "McNugget" ], [ "Susi", "" ], [ "Susi", "" ], [ "", "Sorglos" ] ] );
 		var actual = s.csvToQuery( csv );
 		expect( actual ).toBe( expected ); 
 	});
 
 	it( "can treat the first line as the column names", function(){
-		var csv = 'Name,Phone#crlf#Frumpo,12345';
+		var csv = 'Name,Phone#newline#Frumpo,12345';
 		var expected = QueryNew( "Name,Phone", "", [ [ "Frumpo", "12345" ] ] );
 		var actual = s.csvToQuery( csv=csv, firstRowIsHeader=true );
 		expect( actual ).toBe( expected ); 
 	});
 
 	it( "can handle spaces in header/column names", function(){
-		var csv = 'Name,Phone Number#crlf#Frumpo,12345';
+		var csv = 'Name,Phone Number#newline#Frumpo,12345';
 		if( s.getIsACF() ){
 			//ACF won't allow spaces in column names when creating queries programmatically. Use setColumnNames() to override:
 			var expected = QueryNew( "column1,column2", "", [ [ "Frumpo", "12345" ] ] );
@@ -94,11 +94,11 @@ describe( "csvToQuery", function(){
 	});
 
 	it( "will preserve the case of header/column names", function(){
-		var csv = 'Name,Phone#crlf#Frumpo McNugget,12345';
+		var csv = 'Name,Phone#newline#Frumpo McNugget,12345';
 		var actual = s.csvToQuery( csv=csv, firstRowIsHeader=true );
 		expect( actual.getColumnNames()[ 1 ] ).toBeWithCase( "Name" );
 		//invalid variable name
-		csv = '1st Name,Phone#crlf#Frumpo McNugget,12345';
+		csv = '1st Name,Phone#newline#Frumpo McNugget,12345';
 		actual = s.csvToQuery( csv=csv, firstRowIsHeader=true );
 		expect( actual.getColumnNames()[ 1 ] ).toBeWithCase( "1st Name" );
 	});
@@ -106,27 +106,27 @@ describe( "csvToQuery", function(){
 	describe( "trimming", function(){
 
 		it( "will trim the csv string by default", function(){
-			var csv = crlf & '"Frumpo McNugget",12345' & crlf;
+			var csv = newline & '"Frumpo McNugget",12345' & newline;
 			var actual = s.csvToQuery( csv );
 			expect( actual ).toBe( basicExpectedQuery ); 
 		});
 
 		it( "will trim the csv file by default", function(){
-			var csv = crlf & '"Frumpo McNugget",12345' & crlf;
+			var csv = newline & '"Frumpo McNugget",12345' & newline;
 			FileWrite( tempCsvPath, csv );
 			var actual = s.csvToQuery( filepath: tempCsvPath );
 			expect( actual ).toBe( basicExpectedQuery ); 
 		});
 
 		it( "can preserve a string's leading/trailing space", function(){
-			var csv = crlf & '"Frumpo McNugget",12345' & crlf;
+			var csv = newline & '"Frumpo McNugget",12345' & newline;
 			var actual = s.csvToQuery( csv: csv, trim: false );
 			expected = QueryNew( "column1,column2", "", [ [ "", "" ], [ "Frumpo McNugget", "12345" ] ] );
 			expect( actual ).toBe( expected ); 
 		});
 
 		it( "can preserve a file's leading/trailing space", function(){
-			var csv = crlf & '"Frumpo McNugget",12345' & crlf;
+			var csv = newline & '"Frumpo McNugget",12345' & newline;
 			FileWrite( tempCsvPath, csv );
 			var actual = s.csvToQuery( filepath: tempCsvPath, trim: false );
 			expected = QueryNew( "column1,column2", "", [ [ "", "" ], [ "Frumpo McNugget", "12345" ] ] );
@@ -174,7 +174,7 @@ describe( "csvToQuery", function(){
 		});
 
 		it( "ColumnNames argument overrides firstRowIsHeader: none of the header row values will be used", function(){
-			var csv = 'header1,header2#crlf#"Frumpo McNugget",12345';
+			var csv = 'header1,header2#newline#"Frumpo McNugget",12345';
 			var columnNames = [ "name", "phone number" ];
 			var q = s.csvToQuery( csv=csv, queryColumnNames=columnNames );
 			expect( q.getColumnNames()[ 1 ] ).toBe( columnNames[ 1 ] );
@@ -182,7 +182,7 @@ describe( "csvToQuery", function(){
 		});
 
 		it( "Allows csv header names to be made safe for query column names", function(){
-			var csv = 'id,id,"A  B","x/?y","(a)"," A","##1","1a"#crlf#1,2,3,4,5,6,7,8';
+			var csv = 'id,id,"A  B","x/?y","(a)"," A","##1","1a"#newline#1,2,3,4,5,6,7,8';
 			var q = s.csvToQuery( csv=csv, firstRowIsHeader=true, makeColumnNamesSafe=true );
 			expect( q.getColumnNames() ).toBe( [ "id", "id2", "A_B", "x_y", "_a_", "A", "Number1", "_a" ] );
 		});
@@ -202,7 +202,7 @@ describe( "csvToQuery", function(){
 		});
 
 		it( "allows the query column types to be manually set where the column order isn't known, but the header row values are", function(){
-			var csv = 'integer,double,"string column",time#crlf#1,1.1,string,12:00';
+			var csv = 'integer,double,"string column",time#newline#1,1.1,string,12:00';
 			var columnTypes = { "string column": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
 			var q = s.csvToQuery( csv=csv, queryColumnTypes="Integer,Double,VarChar,Time", firstRowIsHeader=true );
 			var columns = GetMetaData( q );
@@ -235,7 +235,7 @@ describe( "csvToQuery", function(){
 		});
 
 		it( "automatic detecting of query column types ignores blank cells", function(){
-			var csv = ',,,#crlf#,2,test,2021-03-10 12:00:00#crlf#1,1.1,string,2021-03-10 12:00:00#crlf#1,,,';
+			var csv = ',,,#newline#,2,test,2021-03-10 12:00:00#newline#1,1.1,string,2021-03-10 12:00:00#newline#1,,,';
 			var q = s.csvToQuery( csv=csv, queryColumnTypes="auto" );
 			var columns = GetMetaData( q );
 			expect( columns[ 1 ].typeName ).toBe( "DOUBLE" );
