@@ -1716,6 +1716,10 @@ component accessors="true"{
 		return this;
 	}
 
+	public any function writeCsv(){
+		return New objects.WriteCsv( this );
+	}
+
 	public Spreadsheet function writeFileFromQuery(
 		required query data
 		,required string filepath
