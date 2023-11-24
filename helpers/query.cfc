@@ -7,8 +7,8 @@ component extends="base"{
 		catch( any exception ){
 			if( !exception.message CONTAINS "undefined" )
 				rethrow;
-			// ACF
-			return arguments.q.getColumnNames();
+			// ACF: the raw object can behave oddly with writeCsv().setQueryColumnsAsHeaderIfRequired(), hence re-casting as a CFML array
+			return ListToArray( ArrayToList( arguments.q.getColumnNames() ) );
 		}
 	}
 

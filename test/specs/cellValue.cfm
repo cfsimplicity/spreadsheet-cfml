@@ -6,7 +6,7 @@ describe( "cellValue", function(){
 	});
 
 	it( "Gets the value from the specified cell", function(){
-		var data =  QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a","b" ], [ "c","d" ] ] );
+		var data =  [ [ "a", "b" ], [ "c", "d" ] ];
 		workbooks.Each( function( wb ){
 			s.addRows( wb, data );
 			expect( s.getCellValue( wb, 2, 2 ) ).toBe( "d" );

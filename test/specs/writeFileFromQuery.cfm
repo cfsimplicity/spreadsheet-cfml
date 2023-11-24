@@ -2,7 +2,7 @@
 describe( "writeFileFromQuery", function(){
 
 	beforeEach( function(){
-		sleep( 5 );// allow time for file operations to complete
+		Sleep( 5 );// allow time for file operations to complete
 		variables.query = QueryNew( "Header1,Header2","VarChar,VarChar",[ [ "a","b" ],[ "c","d" ] ] );
 	});
 
@@ -25,12 +25,15 @@ describe( "writeFileFromQuery", function(){
 		s.writeFileFromQuery( data=query, filepath=tempXlsPath, overwrite=true, xmlFormat=true );
 		var workbook	=	s.read( convertedPath );
 		expect( workbook.getClass().name ).toBe( "org.apache.poi.xssf.usermodel.XSSFWorkbook" );
-		if( FileExists( convertedPath ) ) FileDelete( convertedPath );
+		if( FileExists( convertedPath ) )
+			FileDelete( convertedPath );
 	});
 
 	afterEach( function(){
-		if( FileExists( variables.tempXlsPath ) ) FileDelete( variables.tempXlsPath );
-		if( FileExists( variables.tempXlsxPath ) ) FileDelete( variables.tempXlsxPath );
+		if( FileExists( variables.tempXlsPath ) )
+			FileDelete( variables.tempXlsPath );
+		if( FileExists( variables.tempXlsxPath ) )
+			FileDelete( variables.tempXlsxPath );
 	});
 
 });	

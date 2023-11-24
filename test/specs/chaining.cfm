@@ -42,7 +42,7 @@ describe( "chaining", function(){
 			});
 
 			it( "Allows the workbook to be generated from a CSV file", function(){
-				var csv = 'column1,column2#crlf#"Frumpo McNugget",12345';
+				var csv = 'column1,column2#newline#"Frumpo McNugget",12345';
 				wb = s.newChainable().fromCsv( csv=csv, firstRowIsHeader=true ).getWorkbook();
 				expect( s.getCellValue( wb, 2, 2 ) ).toBe( "12345" );
 			});

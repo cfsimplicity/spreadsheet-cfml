@@ -36,7 +36,7 @@ describe( "readCsv", function(){
 	});
 
 	it( "allows N rows to be skipped at the start of the file", function(){
-		var csv = 'Skip this line#crlf#skip this line too#crlf#"Frumpo McNugget",12345';
+		var csv = 'Skip this line#newline#skip this line too#newline#"Frumpo McNugget",12345';
 		var expected = { columns: [], data: [ [ "Frumpo McNugget", "12345" ] ] };
 		FileWrite( tempCsvPath, csv );
 		var actual = s.readCsv( tempCsvPath )
@@ -49,7 +49,7 @@ describe( "readCsv", function(){
 	describe( "auto header/column handling", function(){
 
 		it( "can auto extract the column names from first row if specified", function(){
-			var csv = 'name,number#crlf#"Frumpo McNugget",12345';
+			var csv = 'name,number#newline#"Frumpo McNugget",12345';
 			var expected = { columns: [ "name", "number" ], data: [ [ "Frumpo McNugget", "12345" ] ] };
 			FileWrite( tempCsvPath, csv );
 			var actual = s.readCsv( tempCsvPath )
@@ -60,7 +60,7 @@ describe( "readCsv", function(){
 		});
 
 		it( "auto extraction treats the first non-skipped row as the header", function(){
-			var csv = 'Skip this line#crlf#name,number#crlf#"Frumpo McNugget",12345';
+			var csv = 'Skip this line#newline#name,number#newline#"Frumpo McNugget",12345';
 			var expected = { columns: [ "name", "number" ], data: [ [ "Frumpo McNugget", "12345" ] ] };
 			FileWrite( tempCsvPath, csv );
 			var actual = s.readCsv( tempCsvPath )
@@ -72,7 +72,7 @@ describe( "readCsv", function(){
 		});
 
 		it( "adds a manually specified header row to the columns result", function(){
-			var csv = 'name,number#crlf#"Frumpo McNugget",12345';
+			var csv = 'name,number#newline#"Frumpo McNugget",12345';
 			var expected = { columns: [ "name", "number" ], data: [ [ "Frumpo McNugget", "12345" ] ] };
 			FileWrite( tempCsvPath, csv );
 			var actual = s.readCsv( tempCsvPath )
@@ -88,7 +88,7 @@ describe( "readCsv", function(){
 	describe( "passing UDFs to readCsv", function(){
 
 		it( "allows rows to be filtered out of processing using a passed filter UDF", function(){
-			var csv = '"Frumpo McNugget",12345#crlf#"Skip",12345#crlf#"Susi Sorglos",67890';
+			var csv = '"Frumpo McNugget",12345#newline#"Skip",12345#newline#"Susi Sorglos",67890';
 			var expected = { columns: [], data: [ [ "Frumpo McNugget", "12345" ], [ "Susi Sorglos", "67890" ] ] };
 			FileWrite( tempCsvPath, csv );
 			var filter = function( rowValues ){
@@ -102,7 +102,7 @@ describe( "readCsv", function(){
 		});
 
 		it( "allows rows to be processed using a passed UDF and the processed values returned", function(){
-			var csv = '"Frumpo McNugget",12345#crlf#"Susi Sorglos",67890';
+			var csv = '"Frumpo McNugget",12345#newline#"Susi Sorglos",67890';
 			var expected = { columns: [], data: [ [ "XFrumpo McNugget", "X12345" ], [ "XSusi Sorglos", "X67890" ] ] };
 			FileWrite( tempCsvPath, csv );
 			var processor = function( rowValues ){
@@ -119,7 +119,7 @@ describe( "readCsv", function(){
 		});
 
 		it( "allows rows to be processed using a passed UDF without returning any data", function(){
-			var csv = '10#crlf#10';
+			var csv = '10#newline#10';
 			var expected = 20;
 			FileWrite( tempCsvPath, csv );
 			variables.tempTotal = 0;
@@ -135,7 +135,7 @@ describe( "readCsv", function(){
 		});
 
 		it( "passes the current record number to the processor UDF", function(){
-			var csv = '"Frumpo McNugget",12345#crlf#"Susi Sorglos",67890';
+			var csv = '"Frumpo McNugget",12345#newline#"Susi Sorglos",67890';
 			var expected = [ 1, 2 ];
 			FileWrite( tempCsvPath, csv );
 			variables.temp = [];

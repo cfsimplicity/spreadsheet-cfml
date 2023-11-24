@@ -367,10 +367,10 @@ describe( "read", function(){
 
 	it( "Can return a CSV string from an Excel file", function(){
 		var path = getTestFilePath( "test.xls" );
-		var expected = 'a,b#crlf#1,2015-04-01 00:00:00#crlf#2015-04-01 01:01:01,2';
+		var expected = 'a,b#newline#1,2015-04-01 00:00:00#newline#2015-04-01 01:01:01,2';
 		var actual = s.read( src=path, format="csv" );
 		expect( actual ).toBe( expected );
-		expected = 'a,b#crlf#a,b#crlf#1,2015-04-01 00:00:00#crlf#2015-04-01 01:01:01,2';
+		expected = 'a,b#newline#a,b#newline#1,2015-04-01 00:00:00#newline#2015-04-01 01:01:01,2';
 		actual = s.read( src=path, format="csv", headerRow=1, includeHeaderRow=true );
 		expect( actual ).toBe( expected );
 	});
@@ -387,7 +387,7 @@ describe( "read", function(){
 
 	it( "Accepts a custom delimiter when generating CSV", function(){
 		var path = getTestFilePath( "test.xls" );
-		var expected = 'a|b#crlf#1|2015-04-01 00:00:00#crlf#2015-04-01 01:01:01|2';
+		var expected = 'a|b#newline#1|2015-04-01 00:00:00#newline#2015-04-01 01:01:01|2';
 		var actual = s.read( src=path, format="csv", csvDelimiter="|" );
 		expect( actual ).toBe( expected );
 	});
@@ -804,8 +804,10 @@ describe( "read", function(){
 	});
 
 	afterEach( function(){
-		if( FileExists( variables.tempXlsPath ) ) FileDelete( variables.tempXlsPath );
-		if( FileExists( variables.tempXlsxPath ) ) FileDelete( variables.tempXlsxPath );
+		if( FileExists( variables.tempXlsPath ) )
+			FileDelete( variables.tempXlsPath );
+		if( FileExists( variables.tempXlsxPath ) )
+			FileDelete( variables.tempXlsxPath );
 	});
 
 });

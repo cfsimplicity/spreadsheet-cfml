@@ -134,10 +134,10 @@ describe(
 		 .addRow( headerRow )
 		 .addRow( dataRow )
 		 .write( tempXlsxPath, true );
-		var expected = 'header1,header2#crlf#a,2015-04-01 00:00:00';
+		var expected = 'header1,header2#newline#a,2015-04-01 00:00:00';
 		var actual = s.readLargeFile( src=tempXlsxPath, format="csv" );
 		expect( actual ).toBe( expected );
-		expected = 'header1,header2#crlf#header1,header2#crlf#a,2015-04-01 00:00:00';
+		expected = 'header1,header2#newline#header1,header2#newline#a,2015-04-01 00:00:00';
 		actual = s.readLargeFile( src=tempXlsxPath, format="csv", headerRow=1, includeHeaderRow=true );
 		expect( actual ).toBe( expected );
 	});
