@@ -1097,7 +1097,7 @@ component accessors="true"{
 	}
 
 	/* row order is not guaranteed if using more than one thread */
-	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter=",", numeric threads=1 ){
+	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter=",", numeric threads=0 ){
 		return writeCsv()
 			.fromData( arguments.query )
 			.withQueryColumnsAsHeader( arguments.includeHeaderRow )

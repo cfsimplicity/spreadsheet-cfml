@@ -1,7 +1,7 @@
 component extends="BaseCsv" accessors="true"{
 
 	property name="data" setter="false";
-	property name="parallelThreadsToUse" type="numeric" default=1 setter="false";
+	property name="parallelThreadsToUse" type="numeric" default=0 setter="false";
 	property name="useQueryColumnsAsHeader" type="boolean" default="false" setter="false";
 	property name="useStructKeysAsHeader" type="boolean" default="false" setter="false";
 
@@ -25,7 +25,11 @@ component extends="BaseCsv" accessors="true"{
 	}
 
 	public WriteCsv function withParallelThreads( numeric numberOfThreads=2 ){
-		/* WARNING: can have unexpected results */
+		/* WARNING: can have unexpected results such as rows out of order or system crashes. USE WITH CARE. */
+		if( arguments.numberOfThreads < 2 ){
+			variables.parallelThreadsToUse = 0;
+			return this;
+		}
 		if( !variables.library.engineSupportsParallelLoopProcessing() )
 			variables.library.getExceptionHelper().throwParallelOptionNotSupportedException();
 		variables.parallelThreadsToUse = Int( arguments.numberOfThreads );
@@ -178,7 +182,7 @@ component extends="BaseCsv" accessors="true"{
 	}
 
 	private boolean function useParallelThreads(){
-		return variables.library.engineSupportsParallelLoopProcessing() && ( variables.parallelThreadsToUse > 1 );
+		return ( variables.library.engineSupportsParallelLoopProcessing() && ( variables.parallelThreadsToUse > 1 ) );
 	}
 
 	private array function _StructValueArray( required struct data ){
