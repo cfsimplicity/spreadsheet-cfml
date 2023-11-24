@@ -1768,8 +1768,11 @@ component accessors="true"{
 			,includeHeaderRow=arguments.includeHeaderRow
 			,makeColumnNamesSafe=true //doesn't affect the output: avoids ACF clunky workaround in _QueryNew()
 		);
-		var csv = queryToCsv( query=data, delimiter=arguments.delimiter );
-		FileWrite( arguments.filepath, csv );
+		writeCsv()
+			.fromData( data )
+			.toFile( arguments.filepath )
+			.withDelimiter( arguments.delimiter )
+			.execute();
 		return this;
 	}
 
