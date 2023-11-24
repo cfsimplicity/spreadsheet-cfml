@@ -1098,13 +1098,12 @@ component accessors="true"{
 
 	/* row order is not guaranteed if using more than one thread */
 	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter=",", numeric threads=1 ){
-		var data = getCsvHelper().queryToArrayForCsv( arguments.query, arguments.includeHeaderRow, arguments.threads );
-		var builder = getStringHelper().newJavaStringBuilder();
-		var csvFormat = getCsvHelper().getFormatForPrinting( arguments.delimiter );
-		createJavaObject( "org.apache.commons.csv.CSVPrinter" )
-			.init( builder, csvFormat )
-			.printRecords( data );
-		return builder.toString().Trim();
+		return writeCsv()
+			.fromData( arguments.query )
+			.withQueryColumnsAsHeader( arguments.includeHeaderRow )
+			.withDelimiter( arguments.delimiter )
+			.withParallelThreads( arguments.threads )
+			.execute();
 	}
 
 	public any function read(
