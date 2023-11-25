@@ -1169,17 +1169,15 @@ component accessors="true"{
 		var generatedQuery = getSheetHelper().sheetToQuery( argumentCollection=args );
 		if( arguments.format == "query" )
 			return generatedQuery;
-		args = { query: generatedQuery };
-		if( arguments.KeyExists( "headerRow" ) ){
-			args.headerRow = arguments.headerRow;
-			args.includeHeaderRow = arguments.includeHeaderRow;
-		}
 		if( arguments.format == "csv" ){
-			args.delimiter = arguments.csvDelimiter;
-			return queryToCsv( argumentCollection=args );
+			return writeCsv()
+				.fromData( generatedQuery )
+				.withQueryColumnsAsHeader( arguments.includeHeaderRow )
+				.withDelimiter( arguments.csvDelimiter )
+				.execute();
 		}
 		// format = html
-		return getQueryHelper().queryToHtml( argumentCollection=args );
+		return getQueryHelper().queryToHtml( generatedQuery, arguments.headerRow, arguments.includeHeaderRow );
 	}
 
 	public binary function readBinary( required workbook ){
@@ -1244,17 +1242,15 @@ component accessors="true"{
 		var generatedQuery = getStreamingReaderHelper().readFileIntoQuery( arguments.src, builderOptions, sheetToQueryArgs );
 		if( arguments.format == "query" )
 			return generatedQuery;
-		var exportArgs = { query: generatedQuery };
-		if( arguments.KeyExists( "headerRow" ) ){
-			exportArgs.headerRow = arguments.headerRow;
-			exportArgs.includeHeaderRow = arguments.includeHeaderRow;
-		}
 		if( arguments.format == "csv" ){
-			exportArgs.delimiter = arguments.csvDelimiter;
-			return queryToCsv( argumentCollection=exportArgs );
+			return writeCsv()
+				.fromData( generatedQuery )
+				.withQueryColumnsAsHeader( arguments.includeHeaderRow )
+				.withDelimiter( arguments.csvDelimiter )
+				.execute();
 		}
 		// format = html
-		return getQueryHelper().queryToHtml( argumentCollection=exportArgs );
+		return getQueryHelper().queryToHtml( generatedQuery, arguments.headerRow, arguments.includeHeaderRow );
 	}
 
 	public Spreadsheet function removePrintGridlines( required workbook ){
