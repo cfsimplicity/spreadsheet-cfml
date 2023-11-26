@@ -1177,7 +1177,7 @@ component accessors="true"{
 				.execute();
 		}
 		// format = html
-		return getQueryHelper().queryToHtml( generatedQuery, arguments.headerRow, arguments.includeHeaderRow );
+		return getQueryHelper().queryToHtml( generatedQuery, arguments.includeHeaderRow );
 	}
 
 	public binary function readBinary( required workbook ){
@@ -1250,7 +1250,7 @@ component accessors="true"{
 				.execute();
 		}
 		// format = html
-		return getQueryHelper().queryToHtml( generatedQuery, arguments.headerRow, arguments.includeHeaderRow );
+		return getQueryHelper().queryToHtml( generatedQuery, arguments.includeHeaderRow );
 	}
 
 	public Spreadsheet function removePrintGridlines( required workbook ){

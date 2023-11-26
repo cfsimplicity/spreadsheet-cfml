@@ -107,11 +107,10 @@ component extends="base"{
 		return arguments.queryColumnTypes;
 	}
 
-	string function queryToHtml( required query query, numeric headerRow, boolean includeHeaderRow=false ){
+	string function queryToHtml( required query query, boolean includeHeaderRow=false ){
 		var result = getStringHelper().newJavaStringBuilder();
 		var columns = _QueryColumnArray( arguments.query );
-		var generateHeaderRow = ( arguments.includeHeaderRow && arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) );
-		if( generateHeaderRow ){
+		if( arguments.includeHeaderRow ){
 			result.Append( "<thead>" );
 			result.Append( generateHtmlRow( columns, true ) );
 			result.Append( "</thead>" );
