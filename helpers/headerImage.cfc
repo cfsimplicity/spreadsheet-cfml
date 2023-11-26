@@ -75,7 +75,7 @@ component extends="base"{
 			getFileHelper().closeLocalFileOrStream( local, "imageInputStream" );
 		}
 		var newShapeElement = createNewHeaderImageVMLShape( pictureRelationID, vmlPosition, imageDimension );
-		headerImageXML = headerImageXML.ReReplaceNoCase( "(<\/[\w:]*xml>)", newShapeElement & "\1" );
+		headerImageXML = headerImageXML.ReplaceAll( "(?i)(<\/[\w:]*xml>)", newShapeElement & "$1" );//Use java regex for group reference consistency
 		headerImageVml.setXml( headerImageXML );
 	  //create the sheet/vml relation
 	  var xssfVmlRelation = library().createJavaObject( "org.apache.poi.xssf.usermodel.XSSFRelation" ).VML_DRAWINGS;

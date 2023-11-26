@@ -53,7 +53,7 @@ component extends="base"{
 	}
 
 	string function convertRangeReferenceToAbsoluteAddress( required string rangeReference ){
-		return arguments.rangeReference.REReplace( "([A-Za-z]+|\d+)", "$\1", "ALL" ).UCase();
+		return arguments.rangeReference.ReplaceAll( "([A-Za-z]+|\d+)", "\$$1" ).UCase(); //Use java regex for group reference consistency
 	}
 
 	/* Private */
