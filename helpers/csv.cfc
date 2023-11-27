@@ -17,13 +17,6 @@ component extends="base"{
 				.build();
 	}
 
-	any function getFormatForPrinting( required string delimiter ){
-		if( delimiterIsTab( arguments.delimiter ) )
-			return getFormatObject( "TDF" );
-		var format = getFormatObject( "EXCEL" );
-		return format.builder().setDelimiter( arguments.delimiter ).build();
-	}
-
 	array function getColumnNames( required boolean firstRowIsHeader, required array data, required numeric maxColumnCount ){
 		var result = [];
 		if( arguments.firstRowIsHeader )
@@ -34,30 +27,6 @@ component extends="base"{
 				continue;
 			}
 			result.Append( "column#i#" );
-		}
-		return result;
-	}
-
-	/* row order is not guaranteed if using more than one thread */
-	array function queryToArrayForCsv( required query query, required boolean includeHeaderRow, numeric threads=1 ){
-		var result = [];
-		var columns = getQueryHelper()._QueryColumnArray( arguments.query );
-		if( arguments.includeHeaderRow )
-			result.Append( columns );
-		if( ( arguments.threads > 1 ) && !library().engineSupportsParallelLoopProcessing() )
-			getExceptionHelper().throwParallelOptionNotSupportedException();
-		if( arguments.threads > 1 ){
-			arguments.query.Each(
-				function( row ){
-					result.Append( getQueryRowValues( row, columns ) );
-				}
-				,true
-				,arguments.threads
-			);
-			return result;			
-		}
-		for( var row IN arguments.query ){
-			result.Append( getQueryRowValues( row, columns ) );
 		}
 		return result;
 	}
@@ -106,19 +75,6 @@ component extends="base"{
 			ArrayAppend( result.data, values );
 		}
 		return result;
-	}
-
-	private array function getQueryRowValues( required row, required array columns ){
-		var rowValues = [];
-		for( var column IN arguments.columns ){
-			var cellValue = arguments.row[ column ];
-			if( getDateHelper().isDateObject( cellValue ) )
-				cellValue = DateTimeFormat( cellValue, library().getDateFormats().DATETIME );
-			if( IsValid( "integer", cellValue ) )
-				cellValue = JavaCast( "string", cellValue );// prevent CSV writer converting 1 to 1.0
-			rowValues.Append( cellValue );
-		};
-		return rowValues;
 	}
 
 }

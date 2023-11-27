@@ -1,8 +1,8 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="3.11.1-develop" setter="false";
-	property name="osgiLibBundleVersion" default="5.2.4.1" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="version" default="3.12.0" setter="false";
+	property name="osgiLibBundleVersion" default="5.2.5.1" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
 	//configurable
@@ -1097,14 +1097,13 @@ component accessors="true"{
 	}
 
 	/* row order is not guaranteed if using more than one thread */
-	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter=",", numeric threads=1 ){
-		var data = getCsvHelper().queryToArrayForCsv( arguments.query, arguments.includeHeaderRow, arguments.threads );
-		var builder = getStringHelper().newJavaStringBuilder();
-		var csvFormat = getCsvHelper().getFormatForPrinting( arguments.delimiter );
-		createJavaObject( "org.apache.commons.csv.CSVPrinter" )
-			.init( builder, csvFormat )
-			.printRecords( data );
-		return builder.toString().Trim();
+	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter=",", numeric threads=0 ){
+		return writeCsv()
+			.fromData( arguments.query )
+			.withQueryColumnsAsHeader( arguments.includeHeaderRow )
+			.withDelimiter( arguments.delimiter )
+			.withParallelThreads( arguments.threads )
+			.execute();
 	}
 
 	public any function read(
@@ -1170,17 +1169,15 @@ component accessors="true"{
 		var generatedQuery = getSheetHelper().sheetToQuery( argumentCollection=args );
 		if( arguments.format == "query" )
 			return generatedQuery;
-		args = { query: generatedQuery };
-		if( arguments.KeyExists( "headerRow" ) ){
-			args.headerRow = arguments.headerRow;
-			args.includeHeaderRow = arguments.includeHeaderRow;
-		}
 		if( arguments.format == "csv" ){
-			args.delimiter = arguments.csvDelimiter;
-			return queryToCsv( argumentCollection=args );
+			return writeCsv()
+				.fromData( generatedQuery )
+				.withQueryColumnsAsHeader( arguments.includeHeaderRow )
+				.withDelimiter( arguments.csvDelimiter )
+				.execute();
 		}
 		// format = html
-		return getQueryHelper().queryToHtml( argumentCollection=args );
+		return getQueryHelper().queryToHtml( generatedQuery, arguments.includeHeaderRow );
 	}
 
 	public binary function readBinary( required workbook ){
@@ -1245,17 +1242,15 @@ component accessors="true"{
 		var generatedQuery = getStreamingReaderHelper().readFileIntoQuery( arguments.src, builderOptions, sheetToQueryArgs );
 		if( arguments.format == "query" )
 			return generatedQuery;
-		var exportArgs = { query: generatedQuery };
-		if( arguments.KeyExists( "headerRow" ) ){
-			exportArgs.headerRow = arguments.headerRow;
-			exportArgs.includeHeaderRow = arguments.includeHeaderRow;
-		}
 		if( arguments.format == "csv" ){
-			exportArgs.delimiter = arguments.csvDelimiter;
-			return queryToCsv( argumentCollection=exportArgs );
+			return writeCsv()
+				.fromData( generatedQuery )
+				.withQueryColumnsAsHeader( arguments.includeHeaderRow )
+				.withDelimiter( arguments.csvDelimiter )
+				.execute();
 		}
 		// format = html
-		return getQueryHelper().queryToHtml( argumentCollection=exportArgs );
+		return getQueryHelper().queryToHtml( generatedQuery, arguments.includeHeaderRow );
 	}
 
 	public Spreadsheet function removePrintGridlines( required workbook ){
@@ -1769,8 +1764,11 @@ component accessors="true"{
 			,includeHeaderRow=arguments.includeHeaderRow
 			,makeColumnNamesSafe=true //doesn't affect the output: avoids ACF clunky workaround in _QueryNew()
 		);
-		var csv = queryToCsv( query=data, delimiter=arguments.delimiter );
-		FileWrite( arguments.filepath, csv );
+		writeCsv()
+			.fromData( data )
+			.toFile( arguments.filepath )
+			.withDelimiter( arguments.delimiter )
+			.execute();
 		return this;
 	}
 
