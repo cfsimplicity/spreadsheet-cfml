@@ -24,23 +24,37 @@ https://mvnrepository.com
 Here is the current list of required jars:
 
 * commons-codec
+	https://mvnrepository.com/artifact/commons-codec/commons-codec
 * commons-collections4
+	https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
 * commons-compress
+	https://mvnrepository.com/artifact/org.apache.commons/commons-compress
 * commons-io
+	https://mvnrepository.com/artifact/commons-io/commons-io
 * commons-math3
+	https://mvnrepository.com/artifact/org.apache.commons/commons-math3
 * log4j-api
+	https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api
 * poi
+	https://repo1.maven.org/maven2/org/apache/poi/poi/
 * poi-ooxml
+	https://repo1.maven.org/maven2/org/apache/poi/poi-ooxml/
 * poi-ooxml-full
+	https://repo1.maven.org/maven2/org/apache/poi/poi-ooxml-full
 * SparseBitSet
+	https://mvnrepository.com/artifact/com.zaxxer/SparseBitSet
 * xmlbeans
+	https://mvnrepository.com/artifact/org.apache.xmlbeans/xmlbeans
 
 ## Other dependency binaries
 
 The following jars are not POI dependencies but are required by the Spreadsheet Library:
 
 * commons-csv
+	https://mvnrepository.com/artifact/org.apache.commons/commons-csv
 * excel-streaming-reader
+	https://mvnrepository.com/artifact/com.github.pjfanning/excel-streaming-reader
 * slf4j-api
+	https://mvnrepository.com/artifact/org.slf4j/slf4j-api
 
 All available from https://mvnrepository.com
