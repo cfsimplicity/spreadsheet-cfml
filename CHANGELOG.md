@@ -1,3 +1,15 @@
+## 3.12.0 - 27 November 2023
+
+- Enhancements
+	-\#346 Add writeCsv()
+
+- Fixes
+	-\#347/\#348 Avoid Perl/Java regex engine incompatibilities
+
+- Maintenance
+	-\#349 Upgrade POI to 5.2.5
+	-\#350 Upgrade excel-streaming-reader to 4.2.1
+
 ## 3.11.1 - 15 November 2023
 
 - \#345 readCsv(): Commons CSV boolean options should default to true 
@@ -13,7 +25,7 @@
   - \#339 csvToQuery() ignores trim setting when reading from file
 
 - Maintenance
-  - \#334 Upgrade excel-streaming-reader to 4.2.0
+  - \#344 Upgrade excel-streaming-reader to 4.2.0
 
 ## 3.10.0 - 29 September 2023
 

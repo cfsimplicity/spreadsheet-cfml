@@ -180,6 +180,7 @@ You may wish to place the spreadsheet library files in a central location with a
 * [workbookFromCsv](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/workbookFromCsv)
 * [workbookFromQuery](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/workbookFromQuery)
 * [writeFileFromQuery](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/writeFileFromQuery)
+* [writeCsv](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/writeCsv)
 * [writeToCsv](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/writeToCsv)
 
 ### Enhanced Read() method
