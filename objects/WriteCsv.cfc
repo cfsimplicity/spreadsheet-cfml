@@ -48,6 +48,8 @@ component extends="BaseCsv" accessors="true"{
 
 	// final execution
 	public any function execute(){
+		if( IsNull( variables.data ) )
+			Throw( type=variables.library.getExceptionType() & ".missingDataForCsv", message="Missing data", detail="Please specify the data you want to write using '.fromData( data )'" );
 		var appendable = newAppendableBuffer();
 		printTo( appendable );
 		if( IsNull( variables.filepath ) )
