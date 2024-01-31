@@ -317,6 +317,12 @@ component{
 		return this;
 	}
 
+	// Ends chain
+	public string function getCellAddress( required numeric row, required numeric column ){
+		addWorkbookArgument( arguments );
+		return variables.library.getCellAddress( argumentCollection=arguments );
+	}
+
 	public any function getCellComment( numeric row, numeric column ){
 		// Ends chain: returns struct OR array of structs
 		addWorkbookArgument( arguments );
@@ -363,12 +369,6 @@ component{
 	public numeric function getColumnCount( sheetNameOrNumber ){
 		addWorkbookArgument( arguments );
 		return variables.library.getColumnCount( argumentCollection=arguments );
-	}
-
-	// Ends chain
-	public string function getColumnName( required numeric columnNumber ){
-		addWorkbookArgument( arguments );
-		return variables.library.getColumnName( argumentCollection=arguments );
 	}
 
 	// Ends chain

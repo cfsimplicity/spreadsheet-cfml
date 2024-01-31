@@ -791,6 +791,10 @@ component accessors="true"{
 		return this;
 	}
 
+	public string function getCellAddress( required workbook, required numeric row, required numeric column ){
+		return getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column ).getAddress().formatAsString();
+	}
+
 	public any function getCellComment( required workbook, numeric row, numeric column ){
 		// returns struct OR array of structs
 		if( arguments.KeyExists( "row" ) && !arguments.KeyExists( "column" ) )
@@ -903,12 +907,6 @@ component accessors="true"{
 			result = Max( result, row.getLastCellNum() );
 		}
 		return result;
-	}
-
-	public string function getColumnName( required workbook, required numeric columnNumber ){
-		if( !getCellHelper().cellExists( arguments.workbook, 1, arguments.columnNumber ) )
-			Throw( type=getExceptionType() & ".invalidColumn", message="Invalid column", detail="The requested column [#arguments.columnNumber#] does not exist in the active sheet" );
-		return getCellHelper().getCellAt( arguments.workbook, 1, arguments.columnNumber ).getAddress().formatAsString().REReplace( "\d+", "" );
 	}
 
 	public numeric function getColumnWidth( required workbook, required numeric column ){
