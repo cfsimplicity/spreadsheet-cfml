@@ -905,6 +905,12 @@ component accessors="true"{
 		return result;
 	}
 
+	public string function getColumnName( required workbook, required numeric columnNumber ){
+		if( !getCellHelper().cellExists( arguments.workbook, 1, arguments.columnNumber ) )
+			Throw( type=getExceptionType() & ".invalidColumn", message="Invalid column", detail="The requested column [#arguments.columnNumber#] does not exist in the active sheet" );
+		return getCellHelper().getCellAt( arguments.workbook, 1, arguments.columnNumber ).getAddress().formatAsString().REReplace( "\d+", "" );
+	}
+
 	public numeric function getColumnWidth( required workbook, required numeric column ){
 		var columnIndex = ( arguments.column -1 );
 		return ( getSheetHelper().getActiveSheet( arguments.workbook ).getColumnWidth( JavaCast( "int", columnIndex ) ) / 256 );// whole character width (of zero character)

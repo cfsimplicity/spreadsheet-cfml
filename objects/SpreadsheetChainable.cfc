@@ -366,6 +366,12 @@ component{
 	}
 
 	// Ends chain
+	public string function getColumnName( required numeric columnNumber ){
+		addWorkbookArgument( arguments );
+		return variables.library.getColumnName( argumentCollection=arguments );
+	}
+
+	// Ends chain
 	public numeric function getColumnWidth( required numeric column ){
 		addWorkbookArgument( arguments );
 		return variables.library.getColumnWidth( argumentCollection=arguments );
