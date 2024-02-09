@@ -54,9 +54,6 @@ component extends="base"{
 	}
 
 	any function getCellValueAsType( required workbook, required cell ){
-		/*
-		Get the value of the cell based on the data type. The thing to worry about here is cell formulas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values.
-		*/
 		if( cellIsOfType( arguments.cell, "NUMERIC" ) )
 			return getCellNumericOrDateValue( arguments.cell );
 		if( cellIsOfType( arguments.cell, "FORMULA" ) )
