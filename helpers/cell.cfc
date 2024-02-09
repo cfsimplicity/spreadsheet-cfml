@@ -38,8 +38,8 @@ component extends="base"{
 
 	any function getCellFormulaValue( required workbook, required cell ){
 		// streaming reader cannot calculate formulas: return cached value
-		if( getStreamingReaderHelper().isStreamingReaderFormat( arguments.workbook ) )
-			return arguments.cell.getStringCellValue();
+		if( library().getReturnCachedFormulaValues() || getStreamingReaderHelper().isStreamingReaderFormat( arguments.workbook ) )
+			return getCachedFormulaValue( arguments.cell );
 		var formulaEvaluator = arguments.workbook.getCreationHelper().createFormulaEvaluator();
 		try{
 			return getFormatHelper().getDataFormatter().formatCellValue( arguments.cell, formulaEvaluator );
@@ -208,6 +208,16 @@ component extends="base"{
 	private any function setStringValue( required any cell, required any value ){
 		arguments.cell.setCellValue( JavaCast( "string", arguments.value ) );
 		return this;
+	}
+
+	private any function getCachedFormulaValue( required cell ){
+		var cellType = arguments.cell.getCellType();
+		var cachedValueType = arguments.cell.getCachedFormulaResultType();
+		if( ObjectEquals( cachedValueType, cellType.NUMERIC ) )
+			return getCellNumericOrDateValue( arguments.cell ); 
+		if( ObjectEquals( cachedValueType, cellType.BOOLEAN ) )
+			return arguments.cell.getBooleanCellValue();
+		return arguments.cell.getStringCellValue();
 	}
 
 }
