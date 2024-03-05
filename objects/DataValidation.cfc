@@ -4,6 +4,8 @@ component{
 	property name="validValues" type="array";
 	property name="valuesSourceSheetName" default="";
 	property name="valuesSourceCellRange" default="";
+	property name="minDate" default="";
+	property name="maxDate" default="";
 	property name="errorMessage" default="";
 	property name="errorTitle" default="";
 	property name="suppressDropdown" type="boolean" default="false";
@@ -45,6 +47,16 @@ component{
 		return this;
 	}
 
+	public DataValidation function withMinDate( required date date ){
+		variables.minDate = arguments.date;
+		return this;
+	}
+
+	public DataValidation function withMaxDate( required date date ){
+		variables.maxDate = arguments.date;
+		return this;
+	}
+
 	public DataValidation function withErrorTitle( required string errorTitle ){
 		variables.errorTitle = arguments.errorTitle;
 		return this;
@@ -68,9 +80,8 @@ component{
 		variables.cellRangeAddress = variables.library.getRangeHelper().getCellRangeAddressFromReference( variables.cellRange );
 		var addressList = variables.library.createJavaObject( "org.apache.poi.ss.util.CellRangeAddressList" );
 		addressList.addCellRangeAddress( cellRangeAddress );
-		// passed array will trump values in other cells if both provided
-		variables.validationConstraint = IsArray( variables.validValues?:"" )? getConstraintFromArray(): getConstraintFromCells();
-		variables.dataValidation = variables.dataValidationHelper.createValidation( validationConstraint, addressList );
+		createConstraint();
+		variables.dataValidation = variables.dataValidationHelper.createValidation( variables.validationConstraint, addressList );
 		if( variables.workbookIsXlsx )
 			variables.dataValidation.setShowErrorBox( JavaCast( "boolean", true ) );//required to enforce validation in XSSF
 		if( variables.errorTitle.Len() || variables.errorMessage.Len() )
@@ -116,17 +127,74 @@ component{
 		return validationAppliedToSheet().getSuppressDropDownArrow();
 	}
 
-	/* Private  */
-
-	private any function getConstraintFromArray(){
-		return variables.dataValidationHelper.createExplicitListConstraint( variables.validValues );
+	public string function getConstraintType(){
+		switch( variables.validationConstraint.ValidationType?:0 ){
+			case 1: return "integer";
+			case 2: return "decimal";
+			case 3: return "list";
+			case 4: return "date";
+			case 5: return "time";
+			case 6: return "length";
+			case 7: return "formula";
+		}
+		return "undefined";
 	}
 
-	private any function getConstraintFromCells(){
+	public string function getConstraintOperator(){
+		//Don't use Elvis operator to set default: ACF always treats the getOperator() integer as null for some reason
+		switch( variables.validationConstraint.getOperator() ){
+			case 0: return "BETWEEN";
+			case 1: return "NOT_BETWEEN";
+			case 2: return "EQUAL";
+			case 3: return "NOT_EQUAL";
+			case 4: return "GREATER_THAN";
+			case 5: return "LESS_THAN";
+			case 6: return "GREATER_OR_EQUAL";
+			case 7: return "LESS_OR_EQUAL";
+		}
+		return "undefined";
+	}
+
+	/* Private  */
+	private void function createConstraint(){
+		// set the type from the configured variables
+		// passed array will trump values in other cells if both provided
+		if( IsArray( variables.validValues?:"" ) )
+			return createListConstraintFromArray();
+		if( variables.valuesSourceCellRange.Len() )
+			return createListConstraintFromCells();
+		//TODO dates and numbers
+		if( IsDate( variables.minDate ) || IsDate( variables.maxDate ) )
+			return createDateConstraint();
+	}
+
+	private void function createListConstraintFromArray(){
+		variables.validationConstraint = variables.dataValidationHelper.createExplicitListConstraint( variables.validValues );
+	}
+
+	private void function createListConstraintFromCells(){
 		var sheetName = determineSourceSheetName();
 		var cellReference = variables.library.getRangeHelper().convertRangeReferenceToAbsoluteAddress( variables.valuesSourceCellRange );
 		var sheetAndCellReference = quoteSheetNameIfRequired( sheetName ) & "!" & cellReference;
-		return variables.dataValidationHelper.createFormulaListConstraint( sheetAndCellReference );
+		variables.validationConstraint =  variables.dataValidationHelper.createFormulaListConstraint( sheetAndCellReference );
+	}
+
+	private void function createDateConstraint(){
+		if( !IsDate( variables.minDate ) || !IsDate( variables.maxDate ) )
+			Throw( type=variables.library.getExceptionType() & ".invalidValidationConstraint", message="Invalid date validation constraint", detail="You must specify a date range with both minimum and maximum dates" );
+		var comparisonOperator = variables.library.createJavaObject( "org.apache.poi.ss.usermodel.DataValidationConstraint$OperatorType" )[ "BETWEEN" ];
+		variables.validationConstraint = variables.dataValidationHelper.createDateConstraint(
+			comparisonOperator
+			,getWorkbookSpecificDateValue( variables.minDate )
+			,getWorkbookSpecificDateValue( variables.maxDate )
+			,"yyyy-MM-dd" //xlsx ignores this? https://stackoverflow.com/a/44312964/204620
+		);
+	}
+
+	private string function getWorkbookSpecificDateValue( required date date ){
+		if( variables.workbookIsXlsx )
+			return "Date( #arguments.date.Year()#, #arguments.date.Month()#, #arguments.date.Day()# )";
+		return DateFormat( arguments.date, "yyyy-mm-dd" );
 	}
 
 	private string function quoteSheetNameIfRequired( required string sheetName ){
