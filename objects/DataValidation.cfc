@@ -6,6 +6,8 @@ component{
 	property name="valuesSourceCellRange" default="";
 	property name="minDate" default="";
 	property name="maxDate" default="";
+	property name="minInteger" default="";
+	property name="maxInteger" default="";
 	property name="errorMessage" default="";
 	property name="errorTitle" default="";
 	property name="suppressDropdown" type="boolean" default="false";
@@ -54,6 +56,16 @@ component{
 
 	public DataValidation function withMaxDate( required date date ){
 		variables.maxDate = arguments.date;
+		return this;
+	}
+
+	public DataValidation function withMinInteger( required numeric value ){
+		variables.minInteger = arguments.value;
+		return this;
+	}
+
+	public DataValidation function withMaxInteger( required numeric value ){
+		variables.maxInteger = arguments.value;
 		return this;
 	}
 
@@ -163,9 +175,10 @@ component{
 			return createListConstraintFromArray();
 		if( variables.valuesSourceCellRange.Len() )
 			return createListConstraintFromCells();
-		//TODO dates and numbers
 		if( IsDate( variables.minDate ) || IsDate( variables.maxDate ) )
 			return createDateConstraint();
+		if( IsValid( "integer", variables.minInteger ) || IsValid( "integer", variables.maxInteger ) )
+			return createIntegerConstraint();
 	}
 
 	private void function createListConstraintFromArray(){
@@ -188,6 +201,17 @@ component{
 			,getWorkbookSpecificDateValue( variables.minDate )
 			,getWorkbookSpecificDateValue( variables.maxDate )
 			,"yyyy-MM-dd" //xlsx ignores this? https://stackoverflow.com/a/44312964/204620
+		);
+	}
+
+	private void function createIntegerConstraint(){
+		if( !IsValid( "integer", variables.minInteger ) || !IsValid( "integer", variables.maxInteger ) )
+			Throw( type=variables.library.getExceptionType() & ".invalidValidationConstraint", message="Invalid integer validation constraint", detail="You must specify an integer range with both minimum and maximum values" );
+		var comparisonOperator = variables.library.createJavaObject( "org.apache.poi.ss.usermodel.DataValidationConstraint$OperatorType" )[ "BETWEEN" ];
+		variables.validationConstraint = variables.dataValidationHelper.createIntegerConstraint(
+			comparisonOperator
+			,variables.minInteger
+			,variables.maxInteger
 		);
 	}
 

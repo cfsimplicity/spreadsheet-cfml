@@ -101,8 +101,23 @@ describe( "dataValidation", function(){
 				.withMaxDate( maxDate );
 			variables.spreadsheetTypes.Each( function( type ){
 				var chainable = s.newChainable( type ).addDataValidation( dv );
-				//writedump( dv.getConstraintOperator() );
 				expect( dv.getConstraintType() ).toBe( "date" );
+				expect( dv.getConstraintOperator() ).toBe( "BETWEEN" );
+			});
+		});
+
+	});
+
+	describe( "integer constraints", function(){
+
+		it( "can constrain input to an integer range", function(){
+			var dv = s.newDataValidation()
+				.onCells( cellRange )
+				.withMinInteger( 0 )
+				.withMaxInteger( 100 );
+			variables.spreadsheetTypes.Each( function( type ){
+				var chainable = s.newChainable( type ).addDataValidation( dv );
+				expect( dv.getConstraintType() ).toBe( "integer" );
 				expect( dv.getConstraintOperator() ).toBe( "BETWEEN" );
 			});
 		});
@@ -161,6 +176,26 @@ describe( "dataValidation", function(){
 			dv = s.newDataValidation()
 				.onCells( cellRange )
 				.withMaxDate( maxDate );
+			variables.spreadsheetTypes.Each( function( type ){
+				expect( function(){
+					var chainable = s.newChainable( type ).addDataValidation( dv );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidValidationConstraint" );
+			});
+
+		});
+
+		it( "a minInteger is specified but no maxInteger or vice versa", function(){
+			var dv = s.newDataValidation()
+				.onCells( cellRange )
+				.withMinInteger( 0 );
+			variables.spreadsheetTypes.Each( function( type ){
+				expect( function(){
+					var chainable = s.newChainable( type ).addDataValidation( dv );
+				}).toThrow( type="cfsimplicity.spreadsheet.invalidValidationConstraint" );
+			});
+			dv = s.newDataValidation()
+				.onCells( cellRange )
+				.withMaxInteger( 100 );
 			variables.spreadsheetTypes.Each( function( type ){
 				expect( function(){
 					var chainable = s.newChainable( type ).addDataValidation( dv );
