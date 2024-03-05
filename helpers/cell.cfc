@@ -36,9 +36,9 @@ component extends="base"{
 		return getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).getCell( JavaCast( "int", columnIndex ) );
 	}
 
-	any function getCellFormulaValue( required workbook, required cell ){
+	any function getCellFormulaValue( required workbook, required cell, boolean forceEvaluation=false ){
 		// streaming reader cannot calculate formulas: return cached value
-		if( library().getReturnCachedFormulaValues() || getStreamingReaderHelper().isStreamingReaderFormat( arguments.workbook ) )
+		if( !arguments.forceEvaluation && ( library().getReturnCachedFormulaValues() || getStreamingReaderHelper().isStreamingReaderFormat( arguments.workbook ) ) )
 			return getCachedFormulaValue( arguments.cell );
 		var formulaEvaluator = arguments.workbook.getCreationHelper().createFormulaEvaluator();
 		try{
@@ -47,6 +47,10 @@ component extends="base"{
 		catch( any exception ){
 			Throw( type=library().getExceptionType() & ".failedFormula", message="Failed to run formula", detail="There is a problem with the formula in sheet #arguments.cell.getSheet().getSheetName()# row #( arguments.cell.getRowIndex() +1 )# column #( arguments.cell.getColumnIndex() +1 )#");
 		}
+	}
+
+	void function forceFormulaEvaluation( required workbook, required cell ){
+		getCellFormulaValue( workbook=arguments.workbook, cell=arguments.cell, forceEvaluation=true );
 	}
 
 	string function getFormattedCellValue( required any cell ){

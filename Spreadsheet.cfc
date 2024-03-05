@@ -10,7 +10,7 @@ component accessors="true"{
 	property name="javaLoaderDotPath" default="javaLoader.JavaLoader" setter="false";
 	property name="javaLoaderName" default="" setter="false";
 	property name="requiresJavaLoader" type="boolean" default="false";
-	property name="returnCachedFormulaValues" type="boolean" default="false";//TODO How to test?
+	property name="returnCachedFormulaValues" type="boolean" default="true";//TODO How to test?
 	//detected state
 	property name="isACF" type="boolean" setter="false";
 	property name="javaClassesLastLoadedVia" default="Nothing loaded yet";
@@ -1368,6 +1368,8 @@ component accessors="true"{
 	){
 		var cell = getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column );
 		cell.setCellFormula( JavaCast( "string", arguments.formula ) );
+		if( getReturnCachedFormulaValues() )
+			getCellHelper().forceFormulaEvaluation( arguments.workbook, cell );
 		return this;
 	}
 
