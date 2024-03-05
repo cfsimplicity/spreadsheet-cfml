@@ -7,6 +7,7 @@ component accessors="true"{
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
 	//configurable
 	property name="dateFormats" type="struct" setter="false";
+	property name="defaultWorkbookFormat" default="binary" setter="true" getter="false";
 	property name="javaLoaderDotPath" default="javaLoader.JavaLoader" setter="false";
 	property name="javaLoaderName" default="" setter="false";
 	property name="requiresJavaLoader" type="boolean" default="false";
@@ -103,6 +104,12 @@ component accessors="true"{
 
 	private void function detectEngineProperties(){
 		variables.isACF = ( server.coldfusion.productname == "ColdFusion Server" );
+	}
+
+	private string function getDefaultWorkbookFormat(){
+		if( ListFindNoCase( "xml,xlsx", variables.defaultWorkbookFormat ) )
+			return "xml";
+		return "binary";
 	}
 
 	public string function getPoiVersion(){
@@ -1056,7 +1063,7 @@ component accessors="true"{
 
 	public any function new(
 		string sheetName="Sheet1"
-		,boolean xmlFormat=false
+		,boolean xmlFormat=( getDefaultWorkbookFormat() == "xml" )
 		,boolean streamingXml=false
 		,numeric streamingWindowSize
 	){
