@@ -1,15 +1,17 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="3.12.0" setter="false";
+	property name="version" default="4.0.0" setter="false";
 	property name="osgiLibBundleVersion" default="5.2.5.1" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
 	//configurable
 	property name="dateFormats" type="struct" setter="false";
+	property name="defaultWorkbookFormat" default="binary" setter="true" getter="false";
 	property name="javaLoaderDotPath" default="javaLoader.JavaLoader" setter="false";
 	property name="javaLoaderName" default="" setter="false";
 	property name="requiresJavaLoader" type="boolean" default="false";
+	property name="returnCachedFormulaValues" type="boolean" default="true";//TODO How to test?
 	//detected state
 	property name="isACF" type="boolean" setter="false";
 	property name="javaClassesLastLoadedVia" default="Nothing loaded yet";
@@ -102,6 +104,12 @@ component accessors="true"{
 
 	private void function detectEngineProperties(){
 		variables.isACF = ( server.coldfusion.productname == "ColdFusion Server" );
+	}
+
+	private string function getDefaultWorkbookFormat(){
+		if( ListFindNoCase( "xml,xlsx", variables.defaultWorkbookFormat ) )
+			return "xml";
+		return "binary";
 	}
 
 	public string function getPoiVersion(){
@@ -791,6 +799,10 @@ component accessors="true"{
 		return this;
 	}
 
+	public string function getCellAddress( required workbook, required numeric row, required numeric column ){
+		return getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column ).getAddress().formatAsString();
+	}
+
 	public any function getCellComment( required workbook, numeric row, numeric column ){
 		// returns struct OR array of structs
 		if( arguments.KeyExists( "row" ) && !arguments.KeyExists( "column" ) )
@@ -928,8 +940,7 @@ component accessors="true"{
 		var result = [];
 		for( var value in presetEnum.values() )
 			result.Append( value.name() );
-		result.Sort( "text" );//ACF2016 (not 2018) returns "YES" from a sort instead of the sorted array, so perform sort separately.
-		return result;
+		return result.Sort( "text" );
 	}
 
 	public numeric function getRowCount( required workbook, sheetNameOrNumber ){
@@ -1010,7 +1021,7 @@ component accessors="true"{
 	}
 
 	public boolean function isXmlFormat( required workbook ){
-		//CF2016 doesn't support [].Find( needle ) in all contexts;
+		//ACF doesn't support [].Find( needle ) in all contexts;
 		return ArrayFind( [ getClassHelper().getClassName( "XSSFWorkbook" ), getClassHelper().getClassName( "SXSSFWorkbook" ) ], arguments.workbook.getClass().getCanonicalName() );
 	}
 
@@ -1051,7 +1062,7 @@ component accessors="true"{
 
 	public any function new(
 		string sheetName="Sheet1"
-		,boolean xmlFormat=false
+		,boolean xmlFormat=( getDefaultWorkbookFormat() == "xml" )
 		,boolean streamingXml=false
 		,numeric streamingWindowSize
 	){
@@ -1363,6 +1374,8 @@ component accessors="true"{
 	){
 		var cell = getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column );
 		cell.setCellFormula( JavaCast( "string", arguments.formula ) );
+		if( getReturnCachedFormulaValues() )
+			getCellHelper().forceFormulaEvaluation( arguments.workbook, cell );
 		return this;
 	}
 

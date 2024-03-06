@@ -1,3 +1,16 @@
+## 4.0.0 - 6 March 2024
+
+- Breaking changes
+	- \#325 Drop support for ACF2016
+	- \#359 Library should default to returning cached cell formula values instead of always recalculating
+
+- Enhancements
+	- \#358 Allow control of whether to return cached or freshly calculated formula values
+	- \#354 Add getCellAddress() to return a cell's alphanumeric reference
+	- \#364 Support integer range validation
+	- \#356 Support date range validation
+	- \#363 Add option to allow New() to default to creating an XLSX (XML) spreadsheet object
+
 ## 3.12.0 - 27 November 2023
 
 - Enhancements

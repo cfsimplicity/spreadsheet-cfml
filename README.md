@@ -6,7 +6,7 @@ Standalone library for working with spreadsheets and CSV in CFML ([Lucee](http:/
 
 - Java 8 or higher
 - Lucee 5.x or higher
-- Adobe ColdFusion 2016 or higher
+- Adobe ColdFusion 2018 or higher
 
 ## Installation
 
@@ -130,6 +130,7 @@ You may wish to place the spreadsheet library files in a central location with a
 * [download](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/download)
 * [downloadCsvFromFile](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/downloadCsvFromFile)
 * [downloadFileFromQuery](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/downloadFileFromQuery)
+* [getCellAddress](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellAddress)
 * [getCellComments](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellComments)
 * [getCellFormat](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellFormat)
 * [getCellHyperLink](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellHyperLink)
@@ -160,6 +161,7 @@ You may wish to place the spreadsheet library files in a central location with a
 * [setCellHyperLink](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setCellHyperLink)
 * [setCellRangeValue](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setCellRangeValue)
 * [setDateFormats](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setDateFormats)
+* [setDefaultWorkbookFormat](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setDefaultWorkbookFormat)
 * [setFitToPage](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setFitToPage)
 * [setFooterImage](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setFooterImage)
 * [setHeaderImage](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setHeaderImage)
@@ -167,6 +169,7 @@ You may wish to place the spreadsheet library files in a central location with a
 * [setRecalculateFormulasOnNextOpen](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setRecalculateFormulasOnNextOpen)
 * [setRepeatingColumns](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setRepeatingColumns)
 * [setRepeatingRows](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setRepeatingRows)
+* [setReturnCachedFormulaValues](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setReturnCachedFormulaValues)
 * [setSheetTopMargin](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetTopMargin)
 * [setSheetBottomMargin](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetBottomMargin)
 * [setSheetLeftMargin](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetLeftMargin)
@@ -271,7 +274,7 @@ spreadsheet = wirebox.getInstance( "Spreadsheet CFML" );
 
 ## Test Suite
 
-The automated tests require [TestBox 2.1](https://github.com/Ortus-Solutions/TestBox) or later. You will need to create an application mapping for `/testbox`
+The automated tests require [TestBox 5.0](https://github.com/Ortus-Solutions/TestBox) or later. You will need to create an application mapping for `/testbox`
 
 ## Credits
 
@@ -283,7 +286,7 @@ The code was originally adapted from the work of [TeamCfAdvance](https://github.
 
 ### The MIT License (MIT)
 
-Copyright (c) 2015-2023 Julian Halliwell
+Copyright (c) 2015-2024 Julian Halliwell
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in

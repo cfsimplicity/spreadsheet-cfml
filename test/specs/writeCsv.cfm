@@ -226,7 +226,13 @@ describe( "writeCsv", function(){
 
 	describe( "writeCsv() throws an exception if", function(){
 
-		it( "the data is an array or query", function(){
+		it( "executed with no data", function(){
+			expect( function(){
+				s.writeCsv().execute();
+			}).toThrow( type="cfsimplicity.spreadsheet.missingDataForCsv" );
+		});
+
+		it( "the data is not an array or query", function(){
 			expect( function(){
 				var data = "string";
 				s.writeCsv().fromData( data ).execute();

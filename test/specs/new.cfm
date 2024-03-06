@@ -11,6 +11,18 @@ describe( "new", function(){
 		expect( s.isXmlFormat( workbook ) ).toBeTrue();
 	});
 
+	it( "Returns an XSSF workbook if global defaultWorkbookFormat is 'xml' or 'xlsx'", function(){
+		var s = newSpreadsheetInstance().setDefaultWorkbookFormat( "xml" );
+		var workbook = s.new();
+		expect( s.isXmlFormat( workbook ) ).toBeTrue();
+		s.setDefaultWorkbookFormat( "binary" );
+		workbook = s.new();
+		expect( s.isBinaryFormat( workbook ) ).toBeTrue();
+		s.setDefaultWorkbookFormat( "xlsx" );
+		workbook = s.new();
+		expect( s.isXmlFormat( workbook ) ).toBeTrue();
+	});
+
 	it( "Returns a streaming XSSF workbook if streamingXml is true", function(){
 		var workbook = s.new( streamingXml=true );
 		expect( s.isStreamingXmlFormat( workbook ) ).toBeTrue();

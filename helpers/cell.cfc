@@ -36,10 +36,10 @@ component extends="base"{
 		return getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).getCell( JavaCast( "int", columnIndex ) );
 	}
 
-	any function getCellFormulaValue( required workbook, required cell ){
+	any function getCellFormulaValue( required workbook, required cell, boolean forceEvaluation=false ){
 		// streaming reader cannot calculate formulas: return cached value
-		if( getStreamingReaderHelper().isStreamingReaderFormat( arguments.workbook ) )
-			return arguments.cell.getStringCellValue();
+		if( !arguments.forceEvaluation && ( library().getReturnCachedFormulaValues() || getStreamingReaderHelper().isStreamingReaderFormat( arguments.workbook ) ) )
+			return getCachedFormulaValue( arguments.cell );
 		var formulaEvaluator = arguments.workbook.getCreationHelper().createFormulaEvaluator();
 		try{
 			return getFormatHelper().getDataFormatter().formatCellValue( arguments.cell, formulaEvaluator );
@@ -49,14 +49,15 @@ component extends="base"{
 		}
 	}
 
+	void function forceFormulaEvaluation( required workbook, required cell ){
+		getCellFormulaValue( workbook=arguments.workbook, cell=arguments.cell, forceEvaluation=true );
+	}
+
 	string function getFormattedCellValue( required any cell ){
 		return getFormatHelper().getDataFormatter().formatCellValue( arguments.cell );
 	}
 
 	any function getCellValueAsType( required workbook, required cell ){
-		/*
-		Get the value of the cell based on the data type. The thing to worry about here is cell formulas and cell dates. Formulas can be strange and dates are stored as numeric types. Here I will just grab dates as floats and formulas I will try to grab as numeric values.
-		*/
 		if( cellIsOfType( arguments.cell, "NUMERIC" ) )
 			return getCellNumericOrDateValue( arguments.cell );
 		if( cellIsOfType( arguments.cell, "FORMULA" ) )
@@ -211,6 +212,16 @@ component extends="base"{
 	private any function setStringValue( required any cell, required any value ){
 		arguments.cell.setCellValue( JavaCast( "string", arguments.value ) );
 		return this;
+	}
+
+	private any function getCachedFormulaValue( required cell ){
+		var cellType = arguments.cell.getCellType();
+		var cachedValueType = arguments.cell.getCachedFormulaResultType();
+		if( ObjectEquals( cachedValueType, cellType.NUMERIC ) )
+			return getCellNumericOrDateValue( arguments.cell ); 
+		if( ObjectEquals( cachedValueType, cellType.BOOLEAN ) )
+			return arguments.cell.getBooleanCellValue();
+		return arguments.cell.getStringCellValue();
 	}
 
 }

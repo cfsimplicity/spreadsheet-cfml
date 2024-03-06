@@ -1,7 +1,7 @@
 {
     "name" : "Spreadsheet CFML",
     "slug" : "spreadsheet-cfml",
-    "version" : "3.12.0",
+    "version" : "4.0.0",
     "shortDescription" : "CFML spreadsheet library",
     "author" : "Julian Halliwell",
     "location" : "forgeboxStorage",
@@ -15,14 +15,14 @@
     },
     "engines" : [
         { "type" : "lucee", "version" : ">=5.x.x" },
-        { "type" : "adobe", "version" : ">=2016.0.0" }
+        { "type" : "adobe", "version" : ">=2018.0.0" }
     ],
     "defaultEngine" : "lucee",
     "license" : [
         { "type" : "MIT", "URL" : "https://github.com/cfsimplicity/spreadsheet-cfml/blob/main/LICENSE" }
     ],
     "devDependencies" : {
-        "testbox" : ">=4.0.0"
+        "testbox" : ">=5.0.0"
     },
     "installPaths":{
         "testbox":"test/testbox/"
