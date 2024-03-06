@@ -6,7 +6,7 @@ Standalone library for working with spreadsheets and CSV in CFML ([Lucee](http:/
 
 - Java 8 or higher
 - Lucee 5.x or higher
-- Adobe ColdFusion 2016 or higher
+- Adobe ColdFusion 2018 or higher
 
 ## Installation
 
@@ -271,7 +271,7 @@ spreadsheet = wirebox.getInstance( "Spreadsheet CFML" );
 
 ## Test Suite
 
-The automated tests require [TestBox 2.1](https://github.com/Ortus-Solutions/TestBox) or later. You will need to create an application mapping for `/testbox`
+The automated tests require [TestBox 5.0](https://github.com/Ortus-Solutions/TestBox) or later. You will need to create an application mapping for `/testbox`
 
 ## Credits
 

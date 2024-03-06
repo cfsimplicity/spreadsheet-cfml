@@ -13,22 +13,8 @@ component extends="base"{
 	}
 
 	query function _QueryDeleteColumn( required query q, required string columnToDelete ){
-		try{
-			QueryDeleteColumn( arguments.q, arguments.columnToDelete ); // Lucee/ACF2018+
-			return arguments.q;
-		}
-		catch( any exception ){
-			if( !exception.message CONTAINS "undefined" )
-				rethrow;
-			//ACF2016 doesn't support QueryDeleteColumn()
-			var columnPosition = ListFindNoCase( arguments.q.columnList, arguments.columnToDelete );
-			if( !columnPosition )
-				return arguments.q;
-			var columnsToKeep = ListDeleteAt( arguments.q.columnList, columnPosition );
-			if( !columnsToKeep.Len() )
-				return QueryNew( "" );
-			return QueryExecute( "SELECT #columnsToKeep# FROM arguments.q", {}, { dbType = "query" } );
-		}
+		QueryDeleteColumn( arguments.q, arguments.columnToDelete );
+		return arguments.q;
 	}
 
 	query function _QueryNew(

@@ -940,8 +940,7 @@ component accessors="true"{
 		var result = [];
 		for( var value in presetEnum.values() )
 			result.Append( value.name() );
-		result.Sort( "text" );//ACF2016 (not 2018) returns "YES" from a sort instead of the sorted array, so perform sort separately.
-		return result;
+		return result.Sort( "text" );
 	}
 
 	public numeric function getRowCount( required workbook, sheetNameOrNumber ){
@@ -1022,7 +1021,7 @@ component accessors="true"{
 	}
 
 	public boolean function isXmlFormat( required workbook ){
-		//CF2016 doesn't support [].Find( needle ) in all contexts;
+		//ACF doesn't support [].Find( needle ) in all contexts;
 		return ArrayFind( [ getClassHelper().getClassName( "XSSFWorkbook" ), getClassHelper().getClassName( "SXSSFWorkbook" ) ], arguments.workbook.getClass().getCanonicalName() );
 	}
 
