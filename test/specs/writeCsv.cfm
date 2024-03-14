@@ -259,6 +259,14 @@ describe( "writeCsv", function(){
 			}
 		);
 
+		it( "the file path specified is VFS", function(){
+			expect( function(){
+				var data = [ [ "a", "b" ], [ "c", "d" ] ];
+				var path = "ram://temp.csv";
+				s.writeCsv().fromData( data ).toFile( path ).execute();
+			}).toThrow( type="cfsimplicity.spreadsheet.vfsNotSupported" );
+		});
+
 	});
 
 });
