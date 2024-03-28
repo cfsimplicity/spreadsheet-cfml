@@ -11,10 +11,7 @@ component extends="base"{
 				arguments.sheetToQueryArgs.workbook = getBuilder( arguments.builderOptions ).open( file );
 				return getSheetHelper().sheetToQuery( argumentCollection=arguments.sheetToQueryArgs );
 			}
-			catch( org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException exception ){
-				getExceptionHelper().throwInvalidFileForReadLargeFileException();
-			}
-			catch( org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException exception ){
+			catch( com.github.pjfanning.xlsx.exceptions.ReadException exception ){
 				getExceptionHelper().throwInvalidFileForReadLargeFileException();
 			}
 			finally{
