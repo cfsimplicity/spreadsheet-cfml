@@ -13,7 +13,7 @@ jobs:
       image: foundeo/cfml-ci-tools:latest
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Install dependencies
       run: box install
     - name: Start a server
