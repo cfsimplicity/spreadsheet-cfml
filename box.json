@@ -27,6 +27,11 @@
     "installPaths":{
         "testbox":"test/testbox/"
     },
+    testbox:{
+        runner:[
+            { "default": "http://localhost:8080/test/index.cfm" }
+        ]
+    },
     "type" : "modules",
     "keywords" : [ "cfspreadsheet", "coldfusion", "lucee", "module", "spreadsheet", "csv" ],
     "private" : "false",
