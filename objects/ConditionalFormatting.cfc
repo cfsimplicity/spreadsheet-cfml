@@ -83,7 +83,7 @@ component{
 		var evaluator = variables.library.createJavaObject( "org.apache.poi.ss.formula.ConditionalFormattingEvaluator" ).init( variables.workbook, provider );
 		evaluator.clearAllCachedValues();
 		var cellReferenceWithSheetName = addSheetNameToCellReference( arguments.cellReference );
-		var cellReferenceObject = variables.library.createJavaObject( "org.apache.poi.ss.util.CellReference" ).init( cellReferenceWithSheetName );
+		var cellReferenceObject = variables.library.getCellHelper().getReferenceObjectByAddressString( cellReferenceWithSheetName );
 		return evaluator.getConditionalFormattingForCell( cellReferenceObject );
 	}
 

@@ -34,6 +34,8 @@ component extends="base"{
 		Throw( type=library().getExceptionType() & ".parallelOptionNotSupported", message="Parallel threads option not supported", detail="Your ColdFusion engine does not support parallel processing of loops via threads" );
 	}
 
-	
+	void function throwInvalidCellException( required numeric rowNumber, required numeric columnNumber ){
+		Throw( type=library().getExceptionType() & ".invalidCell", message="Invalid cell", detail="The requested cell [#arguments.rowNumber#,#arguments.columnNumber#] does not exist in the active sheet" );
+	}
 
 }
