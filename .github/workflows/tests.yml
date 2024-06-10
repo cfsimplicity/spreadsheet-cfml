@@ -35,4 +35,4 @@ jobs:
       run: box server start cfengine=${{ matrix.cfengine }} port=8080
 
     - name: Run TestBox Tests
-      run: box testbox run
+      run: box testbox run runner="http://localhost:8080/test/index.cfm"
