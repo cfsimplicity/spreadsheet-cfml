@@ -17,7 +17,7 @@ component extends="testbox.system.BaseSpec"{
 	  variables.tempXlsxPath = ExpandPath( "temp.xlsx" );
 	  variables.tempCsvPath = ExpandPath( "temp.csv" );
 	  variables.newline = Chr( 13 ) & Chr( 10 );
-	  variables.spreadsheetTypes = [ "Xls", "Xlsx" ];
+	  variables.spreadsheetTypes = [ "xls", "xlsx" ];
 	}
 
 	function getTestFilePath( required string filename ){
