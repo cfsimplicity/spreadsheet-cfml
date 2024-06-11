@@ -27,5 +27,8 @@
     "type" : "modules",
     "keywords" : [ "cfspreadsheet", "coldfusion", "lucee", "module", "spreadsheet", "csv" ],
     "private" : "false",
-    "ignore" : [ ".github", "build", "src", "test", ".gitattributes", "CHANGELOG.md", "README.md" ]
+    "ignore" : [ ".github", "build", "src", "test", ".gitattributes", "CHANGELOG.md", "README.md" ],
+    "scripts":{
+        "cfpmInstall": "cfpm install image"
+    }
 }

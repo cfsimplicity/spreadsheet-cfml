@@ -34,5 +34,9 @@ jobs:
     - name: Start a server
       run: box server start cfengine=${{ matrix.cfengine }} port=8080
 
+    - name: Install ACF packages
+      if: ${{ matrix.cfengine == 'adobe@2021' || matrix.cfengine == 'adobe@2023' }}
+      run: box run-script cfpmInstall
+
     - name: Run TestBox Tests
       run: box testbox run runner="http://localhost:8080/test/index.cfm"
