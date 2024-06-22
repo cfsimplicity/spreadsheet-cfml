@@ -8,10 +8,12 @@ component extends="base"{
 		return variables.cellUtil;
 	}
 
-	boolean function cellExists( required workbook, required numeric rowNumber, required numeric columnNumber ){
-		var checkRow = getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.rowNumber );
-		var columnIndex = ( arguments.columnNumber -1 );
-		return !IsNull( checkRow ) && !IsNull( checkRow.getCell( JavaCast( "int", columnIndex ) ) );
+	any function getReferenceObject( required cell ){
+		return library().createJavaObject( "org.apache.poi.ss.util.CellReference" ).init( arguments.cell );
+	}
+
+	any function getReferenceObjectByAddressString( required string address ){
+		return library().createJavaObject( "org.apache.poi.ss.util.CellReference" ).init( arguments.address );
 	}
 
 	boolean function cellIsOfType( required cell, required string type ){
@@ -30,10 +32,8 @@ component extends="base"{
 	}
 
 	any function getCellAt( required workbook, required numeric rowNumber, required numeric columnNumber ){
-		if( !cellExists( argumentCollection=arguments ) )
-			Throw( type=library().getExceptionType() & ".invalidCell", message="Invalid cell", detail="The requested cell [#arguments.rowNumber#,#arguments.columnNumber#] does not exist in the active sheet" );
 		var columnIndex = ( arguments.columnNumber -1 );
-		return getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.rowNumber ).getCell( JavaCast( "int", columnIndex ) );
+		return getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.rowNumber )?.getCell( JavaCast( "int", columnIndex ) );
 	}
 
 	any function getCellFormulaValue( required workbook, required cell, boolean forceEvaluation=false ){

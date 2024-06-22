@@ -20,6 +20,8 @@ component extends="BaseCsv" accessors="true"{
 	}
 
 	public WriteCsv function toFile( required string path ){
+		if( arguments.path.Left( 4 ) == "ram:" )
+			Throw( type=variables.library.getExceptionType() & ".vfsNotSupported", message="Invalid file path", detail="Virtual File System (RAM) paths are not supported for writing to CSV. Try just returning the CSV string and then using FileWrite() to write to the VFS path" );
 		variables.filepath = arguments.path;
 		return this;
 	}

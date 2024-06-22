@@ -4,19 +4,39 @@ on:
   [ workflow_dispatch, workflow_call ]
 
 jobs:
-  testbox:
+  tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         cfengine: [ "lucee@5", "adobe@2018", "adobe@2021", "adobe@2023" ]
-    container:
-      image: foundeo/cfml-ci-tools:latest
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+
+    - name: Install the ortus security key
+      run: curl -fsSl https://downloads.ortussolutions.com/debs/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/ortussolutions.gpg > /dev/null
+
+    - name: Add the commandbox source
+      run: echo "deb [signed-by=/usr/share/keyrings/ortussolutions.gpg] https://downloads.ortussolutions.com/debs/noarch /" | sudo tee /etc/apt/sources.list.d/commandbox.list
+
+    - name: Update apt and install commandbox
+      run: sudo apt-get update && sudo apt-get install apt-transport-https commandbox
+
     - name: Install dependencies
       run: box install
+
     - name: Start a server
       run: box server start cfengine=${{ matrix.cfengine }} port=8080
+
+    - name: Install ACF packages
+      if: ${{ matrix.cfengine == 'adobe@2021' || matrix.cfengine == 'adobe@2023' }}
+      run: box run-script cfpmInstall
+
     - name: Run TestBox Tests
-      run: box testbox run "http://localhost:8080/test/index.cfm"
+      run: box testbox run runner="http://localhost:8080/test/index.cfm"

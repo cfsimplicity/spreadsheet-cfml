@@ -115,6 +115,7 @@ component extends="base"{
 			,name: sheet.getSheetName()
 			,numberOfDataValidations: sheet.getDataValidations().Len()
 			,numberOfMergedRegions: sheet.getNumMergedRegions()
+			,position: getSheetIndexFromName( arguments.workbook, sheet.getSheetName() )+1
 			,printsFitToPage: sheet.getFitToPage()
 			,printsGridlines: sheet.isPrintGridlines()
 			,printsHorizontallyCentered: sheet.getHorizontallyCenter()

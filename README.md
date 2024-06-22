@@ -148,6 +148,7 @@ You may wish to place the spreadsheet library files in a central location with a
 * [isRowHidden](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isRowHidden)
 * [isStreamingXmlFormat](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isStreamingXmlFormat)
 * [isXmlFormat](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isXmlFormat)
+* [moveSheet](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/moveSheet)
 * [newStreamingXlsx](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/newStreamingXlsx)
 * [newXls](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/newXls)
 * [newXlsx](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/newXlsx)

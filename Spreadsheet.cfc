@@ -1,8 +1,8 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="4.0.0" setter="false";
-	property name="osgiLibBundleVersion" default="5.2.5.1" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="version" default="4.1.0" setter="false";
+	property name="osgiLibBundleVersion" default="5.2.5.3" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
 	//configurable
@@ -800,7 +800,10 @@ component accessors="true"{
 	}
 
 	public string function getCellAddress( required workbook, required numeric row, required numeric column ){
-		return getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column ).getAddress().formatAsString();
+		var cell = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column );
+		if( IsNull( cell ) )
+			getExceptionHelper().throwInvalidCellException( arguments.row, arguments.column );
+		return cell.getAddress().formatAsString();
 	}
 
 	public any function getCellComment( required workbook, numeric row, numeric column ){
@@ -812,6 +815,8 @@ component accessors="true"{
 		if( !arguments.KeyExists( "row" ) )
 			return getCellComments( arguments.workbook );// row and column weren't provided so return all the comments as an array of structs
 		var cell = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column );
+		if( IsNull( cell ) )
+			getExceptionHelper().throwInvalidCellException( arguments.row, arguments.column );
 		var commentObject = cell.getCellComment();
 		if( IsNull( commentObject ) )
 			return {};
@@ -840,9 +845,10 @@ component accessors="true"{
 	}
 
 	public struct function getCellFormat( required workbook, required numeric row, required numeric column ){
-		if( !getCellHelper().cellExists( arguments.workbook, arguments.row, arguments.column ) )
-			Throw( type=this.getExceptionType() & ".invalidCell", message="Invalid cell", detail="There doesn't appear to be a cell at row #row#, column #column#" );
-		var cellStyle = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column ).getCellStyle();
+		var cell = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column );
+		if( IsNull( cell ) )
+			getExceptionHelper().throwInvalidCellException( arguments.row, arguments.column );
+		var cellStyle = cell.getCellStyle();
 		var cellFont = arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() );
 		var rgb = getColorHelper().getRGBFromCellFont( arguments.workbook, cellFont );
 		return {
@@ -876,9 +882,9 @@ component accessors="true"{
 	public any function getCellFormula( required workbook, numeric row, numeric column ){
 		if( !arguments.KeyExists( "row" ) || !arguments.KeyExists( "column" ) )
 			return getSheetHelper().getAllSheetFormulas( arguments.workbook );
-		if( !getCellHelper().cellExists( arguments.workbook, arguments.row, arguments.column ) )
-			return "";
 		var cell = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column );
+		if( IsNull( cell ) )
+			return "";
 		if( getCellHelper().cellIsOfType( cell, "FORMULA" ) )
 			return cell.getCellFormula();
 		return "";
@@ -890,16 +896,16 @@ component accessors="true"{
 	}
 
 	public string function getCellType( required workbook, required numeric row, required numeric column ){
-		if( !getCellHelper().cellExists( arguments.workbook, arguments.row, arguments.column ) )
-			return "";
 		var cell = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column );
+		if( IsNull( cell ) )
+			return "";
 		return cell.getCellType().toString();
 	}
 
 	public any function getCellValue( required workbook, required numeric row, required numeric column, boolean returnVisibleValue=true ){
-		if( !getCellHelper().cellExists( arguments.workbook, arguments.row, arguments.column ) )
-			return "";
 		var cell = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column );
+		if( IsNull( cell ) )
+			return "";
 		if( arguments.returnVisibleValue && !getCellHelper().cellIsOfType( cell, "FORMULA" ) )
 			return getCellHelper().getFormattedCellValue( cell );
 		return getCellHelper().getCellValueAsType( arguments.workbook, cell );
@@ -1057,6 +1063,14 @@ component accessors="true"{
 		setCellRangeValue( arguments.workbook, "", arguments.startRow, arguments.endRow, arguments.startColumn, arguments.endColumn );
 		//restore the stashed value
 		setCellValue( arguments.workbook, visibleValue, arguments.startRow, arguments.startColumn );
+		return this;
+	}
+
+	public Spreadsheet function moveSheet( required workbook, required string sheetName, required numeric newPosition ){
+		getSheetHelper()
+			.validateSheetExistsWithName( arguments.workbook, arguments.sheetName )
+			.validateSheetNumber( arguments.workbook, arguments.newPosition )
+			.moveSheet( arguments.workbook, arguments.sheetName, arguments.newPosition-1 );
 		return this;
 	}
 
