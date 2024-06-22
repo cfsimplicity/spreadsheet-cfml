@@ -1066,6 +1066,14 @@ component accessors="true"{
 		return this;
 	}
 
+	public Spreadsheet function moveSheet( required workbook, required string sheetName, required numeric newPosition ){
+		getSheetHelper()
+			.validateSheetExistsWithName( arguments.workbook, arguments.sheetName )
+			.validateSheetNumber( arguments.workbook, arguments.newPosition )
+			.moveSheet( arguments.workbook, arguments.sheetName, arguments.newPosition-1 );
+		return this;
+	}
+
 	public any function new(
 		string sheetName="Sheet1"
 		,boolean xmlFormat=( getDefaultWorkbookFormat() == "xml" )

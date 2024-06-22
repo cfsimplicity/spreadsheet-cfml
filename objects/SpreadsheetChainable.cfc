@@ -426,6 +426,12 @@ component{
 		return this;
 	}
 
+	public SpreadsheetChainable function moveSheet( required string sheetName, required numeric newPosition ){
+		addWorkbookArgument( arguments );
+		variables.library.moveSheet( argumentCollection=arguments );
+		return this;
+	}
+
 	public any function read(
 		required string src
 		,string format
