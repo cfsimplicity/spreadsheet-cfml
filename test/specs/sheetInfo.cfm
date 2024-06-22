@@ -18,6 +18,7 @@ describe( "sheetInfo", function(){
 				,name: "Sheet1"
 				,numberOfDataValidations: 0
 				,numberOfMergedRegions: 0
+				,position: 1
 				,printsFitToPage: ( type == "xls" )//xlsx=false xls=true
 				,printsGridlines: false
 				,printsHorizontallyCentered: false
@@ -31,6 +32,8 @@ describe( "sheetInfo", function(){
 			var actual = chainable.sheetInfo();
 			expect( actual ).toBe( defaults );
 			var sheet = s.getSheetHelper().getActiveSheet( wb );
+			// position
+			expect( chainable.sheetInfo().position ).toBe( 1 );
 			// displaysAutomaticPageBreaks
 			sheet.setAutoBreaks( JavaCast( "boolean", true ) );
 			expect( chainable.sheetInfo().displaysAutomaticPageBreaks ).toBeTrue();
