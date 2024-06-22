@@ -1,3 +1,12 @@
+## 4.1.0 - 22 June 2024
+
+- Enhancements
+	- \#369 Add moveSheet()
+	- \#370 Add sheet position to sheetInfo() properties
+
+- Maintenance
+	-\#371 Upgrade excel-streaming-reader to 4.3.1
+
 ## 4.0.0 - 6 March 2024
 
 - Breaking changes
