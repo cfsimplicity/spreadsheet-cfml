@@ -1088,7 +1088,6 @@ component accessors="true"{
 		var workbook = getWorkbookHelper().createWorkBook( argumentCollection=createArgs );
 		getSheetHelper().validateSheetName( arguments.sheetName );
 		createSheet( workbook, arguments.sheetName, arguments.xmlFormat );
-		setActiveSheet( workbook, arguments.sheetName );
 		return workbook;
 	}
 
