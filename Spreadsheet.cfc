@@ -1,8 +1,8 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="4.1.0" setter="false";
-	property name="osgiLibBundleVersion" default="5.2.5.3" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="version" default="4.1.1" setter="false";
+	property name="osgiLibBundleVersion" default="5.3.0.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
 	//configurable
@@ -1088,7 +1088,6 @@ component accessors="true"{
 		var workbook = getWorkbookHelper().createWorkBook( argumentCollection=createArgs );
 		getSheetHelper().validateSheetName( arguments.sheetName );
 		createSheet( workbook, arguments.sheetName, arguments.xmlFormat );
-		setActiveSheet( workbook, arguments.sheetName );
 		return workbook;
 	}
 

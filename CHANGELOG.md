@@ -1,3 +1,8 @@
+## 4.1.1 - 9 July 2024
+
+- Maintenance
+	-\#372 Upgrade POI to 5.3.0, commons-csv to 1.11.0 and excel-streaming-reader to 4.4.0
+
 ## 4.1.0 - 22 June 2024
 
 - Enhancements
