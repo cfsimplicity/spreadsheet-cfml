@@ -1,3 +1,12 @@
+## 4.2.0 - 6 August 2024
+
+- Enhancements
+	- \#373 Allow datatype to be specified with addColumn()
+	- \#374 Rename setCellValue() "type" argument to "datatype" for consistency
+
+- Maintenance
+	-\#375 Upgrade excel-streaming-reader to 5.0.2
+
 ## 4.1.1 - 9 July 2024
 
 - Maintenance
