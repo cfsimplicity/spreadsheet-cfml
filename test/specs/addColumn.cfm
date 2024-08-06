@@ -59,10 +59,20 @@ describe( "addColumn", function(){
 	it( "Adds a column including commas with a custom delimiter", function(){
 		workbooks.Each( function( wb ){
 			var columnData = "a,b|c,d";
-			s.addColumn( workbook=wb, data=columnData,delimiter="|" );
+			s.addColumn( workbook=wb, data=columnData, delimiter="|" );
 			var expected = QueryNew( "column1", "VarChar", [ [ "a,b" ], [ "c,d" ] ] );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
+		});
+	});
+
+	it( "Allows the data type to be specified", function(){
+		var columnData = [ 1.234 ];
+		workbooks.Each( function( wb ){
+			s.addColumn( workbook=wb, data=columnData, datatype="string" );
+			var actual = s.getCellValue( wb, 1, 1 );
+			expect( actual ).toBe( "1.234" );
+			expect( s.getCellType( wb, 1, 1 ) ).toBe( "string" );
 		});
 	});
 		

@@ -201,6 +201,7 @@ component accessors="true"{
 		,boolean insert=false
 		,string delimiter=","
 		,boolean autoSize=false
+		,string datatype
 	){
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		var rowIndex = arguments.KeyExists( "startRow" )? ( arguments.startRow -1 ): 0;
@@ -217,7 +218,14 @@ component accessors="true"{
 			if( insertRequired )
 				getColumnHelper().shiftColumnsRightStartingAt( columnIndex, row, arguments.workbook );
 			var cell = getCellHelper().createCell( row, columnIndex );
-			getCellHelper().setCellValueAsType( arguments.workbook, cell, cellValue );
+			var cellValueArgs = {
+				workbook: arguments.workbook
+				,cell: cell
+				,value: cellValue
+			};
+			if( arguments.KeyExists( "datatype" ) )
+				cellValueArgs.type = arguments.datatype;
+			getCellHelper().setCellValueAsType( argumentCollection=cellValueArgs );
 			rowIndex++;
 		}
 		if( arguments.autoSize )
