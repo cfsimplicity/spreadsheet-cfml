@@ -1,8 +1,8 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="4.1.1" setter="false";
-	property name="osgiLibBundleVersion" default="5.3.0.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="version" default="4.2.0" setter="false";
+	property name="osgiLibBundleVersion" default="5.3.0.1" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
 	//configurable
@@ -201,6 +201,7 @@ component accessors="true"{
 		,boolean insert=false
 		,string delimiter=","
 		,boolean autoSize=false
+		,string datatype
 	){
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		var rowIndex = arguments.KeyExists( "startRow" )? ( arguments.startRow -1 ): 0;
@@ -216,8 +217,14 @@ component accessors="true"{
 			var insertRequired = ( arguments.KeyExists( "startColumn" ) && arguments.insert && ( columnIndex < row.getLastCellNum() ) );
 			if( insertRequired )
 				getColumnHelper().shiftColumnsRightStartingAt( columnIndex, row, arguments.workbook );
-			var cell = getCellHelper().createCell( row, columnIndex );
-			getCellHelper().setCellValueAsType( arguments.workbook, cell, cellValue );
+			var cellValueArgs = {
+				workbook: arguments.workbook
+				,cell: getCellHelper().createCell( row, columnIndex )
+				,value: cellValue
+			};
+			if( arguments.KeyExists( "datatype" ) )
+				cellValueArgs.type = arguments.datatype;
+			getCellHelper().setCellValueAsType( argumentCollection=cellValueArgs );
 			rowIndex++;
 		}
 		if( arguments.autoSize )
@@ -1428,12 +1435,15 @@ component accessors="true"{
 		return this;
 	}
 
-	public Spreadsheet function setCellValue( required workbook, required value, required numeric row, required numeric column, string type ){
+	public Spreadsheet function setCellValue( required workbook, required value, required numeric row, required numeric column, string datatype ){
 		var args = {
 			workbook: arguments.workbook
 			,cell: getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column )
 			,value: arguments.value
 		};
+		if( arguments.KeyExists( "datatype" ) )
+			args.type = arguments.datatype;
+		//support legacy argument name
 		if( arguments.KeyExists( "type" ) )
 			args.type = arguments.type;
 		getCellHelper().setCellValueAsType( argumentCollection=args );
