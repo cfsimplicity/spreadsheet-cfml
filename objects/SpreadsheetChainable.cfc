@@ -553,7 +553,7 @@ component{
 		return this;
 	}
 
-	public SpreadsheetChainable function setCellValue( required value, required numeric row, required numeric column, string type ){
+	public SpreadsheetChainable function setCellValue( required value, required numeric row, required numeric column, string datatype ){
 		addWorkbookArgument( arguments );
 		variables.library.setCellValue( argumentCollection=arguments );
 		return this;

@@ -219,6 +219,23 @@ describe( "cellValue", function(){
 			});
 		});
 
+		it( "support legacy 'type' argument name", function(){
+			var value = 1.234;
+			workbooks.Each( function( wb ){
+				s.setCellValue( workbook=wb, value=value, row=1, column=1, type="string" );
+				var actual = s.getCellValue( wb, 1, 1 );
+				expect( actual ).toBe( "1.234" );
+				expect( s.getCellType( wb, 1, 1 ) ).toBe( "string" );
+			});
+			workbooks.Each( function( wb ){
+				var actual = s.newChainable( wb )
+				.setCellValue( value=value, row=1, column=1, type="string" )
+				.getCellValue( 1, 1 );
+			expect( actual ).toBe( "1.234" );
+			expect( s.getCellType( wb, 1, 1 ) ).toBe( "string" );
+		});
+		});
+
 	});
 
 	describe(

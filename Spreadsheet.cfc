@@ -1436,12 +1436,15 @@ component accessors="true"{
 		return this;
 	}
 
-	public Spreadsheet function setCellValue( required workbook, required value, required numeric row, required numeric column, string type ){
+	public Spreadsheet function setCellValue( required workbook, required value, required numeric row, required numeric column, string datatype ){
 		var args = {
 			workbook: arguments.workbook
 			,cell: getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column )
 			,value: arguments.value
 		};
+		if( arguments.KeyExists( "datatype" ) )
+			args.type = arguments.datatype;
+		//support legacy argument name
 		if( arguments.KeyExists( "type" ) )
 			args.type = arguments.type;
 		getCellHelper().setCellValueAsType( argumentCollection=args );
