@@ -217,10 +217,9 @@ component accessors="true"{
 			var insertRequired = ( arguments.KeyExists( "startColumn" ) && arguments.insert && ( columnIndex < row.getLastCellNum() ) );
 			if( insertRequired )
 				getColumnHelper().shiftColumnsRightStartingAt( columnIndex, row, arguments.workbook );
-			var cell = getCellHelper().createCell( row, columnIndex );
 			var cellValueArgs = {
 				workbook: arguments.workbook
-				,cell: cell
+				,cell: getCellHelper().createCell( row, columnIndex )
 				,value: cellValue
 			};
 			if( arguments.KeyExists( "datatype" ) )
