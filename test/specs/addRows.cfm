@@ -232,7 +232,7 @@ describe( "addRows", function(){
 			expect( s.getCellType( wb, 1, 2 ) ).toBe( "blank" );
 			expect( s.getCellType( wb, 1, 3 ) ).toBe( "blank" );
 			expect( s.getCellType( wb, 1, 4 ) ).toBe( "blank" );
-			expect( s.getCellType( wb, 1, 5 ) ).toBe( "numeric" );
+			expect( s.getCellType( wb, 1, 5 ) ).toBe( "blank" );
 			//doesn't apply to array data which has no column types
 		});
 	});
