@@ -1,3 +1,7 @@
+## 4.2.1 - 23 August 2024
+
+- Fix: \#377 AddRows() should not convert empty values to zeros when they are in a numeric typed query column
+
 ## 4.2.0 - 6 August 2024
 
 - Enhancements
