@@ -102,7 +102,8 @@ component extends="base"{
 			case "boolean":
 				return setBooleanValue( argumentCollection=arguments );
 			case "blank":
-				return setEmptyValue( argumentCollection=arguments );
+				setEmptyValue( arguments.cell );
+				return this;
 			case "url":
 				if( IsValid( "url", arguments.value ) )
 					return setUrlHyperLinkValue( argumentCollection=arguments );
@@ -147,6 +148,10 @@ component extends="base"{
 	}
 
 	private any function setNumericValue( required any cell, required any value ){
+		if( Trim( arguments.value ).IsEmpty() ){
+			setEmptyValue( arguments.cell );
+			return this;
+		}
 		arguments.cell.setCellValue( JavaCast( "double", Val( arguments.value ) ) );
 		return this;
 	}
@@ -155,7 +160,7 @@ component extends="base"{
 		getDateHelper().matchPoiTimeZoneToEngine();
 		//handle empty strings which can't be treated as dates
 		if( Trim( arguments.value ).IsEmpty() ){
-			arguments.cell.setBlank(); //no need to set the value: it will be blank
+			setEmptyValue( arguments.cell );
 			return this;
 		}
 		var dateTimeValue = ParseDateTime( arguments.value );
@@ -179,11 +184,15 @@ component extends="base"{
 	private any function setBooleanValue( required any cell, required any value ){
 		//handle empty strings/nulls which can't be treated as booleans
 		if( Trim( arguments.value ).IsEmpty() ){
-			arguments.cell.setBlank(); //no need to set the value: it will be blank
+			setEmptyValue( arguments.cell );
 			return this;
 		}
 		arguments.cell.setCellValue( JavaCast( "boolean", arguments.value ) );
 		return this;
+	}
+
+	private void function setEmptyValue( required any cell ){
+		arguments.cell.setBlank(); //no need to set the value: it will be blank
 	}
 
 	private void function setUrlHyperLinkValue( required workbook, required cell, required value ){
@@ -202,11 +211,6 @@ component extends="base"{
 		getHyperLinkHelper().addHyperLinkToCell( arguments.cell, arguments.workbook, arguments.value, "FILE" );
 		setStringValue( arguments.cell, arguments.value );
 		getHyperLinkHelper().setHyperLinkDefaultStyle( argumentCollection=arguments );
-	}
-
-	private any function setEmptyValue( required any cell ){
-		arguments.cell.setBlank(); //no need to set the value: it will be blank
-		return this;
 	}
 
 	private any function setStringValue( required any cell, required any value ){
