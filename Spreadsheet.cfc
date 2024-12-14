@@ -51,7 +51,9 @@ component accessors="true"{
 	}
 
 	private void function initializeJavaLoading( string javaLoaderDotPath, boolean requiresJavaLoader ){
-		variables.requiresJavaLoader = this.getIsACF() || ( arguments.KeyExists( "requiresJavaLoader" ) && arguments.requiresJavaLoader );
+		variables.requiresJavaLoader = this.getIsACF();
+		if( arguments.KeyExists( "requiresJavaLoader" ) )
+			variables.requiresJavaLoader = arguments.requiresJavaLoader;
 		if( !this.getRequiresJavaLoader() ){
 			variables.osgiLoader = New osgiLoader();
 			return;
