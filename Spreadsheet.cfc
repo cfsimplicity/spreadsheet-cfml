@@ -45,19 +45,21 @@ component accessors="true"{
 	public Spreadsheet function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader ){
 		detectEngineProperties();
 		loadHelpers();
-		variables.dateFormats = getDateHelper().defaultFormats();
-		if( arguments.KeyExists( "dateFormats" ) )
-			setDateFormats( arguments.dateFormats );
+		initializeDateFormats( argumentCollection=arguments );
+		initializeJavaLoading( argumentCollection=arguments );
+		return this;
+	}
+
+	private void function initializeJavaLoading( string javaLoaderDotPath, boolean requiresJavaLoader ){
 		variables.requiresJavaLoader = this.getIsACF() || ( arguments.KeyExists( "requiresJavaLoader" ) && arguments.requiresJavaLoader );
 		if( !this.getRequiresJavaLoader() ){
 			variables.osgiLoader = New osgiLoader();
-			return this;
+			return;
 		}
 		variables.javaLoaderName = "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#";
 		 // Option to use the dot path of an existing javaloader installation to save duplication
 		if( arguments.KeyExists( "javaLoaderDotPath" ) )
 			variables.javaLoaderDotPath = arguments.javaLoaderDotPath;
-		return this;
 	}
 
 	private void function loadHelpers(){
@@ -86,6 +88,22 @@ component accessors="true"{
 		variables.workbookHelper = New helpers.workbook( this );
 	}
 
+	private void function detectEngineProperties(){
+		variables.isACF = ( server.coldfusion.productname == "ColdFusion Server" );
+	}
+
+	private void function initializeDateFormats( struct dateFormats ){
+		variables.dateFormats = getDateHelper().defaultFormats();
+		if( arguments.KeyExists( "dateFormats" ) )
+			setDateFormats( arguments.dateFormats );
+	}
+
+	private string function getDefaultWorkbookFormat(){
+		if( ListFindNoCase( "xml,xlsx", variables.defaultWorkbookFormat ) )
+			return "xml";
+		return "binary";
+	}
+
 	/* Utilities */
 
 	public struct function getEnvironment(){
@@ -100,16 +118,6 @@ component accessors="true"{
 			,poiVersion: this.getPoiVersion()
 			,osgiLibBundleVersion: this.getOsgiLibBundleVersion()
 		};
-	}
-
-	private void function detectEngineProperties(){
-		variables.isACF = ( server.coldfusion.productname == "ColdFusion Server" );
-	}
-
-	private string function getDefaultWorkbookFormat(){
-		if( ListFindNoCase( "xml,xlsx", variables.defaultWorkbookFormat ) )
-			return "xml";
-		return "binary";
 	}
 
 	public string function getPoiVersion(){
