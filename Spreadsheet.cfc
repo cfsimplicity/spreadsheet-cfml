@@ -13,7 +13,7 @@ component accessors="true"{
 	property name="requiresJavaLoader" type="boolean" default="false";
 	property name="returnCachedFormulaValues" type="boolean" default="true";//TODO How to test?
 	//detected state
-	property name="isACF" type="boolean" setter="false";
+	property name="engine" setter="false";
 	property name="javaClassesLastLoadedVia" default="Nothing loaded yet";
 	//Lucee osgi loader
 	property name="osgiLoader" setter="false";
@@ -43,7 +43,7 @@ component accessors="true"{
 	property name="workbookHelper" setter="false";
 
 	public Spreadsheet function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader ){
-		detectEngineProperties();
+		variables.engine = determineEngine();
 		loadHelpers();
 		initializeDateFormats( argumentCollection=arguments );
 		initializeJavaLoading( argumentCollection=arguments );
@@ -90,8 +90,20 @@ component accessors="true"{
 		variables.workbookHelper = New helpers.workbook( this );
 	}
 
-	private void function detectEngineProperties(){
-		variables.isACF = ( server.coldfusion.productname == "ColdFusion Server" );
+	private string function determineEngine(){
+		if( server.coldfusion.productname == "ColdFusion Server" )
+			return "ColdFusion";
+		return "Lucee";
+	}
+
+	public boolean function getIsACF(){
+		return variables.engine == "ColdFusion";
+	}
+
+	private string function getEngineVersion(){
+		if( this.getIsACF() )
+			return server.coldfusion.productversion;
+		return server.lucee.version;
 	}
 
 	private void function initializeDateFormats( struct dateFormats ){
@@ -111,7 +123,7 @@ component accessors="true"{
 	public struct function getEnvironment(){
 		return {
 			dateFormats: this.getDateFormats()
-			,engine: server.coldfusion.productname & " " & ( this.getIsACF()? server.coldfusion.productversion: ( server.lucee.version?: "?" ) )
+			,engine: this.getEngine() & " " & getEngineVersion()
 			,javaLoaderDotPath: this.getJavaLoaderDotPath()
 			,javaClassesLastLoadedVia: this.getJavaClassesLastLoadedVia()
 			,javaLoaderName: this.getJavaLoaderName()
