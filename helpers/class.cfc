@@ -16,11 +16,12 @@ component extends="base"{
 	}
 
 	any function loadClass( required string javaclass ){
-		if( library().getRequiresJavaLoader() )
-			return loadClassUsingJavaLoader( arguments.javaclass );
-		if( !IsNull( library().getOsgiLoader() ) )
-			return loadClassUsingOsgi( arguments.javaclass );
-		// If ACF and not using JL, *the correct* POI jars must be in the class path and any older versions *removed*
+		switch( library().getLoadJavaClassesUsing() ){
+			case "JavaLoader": return loadClassUsingJavaLoader( arguments.javaclass );
+			case "osgi": return loadClassUsingOsgi( arguments.javaclass );
+			case "dynamicPath": return loadClassUsingDynamicPath( arguments.javaclass );
+		}
+		// If ACF and not using JL or dynamic path, *the correct* POI jars must be in the class path and any older versions *removed*
 		try{
 			library().setJavaClassesLastLoadedVia( "The java class path" );
 			return CreateObject( "java", arguments.javaclass );
@@ -30,7 +31,21 @@ component extends="base"{
 		}
 	}
 
+	string function validateLoadingMethod( required string method ){
+		if( isValidLoadingMethod( arguments.method ) )
+			return arguments.method;
+		Throw( type=library().getExceptionType() & ".invalidJavaLoadingMethod", message="'#arguments.method#' is not valid. Valid methods are #validLoadingMethods().ToList( ', ' )#" );
+	}
+
 	/* Private */
+
+	private array function validLoadingMethods(){
+		return [ "osgi", "JavaLoader", "dynamicPath" ];
+	}
+
+	private boolean function isValidLoadingMethod( required string method ){
+		return validLoadingMethods().FindNoCase( arguments.method );
+	}
 
 	private any function loadClassUsingJavaLoader( required string javaclass ){
 		library().setJavaClassesLastLoadedVia( "JavaLoader" );
@@ -55,6 +70,11 @@ component extends="base"{
 			else
 				rethrow;
 		}
+	}
+
+	private any function loadClassUsingDynamicPath( required string javaclass ){
+		library().setJavaClassesLastLoadedVia( "Dynamic path" );
+		return CreateObject( "java", arguments.javaclass, library().getLibPath() );
 	}
 
 }

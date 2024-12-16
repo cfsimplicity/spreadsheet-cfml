@@ -9,8 +9,7 @@ component extends="testbox.system.BaseSpec"{
 	variables.s = newSpreadsheetInstance();
 	
 	function beforeAll(){
-		if( !s.getIsACF() )
-			s.flushOsgiBundle();
+		s.flushOsgiBundle();
 		if( server.KeyExists( s.getJavaLoaderName() ) )
 			server.delete( s.getJavaLoaderName() );
 	  variables.tempXlsPath = ExpandPath( "temp.xls" );

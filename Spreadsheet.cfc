@@ -10,6 +10,7 @@ component accessors="true"{
 	property name="defaultWorkbookFormat" default="binary" setter="true" getter="false";
 	property name="javaLoaderDotPath" default="javaLoader.JavaLoader" setter="false";
 	property name="javaLoaderName" default="" setter="false";
+	property name="loadJavaClassesUsing";
 	property name="requiresJavaLoader" type="boolean" default="false";
 	property name="returnCachedFormulaValues" type="boolean" default="true";//TODO How to test?
 	//detected state
@@ -42,26 +43,12 @@ component accessors="true"{
 	property name="stringHelper" setter="false";
 	property name="workbookHelper" setter="false";
 
-	public Spreadsheet function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader ){
+	public Spreadsheet function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader, string loadJavaClassesUsing ){
 		variables.engine = determineEngine();
 		loadHelpers();
 		initializeDateFormats( argumentCollection=arguments );
 		initializeJavaLoading( argumentCollection=arguments );
 		return this;
-	}
-
-	private void function initializeJavaLoading( string javaLoaderDotPath, boolean requiresJavaLoader ){
-		variables.requiresJavaLoader = this.getIsACF();
-		if( arguments.KeyExists( "requiresJavaLoader" ) )
-			variables.requiresJavaLoader = arguments.requiresJavaLoader;
-		if( !this.getRequiresJavaLoader() ){
-			variables.osgiLoader = New osgiLoader();
-			return;
-		}
-		variables.javaLoaderName = "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#";
-		 // Option to use the dot path of an existing javaloader installation to save duplication
-		if( arguments.KeyExists( "javaLoaderDotPath" ) )
-			variables.javaLoaderDotPath = arguments.javaLoaderDotPath;
 	}
 
 	private void function loadHelpers(){
@@ -100,16 +87,43 @@ component accessors="true"{
 		return variables.engine == "ColdFusion";
 	}
 
+	public boolean function getIsLucee(){
+		return variables.engine == "Lucee";
+	}
+
 	private string function getEngineVersion(){
 		if( this.getIsACF() )
 			return server.coldfusion.productversion;
-		return server.lucee.version;
+		return server[ variables.engine.LCase() ].version;
 	}
 
 	private void function initializeDateFormats( struct dateFormats ){
 		variables.dateFormats = getDateHelper().defaultFormats();
 		if( arguments.KeyExists( "dateFormats" ) )
 			setDateFormats( arguments.dateFormats );
+	}
+
+	private void function initializeJavaLoading(){
+		//engine defaults
+		if( getIsLucee() )
+			variables.loadJavaClassesUsing = "osgi";
+		if( getIsACF() || ( arguments?.requiresJavaLoader?:false ) ){
+			variables.requiresJavaLoader = true;
+			variables.loadJavaClassesUsing = "JavaLoader";
+		}
+		//configurable
+		if( arguments.KeyExists( "loadJavaClassesUsing" ) )
+			variables.loadJavaClassesUsing = getClassHelper().validateLoadingMethod( arguments.loadJavaClassesUsing );
+		if( variables.loadJavaClassesUsing == "dynamicPath" )
+			return;
+		if( variables.loadJavaClassesUsing == "osgi" ){
+			variables.osgiLoader = New osgiLoader();
+			return;
+		}
+		variables.javaLoaderName = "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#";
+		 // Option to use the dot path of an existing javaloader installation to save duplication
+		if( arguments.KeyExists( "javaLoaderDotPath" ) )
+			variables.javaLoaderDotPath = arguments.javaLoaderDotPath;
 	}
 
 	private string function getDefaultWorkbookFormat(){
@@ -138,12 +152,15 @@ component accessors="true"{
 		return createJavaObject( "org.apache.poi.Version" ).getVersion();
 	}
 
+	public string function getLibPath(){
+		return GetDirectoryFromPath( GetCurrentTemplatePath() ) & "lib/";
+	}
+
 	public JavaLoader function getJavaLoaderInstance(){
 		/* Not in classHelper because of difficulty of accessing JL via dot path from there */
 		if( server.KeyExists( this.getJavaLoaderName() ) )
 			return server[ this.getJavaLoaderName() ];
-		var libPath = GetDirectoryFromPath( GetCurrentTemplatePath() ) & "lib/";
-		server[ this.getJavaLoaderName() ] = CreateObject( "component", this.getJavaLoaderDotPath() ).init( loadPaths=DirectoryList( libPath ), loadColdFusionClassPath=false, trustedSource=true );
+		server[ this.getJavaLoaderName() ] = CreateObject( "component", this.getJavaLoaderDotPath() ).init( loadPaths=DirectoryList( getLibPath() ), loadColdFusionClassPath=false, trustedSource=true );
 		return server[ this.getJavaLoaderName() ];
 	}
 
@@ -155,6 +172,8 @@ component accessors="true"{
 	}
 
 	public Spreadsheet function flushOsgiBundle( string version ){
+		if( variables.loadJavaClassesUsing != "osgi" )
+			return this;
 		var allBundles = getOsgiLoader().getCFMLEngineFactory().getBundleContext().getBundles();
 		var spreadsheetBundles = ArrayFilter( allBundles, function( bundle ){
 			return ( bundle.getSymbolicName() == this.getOsgiLibBundleSymbolicName() );
