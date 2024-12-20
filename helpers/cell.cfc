@@ -18,7 +18,7 @@ component extends="base"{
 
 	boolean function cellIsOfType( required cell, required string type ){
 		var cellType = arguments.cell.getCellType();
-		return ObjectEquals( cellType, cellType[ arguments.type ] );
+		return cellType.equals( cellType[ arguments.type ] );
 	}
 
 	any function createCell( required row, numeric cellNum=arguments.row.getLastCellNum(), overwrite=true ){
@@ -156,7 +156,7 @@ component extends="base"{
 		return this;
 	}
 
-	private any function setDateOrTimeValue( required workbook, required cell, required value, string type ){
+	private any function setDateOrTimeValue( required workbook, required cell, required value, required string type ){
 		getDateHelper().matchPoiTimeZoneToEngine();
 		//handle empty strings which can't be treated as dates
 		if( Trim( arguments.value ).IsEmpty() ){
@@ -221,9 +221,9 @@ component extends="base"{
 	private any function getCachedFormulaValue( required cell ){
 		var cellType = arguments.cell.getCellType();
 		var cachedValueType = arguments.cell.getCachedFormulaResultType();
-		if( ObjectEquals( cachedValueType, cellType.NUMERIC ) )
+		if( cachedValueType.equals( cellType.NUMERIC ) )
 			return getCellNumericOrDateValue( arguments.cell ); 
-		if( ObjectEquals( cachedValueType, cellType.BOOLEAN ) )
+		if( cachedValueType.equals( cellType.BOOLEAN ) )
 			return arguments.cell.getBooleanCellValue();
 		return arguments.cell.getStringCellValue();
 	}
