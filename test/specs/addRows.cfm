@@ -137,7 +137,7 @@ describe( "addRows", function(){
 
 	it( "Adds date/time values correctly", function(){
 		var dateValue = CreateDate( 2015, 04, 12 );
-		var timeValue = CreateTime( 1, 0, 0 );
+		var timeValue = _CreateTime( 1, 0, 0 );
 		var dateTimeValue = createDateTime( 2015, 04, 12, 1, 0, 0 );
 		var data = QueryNew( "column1,column2,column3", "Date,Time,Timestamp", [ [ dateValue, timeValue, dateTimeValue ] ] );
 		var expected = data;
@@ -154,7 +154,7 @@ describe( "addRows", function(){
 		});
 		//array data
 		var dateValue = CreateDate( 2015, 04, 12 );
-		var timeValue = CreateTime( 1, 0, 0 );
+		var timeValue = _CreateTime( 1, 0, 0 );
 		var dateTimeValue = CreateDateTime( 2015, 04, 12, 1, 0, 0 );
 		var dataAsArray = [ [ dateValue, timeValue, dateTimeValue ] ];
 		var workbooks = [ s.newXls(), s.newXlsx() ];
@@ -525,7 +525,7 @@ describe( "addRows", function(){
 				}).toThrow( type="cfsimplicity.spreadsheet.tooManyRows" );
 			},
 			skip=function(){
-				return s.getIsACF();
+				return !s.getIsLucee();//boxlang takes over 5 minutes!
 			}
 		);
 
