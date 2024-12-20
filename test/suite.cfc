@@ -23,6 +23,11 @@ component extends="testbox.system.BaseSpec"{
 		return ExpandPath( "/root/test/files/" ) & arguments.filename;
 	}
 
+	function _CreateTime( required numeric hours, required numeric minutes, required numeric seconds ){
+		//boxlang does not have CreateTime() BIF
+		return CreateDateTime( 1899, 12, 30, arguments.hours, arguments.minutes, arguments.seconds );
+	}
+
 	function afterAll(){
 		WriteDump( var=s.getEnvironment(), label="Environment and settings" );
 	}

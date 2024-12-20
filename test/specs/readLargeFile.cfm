@@ -319,7 +319,7 @@ describe(
 	describe( "query column type setting", function(){
 
 		it( "allows the query column types to be manually set using list", function(){
-			s.newChainable( "xlsx" ).addRow( [ 1, 1.1, "string", CreateTime( 1, 0, 0 ) ] ).write( tempXlsxPath, true );
+			s.newChainable( "xlsx" ).addRow( [ 1, 1.1, "string", _CreateTime( 1, 0, 0 ) ] ).write( tempXlsxPath, true );
 			var q = s.readLargeFile( src=tempXlsxPath, queryColumnTypes="Integer,Double,VarChar,Time" );
 			var columns = GetMetaData( q );
 			expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
@@ -330,7 +330,7 @@ describe(
 
 		it( "allows the query column types to be manually set where the column order isn't known, but the header row values are", function(){
 			s.newChainable( "xlsx" )
-				.addRows( [ [ "integer", "double", "string column", "time" ], [ 1, 1.1, "text", CreateTime( 1, 0, 0 ) ] ] )
+				.addRows( [ [ "integer", "double", "string column", "time" ], [ 1, 1.1, "text", _CreateTime( 1, 0, 0 ) ] ] )
 				.write( tempXlsxPath, true );
 			var columnTypes = { "string column": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
 			var q = s.readLargeFile( src=tempXlsxPath, format="query", queryColumnTypes=columnTypes, headerRow=1 );
@@ -342,7 +342,7 @@ describe(
 		});
 
 		it( "allows the query column types to be manually set where the column order isn't known, but the column names are", function(){
-			s.newChainable( "xlsx" ).addRows( [ [ 1, 1.1, "text", CreateTime( 1, 0, 0 ) ] ] ).write( tempXlsxPath, true );
+			s.newChainable( "xlsx" ).addRows( [ [ 1, 1.1, "text", _CreateTime( 1, 0, 0 ) ] ] ).write( tempXlsxPath, true );
 			var columnNames = "integer,double,string column,time";
 			var columnTypes = { "string": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
 			var q = s.readLargeFile( src=tempXlsxPath, queryColumnTypes=columnTypes, queryColumnNames=columnNames );

@@ -150,7 +150,7 @@ describe( "addColumn", function(){
 	it( "Adds date/time values correctly", function(){
 		workbooks.Each( function( wb ){
 			var dateValue = CreateDate( 2015, 04, 12 );
-			var timeValue = CreateTime( 1, 0, 0 );
+			var timeValue = _CreateTime( 1, 0, 0 );
 			var dateTimeValue = CreateDateTime( 2015, 04, 12, 1, 0, 0 );
 			var rowData = "#dateValue#,#timeValue#,#dateTimeValue#";
 			s.addColumn( wb, rowData );

@@ -64,12 +64,14 @@ component extends="base"{
 	}
 
 	string function getPoiTimeZone(){
-		return library().createJavaObject( "org.apache.poi.util.LocaleUtil" ).getUserTimeZone();
+		return library().createJavaObject( "org.apache.poi.util.LocaleUtil" ).getUserTimeZone().toString();
 	}
 
 	any function matchPoiTimeZoneToEngine(){
-		if( library().getIsACF() )
-			return this;//ACF doesn't allow the server/context timezone to be changed
+		//ACF doesn't allow the server/context timezone to be changed
+		//Boxlang supports setting the context timezone, but not getting it?
+		if( !library().getIsLucee() )
+			return this;
 		//Lucee allows the context timezone to be changed, which can cause problems with date calculations
 		if( getPoiTimeZone() == GetTimezone() )
 			return this;
