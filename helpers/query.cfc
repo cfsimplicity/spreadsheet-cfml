@@ -25,8 +25,10 @@ component extends="base"{
 	){
 		if( arguments.makeColumnNamesSafe )
 			arguments.columnNames = getSafeColumnNames( arguments.columnNames );
-		if( !library().getIsACF() ) //Lucee
+		if( library().getIsLucee() )
 			return QueryNew( arguments.columnNames, arguments.columnTypeList, arguments.data );
+		if( library().getIsBoxlang() )
+			return QueryNew( arguments.columnNames.ToList(), arguments.columnTypeList, arguments.data );
 		//ACF
  		if( arguments.makeColumnNamesSafe || !columnNamesContainAnInvalidVariableName( arguments.columnNames ) ) // Column names will be accepted and case preserved
 			return QueryNew( arguments.columnNames.ToList(), arguments.columnTypeList, arguments.data ); //ACF requires a list, not an array.
