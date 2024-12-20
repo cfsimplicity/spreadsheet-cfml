@@ -80,6 +80,8 @@ component accessors="true"{
 	private string function determineEngine(){
 		if( server.coldfusion.productname == "ColdFusion Server" )
 			return "ColdFusion";
+		if( server.KeyExists( "boxlang" ) )
+			return "Boxlang";
 		return "Lucee";
 	}
 
@@ -89,6 +91,10 @@ component accessors="true"{
 
 	public boolean function getIsLucee(){
 		return variables.engine == "Lucee";
+	}
+
+	public boolean function getIsBoxlang(){
+		return variables.engine == "Boxlang";
 	}
 
 	private string function getEngineVersion(){
@@ -111,6 +117,8 @@ component accessors="true"{
 			variables.requiresJavaLoader = true;
 			variables.loadJavaClassesUsing = "JavaLoader";
 		}
+		if( getIsBoxlang() )
+			variables.loadJavaClassesUsing = "dynamicPath";
 		//configurable
 		if( arguments.KeyExists( "loadJavaClassesUsing" ) )
 			variables.loadJavaClassesUsing = getClassHelper().validateLoadingMethod( arguments.loadJavaClassesUsing );
