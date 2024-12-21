@@ -66,6 +66,10 @@ component extends="base"{
 		return this;
 	}
 
+	any function convertDateToJava( required date object ){
+		return CreateObject( "java", "java.util.Date" ).init( arguments.object.getTime() );
+	}
+
 	// alternative BIFS
 	boolean function _IsDate( required value ){
 		if( !IsDate( arguments.value ) )
@@ -81,19 +85,22 @@ component extends="base"{
 	}
 
 	any function _ParseDateTime( required value ){
+		// ACF and boxlang can test for an existing date object
+		if( !library().getIsLucee() && IsDateObject( arguments.value ) )
+			return arguments.value;
 		//Boxlang is very limited in what it will accept
-		if( !library().getIsBoxlang() || _IsDate( arguments.value ) )
+		if( !library().getIsBoxlang() )
 			return ParseDateTime( arguments.value );
 		//Boxlang: support a limited set of "non-standard" date/time formats
-		if( arguments.value.REFindNoCase( "^\d{1,2}\D\d{4,4}$" ) ){
+		if( arguments.value.REFindNoCase( "^\d{1,2}\D\d{4,4}$" ) ){ //e.g. 01.2024 or 04/2024
 			arguments.value = arguments.value.REReplaceNoCase( "(\d{2,2})\D(\d{4,4})", "01/\1/\2" );
 			return ParseDateTime( arguments.value );
 		}
+		if( arguments.value.REFindNoCase( "^\d{2,2}:\d{2,2}$" ) ) //e.g. //08:21
+			return ParseDateTime( "1899-12-30T#arguments.value#:00Z" );
+		if( arguments.value.REFindNoCase( "^\d{2,2}:\d{2,2}:\d{2,2}$" ) ) //e.g. //08:21:30
+			return ParseDateTime( "1899-12-30T#arguments.value#Z" );
 		return ParseDateTime( arguments.value );
-	}
-
-	any function convertDateToJava( required date object ){
-		return CreateObject( "java", "java.util.Date" ).init( arguments.object.getTime() );
 	}
 
 }

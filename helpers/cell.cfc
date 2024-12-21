@@ -184,7 +184,7 @@ component extends="base"{
 		var excelEpochDateTimeValue = arguments.dateTimeValue.Add( "d", 2 ); //shift the epoch forward to match Excel's
 		var javaDate = getDateHelper().convertDateToJava( excelEpochDateTimeValue );
 		var timeAsExcelDate = ( getDateHelper().getDateUtil().getExcelDate( javaDate ) -1 );//Convert to Excel's double value for dates, minus the 1 complete day to leave the day fraction (= time value)
-		arguments.cell.setCellValue( timeAsExcelDate );
+		arguments.cell.setCellValue( JavaCast( "double", timeAsExcelDate ) );
 		return this;
 	}
 

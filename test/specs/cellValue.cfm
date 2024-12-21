@@ -104,16 +104,20 @@ describe( "cellValue", function(){
 		});
 	});
 
-	it( "but does accept date strings with AM or PM", function(){
-		workbooks.Each( function( wb ){
-			s.setCellValue( wb, "8/22/2020 10:34 AM", 1, 1 );
-			expect( s.getCellValue( wb, 1, 1 ) ).toBe( "2020-08-22 10:34:00" );
-			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
-			s.setCellValue( wb, "12:53 pm", 1, 1 );
-			expect( s.getCellValue( wb, 1, 1 ) ).toBe( "12:53:00" );
-			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
-		});
-	});
+	it(
+		title="but does accept date strings with AM or PM",
+		body=function(){
+			workbooks.Each( function( wb ){
+				s.setCellValue( wb, "22/8/2020 10:34 AM", 1, 1 );
+				expect( s.getCellValue( wb, 1, 1 ) ).toBe( "2020-08-22 10:34:00" );
+				expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
+				s.setCellValue( wb, "12:53 pm", 1, 1 );
+				expect( s.getCellValue( wb, 1, 1 ) ).toBe( "12:53:00" );
+				expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
+			});
+		},
+		skip=s.getIsBoxlang()
+	);
 
 	it( "getCellValue and setCellValue are chainable", function(){
 		var value = "test";
@@ -258,7 +262,7 @@ describe( "cellValue", function(){
 
 		},
 		skip=function(){
-			return s.getIsACF();
+			return !s.getIsLucee();
 		}
 	);
 

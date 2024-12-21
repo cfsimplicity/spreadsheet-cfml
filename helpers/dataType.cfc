@@ -10,7 +10,7 @@ component extends="base"{
 		// Do not detect booleans: leave as strings
 		if( REFind( "^0[\d]+", arguments.value ) )
 			return "string";
-		if( IsNumeric( arguments.value ) )
+		if( _IsNumeric( arguments.value ) )
 			return "numeric";
 		if( getDateHelper()._IsDate( arguments.value ) )
 			return "date";
@@ -85,6 +85,16 @@ component extends="base"{
 		// default autodetect
 		getCellHelper().setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue );
 		return this;
+	}
+
+	// BIF override
+	public boolean function _IsNumeric( required any value ){
+		//Boxlang treats true/false as numeric!
+		if( !library().getIsBoxlang() )
+			return IsNumeric( arguments.value );
+		if( arguments.value === true || arguments.value === false )
+			return false;
+		return IsNumeric( arguments.value );
 	}
 
 	/* Private */
