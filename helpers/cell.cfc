@@ -163,7 +163,7 @@ component extends="base"{
 			setEmptyValue( arguments.cell );
 			return this;
 		}
-		var dateTimeValue = ParseDateTime( arguments.value );
+		var dateTimeValue = getDateHelper()._ParseDateTime( arguments.value );
 		if( arguments.type == "time" )
 			var cellFormat = library().getDateFormats().TIME; //don't include the epoch date in the display
 		else
@@ -171,13 +171,20 @@ component extends="base"{
 		var dataFormat = arguments.workbook.getCreationHelper().createDataFormat();
 		//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
 		getCellUtil().setCellStyleProperty( arguments.cell, getCellUtil().DATA_FORMAT, dataFormat.getFormat( JavaCast( "string", cellFormat ) ) );
+		if( arguments.type == "time" || getDateHelper().isTimeOnlyValue( dateTimeValue ) )
+			return setTimeValue( dateTimeValue, arguments.cell );
+		// POI needs a java date to be able to detect the value as a date
+		var javaDate = getDateHelper().convertDateToJava( dateTimeValue );
+		arguments.cell.setCellValue( javaDate );
+		return this;
+	}
+
+	private any function setTimeValue( required dateTimeValue, required cell ){
 		/*  Excel uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling */
-		if( arguments.type == "time" || getDateHelper().isTimeOnlyValue( dateTimeValue ) ){
-			dateTimeValue = dateTimeValue.Add( "d", 2 );//shift the epoch forward to match Excel's
-			var javaDate = dateTimeValue.from( dateTimeValue.toInstant() );// dateUtil needs a java date
-			dateTimeValue = ( getDateHelper().getDateUtil().getExcelDate( javaDate ) -1 );//Convert to Excel's double value for dates, minus the 1 complete day to leave the day fraction (= time value)
-		}
-		arguments.cell.setCellValue( dateTimeValue );
+		var excelEpochDateTimeValue = arguments.dateTimeValue.Add( "d", 2 ); //shift the epoch forward to match Excel's
+		var javaDate = getDateHelper().convertDateToJava( excelEpochDateTimeValue );
+		var timeAsExcelDate = ( getDateHelper().getDateUtil().getExcelDate( javaDate ) -1 );//Convert to Excel's double value for dates, minus the 1 complete day to leave the day fraction (= time value)
+		arguments.cell.setCellValue( timeAsExcelDate );
 		return this;
 	}
 

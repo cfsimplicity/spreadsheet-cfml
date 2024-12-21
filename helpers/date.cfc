@@ -8,20 +8,6 @@ component extends="base"{
 		return variables.dateUtil;
 	}
 
-	// alternative BIF
-	boolean function _IsDate( required value ){
-		if( !IsDate( arguments.value ) )
-			return false;
-		// Lucee will treat 01-23112 or 23112-01 as a date!
-		if( ParseDateTime( arguments.value ).Year() > 9999 ) //ACF future limit
-			return false;
-		// ACF accepts "9a", "9p", "9 a" as dates
-		// ACF no member function
-		if( REFind( "^\d+\s*[apAP]{1,1}$", arguments.value ) )
-			return false;
-		return true;
-	}
-
 	struct function defaultFormats(){
 		return {
 			DATE: "yyyy-mm-dd"
@@ -78,6 +64,36 @@ component extends="base"{
 		//Make POI match the Lucee timezone for the duration of the current thread
 		library().createJavaObject( "org.apache.poi.util.LocaleUtil" ).setUserTimeZone( GetTimezone() );
 		return this;
+	}
+
+	// alternative BIFS
+	boolean function _IsDate( required value ){
+		if( !IsDate( arguments.value ) )
+			return false;
+		// Lucee will treat 01-23112 or 23112-01 as a date!
+		if( ParseDateTime( arguments.value ).Year() > 9999 ) //ACF future limit
+			return false;
+		// ACF accepts "9a", "9p", "9 a" as dates
+		// ACF no member function
+		if( REFind( "^\d+\s*[apAP]{1,1}$", arguments.value ) )
+			return false;
+		return true;
+	}
+
+	any function _ParseDateTime( required value ){
+		//Boxlang is very limited in what it will accept
+		if( !library().getIsBoxlang() || _IsDate( arguments.value ) )
+			return ParseDateTime( arguments.value );
+		//Boxlang: support a limited set of "non-standard" date/time formats
+		if( arguments.value.REFindNoCase( "^\d{1,2}\D\d{4,4}$" ) ){
+			arguments.value = arguments.value.REReplaceNoCase( "(\d{2,2})\D(\d{4,4})", "01/\1/\2" );
+			return ParseDateTime( arguments.value );
+		}
+		return ParseDateTime( arguments.value );
+	}
+
+	any function convertDateToJava( required date object ){
+		return CreateObject( "java", "java.util.Date" ).init( arguments.object.getTime() );
 	}
 
 }
