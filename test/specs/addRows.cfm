@@ -524,9 +524,7 @@ describe( "addRows", function(){
 					variables.s.addRows( xls, data );
 				}).toThrow( type="cfsimplicity.spreadsheet.tooManyRows" );
 			},
-			skip=function(){
-				return !s.getIsLucee();//boxlang takes over 5 minutes!
-			}
+			skip=!s.getIsLucee()
 		);
 
 		it( "row is zero or less", function(){

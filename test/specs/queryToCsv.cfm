@@ -84,9 +84,7 @@ describe( "queryToCsv", function(){
 					s.queryToCsv( query=data, threads=2 );
 				}).toThrow( type="cfsimplicity.spreadsheet.parallelOptionNotSupported" );
 			}
-			,skip=function(){
-				return s.engineSupportsParallelLoopProcessing();
-			}
+			,skip=s.engineSupportsParallelLoopProcessing()
 		);
 
 	});

@@ -696,10 +696,7 @@ describe( "read", function(){
 			});
 
 		},
-		skip=function(){
-			// only valid if system timezone is ahead of temporary test timezone
-			return ( !s.getIsLucee() || ( s.getDateHelper().getPoiTimeZone() != "Europe/London" ) );
-		}
+		skip=( !s.getIsLucee() || ( s.getDateHelper().getPoiTimeZone() != "Europe/London" ) )// only valid if system timezone is ahead of temporary test timezone
 	);
 
 	describe( "read throws an exception if", function(){

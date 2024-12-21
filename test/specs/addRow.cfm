@@ -187,9 +187,7 @@ describe( "addRow", function(){
 				}
 			});
 		},
-		skip=function(){
-			return s.getIsACF();
-		}
+		skip=s.getIsACF()
 	);
 
 	it( "Doesn't error if the workbook is SXSSF and autoSizeColumns is true", function(){

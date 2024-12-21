@@ -261,9 +261,7 @@ describe( "cellValue", function(){
 			});
 
 		},
-		skip=function(){
-			return !s.getIsLucee();
-		}
+		skip=!s.getIsLucee()
 	);
 
 	describe( "setCellValue throws an exception if", function(){

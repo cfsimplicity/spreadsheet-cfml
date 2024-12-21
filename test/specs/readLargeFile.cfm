@@ -460,9 +460,7 @@ describe(
 	});
 
 	}
-	,skip=function(){
-		return ( s.getIsACF() );
-	}
+	,skip=s.getIsACF()
 );
 
 describe(
@@ -477,9 +475,6 @@ describe(
 		});
 
 	}
-
-	,skip=function(){
-		return ( !s.getIsACF() );
-	}
+	,skip=!s.getIsACF()
 ); 
 </cfscript>
