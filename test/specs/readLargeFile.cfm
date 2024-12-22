@@ -460,7 +460,7 @@ describe(
 	});
 
 	}
-	,skip=s.getIsACF()
+	,skip=!s.getIsLucee()
 );
 
 describe(
@@ -475,6 +475,6 @@ describe(
 		});
 
 	}
-	,skip=!s.getIsACF()
+	,skip=s.getIsLucee()
 ); 
 </cfscript>

@@ -1289,8 +1289,8 @@ component accessors="true"{
 		,struct streamingReaderOptions
 		,boolean returnVisibleValues=false
 	){
-		if( this.getIsACF() ){
-			Throw( type=this.getExceptionType() & ".methodNotSupported", message="'readLargeFile()' is not supported with ColdFusion", detail="'readLargeFile()' currently only works with Lucee." );
+		if( !this.getIsLucee() ){
+			Throw( type=this.getExceptionType() & ".methodNotSupported", message="'readLargeFile()' is only supported on Lucee", detail="'readLargeFile()' currently only works with Lucee." );
 		}
 		getFileHelper().throwErrorIFfileNotExists( arguments.src );
 		getExceptionHelper().throwExceptionIFreadFormatIsInvalid( argumentCollection=arguments );
