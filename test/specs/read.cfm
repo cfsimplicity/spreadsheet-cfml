@@ -43,8 +43,8 @@ describe( "read", function(){
 		var expected = querySim(
 			"column1,column2
 			a|b
-			1|#ParseDateTime( '2015-04-01 00:00:00' )#
-			#ParseDateTime( '2015-04-01 01:01:01' )#|2");
+			1|#CreateDateTime( 2015, 4, 1, 0, 0, 0 )#
+			#CreateDateTime( 2015, 4, 1, 1, 1, 1 )#|2");
 		var actual = s.read( src=path,format="query" );
 		expect( actual ).toBe( expected );
 
@@ -116,8 +116,8 @@ describe( "read", function(){
 		var path = getTestFilePath( "test.xls" );
 		var expected = querySim(
 			"a,b
-			1|#ParseDateTime( '2015-04-01 00:00:00' )#
-			#ParseDateTime( '2015-04-01 01:01:01' )#|2");
+			1|#CreateDateTime( 2015, 4, 1, 0, 0, 0 )#
+			#CreateDateTime( 2015, 4, 1, 1, 1, 1 )#|2");
 		var actual = s.read( src=path, format="query", headerRow=1 );
 		expect( actual ).toBe( expected );
 	});
@@ -145,8 +145,8 @@ describe( "read", function(){
 		var expected = querySim(
 			"a,b
 			a|b
-			1|#ParseDateTime( '2015-04-01 00:00:00' )#
-			#ParseDateTime( '2015-04-01 01:01:01' )#|2");
+			1|#CreateDateTime( 2015, 4, 1, 0, 0, 0 )#
+			#CreateDateTime( 2015, 4, 1, 1, 1, 1 )#|2");
 		var actual = s.read( src=path, format="query", headerRow=1, includeHeaderRow=true );
 		expect( actual ).toBe( expected );
 	});
@@ -510,8 +510,8 @@ describe( "read", function(){
 			actual = s.read( src=path, format="query", columnNames="One,Two" );
 			expected = QuerySim( "One,Two
 				a|b
-				1|#ParseDateTime( '2015-04-01 00:00:00' )#
-				#ParseDateTime( '2015-04-01 01:01:01' )#|2");
+				1|#CreateDateTime( 2015, 4, 1, 0, 0, 0 )#
+				#CreateDateTime( 2015, 4, 1, 1, 1, 1 )#|2");
 			expect( actual ).toBe( expected );
 		});
 
@@ -520,8 +520,8 @@ describe( "read", function(){
 			actual = s.read( src=path, format="query", columnNames=[ "One", "Two" ] );
 			expected = QuerySim( "One,Two
 				a|b
-				1|#ParseDateTime( '2015-04-01 00:00:00' )#
-				#ParseDateTime( '2015-04-01 01:01:01' )#|2");
+				1|#CreateDateTime( 2015, 4, 1, 0, 0, 0 )#
+				#CreateDateTime( 2015, 4, 1, 1, 1, 1 )#|2");
 			expect( actual ).toBe( expected );
 		});
 
@@ -529,8 +529,8 @@ describe( "read", function(){
 			var path = getTestFilePath( "test.xls" );
 			var actual = s.read( src=path, format="query", columnNames="One,Two", headerRow=1 );
 			var expected = QuerySim( "One,Two
-				1|#ParseDateTime( '2015-04-01 00:00:00' )#
-				#ParseDateTime( '2015-04-01 01:01:01' )#|2");
+				1|#CreateDateTime( 2015, 4, 1, 0, 0, 0 )#
+				#CreateDateTime( 2015, 4, 1, 1, 1, 1 )#|2");
 			expect( actual ).toBe( expected );
 		});
 
@@ -547,8 +547,8 @@ describe( "read", function(){
 			actual = s.read( src=path, format="query", queryColumnNames="One,Two" );
 			expected = QuerySim( "One,Two
 				a|b
-				1|#ParseDateTime( '2015-04-01 00:00:00' )#
-				#ParseDateTime( '2015-04-01 01:01:01' )#|2");
+				1|#CreateDateTime( 2015, 4, 1, 0, 0, 0 )#
+				#CreateDateTime( 2015, 4, 1, 1, 1, 1 )#|2");
 			expect( actual ).toBe( expected );
 		});
 
