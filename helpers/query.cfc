@@ -28,7 +28,7 @@ component extends="base"{
 		if( library().getIsLucee() )
 			return QueryNew( arguments.columnNames, arguments.columnTypeList, arguments.data );
 		if( library().getIsBoxlang() )
-			return QueryNew( arguments.columnNames.ToList(), arguments.columnTypeList, arguments.data );
+			return _QueryNewBoxlang( arguments.columnNames, arguments.columnTypeList, arguments.data );
 		//ACF
  		if( arguments.makeColumnNamesSafe || !columnNamesContainAnInvalidVariableName( arguments.columnNames ) ) // Column names will be accepted and case preserved
 			return QueryNew( arguments.columnNames.ToList(), arguments.columnTypeList, arguments.data ); //ACF requires a list, not an array.
@@ -231,6 +231,25 @@ component extends="base"{
 			default: arguments.columnMetadata.cellDataType = "STRING";
 		}
 		return this;
+	}
+
+	private query function _QueryNewBoxlang( required array columnNames, required string columnTypeList, required array data ){
+		var result = QueryNew( arguments.columnNames.ToList(), arguments.columnTypeList );
+		arguments.data.Each( function( row ){
+			QuerySetRow( result, 0, row );
+		});
+		return replaceNullsWithEmptyValues( result );
+	}
+
+	private query function replaceNullsWithEmptyValues( required query data ){
+		//Boxlang defaults to Nulls in queries where Lucee/ACF use empty strings
+		arguments.data.Each( function( row, rowNumber ){
+			row.Each( function( key, value ){
+				if( IsNull( value ) )
+					QuerySetCell( data, key, "", rowNumber );
+			});
+		});
+		return arguments.data;
 	}
 
 }
