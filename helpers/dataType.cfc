@@ -89,10 +89,10 @@ component extends="base"{
 
 	// BIF override
 	public boolean function _IsNumeric( required any value ){
-		//Boxlang treats true/false as numeric!
+		//Boxlang treats true/false as numeric https://ortussolutions.atlassian.net/browse/BL-879
 		if( !library().getIsBoxlang() )
 			return IsNumeric( arguments.value );
-		if( arguments.value === true || arguments.value === false )
+		if( arguments.value === true || arguments.value === false || arguments.value === "true" || arguments.value === "false" )
 			return false;
 		return IsNumeric( arguments.value );
 	}
