@@ -54,6 +54,16 @@ describe( "cellValue", function(){
 		});
 	});
 
+	it( "Sets zeros as zeros, not booleans", function(){
+		var value = 0;
+		workbooks.Each( function( wb ){
+			s.setCellValue( wb, value, 1, 1 );
+			var actual = s.getCellValue( wb, 1, 1 );
+			expect( actual ).toBe( value );
+			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
+		});
+	});
+
 	it( "Sets the specified range of cells to the specified value", function(){
 		var value = "a";
 		var expected = querySim(
