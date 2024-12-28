@@ -28,7 +28,7 @@ component extends="base"{
 		if( library().getIsLucee() )
 			return QueryNew( arguments.columnNames, arguments.columnTypeList, arguments.data );
 		if( library().getIsBoxlang() )
-			return _QueryNewBoxlang( arguments.columnNames, arguments.columnTypeList, arguments.data );
+			return QueryNewBoxlang( arguments.columnNames, arguments.columnTypeList, arguments.data );
 		//ACF
  		if( arguments.makeColumnNamesSafe || !columnNamesContainAnInvalidVariableName( arguments.columnNames ) ) // Column names will be accepted and case preserved
 			return QueryNew( arguments.columnNames.ToList(), arguments.columnTypeList, arguments.data ); //ACF requires a list, not an array.
@@ -233,12 +233,19 @@ component extends="base"{
 		return this;
 	}
 
-	private query function _QueryNewBoxlang( required array columnNames, required string columnTypeList, required array data ){
+	private query function QueryNewBoxlang( required array columnNames, required string columnTypeList, required array data ){
 		var result = QueryNew( arguments.columnNames.ToList(), arguments.columnTypeList );
 		arguments.data.Each( function( row ){
-			QuerySetRow( result, 0, row );
+			QuerySetRow( result, 0, convertJavaArrayToCFMLArray( row ) );
 		});
 		return replaceNullsWithEmptyValues( result );
+	}
+
+	private array function convertJavaArrayToCFMLArray( required any value ){
+		//Boxlang BIFs may not accept java string arrays
+		if( arguments.value.getClass().getName() != "[Ljava.lang.String;" )
+			return arguments.value;
+		return ArrayNew( 1 ).Append( arguments.value, true );
 	}
 
 	private query function replaceNullsWithEmptyValues( required query data ){
