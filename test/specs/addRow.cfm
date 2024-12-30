@@ -128,9 +128,9 @@ describe( "addRow", function(){
 			var dateTimeValue = CreateDateTime( 2015, 04, 12, 1, 0, 0 );
 			var data = "#dateValue#,#timeValue#,#dateTimeValue#";
 			s.addRow( wb, data );
-			expect( s.getCellValue( wb, 1, 1 ) ).toBe( dateValue );
-			expect( s.getCellValue( wb, 1, 2 ) ).toBe( timeValue );
-			expect( s.getCellValue( wb, 1, 3 ) ).toBe( dateTimeValue );
+			expect( s.getCellValue( wb, 1, 1 ) ).toBe( "2015-04-12" );
+			expect( s.getCellValue( wb, 1, 2 ) ).toBe( "01:00:00" );
+			expect( s.getCellValue( wb, 1, 3 ) ).toBe( "2015-04-12 01:00:00" );
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 1, 2 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 1, 3 ) ).toBe( "numeric" );
@@ -143,9 +143,9 @@ describe( "addRow", function(){
 			var dateTimeValue = CreateDateTime( 2015, 04, 12, 1, 0, 0 );
 			var dataAsArray = [ dateValue, timeValue, dateTimeValue ];
 			s.addRow( wb, dataAsArray );
-			expect( s.getCellValue( wb, 1, 1 ) ).toBe( dateValue );
-			expect( s.getCellValue( wb, 1, 2 ) ).toBe( timeValue );
-			expect( s.getCellValue( wb, 1, 3 ) ).toBe( dateTimeValue );
+			expect( s.getCellValue( wb, 1, 1 ) ).toBe( "2015-04-12" );
+			expect( s.getCellValue( wb, 1, 2 ) ).toBe( "01:00:00" );
+			expect( s.getCellValue( wb, 1, 3 ) ).toBe( "2015-04-12 01:00:00" );
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 1, 2 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 1, 3 ) ).toBe( "numeric" );

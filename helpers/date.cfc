@@ -28,10 +28,10 @@ component extends="base"{
 	}
 
 	string function getDefaultDateMaskFor( required date value ){
-		if( isDateOnlyValue( arguments.value ) )
-			return library().getDateFormats().DATE;
 		if( isTimeOnlyValue( arguments.value ) )
 			return library().getDateFormats().TIME;
+		if( isDateOnlyValue( arguments.value ) )
+			return library().getDateFormats().DATE;
 		return library().getDateFormats().TIMESTAMP;
 	}
 
@@ -39,7 +39,10 @@ component extends="base"{
 		return IsInstanceOf( arguments.input, "java.util.Date" );
 	}
 
+	//TODO improve these imperfect tests!
 	boolean function isDateOnlyValue( required date value ){
+		if( library().getIsBoxlang() )
+			return ( arguments.value.TimeFormat( "hh:mm:ss" ) == "00:00:00" );
 		var dateOnly = CreateDate( Year( arguments.value ), Month( arguments.value ), Day( arguments.value ) );
 		return ( DateCompare( arguments.value, dateOnly, "s" ) == 0 );
 	}
@@ -72,6 +75,8 @@ component extends="base"{
 
 	// alternative BIFS
 	boolean function _IsDate( required value ){
+		if( library().getIsBoxlang() ) // no special handling for boxlang
+			return IsDate( arguments.value );
 		if( !IsDate( arguments.value ) )
 			return false;
 		// Lucee will treat 01-23112 or 23112-01 as a date!
@@ -91,14 +96,24 @@ component extends="base"{
 		//Boxlang is very limited in what it will accept
 		if( !library().getIsBoxlang() )
 			return ParseDateTime( arguments.value );
-		//Boxlang: support a limited set of "non-standard" date/time formats
-		if( arguments.value.REFindNoCase( "^\d{1,2}\D\d{4,4}$" ) ){ //e.g. 01.2024 or 04/2024
+		return _ParseDateTimeBoxlang( arguments.value );
+	}
+
+	private any function _ParseDateTimeBoxlang( required value ){
+		//Boxlang: support a limited set of "non-standard" date/time string formats
+		//e.g. 01.2024 or 04/2024
+		if( arguments.value.REFindNoCase( "^\d{1,2}\D\d{4,4}$" ) ){ 
 			arguments.value = arguments.value.REReplaceNoCase( "(\d{2,2})\D(\d{4,4})", "01/\1/\2" );
 			return ParseDateTime( arguments.value );
 		}
-		if( arguments.value.REFindNoCase( "^\d{2,2}:\d{2,2}$" ) ) //e.g. //08:21
+		//e.g. Mon Jan 05 05:00:00 GMT 1970
+		if( arguments.value.REFindNoCase( "^\w{3,3} \w{3,3} \d{2,2} \d{2,2}:\d{2,2}:\d{2,2} \w{3,3} \d{4,4}$" ) )
+			return ParseDateTime( arguments.value, "EEE MMM d HH:mm:ss zzz yyyy" );
+		 //e.g. 08:21
+		if( arguments.value.REFindNoCase( "^\d{2,2}:\d{2,2}$" ) )
 			return ParseDateTime( "1899-12-30T#arguments.value#:00Z" );
-		if( arguments.value.REFindNoCase( "^\d{2,2}:\d{2,2}:\d{2,2}$" ) ) //e.g. //08:21:30
+		//e.g. 08:21:30
+		if( arguments.value.REFindNoCase( "^\d{2,2}:\d{2,2}:\d{2,2}$" ) )
 			return ParseDateTime( "1899-12-30T#arguments.value#Z" );
 		return ParseDateTime( arguments.value );
 	}

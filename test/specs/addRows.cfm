@@ -140,7 +140,7 @@ describe( "addRows", function(){
 		var timeValue = _CreateTime( 1, 0, 0 );
 		var dateTimeValue = createDateTime( 2015, 04, 12, 1, 0, 0 );
 		var data = QueryNew( "column1,column2,column3", "Date,Time,Timestamp", [ [ dateValue, timeValue, dateTimeValue ] ] );
-		var expected = data;
+		var expected = QueryNew( "column1,column2,column3", "Date,Time,Timestamp", [ [ dateValue, "01:00:00", dateTimeValue ] ] );;
 		workbooks.Each( function( wb ){
 			s.addRows( wb, data );
 			var actual = s.getSheetHelper().sheetToQuery( wb );

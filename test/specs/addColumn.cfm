@@ -154,9 +154,9 @@ describe( "addColumn", function(){
 			var dateTimeValue = CreateDateTime( 2015, 04, 12, 1, 0, 0 );
 			var rowData = "#dateValue#,#timeValue#,#dateTimeValue#";
 			s.addColumn( wb, rowData );
-			expect( s.getCellValue( wb, 1, 1 ) ).toBe( dateValue );
-			expect( s.getCellValue( wb, 2, 1 ) ).toBe( timeValue );
-			expect( s.getCellValue( wb, 3, 1 ) ).toBe( dateTimeValue );
+			expect( s.getCellValue( wb, 1, 1 ) ).toBe( "2015-04-12" );
+			expect( s.getCellValue( wb, 2, 1 ) ).toBe( "01:00:00" );
+			expect( s.getCellValue( wb, 3, 1 ) ).toBe( "2015-04-12 01:00:00" );
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 2, 1 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 3, 1 ) ).toBe( "numeric" );
