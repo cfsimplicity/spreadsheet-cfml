@@ -80,6 +80,7 @@ component accessors="true"{
 	private string function determineEngine(){
 		if( server.coldfusion.productname == "ColdFusion Server" )
 			return "ColdFusion";
+		// PLEASE NOTE: BOXLANG SUPPORT IS CURRENTLY EXPERIMENTAL AND INCOMPLETE (only circa 75% of tests pass). 
 		if( server.KeyExists( "boxlang" ) )
 			return "Boxlang";
 		return "Lucee";
