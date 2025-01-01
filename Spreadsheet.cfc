@@ -484,7 +484,7 @@ component accessors="true"{
 		return this;
 	}
 
-	public binary function binaryFromQuery(
+	public any function binaryFromQuery(
 		required query data
 		,boolean addHeaderRow=true
 		,boolean boldHeaderRow=true
@@ -1260,7 +1260,7 @@ component accessors="true"{
 		return getQueryHelper().queryToHtml( generatedQuery, arguments.includeHeaderRow );
 	}
 
-	public binary function readBinary( required workbook ){
+	public any function readBinary( required workbook ){
 		var baos = createJavaObject( "org.apache.commons.io.output.ByteArrayOutputStream" ).init();
 		arguments.workbook.write( baos );
 		baos.flush();
