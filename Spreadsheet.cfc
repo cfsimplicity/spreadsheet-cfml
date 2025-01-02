@@ -147,6 +147,7 @@ component accessors="true"{
 		return {
 			dateFormats: this.getDateFormats()
 			,engine: this.getEngine() & " " & getEngineVersion()
+			,javaVersion: getJavaVersion()
 			,javaLoaderDotPath: this.getJavaLoaderDotPath()
 			,javaClassesLastLoadedVia: this.getJavaClassesLastLoadedVia()
 			,javaLoaderName: this.getJavaLoaderName()
@@ -155,6 +156,12 @@ component accessors="true"{
 			,poiVersion: this.getPoiVersion()
 			,osgiLibBundleVersion: this.getOsgiLibBundleVersion()
 		};
+	}
+
+	public string function getJavaVersion(){
+		var result = [ server.system.properties[ "java.runtime.name" ]?:"" ];
+		result.Append( server.system.properties[ "java.runtime.version" ]?:"" );
+		return Trim( result.ToList( " " ) );
 	}
 
 	public string function getPoiVersion(){
