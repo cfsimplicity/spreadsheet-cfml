@@ -165,12 +165,13 @@ component extends="base"{
 		}
 		var dateTimeValue = getDateHelper()._ParseDateTime( arguments.value );
 		if( arguments.type == "time" )
-			var cellFormat = library().getDateFormats().TIME; //don't include the epoch date in the display
+			var dateTimeFormat = library().getDateFormats().TIME; //don't include the epoch date in the display
 		else
-			var cellFormat = getDateHelper().getDefaultDateMaskFor( dateTimeValue );// check if DATE, TIME or TIMESTAMP
-		var dataFormat = arguments.workbook.getCreationHelper().createDataFormat();
+			var dateTimeFormat = getDateHelper().getDefaultDateMaskFor( dateTimeValue );// check if DATE, TIME or TIMESTAMP
+		var propertyType = library().createJavaObject( "org.apache.poi.ss.usermodel.CellPropertyType" ).DATA_FORMAT;
+		var dateFormat = arguments.workbook.getCreationHelper().createDataFormat().getFormat( JavaCast( "string", dateTimeFormat ) );
 		//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
-		getCellUtil().setCellStyleProperty( arguments.cell, getCellUtil().DATA_FORMAT, dataFormat.getFormat( JavaCast( "string", cellFormat ) ) );
+		getCellUtil().setCellStyleProperty( arguments.cell, propertyType, dateFormat );
 		if( arguments.type == "time" || getDateHelper().isTimeOnlyValue( dateTimeValue ) )
 			return setTimeValue( dateTimeValue, arguments.cell );
 		// POI needs a java date to be able to detect the value as a date
