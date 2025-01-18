@@ -1,3 +1,15 @@
+## 4.3.0 - 18 January 2025
+
+- Enhancements
+	-	\#383 Support java class loading via a dynamic path and improve configurability
+	- \#384 Add java version to getEnvironment() details
+	- **Experimental and only partial** support for Boxlang
+
+- Maintenance
+	- \#385 Upgrade POI to 5.4.0
+	- \#386 Upgrade commons-csv to 1.12.0
+	- \#388 Upgrade excel-streaming-reader to 5.0.3
+
 ## 4.2.1 - 23 August 2024
 
 - Fix: \#377 AddRows() should not convert empty values to zeros when they are in a numeric typed query column
