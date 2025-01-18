@@ -1,8 +1,8 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="4.2.1" setter="false";
-	property name="osgiLibBundleVersion" default="5.3.0.1" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="version" default="4.3.0" setter="false";
+	property name="osgiLibBundleVersion" default="5.4.0.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
 	//configurable
@@ -10,10 +10,11 @@ component accessors="true"{
 	property name="defaultWorkbookFormat" default="binary" setter="true" getter="false";
 	property name="javaLoaderDotPath" default="javaLoader.JavaLoader" setter="false";
 	property name="javaLoaderName" default="" setter="false";
+	property name="loadJavaClassesUsing";
 	property name="requiresJavaLoader" type="boolean" default="false";
 	property name="returnCachedFormulaValues" type="boolean" default="true";//TODO How to test?
 	//detected state
-	property name="isACF" type="boolean" setter="false";
+	property name="engine" setter="false";
 	property name="javaClassesLastLoadedVia" default="Nothing loaded yet";
 	//Lucee osgi loader
 	property name="osgiLoader" setter="false";
@@ -42,21 +43,11 @@ component accessors="true"{
 	property name="stringHelper" setter="false";
 	property name="workbookHelper" setter="false";
 
-	public Spreadsheet function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader ){
-		detectEngineProperties();
+	public Spreadsheet function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader, string loadJavaClassesUsing ){
+		variables.engine = determineEngine();
 		loadHelpers();
-		variables.dateFormats = getDateHelper().defaultFormats();
-		if( arguments.KeyExists( "dateFormats" ) )
-			setDateFormats( arguments.dateFormats );
-		variables.requiresJavaLoader = this.getIsACF() || ( arguments.KeyExists( "requiresJavaLoader" ) && arguments.requiresJavaLoader );
-		if( !this.getRequiresJavaLoader() ){
-			variables.osgiLoader = New osgiLoader();
-			return this;
-		}
-		variables.javaLoaderName = "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#";
-		 // Option to use the dot path of an existing javaloader installation to save duplication
-		if( arguments.KeyExists( "javaLoaderDotPath" ) )
-			variables.javaLoaderDotPath = arguments.javaLoaderDotPath;
+		initializeDateFormats( argumentCollection=arguments );
+		initializeJavaLoading( argumentCollection=arguments );
 		return this;
 	}
 
@@ -86,12 +77,77 @@ component accessors="true"{
 		variables.workbookHelper = New helpers.workbook( this );
 	}
 
+	private string function determineEngine(){
+		if( server.coldfusion.productname == "ColdFusion Server" )
+			return "ColdFusion";
+		// PLEASE NOTE: BOXLANG SUPPORT IS CURRENTLY EXPERIMENTAL AND INCOMPLETE (only circa 75% of tests pass). 
+		if( server.KeyExists( "boxlang" ) )
+			return "Boxlang";
+		return "Lucee";
+	}
+
+	public boolean function getIsACF(){
+		return variables.engine == "ColdFusion";
+	}
+
+	public boolean function getIsLucee(){
+		return variables.engine == "Lucee";
+	}
+
+	public boolean function getIsBoxlang(){
+		return variables.engine == "Boxlang";
+	}
+
+	private string function getEngineVersion(){
+		if( this.getIsACF() )
+			return server.coldfusion.productversion;
+		return server[ variables.engine.LCase() ].version;
+	}
+
+	private void function initializeDateFormats( struct dateFormats ){
+		variables.dateFormats = getDateHelper().defaultFormats();
+		if( arguments.KeyExists( "dateFormats" ) )
+			setDateFormats( arguments.dateFormats );
+	}
+
+	private void function initializeJavaLoading(){
+		//engine defaults
+		if( getIsLucee() )
+			variables.loadJavaClassesUsing = "osgi";
+		if( getIsACF() || ( arguments?.requiresJavaLoader?:false ) ){
+			variables.requiresJavaLoader = true;
+			variables.loadJavaClassesUsing = "JavaLoader";
+		}
+		if( getIsBoxlang() )
+			variables.loadJavaClassesUsing = "dynamicPath";
+		//configurable
+		if( arguments.KeyExists( "loadJavaClassesUsing" ) )
+			variables.loadJavaClassesUsing = getClassHelper().validateLoadingMethod( arguments.loadJavaClassesUsing );
+		if( variables.loadJavaClassesUsing == "dynamicPath" )
+			return;
+		if( variables.loadJavaClassesUsing == "osgi" ){
+			variables.osgiLoader = New osgiLoader();
+			return;
+		}
+		variables.javaLoaderName = "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#";
+		 // Option to use the dot path of an existing javaloader installation to save duplication
+		if( arguments.KeyExists( "javaLoaderDotPath" ) )
+			variables.javaLoaderDotPath = arguments.javaLoaderDotPath;
+	}
+
+	private string function getDefaultWorkbookFormat(){
+		if( ListFindNoCase( "xml,xlsx", variables.defaultWorkbookFormat ) )
+			return "xml";
+		return "binary";
+	}
+
 	/* Utilities */
 
 	public struct function getEnvironment(){
 		return {
 			dateFormats: this.getDateFormats()
-			,engine: server.coldfusion.productname & " " & ( this.getIsACF()? server.coldfusion.productversion: ( server.lucee.version?: "?" ) )
+			,engine: this.getEngine() & " " & getEngineVersion()
+			,javaVersion: getJavaVersion()
 			,javaLoaderDotPath: this.getJavaLoaderDotPath()
 			,javaClassesLastLoadedVia: this.getJavaClassesLastLoadedVia()
 			,javaLoaderName: this.getJavaLoaderName()
@@ -102,26 +158,25 @@ component accessors="true"{
 		};
 	}
 
-	private void function detectEngineProperties(){
-		variables.isACF = ( server.coldfusion.productname == "ColdFusion Server" );
-	}
-
-	private string function getDefaultWorkbookFormat(){
-		if( ListFindNoCase( "xml,xlsx", variables.defaultWorkbookFormat ) )
-			return "xml";
-		return "binary";
+	public string function getJavaVersion(){
+		var result = [ server.system.properties[ "java.runtime.name" ]?:"" ];
+		result.Append( server.system.properties[ "java.runtime.version" ]?:"" );
+		return Trim( result.ToList( " " ) );
 	}
 
 	public string function getPoiVersion(){
 		return createJavaObject( "org.apache.poi.Version" ).getVersion();
 	}
 
+	public string function getLibPath(){
+		return GetDirectoryFromPath( GetCurrentTemplatePath() ) & "lib/";
+	}
+
 	public JavaLoader function getJavaLoaderInstance(){
 		/* Not in classHelper because of difficulty of accessing JL via dot path from there */
 		if( server.KeyExists( this.getJavaLoaderName() ) )
 			return server[ this.getJavaLoaderName() ];
-		var libPath = GetDirectoryFromPath( GetCurrentTemplatePath() ) & "lib/";
-		server[ this.getJavaLoaderName() ] = CreateObject( "component", this.getJavaLoaderDotPath() ).init( loadPaths=DirectoryList( libPath ), loadColdFusionClassPath=false, trustedSource=true );
+		server[ this.getJavaLoaderName() ] = CreateObject( "component", this.getJavaLoaderDotPath() ).init( loadPaths=DirectoryList( getLibPath() ), loadColdFusionClassPath=false, trustedSource=true );
 		return server[ this.getJavaLoaderName() ];
 	}
 
@@ -133,6 +188,8 @@ component accessors="true"{
 	}
 
 	public Spreadsheet function flushOsgiBundle( string version ){
+		if( variables.loadJavaClassesUsing != "osgi" )
+			return this;
 		var allBundles = getOsgiLoader().getCFMLEngineFactory().getBundleContext().getBundles();
 		var spreadsheetBundles = ArrayFilter( allBundles, function( bundle ){
 			return ( bundle.getSymbolicName() == this.getOsgiLibBundleSymbolicName() );
@@ -435,7 +492,7 @@ component accessors="true"{
 		return this;
 	}
 
-	public binary function binaryFromQuery(
+	public any function binaryFromQuery(
 		required query data
 		,boolean addHeaderRow=true
 		,boolean boldHeaderRow=true
@@ -1211,7 +1268,7 @@ component accessors="true"{
 		return getQueryHelper().queryToHtml( generatedQuery, arguments.includeHeaderRow );
 	}
 
-	public binary function readBinary( required workbook ){
+	public any function readBinary( required workbook ){
 		var baos = createJavaObject( "org.apache.commons.io.output.ByteArrayOutputStream" ).init();
 		arguments.workbook.write( baos );
 		baos.flush();
@@ -1240,8 +1297,8 @@ component accessors="true"{
 		,struct streamingReaderOptions
 		,boolean returnVisibleValues=false
 	){
-		if( this.getIsACF() ){
-			Throw( type=this.getExceptionType() & ".methodNotSupported", message="'readLargeFile()' is not supported with ColdFusion", detail="'readLargeFile()' currently only works with Lucee." );
+		if( !this.getIsLucee() ){
+			Throw( type=this.getExceptionType() & ".methodNotSupported", message="'readLargeFile()' is only supported on Lucee", detail="'readLargeFile()' currently only works with Lucee." );
 		}
 		getFileHelper().throwErrorIFfileNotExists( arguments.src );
 		getExceptionHelper().throwExceptionIFreadFormatIsInvalid( argumentCollection=arguments );

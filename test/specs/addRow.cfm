@@ -124,13 +124,13 @@ describe( "addRow", function(){
 	it( "Adds date/time values correctly", function(){
 		workbooks.Each( function( wb ){
 			var dateValue = CreateDate( 2015, 04, 12 );
-			var timeValue = CreateTime( 1, 0, 0 );
+			var timeValue = _CreateTime( 1, 0, 0 );
 			var dateTimeValue = CreateDateTime( 2015, 04, 12, 1, 0, 0 );
 			var data = "#dateValue#,#timeValue#,#dateTimeValue#";
 			s.addRow( wb, data );
-			expect( s.getCellValue( wb, 1, 1 ) ).toBe( dateValue );
-			expect( s.getCellValue( wb, 1, 2 ) ).toBe( timeValue );
-			expect( s.getCellValue( wb, 1, 3 ) ).toBe( dateTimeValue );
+			expect( s.getCellValue( wb, 1, 1 ) ).toBe( "2015-04-12" );
+			expect( s.getCellValue( wb, 1, 2 ) ).toBe( "01:00:00" );
+			expect( s.getCellValue( wb, 1, 3 ) ).toBe( "2015-04-12 01:00:00" );
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 1, 2 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 1, 3 ) ).toBe( "numeric" );
@@ -139,13 +139,13 @@ describe( "addRow", function(){
 		var workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( function( wb ){
 			var dateValue = CreateDate( 2015, 04, 12 );
-			var timeValue = CreateTime( 1, 0, 0 );
+			var timeValue = _CreateTime( 1, 0, 0 );
 			var dateTimeValue = CreateDateTime( 2015, 04, 12, 1, 0, 0 );
 			var dataAsArray = [ dateValue, timeValue, dateTimeValue ];
 			s.addRow( wb, dataAsArray );
-			expect( s.getCellValue( wb, 1, 1 ) ).toBe( dateValue );
-			expect( s.getCellValue( wb, 1, 2 ) ).toBe( timeValue );
-			expect( s.getCellValue( wb, 1, 3 ) ).toBe( dateTimeValue );
+			expect( s.getCellValue( wb, 1, 1 ) ).toBe( "2015-04-12" );
+			expect( s.getCellValue( wb, 1, 2 ) ).toBe( "01:00:00" );
+			expect( s.getCellValue( wb, 1, 3 ) ).toBe( "2015-04-12 01:00:00" );
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 1, 2 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 1, 3 ) ).toBe( "numeric" );
@@ -187,9 +187,7 @@ describe( "addRow", function(){
 				}
 			});
 		},
-		skip=function(){
-			return s.getIsACF();
-		}
+		skip=s.getIsACF()
 	);
 
 	it( "Doesn't error if the workbook is SXSSF and autoSizeColumns is true", function(){

@@ -103,8 +103,13 @@ component extends="BaseCsv" accessors="true"{
 	}
 
 	private any function newBufferedFileWriter(){
-		var path = CreateObject( "java", "java.nio.file.Paths" ).get( JavaCast( "string", variables.filepath ), [] );
 		var charset = CreateObject( "java", "java.nio.charset.Charset" ).forName( "UTF-8" );
+		if( variables.library.getIsBoxlang() ){
+			//boxlang (or java21?) doesn't recognize ACF/Lucee signatures
+			var path = CreateObject( "java", "java.nio.file.Paths" ).get( JavaCast( "string", variables.filepath ) );
+			return CreateObject( "java", "java.nio.file.Files" ).newBufferedWriter( path, charset );
+		}
+		var path = CreateObject( "java", "java.nio.file.Paths" ).get( JavaCast( "string", variables.filepath ), [] );
 		return CreateObject( "java", "java.nio.file.Files" ).newBufferedWriter( path, charset, [] );
 	}
 

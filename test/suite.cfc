@@ -9,8 +9,7 @@ component extends="testbox.system.BaseSpec"{
 	variables.s = newSpreadsheetInstance();
 	
 	function beforeAll(){
-		if( !s.getIsACF() )
-			s.flushOsgiBundle();
+		s.flushOsgiBundle();
 		if( server.KeyExists( s.getJavaLoaderName() ) )
 			server.delete( s.getJavaLoaderName() );
 	  variables.tempXlsPath = ExpandPath( "temp.xls" );
@@ -22,6 +21,11 @@ component extends="testbox.system.BaseSpec"{
 
 	function getTestFilePath( required string filename ){
 		return ExpandPath( "/root/test/files/" ) & arguments.filename;
+	}
+
+	function _CreateTime( required numeric hours, required numeric minutes, required numeric seconds ){
+		//boxlang does not have CreateTime() BIF
+		return CreateDateTime( 1899, 12, 30, arguments.hours, arguments.minutes, arguments.seconds );
 	}
 
 	function afterAll(){

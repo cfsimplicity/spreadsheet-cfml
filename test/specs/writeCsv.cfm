@@ -160,11 +160,9 @@ describe( "writeCsv", function(){
 				.execute();
 			expect( actual ).toBe( expected );
 		}
-		,skip=function(){
-			//20231031: ACF 2021 and 2023 won't run the whole suite if this test is included: testbox errors thrown
-			//running just the queryToCsv tests works fine though. Lucee is fine with the whole suite.
-			return s.getIsACF();
-		}
+		//20231031: ACF 2021 and 2023 won't run the whole suite if this test is included: testbox errors thrown
+		//running just the queryToCsv tests works fine though. Lucee is fine with the whole suite.
+		,skip=s.getIsACF()
 	);
 
 	it( "allows Commons CSV format options to be applied", function(){

@@ -43,8 +43,8 @@ describe( "read", function(){
 		var expected = querySim(
 			"column1,column2
 			a|b
-			1|#ParseDateTime( '2015-04-01 00:00:00' )#
-			#ParseDateTime( '2015-04-01 01:01:01' )#|2");
+			1|#CreateDateTime( 2015, 4, 1, 0, 0, 0 )#
+			#CreateDateTime( 2015, 4, 1, 1, 1, 1 )#|2");
 		var actual = s.read( src=path,format="query" );
 		expect( actual ).toBe( expected );
 
@@ -116,8 +116,8 @@ describe( "read", function(){
 		var path = getTestFilePath( "test.xls" );
 		var expected = querySim(
 			"a,b
-			1|#ParseDateTime( '2015-04-01 00:00:00' )#
-			#ParseDateTime( '2015-04-01 01:01:01' )#|2");
+			1|#CreateDateTime( 2015, 4, 1, 0, 0, 0 )#
+			#CreateDateTime( 2015, 4, 1, 1, 1, 1 )#|2");
 		var actual = s.read( src=path, format="query", headerRow=1 );
 		expect( actual ).toBe( expected );
 	});
@@ -145,8 +145,8 @@ describe( "read", function(){
 		var expected = querySim(
 			"a,b
 			a|b
-			1|#ParseDateTime( '2015-04-01 00:00:00' )#
-			#ParseDateTime( '2015-04-01 01:01:01' )#|2");
+			1|#CreateDateTime( 2015, 4, 1, 0, 0, 0 )#
+			#CreateDateTime( 2015, 4, 1, 1, 1, 1 )#|2");
 		var actual = s.read( src=path, format="query", headerRow=1, includeHeaderRow=true );
 		expect( actual ).toBe( expected );
 	});
@@ -510,8 +510,8 @@ describe( "read", function(){
 			actual = s.read( src=path, format="query", columnNames="One,Two" );
 			expected = QuerySim( "One,Two
 				a|b
-				1|#ParseDateTime( '2015-04-01 00:00:00' )#
-				#ParseDateTime( '2015-04-01 01:01:01' )#|2");
+				1|#CreateDateTime( 2015, 4, 1, 0, 0, 0 )#
+				#CreateDateTime( 2015, 4, 1, 1, 1, 1 )#|2");
 			expect( actual ).toBe( expected );
 		});
 
@@ -520,8 +520,8 @@ describe( "read", function(){
 			actual = s.read( src=path, format="query", columnNames=[ "One", "Two" ] );
 			expected = QuerySim( "One,Two
 				a|b
-				1|#ParseDateTime( '2015-04-01 00:00:00' )#
-				#ParseDateTime( '2015-04-01 01:01:01' )#|2");
+				1|#CreateDateTime( 2015, 4, 1, 0, 0, 0 )#
+				#CreateDateTime( 2015, 4, 1, 1, 1, 1 )#|2");
 			expect( actual ).toBe( expected );
 		});
 
@@ -529,8 +529,8 @@ describe( "read", function(){
 			var path = getTestFilePath( "test.xls" );
 			var actual = s.read( src=path, format="query", columnNames="One,Two", headerRow=1 );
 			var expected = QuerySim( "One,Two
-				1|#ParseDateTime( '2015-04-01 00:00:00' )#
-				#ParseDateTime( '2015-04-01 01:01:01' )#|2");
+				1|#CreateDateTime( 2015, 4, 1, 0, 0, 0 )#
+				#CreateDateTime( 2015, 4, 1, 1, 1, 1 )#|2");
 			expect( actual ).toBe( expected );
 		});
 
@@ -547,8 +547,8 @@ describe( "read", function(){
 			actual = s.read( src=path, format="query", queryColumnNames="One,Two" );
 			expected = QuerySim( "One,Two
 				a|b
-				1|#ParseDateTime( '2015-04-01 00:00:00' )#
-				#ParseDateTime( '2015-04-01 01:01:01' )#|2");
+				1|#CreateDateTime( 2015, 4, 1, 0, 0, 0 )#
+				#CreateDateTime( 2015, 4, 1, 1, 1, 1 )#|2");
 			expect( actual ).toBe( expected );
 		});
 
@@ -595,7 +595,7 @@ describe( "read", function(){
 
 		it( "allows the query column types to be manually set using list", function(){
 			var workbook = s.new();
-			s.addRow( workbook, [ 1, 1.1, "string", CreateTime( 1, 0, 0 ) ] )
+			s.addRow( workbook, [ 1, 1.1, "string", _CreateTime( 1, 0, 0 ) ] )
 				.write( workbook, tempXlsPath, true );
 			var q = s.read( src=tempXlsPath, format="query", queryColumnTypes="Integer,Double,VarChar,Time" );
 			var columns = GetMetaData( q );
@@ -607,7 +607,7 @@ describe( "read", function(){
 
 		it( "allows the query column types to be manually set where the column order isn't known, but the header row values are", function(){
 			var workbook = s.new();
-			s.addRows( workbook, [ [ "integer", "double", "string column", "time" ], [ 1, 1.1, "text", CreateTime( 1, 0, 0 ) ] ] )
+			s.addRows( workbook, [ [ "integer", "double", "string column", "time" ], [ 1, 1.1, "text", _CreateTime( 1, 0, 0 ) ] ] )
 				.write( workbook, tempXlsPath, true );
 			var columnTypes = { "string column": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
 			var q = s.read( src=tempXlsPath, format="query", queryColumnTypes=columnTypes, headerRow=1 );
@@ -620,7 +620,7 @@ describe( "read", function(){
 
 		it( "allows the query column types to be manually set where the column order isn't known, but the column names are", function(){
 			var workbook = s.new();
-			s.addRows( workbook, [ [ 1, 1.1, "text", CreateTime( 1, 0, 0 ) ] ] )
+			s.addRows( workbook, [ [ 1, 1.1, "text", _CreateTime( 1, 0, 0 ) ] ] )
 				.write( workbook, tempXlsPath, true );
 			var columnNames = "integer,double,string column,time";
 			var columnTypes = { "string": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
@@ -696,10 +696,7 @@ describe( "read", function(){
 			});
 
 		},
-		skip=function(){
-			// only valid if system timezone is ahead of temporary test timezone
-			return ( s.getIsACF() || ( s.getDateHelper().getPoiTimeZone() != "Europe/London" ) );
-		}
+		skip=( !s.getIsLucee() || ( s.getDateHelper().getPoiTimeZone() != "Europe/London" ) )// only valid if system timezone is ahead of temporary test timezone
 	);
 
 	describe( "read throws an exception if", function(){

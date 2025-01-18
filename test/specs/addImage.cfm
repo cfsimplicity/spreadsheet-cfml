@@ -37,7 +37,7 @@ describe( "addImage", function(){
 		it( "imageData is provided with no imageType", function(){
 			workbooks.Each( function( wb ) {
 				expect( function(){
-					var imageData = ImageRead( getTestFilePath( "test.png" ) );
+					var imageData = ImageRead( getTestFilePath( "test.png" ).Replace( "\", "/", "ALL" ) );//boxlang won't accept "\" https://ortussolutions.atlassian.net/browse/BL-878
 					s.addImage( workbook=wb, imageData=imageData, anchor="1,1,2,2" );
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidArgumentCombination" );
 			});

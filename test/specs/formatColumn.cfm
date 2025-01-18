@@ -17,9 +17,7 @@ describe( "formatColumn", function(){
 			var format = { italic: "true" };
 			s.formatColumn( workbook, format, 1 );
 		},
-		skip=function(){
-			return s.getIsACF();
-		}
+		skip=s.getIsACF()
 	);
 
 	it( "can preserve the existing format properties other than the one(s) being changed", function(){

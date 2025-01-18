@@ -18,7 +18,7 @@ component extends="base"{
 
 	boolean function cellIsOfType( required cell, required string type ){
 		var cellType = arguments.cell.getCellType();
-		return ObjectEquals( cellType, cellType[ arguments.type ] );
+		return cellType.equals( cellType[ arguments.type ] );
 	}
 
 	any function createCell( required row, numeric cellNum=arguments.row.getLastCellNum(), overwrite=true ){
@@ -156,28 +156,36 @@ component extends="base"{
 		return this;
 	}
 
-	private any function setDateOrTimeValue( required workbook, required cell, required value, string type ){
+	private any function setDateOrTimeValue( required workbook, required cell, required value, required string type ){
 		getDateHelper().matchPoiTimeZoneToEngine();
 		//handle empty strings which can't be treated as dates
 		if( Trim( arguments.value ).IsEmpty() ){
 			setEmptyValue( arguments.cell );
 			return this;
 		}
-		var dateTimeValue = ParseDateTime( arguments.value );
+		var dateTimeValue = getDateHelper()._ParseDateTime( arguments.value );
 		if( arguments.type == "time" )
-			var cellFormat = library().getDateFormats().TIME; //don't include the epoch date in the display
+			var dateTimeFormat = library().getDateFormats().TIME; //don't include the epoch date in the display
 		else
-			var cellFormat = getDateHelper().getDefaultDateMaskFor( dateTimeValue );// check if DATE, TIME or TIMESTAMP
-		var dataFormat = arguments.workbook.getCreationHelper().createDataFormat();
+			var dateTimeFormat = getDateHelper().getDefaultDateMaskFor( dateTimeValue );// check if DATE, TIME or TIMESTAMP
+		var propertyType = library().createJavaObject( "org.apache.poi.ss.usermodel.CellPropertyType" ).DATA_FORMAT;
+		var dateFormat = arguments.workbook.getCreationHelper().createDataFormat().getFormat( JavaCast( "string", dateTimeFormat ) );
 		//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
-		getCellUtil().setCellStyleProperty( arguments.cell, getCellUtil().DATA_FORMAT, dataFormat.getFormat( JavaCast( "string", cellFormat ) ) );
+		getCellUtil().setCellStyleProperty( arguments.cell, propertyType, dateFormat );
+		if( arguments.type == "time" || getDateHelper().isTimeOnlyValue( dateTimeValue ) )
+			return setTimeValue( dateTimeValue, arguments.cell );
+		// POI needs a java date to be able to detect the value as a date
+		var javaDate = getDateHelper().convertDateToJava( dateTimeValue );
+		arguments.cell.setCellValue( javaDate );
+		return this;
+	}
+
+	private any function setTimeValue( required dateTimeValue, required cell ){
 		/*  Excel uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling */
-		if( arguments.type == "time" || getDateHelper().isTimeOnlyValue( dateTimeValue ) ){
-			dateTimeValue = dateTimeValue.Add( "d", 2 );//shift the epoch forward to match Excel's
-			var javaDate = dateTimeValue.from( dateTimeValue.toInstant() );// dateUtil needs a java date
-			dateTimeValue = ( getDateHelper().getDateUtil().getExcelDate( javaDate ) -1 );//Convert to Excel's double value for dates, minus the 1 complete day to leave the day fraction (= time value)
-		}
-		arguments.cell.setCellValue( dateTimeValue );
+		var excelEpochDateTimeValue = arguments.dateTimeValue.Add( "d", 2 ); //shift the epoch forward to match Excel's
+		var javaDate = getDateHelper().convertDateToJava( excelEpochDateTimeValue );
+		var timeAsExcelDate = ( getDateHelper().getDateUtil().getExcelDate( javaDate ) -1 );//Convert to Excel's double value for dates, minus the 1 complete day to leave the day fraction (= time value)
+		arguments.cell.setCellValue( JavaCast( "double", timeAsExcelDate ) );
 		return this;
 	}
 
@@ -221,9 +229,9 @@ component extends="base"{
 	private any function getCachedFormulaValue( required cell ){
 		var cellType = arguments.cell.getCellType();
 		var cachedValueType = arguments.cell.getCachedFormulaResultType();
-		if( ObjectEquals( cachedValueType, cellType.NUMERIC ) )
+		if( cachedValueType.equals( cellType.NUMERIC ) )
 			return getCellNumericOrDateValue( arguments.cell ); 
-		if( ObjectEquals( cachedValueType, cellType.BOOLEAN ) )
+		if( cachedValueType.equals( cellType.BOOLEAN ) )
 			return arguments.cell.getBooleanCellValue();
 		return arguments.cell.getStringCellValue();
 	}

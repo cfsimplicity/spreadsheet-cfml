@@ -192,7 +192,7 @@ describe( "csvToQuery", function(){
 	describe( "query column type setting", function(){
 
 		it( "allows the query column types to be manually set using a list", function(){
-			var csv = '1,1.1,"string",#CreateTime( 1, 0, 0 )#';
+			var csv = '1,1.1,"string",#_CreateTime( 1, 0, 0 )#';
 			var q = s.csvToQuery( csv=csv, queryColumnTypes="Integer,Double,VarChar,Time" );
 			var columns = GetMetaData( q );
 			expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
@@ -213,7 +213,7 @@ describe( "csvToQuery", function(){
 		});
 
 		it( "allows the query column types to be manually set where the column order isn't known, but the column names are", function(){
-			var csv = '1,1.1,"string",#CreateTime( 1, 0, 0 )#';
+			var csv = '1,1.1,"string",#_CreateTime( 1, 0, 0 )#';
 			var columnNames = [ "integer", "double", "string column", "time" ];
 			var columnTypes = { "string": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
 			var q = s.csvToQuery( csv=csv, queryColumnTypes=columnTypes, queryColumnNames=columnNames );
@@ -245,7 +245,7 @@ describe( "csvToQuery", function(){
 		});
 
 		it( "allows a default type to be set for all query columns", function(){
-			var csv = '1,1.1,"string",#CreateTime( 1, 0, 0 )#';
+			var csv = '1,1.1,"string",#_CreateTime( 1, 0, 0 )#';
 			var q = s.csvToQuery( csv=csv, queryColumnTypes="VARCHAR" );
 			var columns = GetMetaData( q );
 			expect( columns[ 1 ].typeName ).toBe( "VARCHAR" );

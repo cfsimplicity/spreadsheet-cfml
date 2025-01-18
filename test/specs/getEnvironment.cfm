@@ -8,6 +8,7 @@ describe( "getEnvironment", function(){
 			,"javaLoaderDotPath"
 			,"javaClassesLastLoadedVia"
 			,"javaLoaderName"
+			,"javaVersion"
 			,"requiresJavaLoader"
 			,"version"
 			,"poiVersion"

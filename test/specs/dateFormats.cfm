@@ -47,7 +47,7 @@ describe( "dateFormats customisability",function(){
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 		//Dates
 		var dateValue =  CreateDate( 2019, 04, 12 );
-		var timeValue = CreateTime( 1, 5, 5 );
+		var timeValue = _CreateTime( 1, 5, 5 );
 		var timestampValue = CreateDateTime(  2019, 04, 12, 1, 5, 5 );
 		workbooks.Each( function( wb ){
 			s.setCellValue( wb, dateValue, 1, 1 );

@@ -8,20 +8,6 @@ component extends="base"{
 		return variables.dateUtil;
 	}
 
-	// alternative BIF
-	boolean function _IsDate( required value ){
-		if( !IsDate( arguments.value ) )
-			return false;
-		// Lucee will treat 01-23112 or 23112-01 as a date!
-		if( ParseDateTime( arguments.value ).Year() > 9999 ) //ACF future limit
-			return false;
-		// ACF accepts "9a", "9p", "9 a" as dates
-		// ACF no member function
-		if( REFind( "^\d+\s*[apAP]{1,1}$", arguments.value ) )
-			return false;
-		return true;
-	}
-
 	struct function defaultFormats(){
 		return {
 			DATE: "yyyy-mm-dd"
@@ -42,10 +28,10 @@ component extends="base"{
 	}
 
 	string function getDefaultDateMaskFor( required date value ){
-		if( isDateOnlyValue( arguments.value ) )
-			return library().getDateFormats().DATE;
 		if( isTimeOnlyValue( arguments.value ) )
 			return library().getDateFormats().TIME;
+		if( isDateOnlyValue( arguments.value ) )
+			return library().getDateFormats().DATE;
 		return library().getDateFormats().TIMESTAMP;
 	}
 
@@ -53,7 +39,10 @@ component extends="base"{
 		return IsInstanceOf( arguments.input, "java.util.Date" );
 	}
 
+	//TODO improve these imperfect tests!
 	boolean function isDateOnlyValue( required date value ){
+		if( library().getIsBoxlang() )
+			return ( arguments.value.TimeFormat( "hh:mm:ss" ) == "00:00:00" );
 		var dateOnly = CreateDate( Year( arguments.value ), Month( arguments.value ), Day( arguments.value ) );
 		return ( DateCompare( arguments.value, dateOnly, "s" ) == 0 );
 	}
@@ -64,18 +53,69 @@ component extends="base"{
 	}
 
 	string function getPoiTimeZone(){
-		return library().createJavaObject( "org.apache.poi.util.LocaleUtil" ).getUserTimeZone();
+		return library().createJavaObject( "org.apache.poi.util.LocaleUtil" ).getUserTimeZone().toString();
 	}
 
 	any function matchPoiTimeZoneToEngine(){
-		if( library().getIsACF() )
-			return this;//ACF doesn't allow the server/context timezone to be changed
+		//ACF doesn't allow the server/context timezone to be changed
+		//Boxlang supports setting the context timezone, but not getting it?
+		if( !library().getIsLucee() )
+			return this;
 		//Lucee allows the context timezone to be changed, which can cause problems with date calculations
 		if( getPoiTimeZone() == GetTimezone() )
 			return this;
 		//Make POI match the Lucee timezone for the duration of the current thread
 		library().createJavaObject( "org.apache.poi.util.LocaleUtil" ).setUserTimeZone( GetTimezone() );
 		return this;
+	}
+
+	any function convertDateToJava( required date object ){
+		return CreateObject( "java", "java.util.Date" ).init( arguments.object.getTime() );
+	}
+
+	// alternative BIFS
+	boolean function _IsDate( required value ){
+		if( library().getIsBoxlang() ) // no special handling for boxlang
+			return IsDate( arguments.value );
+		if( !IsDate( arguments.value ) )
+			return false;
+		// Lucee will treat 01-23112 or 23112-01 as a date!
+		if( ParseDateTime( arguments.value ).Year() > 9999 ) //ACF future limit
+			return false;
+		// ACF accepts "9a", "9p", "9 a" as dates
+		// ACF no member function
+		if( REFind( "^\d+\s*[apAP]{1,1}$", arguments.value ) )
+			return false;
+		return true;
+	}
+
+	any function _ParseDateTime( required value ){
+		// ACF and boxlang can test for an existing date object
+		if( !library().getIsLucee() && IsDateObject( arguments.value ) )
+			return arguments.value;
+		//Boxlang is very limited in what it will accept
+		if( !library().getIsBoxlang() )
+			return ParseDateTime( arguments.value );
+		return _ParseDateTimeBoxlang( arguments.value );
+	}
+
+	private any function _ParseDateTimeBoxlang( required value ){
+		//Boxlang: support a limited set of "non-standard" date/time string formats
+		//e.g. 01.2024 or 04/2024
+		if( arguments.value.REFindNoCase( "^\d{1,2}\D\d{4,4}$" ) ){ 
+			arguments.value = arguments.value.REReplaceNoCase( "(\d{2,2})\D(\d{4,4})", "01/\1/\2" );
+			return ParseDateTime( arguments.value );
+		}
+		//e.g. Mon Jan 05 05:00:00 GMT 1970
+		if( arguments.value.REFindNoCase( "^\w{3,3} \w{3,3} \d{2,2} \d{2,2}:\d{2,2}:\d{2,2} \w{3,3} \d{4,4}$" ) )
+			return ParseDateTime( arguments.value, "EEE MMM d HH:mm:ss zzz yyyy" );
+		 //e.g. 08:21
+		if( arguments.value.REFindNoCase( "^\d{2,2}:\d{2,2}$" ) )
+			return ParseDateTime( "1899-12-30T#arguments.value#:00Z" );
+		//e.g. 08:21:30
+		if( arguments.value.REFindNoCase( "^\d{2,2}:\d{2,2}:\d{2,2}$" ) )
+			return ParseDateTime( "1899-12-30T#arguments.value#Z" );
+		return ParseDateTime( arguments.value );
 	}
 
 }
