@@ -684,10 +684,11 @@ describe( "read", function(){
 				variables.currentTZ = GetTimeZone();
 				variables.tempTZ = "US/Eastern";
 				spreadsheetTypes.Each( function( type ){
-					var path = variables[ "temp" & type & "Path" ];
-					s.newChainable( type ).setCellValue( "2022-01-01", 1, 1, "date" ).write( path, true );
 					SetTimeZone( tempTZ );
-					var actual = s.read( path, "query" ).column1;
+					var path = variables[ "temp" & type & "Path" ];
+					local.s = newSpreadsheetInstance();//timezone mismatch detection cached is per instance
+					local.s.newChainable( type ).setCellValue( "2022-01-01", 1, 1, "date" ).write( path, true );
+					var actual = local.s.read( path, "query" ).column1;
 					var expected = CreateDate( 2022, 01, 01 );
 					expect( actual ).toBe( expected );
 					SetTimeZone( currentTZ );
