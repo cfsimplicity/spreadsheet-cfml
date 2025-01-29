@@ -53,7 +53,7 @@ component extends="base"{
 	}
 
 	string function getPoiTimeZone(){
-		return library().createJavaObject( "org.apache.poi.util.LocaleUtil" ).getUserTimeZone().toString();
+		return library().createJavaObject( "org.apache.poi.util.LocaleUtil" ).getUserTimeZone().getID();
 	}
 
 	any function matchPoiTimeZoneToEngine(){

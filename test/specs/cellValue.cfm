@@ -256,6 +256,11 @@ describe( "cellValue", function(){
 		title="Lucee only timezone tests",
 		body=function(){
 
+			it( "Knows if Lucee timezone matches POI", function(){
+				s.getDateHelper().matchPoiTimeZoneToEngine();
+				expect( s.getDateHelper().getPoiTimeZone() ).toBe( GetTimeZone() );
+			});
+
 			it( "Sets the specified cell to the specified date value even if the Lucee timezone doesn't match the system", function(){
 				variables.currentTZ = GetTimeZone();
 				//Needs manually adjusting if the test Lucee instance TZ is in Central European Time, i.e. same as London e.g. Lisbon
