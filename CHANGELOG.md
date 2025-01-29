@@ -1,3 +1,9 @@
+## 4.3.1 - 29 January 2025
+
+Fixes:
+ - \#389 Faulty timezone check causes performance issues when handling date/time values in Lucee
+ - \#390 Improve performance around date value handling
+
 ## 4.3.0 - 18 January 2025
 
 - Enhancements

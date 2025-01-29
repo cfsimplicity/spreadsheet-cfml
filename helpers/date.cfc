@@ -1,11 +1,18 @@
 component extends="base"{
 
 	property name="dateUtil";
+	property name="poiTimeZoneMatchesEngine" type="boolean";
 
 	any function getDateUtil(){
 		if( IsNull( variables.dateUtil ) )
 			variables.dateUtil = library().createJavaObject( "org.apache.poi.ss.usermodel.DateUtil" );
 		return variables.dateUtil;
+	}
+
+	boolean function getPoiTimeZoneMatchesEngine(){
+		if( IsNull( variables.poiTimeZoneMatchesEngine ) )
+			variables.poiTimeZoneMatchesEngine = ( GetTimeZone() == getPoiTimeZone() );
+		return variables.poiTimeZoneMatchesEngine;
 	}
 
 	struct function defaultFormats(){
@@ -53,16 +60,14 @@ component extends="base"{
 	}
 
 	string function getPoiTimeZone(){
-		return library().createJavaObject( "org.apache.poi.util.LocaleUtil" ).getUserTimeZone().toString();
+		return library().createJavaObject( "org.apache.poi.util.LocaleUtil" ).getUserTimeZone().getID();
 	}
 
 	any function matchPoiTimeZoneToEngine(){
 		//ACF doesn't allow the server/context timezone to be changed
 		//Boxlang supports setting the context timezone, but not getting it?
-		if( !library().getIsLucee() )
-			return this;
 		//Lucee allows the context timezone to be changed, which can cause problems with date calculations
-		if( getPoiTimeZone() == GetTimezone() )
+		if( !library().getIsLucee() || getPoiTimeZoneMatchesEngine() )
 			return this;
 		//Make POI match the Lucee timezone for the duration of the current thread
 		library().createJavaObject( "org.apache.poi.util.LocaleUtil" ).setUserTimeZone( GetTimezone() );
