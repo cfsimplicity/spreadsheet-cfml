@@ -29,8 +29,8 @@ component{
 		return library().getColumnHelper();
 	}
 
-	any function getCommetHelper(){
-		return library().getCommetHelper();
+	any function getCommentHelper(){
+		return library().getCommentHelper();
 	}
 
 	any function getCsvHelper(){
