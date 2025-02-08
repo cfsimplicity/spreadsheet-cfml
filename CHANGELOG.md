@@ -1,3 +1,7 @@
+## 4.4.0 - 8 February 2025
+
+- \#297 readLargeFile() now works on ACF
+
 ## 4.3.1 - 29 January 2025
 
 Fixes:
