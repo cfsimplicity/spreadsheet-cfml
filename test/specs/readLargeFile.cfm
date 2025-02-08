@@ -1,7 +1,5 @@
 <cfscript>
-describe(
-	title="readLargeFile (Lucee only)"
-	,body=function(){
+describe( "readLargeFile", function(){
 
 	it( "Can read an XLSX file into a query", function(){
 		var path = getTestFilePath( "large.xlsx" );
@@ -460,21 +458,5 @@ describe(
 	});
 
 	}
-	,skip=!s.getIsLucee()
 );
-
-describe(
-	title="readLargeFile (when run on ACF)"
-	,body=function(){
-
-		it( "throws a methodNotSupported exception", function(){
-			expect( function(){
-				var path = getTestFilePath( "large.xlsx" );
-				s.readLargeFile( src=path );
-			}).toThrow( type="cfsimplicity.spreadsheet.methodNotSupported" );
-		});
-
-	}
-	,skip=s.getIsLucee()
-); 
 </cfscript>

@@ -1,7 +1,7 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="4.3.1" setter="false";
+	property name="version" default="4.4.0" setter="false";
 	property name="osgiLibBundleVersion" default="5.4.0.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
@@ -1297,9 +1297,6 @@ component accessors="true"{
 		,struct streamingReaderOptions
 		,boolean returnVisibleValues=false
 	){
-		if( !this.getIsLucee() ){
-			Throw( type=this.getExceptionType() & ".methodNotSupported", message="'readLargeFile()' is only supported on Lucee", detail="'readLargeFile()' currently only works with Lucee." );
-		}
 		getFileHelper().throwErrorIFfileNotExists( arguments.src );
 		getExceptionHelper().throwExceptionIFreadFormatIsInvalid( argumentCollection=arguments );
 		getSheetHelper().throwErrorIFSheetNameAndNumberArgumentsBothPassed( argumentCollection=arguments );
