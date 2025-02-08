@@ -1297,9 +1297,6 @@ component accessors="true"{
 		,struct streamingReaderOptions
 		,boolean returnVisibleValues=false
 	){
-		if( !this.getIsLucee() ){
-			Throw( type=this.getExceptionType() & ".methodNotSupported", message="'readLargeFile()' is only supported on Lucee", detail="'readLargeFile()' currently only works with Lucee." );
-		}
 		getFileHelper().throwErrorIFfileNotExists( arguments.src );
 		getExceptionHelper().throwExceptionIFreadFormatIsInvalid( argumentCollection=arguments );
 		getSheetHelper().throwErrorIFSheetNameAndNumberArgumentsBothPassed( argumentCollection=arguments );
