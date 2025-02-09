@@ -1,44 +1,44 @@
 <cfscript>
-describe( "deleteRow", function(){
+describe( "deleteRow", ()=>{
 
-	beforeEach( function(){
+	beforeEach( ()=>{
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
-	});
+	})
 
-	it( "Deletes the data in a specified row", function(){
+	it( "Deletes the data in a specified row", ()=>{
 		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "", "" ], [ "c", "d" ] ] );
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRow( wb, "a,b" )
 				.addRow( wb, "c,d" )
 				.deleteRow( wb, 1 );
 			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "Is chainable", function(){
+	it( "Is chainable", ()=>{
 		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "", "" ], [ "c", "d" ] ] );
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.newChainable( wb )
 				.addRow( "a,b" )
 				.addRow( "c,d" )
 				.deleteRow( 1 );
 			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	describe( "deleteRow throws an exception if", function(){
+	describe( "deleteRow throws an exception if", ()=>{
 
-		it( "row is zero or less", function(){
-			workbooks.Each( function( wb ){
-				expect( function(){
+		it( "row is zero or less", ()=>{
+			workbooks.Each( ( wb )=>{
+				expect( ()=>{
 					s.deleteRow( workbook=wb, row=0 );
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidRowArgument" );
-			});
-		});
+			})
+		})
 
-	});
+	})
 
-});	
+})	
 </cfscript>

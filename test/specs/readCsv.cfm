@@ -1,16 +1,16 @@
 <cfscript>
-describe( "readCsv", function(){
+describe( "readCsv", ()=>{
 
-	it( "can read a basic csv file into an array", function(){
+	it( "can read a basic csv file into an array", ()=>{
 		var path = getTestFilePath( "test.csv" );
 		var expected = { columns: [], data: [ [ "Frumpo McNugget", "12345" ] ] };
 		var actual = s.readCsv( path )
 			.intoAnArray()
 			.execute();
 		expect( actual ).toBe( expected );
-	});
+	})
 
-	it( "allows predefined formats to be specified", function(){
+	it( "allows predefined formats to be specified", ()=>{
 		var csv = '"Frumpo McNugget"#Chr( 9 )#12345';
 		FileWrite( tempCsvPath, csv );
 		var expected = { columns: [], data: [ [ "Frumpo McNugget", "12345" ] ] };
@@ -19,9 +19,9 @@ describe( "readCsv", function(){
 			.withPredefinedFormat( "TDF" )
 			.execute();
 		expect( actual ).toBe( expected );
-	});
+	})
 
-	it( "has special handling when specifying tab as the delimiter", function(){
+	it( "has special handling when specifying tab as the delimiter", ()=>{
 		var csv = '"Frumpo McNugget"#Chr( 9 )#12345';
 		FileWrite( tempCsvPath, csv );
 		var validTabValues = [ "#Chr( 9 )#", "\t", "tab", "TAB" ];
@@ -33,9 +33,9 @@ describe( "readCsv", function(){
 				.execute();
 			expect( actual ).toBe( expected );
 		}
-	});
+	})
 
-	it( "allows N rows to be skipped at the start of the file", function(){
+	it( "allows N rows to be skipped at the start of the file", ()=>{
 		var csv = 'Skip this line#newline#skip this line too#newline#"Frumpo McNugget",12345';
 		var expected = { columns: [], data: [ [ "Frumpo McNugget", "12345" ] ] };
 		FileWrite( tempCsvPath, csv );
@@ -44,11 +44,11 @@ describe( "readCsv", function(){
 			.withSkipFirstRows( 2 )
 			.execute();
 		expect( actual ).toBe( expected );
-	});
+	})
 
-	describe( "auto header/column handling", function(){
+	describe( "auto header/column handling", ()=>{
 
-		it( "can auto extract the column names from first row if specified", function(){
+		it( "can auto extract the column names from first row if specified", ()=>{
 			var csv = 'name,number#newline#"Frumpo McNugget",12345';
 			var expected = { columns: [ "name", "number" ], data: [ [ "Frumpo McNugget", "12345" ] ] };
 			FileWrite( tempCsvPath, csv );
@@ -57,9 +57,9 @@ describe( "readCsv", function(){
 				.withFirstRowIsHeader( true )
 				.execute();
 			expect( actual ).toBe( expected );
-		});
+		})
 
-		it( "auto extraction treats the first non-skipped row as the header", function(){
+		it( "auto extraction treats the first non-skipped row as the header", ()=>{
 			var csv = 'Skip this line#newline#name,number#newline#"Frumpo McNugget",12345';
 			var expected = { columns: [ "name", "number" ], data: [ [ "Frumpo McNugget", "12345" ] ] };
 			FileWrite( tempCsvPath, csv );
@@ -69,9 +69,9 @@ describe( "readCsv", function(){
 				.withFirstRowIsHeader( true )
 				.execute();
 			expect( actual ).toBe( expected );
-		});
+		})
 
-		it( "adds a manually specified header row to the columns result", function(){
+		it( "adds a manually specified header row to the columns result", ()=>{
 			var csv = 'name,number#newline#"Frumpo McNugget",12345';
 			var expected = { columns: [ "name", "number" ], data: [ [ "Frumpo McNugget", "12345" ] ] };
 			FileWrite( tempCsvPath, csv );
@@ -81,17 +81,17 @@ describe( "readCsv", function(){
 				.withSkipHeaderRecord( true )
 				.execute();
 			expect( actual ).toBe( expected );
-		});
+		})
 
-	});
+	})
 
-	describe( "passing UDFs to readCsv", function(){
+	describe( "passing UDFs to readCsv", ()=>{
 
-		it( "allows rows to be filtered out of processing using a passed filter UDF", function(){
+		it( "allows rows to be filtered out of processing using a passed filter UDF", ()=>{
 			var csv = '"Frumpo McNugget",12345#newline#"Skip",12345#newline#"Susi Sorglos",67890';
 			var expected = { columns: [], data: [ [ "Frumpo McNugget", "12345" ], [ "Susi Sorglos", "67890" ] ] };
 			FileWrite( tempCsvPath, csv );
-			var filter = function( rowValues ){
+			var filter = ( rowValues )=>{
 				return !ArrayFindNoCase( rowValues, "skip" );
 			};
 			var actual = s.readCsv( tempCsvPath )
@@ -99,58 +99,58 @@ describe( "readCsv", function(){
 				.withRowFilter( filter )
 				.execute();
 			expect( actual ).toBe( expected );
-		});
+		})
 
-		it( "allows rows to be processed using a passed UDF and the processed values returned", function(){
+		it( "allows rows to be processed using a passed UDF and the processed values returned", ()=>{
 			var csv = '"Frumpo McNugget",12345#newline#"Susi Sorglos",67890';
 			var expected = { columns: [], data: [ [ "XFrumpo McNugget", "X12345" ], [ "XSusi Sorglos", "X67890" ] ] };
 			FileWrite( tempCsvPath, csv );
-			var processor = function( rowValues ){
+			var processor = ( rowValues )=>{
 				//NB: rowValues is a java native array. Array member functions won't work therefore.
-				return ArrayMap( rowValues, function( value ){
+				return ArrayMap( rowValues, ( value )=>{
 					return "X" & value;
-				});
+				})
 			};
 			var actual = s.readCsv( tempCsvPath )
 				.intoAnArray()
 				.withRowProcessor( processor )
 				.execute();
 			expect( actual ).toBe( expected );
-		});
+		})
 
-		it( "allows rows to be processed using a passed UDF without returning any data", function(){
+		it( "allows rows to be processed using a passed UDF without returning any data", ()=>{
 			var csv = '10#newline#10';
 			var expected = 20;
 			FileWrite( tempCsvPath, csv );
 			variables.tempTotal = 0;
-			var processor = function( rowValues ){
-				ArrayEach( rowValues, function( value ){
+			var processor = ( rowValues )=>{
+				ArrayEach( rowValues, ( value )=>{
 					tempTotal = ( tempTotal + value );
-				});
+				})
 			};
 			s.readCsv( tempCsvPath )
 				.withRowProcessor( processor )
 				.execute();
 			expect( tempTotal ).toBe( expected );
-		});
+		})
 
-		it( "passes the current record number to the processor UDF", function(){
+		it( "passes the current record number to the processor UDF", ()=>{
 			var csv = '"Frumpo McNugget",12345#newline#"Susi Sorglos",67890';
 			var expected = [ 1, 2 ];
 			FileWrite( tempCsvPath, csv );
 			variables.temp = [];
-			var processor = function( rowValues, rowNumber ){
+			var processor = ( rowValues, rowNumber )=>{
 				temp.Append( rowNumber );
 			};
 			s.readCsv( tempCsvPath )
 				.withRowProcessor( processor )
 				.execute();
 			expect( temp ).toBe( expected );
-		});
+		})
 
-	});
+	})
 
-	it( "allows Commons CSV format options to be applied", function(){
+	it( "allows Commons CSV format options to be applied", ()=>{
 		var path = getTestFilePath( "test.csv" );
 		var object = s.readCsv( path )
 			.withAllowMissingColumnNames()
@@ -205,22 +205,22 @@ describe( "readCsv", function(){
 		expect( object.getFormat().getSkipHeaderRecord() ).toBeFalse();
 		expect( object.getFormat().getTrailingDelimiter() ).toBeFalse();
 		expect( object.getFormat().getTrim() ).toBeFalse();
-	});
+	})
 
-	afterEach( function(){
+	afterEach( ()=>{
 		if( FileExists( tempCsvPath ) )
 			FileDelete( tempCsvPath );
-	});
+	})
 
-	describe( "readCsv() throws an exception if", function(){
+	describe( "readCsv() throws an exception if", ()=>{
 
-		it( "a zero or positive integer is not passed to withSkipFirstRows()", function(){
-			expect( function(){
+		it( "a zero or positive integer is not passed to withSkipFirstRows()", ()=>{
+			expect( ()=>{
 				var actual = s.readCsv( getTestFilePath( "test.csv" ) ).withSkipFirstRows( -1 );
 			}).toThrow( type="cfsimplicity.spreadsheet.invalidArgument" );
-		});
+		})
 
-	});
+	})
 
-});
+})
 </cfscript>

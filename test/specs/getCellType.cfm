@@ -1,12 +1,12 @@
 <cfscript>
-describe( "getCellType", function(){
+describe( "getCellType", ()=>{
 
-	beforeEach( function(){
+	beforeEach( ()=>{
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
-	});
+	})
 
-	it( "Gets the Excel data type of a cell in the active sheet", function(){
-		workbooks.Each( function( wb ){
+	it( "Gets the Excel data type of a cell in the active sheet", ()=>{
+		workbooks.Each( ( wb )=>{
 			s.setCellValue( wb, "test", 1, 1 );
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "string" );
 			s.setCellValue( wb, 1, 1, 1 );
@@ -19,17 +19,17 @@ describe( "getCellType", function(){
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "blank" );
 			s.setCellFormula( wb, "SUM(A1:A2)", 1, 1 );
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "formula" );
-		});
-	});
+		})
+	})
 
-	it( "Is chainable", function(){
-		workbooks.Each( function( wb ){
+	it( "Is chainable", ()=>{
+		workbooks.Each( ( wb )=>{
 			var type = s.newChainable( wb )
 				.setCellValue( "true", 1, 1, "boolean" )
 				.getCellType( 1, 1 );
 			expect( type ).toBe( "boolean" );
-		});
-	});
+		})
+	})
 
-});	
+})	
 </cfscript>

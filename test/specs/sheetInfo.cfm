@@ -1,8 +1,8 @@
 <cfscript>
-describe( "sheetInfo", function(){
+describe( "sheetInfo", ()=>{
 
-	it( "can get info about a specific sheet within a workbook", function(){
-		variables.spreadsheetTypes.Each( function( type ){
+	it( "can get info about a specific sheet within a workbook", ()=>{
+		variables.spreadsheetTypes.Each( ( type )=>{
 			var defaults = {
 				displaysAutomaticPageBreaks: ( type == "xlsx" )//xls=false xlsx=true
 				,displaysFormulas: false
@@ -109,16 +109,16 @@ describe( "sheetInfo", function(){
 			expect( hiddenSheetInfo.isHidden ).toBeTrue();
 			expect( hiddenSheetInfo.name ).toBe( "hidden sheet" );
 			expect( hiddenSheetInfo.isCurrentActiveSheet ).toBeFalse;
-		});
-	});
+		})
+	})
 
-	it( "Returns info from the current active sheet by default", function(){
-		variables.spreadsheetTypes.Each( function( type ){
+	it( "Returns info from the current active sheet by default", ()=>{
+		variables.spreadsheetTypes.Each( ( type )=>{
 			var chainable = s.newChainable( type ).createSheet( "Sheet2" ).setActiveSheet( "Sheet2" );
 			var actual = chainable.sheetInfo();
 			expect( actual.name ).toBe( "Sheet2" );
-		});
-	});
+		})
+	})
 
-});	
+})	
 </cfscript>

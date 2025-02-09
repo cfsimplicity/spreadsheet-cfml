@@ -1,12 +1,12 @@
 <cfscript>
-describe( "setHeader", function(){
+describe( "setHeader", ()=>{
 
-	beforeEach( function(){
+	beforeEach( ()=>{
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
-	});
+	})
 
-	it( "adds text to the left, centre or right header", function() {
-		workbooks.Each( function( wb ) {
+	it( "adds text to the left, centre or right header", ()=>{
+		workbooks.Each( ( wb )=>{
 			var leftText = "I'm on the left";
 			var centerText = "I'm in the middle";
 			var rightText = "I'm on the right";
@@ -15,11 +15,11 @@ describe( "setHeader", function(){
 			expect( header.getLeft() ).toBe( leftText );
 			expect( header.getCenter() ).toBe( centerText );
 			expect( header.getRight() ).toBe( rightText );
-		});
-	});
+		})
+	})
 
-	it( "is chainable", function() {
-		workbooks.Each( function( wb ) {
+	it( "is chainable", ()=>{
+		workbooks.Each( ( wb )=>{
 			var leftText = "I'm on the left";
 			var centerText = "I'm in the middle";
 			var rightText = "I'm on the right";
@@ -29,8 +29,8 @@ describe( "setHeader", function(){
 			expect( header.getLeft() ).toBe( leftText );
 			expect( header.getCenter() ).toBe( centerText );
 			expect( header.getRight() ).toBe( rightText );
-		});
-	});
+		})
+	})
 
-});
+})
 </cfscript>

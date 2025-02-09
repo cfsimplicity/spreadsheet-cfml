@@ -1,42 +1,42 @@
 <cfscript>
-describe( "writeToCsv", function(){
+describe( "writeToCsv", ()=>{
 
-	beforeEach( function(){
+	beforeEach( ()=>{
 		Sleep( 5 );// allow time for file operations to complete
 		var data = [ [ "a", "b" ], [ "c", "d" ] ];
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( wb, data );
-		});
-	});
+		})
+	})
 
-	it( "writes a csv file from a spreadsheet object", function(){
+	it( "writes a csv file from a spreadsheet object", ()=>{
 		var expectedCsv = 'a,b#newline#c,d#newline#';
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.writeToCsv( wb, tempCsvPath, true );
 			expect( FileRead( tempCsvPath ) ).toBe( expectedCsv );
-		});
-	});
+		})
+	})
 
-	it( "is chainable", function(){
+	it( "is chainable", ()=>{
 		var expectedCsv = 'a,b#newline#c,d#newline#';
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.newChainable( wb ).writeToCsv( tempCsvPath, true );
 			expect( FileRead( tempCsvPath ) ).toBe( expectedCsv );
-		});
-	});
+		})
+	})
 
-	it( "allows an alternative delimiter", function(){
+	it( "allows an alternative delimiter", ()=>{
 		var expectedCsv = 'a|b#newline#c|d#newline#';
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.writeToCsv( wb, tempCsvPath, true, "|" );
 			expect( FileRead( tempCsvPath ) ).toBe( expectedCsv );
-		});
-	});
+		})
+	})
 
-	it( "allows the sheet's header row to be excluded", function(){
+	it( "allows the sheet's header row to be excluded", ()=>{
 		var expectedCsv = 'a,b#newline#c,d#newline#';
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRow( wb, [ "column1", "column2" ], 1 )
 				.writeToCsv( workbook=wb, filepath=tempCsvPath, overwrite=true, includeHeaderRow=false );
 			expect( FileRead( tempCsvPath ) ).toBe( expectedCsv );
@@ -44,26 +44,26 @@ describe( "writeToCsv", function(){
 			s.shiftRows( wb, 1, 3, 1 )
 				.writeToCsv( workbook=wb, filepath=tempCsvPath, overwrite=true, includeHeaderRow=false, headerRow=2 );
 			expect( FileRead( tempCsvPath ) ).toBe( expectedCsv );
-		});
-	});
+		})
+	})
 
-	describe( "writeToCsv throws an exception if", function(){
+	describe( "writeToCsv throws an exception if", ()=>{
 
-		it( "the path exists and overwrite is false", function(){
+		it( "the path exists and overwrite is false", ()=>{
 			FileWrite( tempCsvPath, "" );
-			workbooks.Each( function( wb ){
-				expect( function(){
+			workbooks.Each( ( wb )=>{
+				expect( ()=>{
 					s.writeToCsv( wb, tempCsvPath, false );
 				}).toThrow( type="cfsimplicity.spreadsheet.fileAlreadyExists" );
-			});
-		});
+			})
+		})
 
-	});	
+	})	
 
-	afterEach( function(){
+	afterEach( ()=>{
 		if( FileExists( tempCsvPath ) )
 			FileDelete( tempCsvPath );
-	});
+	})
 
-});	
+})	
 </cfscript>

@@ -1,15 +1,15 @@
 <cfscript>
-describe( "deleteColumns", function(){
+describe( "deleteColumns", ()=>{
 
-	beforeEach( function(){
+	beforeEach( ()=>{
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
-	});
+	})
 
-	it( "Deletes the data in a specified range of columns", function(){
+	it( "Deletes the data in a specified range of columns", ()=>{
 		var expected = querySim("column1,column2,column3,column4,column5
 			||e||i
 			||f||j");
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addColumn( wb, "a,b" )
 				.addColumn( wb, "c,d" )
 				.addColumn( wb, "e,f" )
@@ -18,14 +18,14 @@ describe( "deleteColumns", function(){
 				.deleteColumns( wb, "1-2,4" );
 			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "Is chainable", function(){
+	it( "Is chainable", ()=>{
 		var expected = querySim("column1,column2,column3,column4,column5
 			||e||i
 			||f||j");
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.newChainable( wb )
 				.addColumn( "a,b" )
 				.addColumn( "c,d" )
@@ -35,20 +35,20 @@ describe( "deleteColumns", function(){
 				.deleteColumns( "1-2,4" );
 			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	describe( "deleteColumns throws an exception if", function(){
+	describe( "deleteColumns throws an exception if", ()=>{
 
-		it( "the range is invalid", function(){
-			workbooks.Each( function( wb ){
-				expect( function(){
+		it( "the range is invalid", ()=>{
+			workbooks.Each( ( wb )=>{
+				expect( ()=>{
 					s.deleteColumns( wb, "a-b" );
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidRange" );
-			});
-		});
+			})
+		})
 
-	});
+	})
 
-});	
+})	
 </cfscript>

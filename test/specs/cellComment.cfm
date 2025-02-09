@@ -1,28 +1,28 @@
 <cfscript>
-describe( "cellComment", function(){
+describe( "cellComment", ()=>{
 
-	beforeEach( function(){
+	beforeEach( ()=>{
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
-	});
+	})
 
-	it( "Can set and get a comment from the specified cell", function() {
+	it( "Can set and get a comment from the specified cell", ()=>{
 		var theComment = {
 			author: "cfsimplicity"
 			,comment: "This is the comment in row 1 column 1"
 		};
 		var expected = Duplicate( theComment ).Append( { column: 1, row: 1 } );
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addColumn( wb, "1" )
 				.setCellComment( wb, theComment, 1, 1 );
 			var actual = s.getCellComment( wb, 1, 1 );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "getCellComment, getCellComments and setCellComment are chainable", function() {
+	it( "getCellComment, getCellComments and setCellComment are chainable", ()=>{
 		var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
 		var dataAsArray = [ [ "a", "b" ], [ "c", "d" ] ];
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( wb, data );
 			var comments = [];
 			comments.Append( { author: "cfsimplicity", comment: "This is the comment in row 1 column 1", column: 1, row: 1 } );
@@ -33,13 +33,13 @@ describe( "cellComment", function(){
 			expect( wbChainable.getCellComment() ).toBe( comments );
 			expect( wbChainable.getCellComments() ).toBe( comments );
 			expect( wbChainable.getCellComment( 1, 1 ) ).toBe( comments[ 1 ] );
-		});
-	});
+		})
+	})
 
-	it( "Can get all comments in the current sheet", function() {
+	it( "Can get all comments in the current sheet", ()=>{
 		var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
 		var dataAsArray = [ [ "a", "b" ], [ "c", "d" ] ];
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( wb, data );
 			var comments = [];
 			comments.Append( { author: "cfsimplicity", comment: "This is the comment in row 1 column 1", column: 1, row: 1 } );
@@ -52,11 +52,11 @@ describe( "cellComment", function(){
 			//alias getCellComments
 			actual = s.getCellComments( wb );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "can set comment styles without erroring", function(){
-		workbooks.Each( function( wb ){
+	it( "can set comment styles without erroring", ()=>{
+		workbooks.Each( ( wb )=>{
 			s.addColumn( wb, "1" );
 			var theComment = {
 				anchor: "1,2,3,4"
@@ -78,21 +78,21 @@ describe( "cellComment", function(){
 				,verticalalignment: "center"
 			};
 			s.setCellComment( wb, theComment, 1, 1 );
-		});
-	});
+		})
+	})
 
-	describe( "cellComment throws an exception if", function(){
+	describe( "cellComment throws an exception if", ()=>{
 
-		it( "column specified but not row, or vice versa", function() {
-			workbooks.Each( function( wb ){
-				expect( function(){
+		it( "column specified but not row, or vice versa", ()=>{
+			workbooks.Each( ( wb )=>{
+				expect( ()=>{
 					s.getCellComment( workbook=wb, row=1 );
 					s.getCellComment( workbook=wb, column=1 );
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidArgumentCombination" );
-			});
-		});
+			})
+		})
 
-	});	
+	})	
 
-});	
+})	
 </cfscript>
