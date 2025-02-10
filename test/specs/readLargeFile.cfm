@@ -452,11 +452,5 @@ describe( "readLargeFile", ()=>{
 
 	})
 
-	afterEach( ()=>{
-		if( FileExists( variables.tempXlsxPath ) )
-			FileDelete( variables.tempXlsxPath );
-	})
-
-	}
-);
+})
 </cfscript>
