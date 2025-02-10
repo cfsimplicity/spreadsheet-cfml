@@ -18,7 +18,7 @@ describe( "readLargeFile", ()=>{
 		expect( actual ).toBe( expected );
 	})
 
-	it( "Reads from the specified sheet name", ()=>{
+	it( "Reads from the specified sheet number", ()=>{
 		var path = getTestFilePath( "large.xlsx" );// has 2 sheets
 		var expected = querySim(
 			"column1,column2
