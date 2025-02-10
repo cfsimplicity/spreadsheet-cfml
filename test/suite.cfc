@@ -30,6 +30,12 @@ component extends="testbox.system.BaseSpec"{
 
 	function afterAll(){
 		WriteDump( var=s.getEnvironment(), label="Environment and settings" );
+		if( FileExists( variables.tempXlsPath ) )
+			FileDelete( variables.tempXlsPath );
+		if( FileExists( variables.tempXlsxPath ) )
+			FileDelete( variables.tempXlsxPath );
+		if( FileExists( variables.tempCsvPath ) )
+			FileDelete( variables.tempCsvPath );
 	}
 
 	function run( testResults, testBox ){
