@@ -12,9 +12,9 @@ component extends="testbox.system.BaseSpec"{
 		s.flushOsgiBundle();
 		if( server.KeyExists( s.getJavaLoaderName() ) )
 			server.delete( s.getJavaLoaderName() );
-	  variables.tempXlsPath = ExpandPath( "temp.xls" );
-	  variables.tempXlsxPath = ExpandPath( "temp.xlsx" );
-	  variables.tempCsvPath = ExpandPath( "temp.csv" );
+	  variables.tempXlsPath = GetTempDirectory() & "temp.xls";
+	  variables.tempXlsxPath = GetTempDirectory() & "temp.xlsx";
+	  variables.tempCsvPath = GetTempDirectory() & "temp.csv";
 	  variables.newline = Chr( 13 ) & Chr( 10 );
 	  variables.spreadsheetTypes = [ "xls", "xlsx" ];
 	}
