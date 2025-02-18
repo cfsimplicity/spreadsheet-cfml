@@ -1184,6 +1184,10 @@ component accessors="true"{
 		return new( sheetName=arguments.sheetName, xmlFormat=true );
 	}
 
+	public any function processLargeFile( required string filepath ){
+		return New objects.ProcessLargeFile( this, arguments.filepath );
+	}
+
 	/* row order is not guaranteed if using more than one thread */
 	public string function queryToCsv( required query query, boolean includeHeaderRow=false, string delimiter=",", numeric threads=0 ){
 		return writeCsv()

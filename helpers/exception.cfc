@@ -22,8 +22,13 @@ component extends="base"{
 			Throw( type=library().getExceptionType() & ".invalidReadFormat", message="Invalid format", detail="Supported formats are: 'query', 'html' and 'csv'" );
 	}
 
-	void function throwInvalidFileForReadLargeFileException(){
-		Throw( type=library().getExceptionType() & ".invalidSpreadsheetType", message="Invalid spreadsheet file", detail="readLargeFile() can only be used with XLSX files. The file you are trying to read does not appear to be an XLSX file." );
+	void function throwExceptionIfFileIsInvalidForStreamingReader( required exception ){
+		/*
+			for some reason ACF won't match the exception type as a catch() arg here, i.e.
+			catch( com.github.pjfanning.xlsx.exceptions.ReadException exception ){} hence using an if-test
+		*/
+		if( arguments.exception.type == "com.github.pjfanning.xlsx.exceptions.ReadException" )
+			Throw( type=library().getExceptionType() & ".invalidSpreadsheetType", message="Invalid spreadsheet file", detail="readLargeFile() and processLargeFile() can only be used with XLSX files. The file you are trying to read does not appear to be an XLSX file." );
 	}
 
 	void function throwNonExistentRowException( required numeric rowNumber ){
