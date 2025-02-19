@@ -205,7 +205,7 @@ describe( "read", ()=>{
 			s.newChainable( type )
 				.addRows( data )
 				.formatCell( { dataformat: "0.00000" }, 1, 3 )
-				.write( path );
+				.write( path, true );
 			var actual = s.read( src=path, format="query", columnNames=columnNames );
 			expect( actual ).toBe( data );
 		})
@@ -225,7 +225,7 @@ describe( "read", ()=>{
 			s.newChainable( type )
 				.addRows( data )
 				.formatCell( { dataformat: "0.00000" }, 1, 3 )
-				.write( path );
+				.write( path, true );
 			var actual = s.read( src=path, format="query", columnNames=columnNames, returnVisibleValues=true );
 			expect( actual.numeric ).toBe( numericValue );
 			expect( actual.zero ).toBe( 0 );
@@ -799,13 +799,6 @@ describe( "read", ()=>{
 			}).toThrow( type="cfsimplicity.spreadsheet.oldExcelFormatException" );
 		})
 
-	})
-
-	afterEach( ()=>{
-		if( FileExists( variables.tempXlsPath ) )
-			FileDelete( variables.tempXlsPath );
-		if( FileExists( variables.tempXlsxPath ) )
-			FileDelete( variables.tempXlsxPath );
 	})
 
 })

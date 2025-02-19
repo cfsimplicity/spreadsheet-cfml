@@ -29,12 +29,5 @@ describe( "writeFileFromQuery", ()=>{
 			FileDelete( convertedPath );
 	})
 
-	afterEach( ()=>{
-		if( FileExists( variables.tempXlsPath ) )
-			FileDelete( variables.tempXlsPath );
-		if( FileExists( variables.tempXlsxPath ) )
-			FileDelete( variables.tempXlsxPath );
-	})
-
 })	
 </cfscript>

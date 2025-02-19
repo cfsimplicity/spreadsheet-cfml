@@ -11,11 +11,6 @@ describe( "writeCsv", ()=>{
 
 	describe( "writeCsv can write a csv file or return a csv string", ()=>{
 
-		afterEach( ()=>{
-			if( FileExists( tempCsvPath ) )
-				FileDelete( tempCsvPath );
-		})
-
 		it( "from an array of arrays", ()=>{
 			var data = [ [ "a", "b" ], [ "c", "d" ] ];
 			var expected = "a,b#newline#c,d#newline#";

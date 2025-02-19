@@ -133,11 +133,6 @@ describe( "csvToQuery", ()=>{
 			expect( actual ).toBe( expected ); 
 		})
 
-		afterEach( ()=>{
-			if( FileExists( tempCsvPath ) )
-				FileDelete( tempCsvPath );
-		})
-
 	})
 
 	describe( "delimiter handling", ()=>{

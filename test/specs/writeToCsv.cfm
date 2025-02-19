@@ -58,11 +58,6 @@ describe( "writeToCsv", ()=>{
 			})
 		})
 
-	})	
-
-	afterEach( ()=>{
-		if( FileExists( tempCsvPath ) )
-			FileDelete( tempCsvPath );
 	})
 
 })	

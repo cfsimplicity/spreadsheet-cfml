@@ -207,11 +207,6 @@ describe( "readCsv", ()=>{
 		expect( object.getFormat().getTrim() ).toBeFalse();
 	})
 
-	afterEach( ()=>{
-		if( FileExists( tempCsvPath ) )
-			FileDelete( tempCsvPath );
-	})
-
 	describe( "readCsv() throws an exception if", ()=>{
 
 		it( "a zero or positive integer is not passed to withSkipFirstRows()", ()=>{
