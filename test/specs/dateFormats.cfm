@@ -1,7 +1,7 @@
 <cfscript>
-describe( "dateFormats customisability",function(){
+describe( "dateFormats customisability", ()=>{
 
-	it( "the default dateFormats can be overridden individually on init", function() {
+	it( "the default dateFormats can be overridden individually on init", ()=>{
 		local.s = newSpreadsheetInstance();
 		var expected = {
 			DATE: "yyyy-mm-dd"
@@ -20,9 +20,9 @@ describe( "dateFormats customisability",function(){
 		};
 		actual = local.s.getDateFormats();
 		expect( actual ).toBe( expected );
-	});
+	})
 
-	it( "the dateFormats can be set post-init", function() {
+	it( "the dateFormats can be set post-init", ()=>{
 		local.s = newSpreadsheetInstance();
 		var expected = {
 			DATE: "yyyy-mm-dd"
@@ -41,15 +41,15 @@ describe( "dateFormats customisability",function(){
 			,TIMESTAMP: "yyyy-mm-dd hh:mm:ss"
 		};
 		expect( local.s.getDateFormats() ).toBe( expected );
-	});
+	})
 
-	it( "allows the format of date and time values to be customised", function() {
+	it( "allows the format of date and time values to be customised", ()=>{
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 		//Dates
 		var dateValue =  CreateDate( 2019, 04, 12 );
 		var timeValue = _CreateTime( 1, 5, 5 );
 		var timestampValue = CreateDateTime(  2019, 04, 12, 1, 5, 5 );
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.setCellValue( wb, dateValue, 1, 1 );
 			var expected = DateFormat( dateValue, "yyyy-mm-dd" );
 			var actual = s.getCellValue( wb, 1, 1 );
@@ -81,10 +81,10 @@ describe( "dateFormats customisability",function(){
 			s.setCellValue( wb, timestampValue, 1, 1 );
 			expected = DateTimeFormat( timestampValue, "mm/dd/yyyy h:n:s" );
 			actual = s.getCellValue( wb, 1, 1 );
-		});
-	});
+		})
+	})
 
-	it( "Uses the overridden DATETIME format mask when generating CSV and HTML",function() {
+	it( "Uses the overridden DATETIME format mask when generating CSV and HTML",()=>{
 		local.s = newSpreadsheetInstance( dateFormats={ DATETIME="mm/dd/yyyy h:n:s" } );
 		var path = getTestFilePath( "test.xls" );
 		var actual = s.read( src=path, format="html" );
@@ -93,17 +93,17 @@ describe( "dateFormats customisability",function(){
 		expected = 'a,b#newline#1,04/01/2015 12:0:0#newline#04/01/2015 1:1:1,2#newline#';
 		actual = s.read( src=path, format="csv" );
 		expect( actual ).toBe( expected );
-	});
+	})
 
-	describe( "dateFormats: throws an exception if",function(){
+	describe( "dateFormats: throws an exception if",()=>{
 
-		it( "a passed format key is invalid",function() {
-			expect( function(){
+		it( "a passed format key is invalid",()=>{
+			expect( ()=>{
 				local.s = newSpreadsheetInstance( dateFormats={ DAT="mm/dd/yyyy" } );
 			}).toThrow( type="cfsimplicity.spreadsheet.invalidDateFormatKey" );
-		});
+		})
 
-	});	
+	})	
 
-});	
+})	
 </cfscript>

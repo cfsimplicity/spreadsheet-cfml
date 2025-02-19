@@ -12,12 +12,7 @@ component extends="base"{
 				return getSheetHelper().sheetToQuery( argumentCollection=arguments.sheetToQueryArgs );
 			}
 			catch( any exception ){
-				/*
-					for some reason ACF won't match the exception type as a catch() arg here, i.e.
-					catch( com.github.pjfanning.xlsx.exceptions.ReadException exception ){}
-				*/
-				if( exception.type == "com.github.pjfanning.xlsx.exceptions.ReadException" )
-					getExceptionHelper().throwInvalidFileForReadLargeFileException();
+				getExceptionHelper().throwExceptionIfFileIsInvalidForStreamingReader( exception );
 				rethrow;
 			}
 			finally{

@@ -1,7 +1,7 @@
 <cfscript>
-describe( "getEnvironment", function(){
+describe( "getEnvironment", ()=>{
 
-	it( "returns a struct with the expected keys", function() {
+	it( "returns a struct with the expected keys", ()=>{
 		var expectedKeys = [
 			"dateFormats"
 			,"engine"
@@ -18,7 +18,7 @@ describe( "getEnvironment", function(){
 		for( var key in expectedKeys ){
 			expect( actual ).toHaveKey( key );
 		}
-	});
+	})
 
-});	
+})
 </cfscript>

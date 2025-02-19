@@ -1,22 +1,17 @@
 <cfscript>
-describe( "writeCsv", function(){
+describe( "writeCsv", ()=>{
 
 	//Note: a trailing newline is always expected when printing from Commons CSV
 
-	it( "writeCsv defaults to the EXCEL predefined format", function(){
+	it( "writeCsv defaults to the EXCEL predefined format", ()=>{
 		var object = s.writeCsv();
 		var format = object.getFormat();
 		expect( format.equals( format.EXCEL ) ).toBeTrue();
-	});
+	})
 
-	describe( "writeCsv can write a csv file or return a csv string", function(){
+	describe( "writeCsv can write a csv file or return a csv string", ()=>{
 
-		afterEach( function(){
-			if( FileExists( tempCsvPath ) )
-				FileDelete( tempCsvPath );
-		});
-
-		it( "from an array of arrays", function(){
+		it( "from an array of arrays", ()=>{
 			var data = [ [ "a", "b" ], [ "c", "d" ] ];
 			var expected = "a,b#newline#c,d#newline#";
 			var actual = s.writeCsv()
@@ -29,9 +24,9 @@ describe( "writeCsv", function(){
 				.execute();
 			actual = FileRead( tempCsvPath );
 			expect( actual ).toBe( expected );
-		});
+		})
 
-		it( "from an array of structs", function(){
+		it( "from an array of structs", ()=>{
 			var data = [ [ first: "Frumpo", last: "McNugget" ] ];
 			var expected = "Frumpo,McNugget#newline#";
 			var actual = s.writeCsv()
@@ -44,9 +39,9 @@ describe( "writeCsv", function(){
 				.execute();
 			actual = FileRead( tempCsvPath );
 			expect( actual ).toBe( expected );
-		});
+		})
 
-		it( "from a query", function(){
+		it( "from a query", ()=>{
 			var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
 			var expected = "a,b#newline#c,d#newline#";
 			var actual = s.writeCsv()
@@ -59,11 +54,11 @@ describe( "writeCsv", function(){
 				.execute();
 			actual = FileRead( tempCsvPath );
 			expect( actual ).toBe( expected );
-		});
+		})
 
-	});
+	})
 
-	it( "allows an alternative to the default comma delimiter", function(){
+	it( "allows an alternative to the default comma delimiter", ()=>{
 		var data = [ [ "a", "b" ], [ "c", "d" ] ];
 		var expected = "a|b#newline#c|d#newline#";
 		var actual = s.writeCsv()
@@ -71,9 +66,9 @@ describe( "writeCsv", function(){
 			.withDelimiter( "|" )
 			.execute();
 		expect( actual ).toBe( expected );
-	});
+	})
 
-	it( "has special handling when specifying tab as the delimiter", function(){
+	it( "has special handling when specifying tab as the delimiter", ()=>{
 		var data = [ [ "a", "b" ], [ "c", "d" ] ];
 		var validTabValues = [ "#Chr( 9 )#", "\t", "tab", "TAB" ];
 		var expected = "a#Chr( 9 )#b#newline#c#Chr( 9 )#d#newline#";
@@ -84,9 +79,9 @@ describe( "writeCsv", function(){
 				.execute();
 			expect( actual ).toBe( expected );
 		}
-	});
+	})
 
-	it( "can use the query columns as the header row", function(){
+	it( "can use the query columns as the header row", ()=>{
 		var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
 		var expected = "column1,column2#newline#a,b#newline#c,d#newline#";
 		var actual = s.writeCsv()
@@ -94,9 +89,9 @@ describe( "writeCsv", function(){
 			.withQueryColumnsAsHeader()
 			.execute();
 		expect( actual ).toBe( expected );
-	});
+	})
 
-	it( "can use the row struct keys as the header row", function(){
+	it( "can use the row struct keys as the header row", ()=>{
 		var data = [ [ first: "Frumpo", last: "McNugget" ] ];
 		var expected = "first,last#newline#Frumpo,McNugget#newline#";
 		var actual = s.writeCsv()
@@ -104,49 +99,49 @@ describe( "writeCsv", function(){
 			.withStructKeysAsHeader()
 			.execute();
 		expect( actual ).toBe( expected );
-	});
+	})
 
-	it( "outputs integers correctly with no decimal point", function(){
+	it( "outputs integers correctly with no decimal point", ()=>{
 		var arrayData = [ [ 123 ] ];
 		var queryData = QueryNew( "column1", "Integer", arrayData );
 		var expected = "123#newline#";
 		expect( s.writeCsv().fromData( arrayData ).execute() ).toBe( expected );
 		expect( s.writeCsv().fromData( queryData ).execute() ).toBe( expected );
-	});
+	})
 
-	it( "outputs date objects using the instance's specified DATETIME format", function(){
+	it( "outputs date objects using the instance's specified DATETIME format", ()=>{
 		var nowAsText = DateTimeFormat( Now(), s.getDateFormats().DATETIME );
 		var arrayData = [ [ ParseDateTime( nowAsText ) ] ];
 		var queryData = QueryNew( "column1", "Timestamp", arrayData );
 		var expected = "#nowAsText##newline#";
 		expect( s.writeCsv().fromData( arrayData ).execute() ).toBe( expected );
 		expect( s.writeCsv().fromData( queryData ).execute() ).toBe( expected );
-	});
+	})
 
-	it( "does NOT treat date strings as date objects to be formatted using the DATETIME format", function(){
+	it( "does NOT treat date strings as date objects to be formatted using the DATETIME format", ()=>{
 		var dateString = "2022-12-18";
 		var data = [ [ dateString ] ];
 		var expected = '#dateString##newline#';
 		expect( s.writeCsv().fromData( data ).execute() ).toBe( expected );
-	});
+	})
 
-	it( "can handle an embedded delimiter", function(){
+	it( "can handle an embedded delimiter", ()=>{
 		var data = [ [ "a,a", "b" ], [ "c", "d" ] ];
 		var expected = '"a,a",b#newline#c,d#newline#';
 		expect( s.writeCsv().fromData( data ).execute() ).toBe( expected );
-	});
+	})
 
-	it( "can handle an embedded double-quote", function(){
+	it( "can handle an embedded double-quote", ()=>{
 		var data = [ [ "a""a", "b" ], [ "c", "d" ] ];
 		var expected = '"a""a",b#newline#c,d#newline#';
 		expect( s.writeCsv().fromData( data ).execute() ).toBe( expected );
-	});
+	})
 
-	it( "can handle an embedded carriage return", function(){
+	it( "can handle an embedded carriage return", ()=>{
 		var data = [ [ "a#newline#a", "b" ], [ "c", "d" ] ];
 		var expected = '"a#newline#a",b#newline#c,d#newline#';
 		expect( s.writeCsv().fromData( data ).execute() ).toBe( expected );
-	});
+	})
 
 	it(
 		title="can process rows in parallel if the engine supports it"
@@ -165,7 +160,7 @@ describe( "writeCsv", function(){
 		,skip=s.getIsACF()
 	);
 
-	it( "allows Commons CSV format options to be applied", function(){
+	it( "allows Commons CSV format options to be applied", ()=>{
 		var path = getTestFilePath( "test.csv" );
 		var object = s.writeCsv()
 			.withAutoFlush()
@@ -220,35 +215,35 @@ describe( "writeCsv", function(){
 		expect( object.getFormat().getSkipHeaderRecord() ).toBeFalse();
 		expect( object.getFormat().getTrailingDelimiter() ).toBeFalse();
 		expect( object.getFormat().getTrim() ).toBeFalse();
-	});
+	})
 
-	describe( "writeCsv() throws an exception if", function(){
+	describe( "writeCsv() throws an exception if", ()=>{
 
-		it( "executed with no data", function(){
-			expect( function(){
+		it( "executed with no data", ()=>{
+			expect( ()=>{
 				s.writeCsv().execute();
 			}).toThrow( type="cfsimplicity.spreadsheet.missingDataForCsv" );
-		});
+		})
 
-		it( "the data is not an array or query", function(){
-			expect( function(){
+		it( "the data is not an array or query", ()=>{
+			expect( ()=>{
 				var data = "string";
 				s.writeCsv().fromData( data ).execute();
 			}).toThrow( type="cfsimplicity.spreadsheet.invalidDataForCsv" );
-		});
+		})
 
-		it( "the data contains complex values", function(){
-			expect( function(){
+		it( "the data contains complex values", ()=>{
+			expect( ()=>{
 				var complexValue = [];
 				var data = [ [ complexValue ] ];
 				s.writeCsv().fromData( data ).execute();
 			}).toThrow( type="cfsimplicity.spreadsheet.invalidDataForCsv" );
-		});
+		})
 
 		it(
 			title="parallel threads are specified and the engine does not support it"
 			,body=function(){
-				expect( function(){
+				expect( ()=>{
 					s.writeCsv().withParallelThreads();
 				}).toThrow( type="cfsimplicity.spreadsheet.parallelOptionNotSupported" );
 			}
@@ -257,15 +252,15 @@ describe( "writeCsv", function(){
 			}
 		);
 
-		it( "the file path specified is VFS", function(){
-			expect( function(){
+		it( "the file path specified is VFS", ()=>{
+			expect( ()=>{
 				var data = [ [ "a", "b" ], [ "c", "d" ] ];
 				var path = "ram://temp.csv";
 				s.writeCsv().fromData( data ).toFile( path ).execute();
 			}).toThrow( type="cfsimplicity.spreadsheet.vfsNotSupported" );
-		});
+		})
 
-	});
+	})
 
-});
+})
 </cfscript>

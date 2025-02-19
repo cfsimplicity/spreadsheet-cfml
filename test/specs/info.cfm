@@ -1,7 +1,7 @@
 <cfscript>
-describe( "info", function(){
+describe( "info", ()=>{
 
-	beforeEach( function(){
+	beforeEach( ()=>{
 		variables.infoToAdd = {
 			author: "Bob"
 			,category: "Testing"
@@ -24,10 +24,10 @@ describe( "info", function(){
 		variables.infoToBeReturned = Duplicate( infoToAdd );
 		StructAppend( infoToBeReturned, additional );
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
-	});
+	})
 
-	it( "Adds and can get back info", function(){
-		workbooks.Each( function( wb ){
+	it( "Adds and can get back info", ()=>{
+		workbooks.Each( ( wb )=>{
 			s.addInfo( wb, infoToAdd );
 			if( s.isXmlFormat( wb ) )
 				infoToBeReturned.spreadSheetType = "Excel (2007)";
@@ -35,10 +35,10 @@ describe( "info", function(){
 			var actual = s.info( wb );
 			actual.creationDate = DateFormat( Now(), "yyyymmdd" );// Doesn't return this value so mock
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "Handles missing lastAuthor value in an xlsx", function(){
+	it( "Handles missing lastAuthor value in an xlsx", ()=>{
 		infoToAdd.delete( "lastAuthor" );
 		infoToBeReturned.delete( "lastAuthor" );
 		var workbook = workbooks[ 2 ];
@@ -48,10 +48,10 @@ describe( "info", function(){
 		var actual = s.info( workbook );
 		actual.creationDate = DateFormat( actual.creationDate, "yyyymmdd" ); // Doesn't return this value so mock
 		expect( actual ).toBe( expected );
-	});
+	})
 
-	it( "Can accept a file path instead of a workbook", function(){
-		workbooks.Each( function( wb ){
+	it( "Can accept a file path instead of a workbook", ()=>{
+		workbooks.Each( ( wb )=>{
 			if( s.isXmlFormat( wb ) )
 				infoToBeReturned.spreadSheetType = "Excel (2007)";
 			var tempPath = s.isXmlFormat( wb )? tempXlsxPath: tempXlsPath;
@@ -61,11 +61,11 @@ describe( "info", function(){
 			var actual = s.info( tempPath );
 			actual.creationDate = DateFormat( Now(), "yyyymmdd" );// Doesn't return this value so mock
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "addInfo and info are chainable", function(){
-		workbooks.Each( function( wb ){
+	it( "addInfo and info are chainable", ()=>{
+		workbooks.Each( ( wb )=>{
 			var actual = s.newChainable( wb )
 				.addInfo( infoToAdd )
 				.info();
@@ -74,15 +74,8 @@ describe( "info", function(){
 			var expected = infoToBeReturned;
 			actual.creationDate = DateFormat( Now(), "yyyymmdd" );// Doesn't return this value so mock
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	afterEach( function(){
-		if( FileExists( variables.tempXlsPath ) )
-			FileDelete( variables.tempXlsPath );
-		if( FileExists( variables.tempXlsxPath ) )
-			FileDelete( variables.tempXlsxPath );
-	});
-
-});	
+})	
 </cfscript>

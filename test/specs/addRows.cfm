@@ -1,94 +1,94 @@
 <cfscript>
-describe( "addRows", function(){
+describe( "addRows", ()=>{
 
-	beforeEach( function(){
+	beforeEach( ()=>{
 		variables.data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
 		variables.dataAsArray = [ [ "a", "b" ], [ "c", "d" ] ];
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
-	});
+	})
 
-	it( "Appends multiple rows from a query with the minimum arguments", function(){
+	it( "Appends multiple rows from a query with the minimum arguments", ()=>{
 		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "x", "y" ], [ "a", "b" ], [ "c", "d" ] ] );
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRow( wb, "x,y" )
 				.addRows( wb, data );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "Is chainable", function(){
+	it( "Is chainable", ()=>{
 		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "x", "y" ], [ "a", "b" ], [ "c", "d" ] ] );
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.newChainable( wb )
 				.addRow( "x,y" )
 				.addRows( data );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "Can accept data as an array instead of a query", function(){
+	it( "Can accept data as an array instead of a query", ()=>{
 		var data = [ [ "x", "y" ], [ "a", "b" ], [ "c", "d" ] ];
 		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "x", "y" ], [ "a", "b" ], [ "c", "d" ] ] );
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( wb, data );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "Does nothing if array data is empty", function(){
+	it( "Does nothing if array data is empty", ()=>{
 		var emptyData = [];
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( wb, emptyData );
 			var expected = QueryNew( "" );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "Inserts multiple rows at a specifed position", function(){
+	it( "Inserts multiple rows at a specifed position", ()=>{
 		var expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "", "a", "b" ], [ "", "c", "d" ], [ "e", "f", "" ] ] );
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRow( wb, "e,f" )
 				.addRows( wb, data, 1, 2 );
 			var actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
-		});
+		})
 		//array data
 		var workbooks = [ s.newXls(), s.newXlsx() ];
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRow( wb, "e,f" )
 				.addRows( wb, dataAsArray, 1, 2 );
 			actual = s.getSheetHelper().sheetToQuery( workbook=wb, includeBlankRows=true );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "Replaces rows if insert is false", function(){
+	it( "Replaces rows if insert is false", ()=>{
 		var expected = data;
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRow( wb, "e,f" )
 				.addRow( wb, "g,h" )
 				.addRows( workbook=wb, data=data, row=1, insert=false );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
-		});
+		})
 		var workbooks = [ s.newXls(), s.newXlsx() ];
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRow( wb, "e,f" )
 				.addRow( wb, "g,h" )
 				.addRows( workbook=wb, data=dataAsArray, row=1, insert=false );
 			actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "Adds numeric values correctly", function(){
+	it( "Adds numeric values correctly", ()=>{
 		var data = QueryNew( "column1,column2,column3", "Integer,BigInt,Double", [ [ 1, 1, 1.1 ] ] );
 		var expected = data;
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( wb, data );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
@@ -98,10 +98,10 @@ describe( "addRows", function(){
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 1, 2 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 1, 3 ) ).toBe( "numeric" );
-		});
+		})
 		var dataAsArray = [ [ 1, 1, 1.1 ] ];
 		var workbooks = [ s.newXls(), s.newXlsx() ];
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( wb, dataAsArray );
 			actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
@@ -111,37 +111,37 @@ describe( "addRows", function(){
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 1, 2 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 1, 3 ) ).toBe( "numeric" );
-		});
-	});
+		})
+	})
 
-	it( "Adds boolean values correctly", function(){
+	it( "Adds boolean values correctly", ()=>{
 		var data = QueryNew( "column1", "Bit", [ [ true ] ] );
 		var expected = data;
-			workbooks.Each( function( wb ){
+			workbooks.Each( ( wb )=>{
 			s.addRows( wb, data );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 			expect( IsBoolean( s.getCellValue( wb, 1, 1 ) ) ).toBeTrue();
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "boolean" );
-		});
+		})
 		var dataAsArray = [ [ true ] ];
 		var workbooks = [ s.newXls(), s.newXlsx() ];
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( wb, dataAsArray );
 			actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 			expect( IsBoolean( s.getCellValue( wb, 1, 1 ) ) ).toBeTrue();
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "string" );// don't set the cell type as boolean from an array
-		});
-	});
+		})
+	})
 
-	it( "Adds date/time values correctly", function(){
+	it( "Adds date/time values correctly", ()=>{
 		var dateValue = CreateDate( 2015, 04, 12 );
 		var timeValue = _CreateTime( 1, 0, 0 );
 		var dateTimeValue = createDateTime( 2015, 04, 12, 1, 0, 0 );
 		var data = QueryNew( "column1,column2,column3", "Date,Time,Timestamp", [ [ dateValue, timeValue, dateTimeValue ] ] );
 		var expected = QueryNew( "column1,column2,column3", "Date,Time,Timestamp", [ [ dateValue, "01:00:00", dateTimeValue ] ] );;
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( wb, data );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
@@ -151,14 +151,14 @@ describe( "addRows", function(){
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 1, 2 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 1, 3 ) ).toBe( "numeric" );
-		});
+		})
 		//array data
 		var dateValue = CreateDate( 2015, 04, 12 );
 		var timeValue = _CreateTime( 1, 0, 0 );
 		var dateTimeValue = CreateDateTime( 2015, 04, 12, 1, 0, 0 );
 		var dataAsArray = [ [ dateValue, timeValue, dateTimeValue ] ];
 		var workbooks = [ s.newXls(), s.newXlsx() ];
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( wb, dataAsArray );
 			actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
@@ -168,10 +168,10 @@ describe( "addRows", function(){
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 1, 2 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 1, 3 ) ).toBe( "numeric" );
-		});
-	});
+		})
+	})
 
-	it( "Formats time and timestamp values correctly when custom mask includes fractions of a second", function(){
+	it( "Formats time and timestamp values correctly when custom mask includes fractions of a second", ()=>{
 		var dateFormats = {
 			TIME: "hh:mm:ss.000"
 			,TIMESTAMP: "yyyy-mm-dd hh:mm:ss.000"
@@ -188,45 +188,45 @@ describe( "addRows", function(){
 		var data = QueryNew( "column1,column2", "Time,Timestamp", [ [ timeValue, dateTimeValue ] ] );
 		var expectedTimeValue = data.column1[ 1 ].TimeFormat( "hh:nn:ss:l" );
 		var expectedDateTimeValue = data.column2[ 1 ].DateTimeFormat( "yyyy-mm-dd hh:nn:ss:l" );
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( wb, data );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			var actualTimeValue = actual.column1[ 1 ];
 			var actualDateTimeValue = actual.column2[ 1 ];
-		});
+		})
 		var dataAsArray = [ [ timeValue, dateTimeValue ] ];
 		var workbooks = [ s.newXls(), s.newXlsx() ];
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( wb, dataAsArray );
 			expectedTimeValue = data.column1[ 1 ].TimeFormat( "hh:nn:ss:l" );
 			expectedDateTimeValue = data.column2[ 1 ].DateTimeFormat( "yyyy-mm-dd hh:nn:ss:l" );
 			actual = s.getSheetHelper().sheetToQuery( wb );
 			actualTimeValue = actual.column1[ 1 ];
 			actualDateTimeValue = actual.column2[ 1 ];
-		});
-	});
+		})
+	})
 
-	it( "Adds zeros as zeros, not booleans", function(){
+	it( "Adds zeros as zeros, not booleans", ()=>{
 		var data = QueryNew( "column1", "Integer", [ [ 0 ] ] );
 		var expected = data;
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( wb, data );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
-		});
+		})
 		var dataAsArray = [ [ 0 ] ];
 		var workbooks = [ s.newXls(), s.newXlsx() ];
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			//array data
 			s.addRows( wb, dataAsArray );
 			actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "Handles empty values correctly", function(){
+	it( "Handles empty values correctly", ()=>{
 		var data = QueryNew( "column1,column2,column3,column4,column5", "Date,Time,Timestamp,Bit,Integer",[ [ "", "", "", "", "" ] ] );
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( wb, data );
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "blank" );
 			expect( s.getCellType( wb, 1, 2 ) ).toBe( "blank" );
@@ -234,116 +234,116 @@ describe( "addRows", function(){
 			expect( s.getCellType( wb, 1, 4 ) ).toBe( "blank" );
 			expect( s.getCellType( wb, 1, 5 ) ).toBe( "blank" );
 			//doesn't apply to array data which has no column types
-		});
-	});
+		})
+	})
 
-	it( "Can ignore query column types, so that each cell's type is auto-detected from its value", function(){
+	it( "Can ignore query column types, so that each cell's type is auto-detected from its value", ()=>{
 		var dateValue = CreateDate( 2015, 04, 12 );
 		var data = QueryNew( "column1", "VarChar", [ [ 0 ], [ 1 ], [ 1.1 ], [ dateValue ], [ "hello" ] ] );
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( workbook=wb, data=data, ignoreQueryColumnDataTypes=true );
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 2, 1 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 3, 1 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 4, 1 ) ).toBe( "numeric" );
 			expect( s.getCellType( wb, 5, 1 ) ).toBe( "string" );
-		});
-	});
+		})
+	})
 
-	it( "Adds strings with leading zeros as strings not numbers", function(){
+	it( "Adds strings with leading zeros as strings not numbers", ()=>{
 		var data = QueryNew( "column1", "VarChar", [ [ "01" ] ] );
 		var expected = data;
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( wb, data );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
-		});
+		})
 		var dataAsArray = [ [ "01" ] ];
 		var workbooks = [ s.newXls(), s.newXlsx() ];
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( wb, dataAsArray );
 			actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "Can include the query column names", function(){
+	it( "Can include the query column names", ()=>{
 		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "column1", "column2" ], [ "a","b" ], [ "c", "d" ] ] );
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( workbook=wb, data=data, includeQueryColumnNames=true );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "Includes query columns in the same case and order as the original query", function(){
+	it( "Includes query columns in the same case and order as the original query", ()=>{
 		var data = QueryNew( "Header2,Header1", "VarChar,VarChar", [ [ "b","a" ], [ "d","c" ] ] );
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( workbook=wb, data=data, includeQueryColumnNames=true );
 			expect( s.getCellValue( wb, 1, 1 ) ).toBeWithCase( "Header2" );
-		});
-	});
+		})
+	})
 
-	it( "Can include the query column names starting at a specific row", function(){
+	it( "Can include the query column names starting at a specific row", ()=>{
 		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "x", "y" ], [ "column1", "column2" ], [ "a", "b" ], [ "c", "d" ] ] );
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRow( wb, "x,y" )
 				.addRows( workbook=wb, data=data, row=2, includeQueryColumnNames=true );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "Can include the query column names starting at a specific column", function(){
+	it( "Can include the query column names starting at a specific column", ()=>{
 		var expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "", "column1", "column2" ], [ "", "a", "b" ], [ "", "c", "d" ] ] );
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRows( workbook=wb, data=data, column=2, includeQueryColumnNames=true );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "Can include the query column names starting at a specific row and column", function(){
+	it( "Can include the query column names starting at a specific row and column", ()=>{
 		var expected = QueryNew( "column1,column2,column3", "VarChar,VarChar,VarChar", [ [ "x", "y", "" ],[ "", "column1","column2" ], [ "", "a", "b" ], [ "", "c","d" ] ] );
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			s.addRow( wb, "x,y" )
 				.addRows( workbook=wb, data=data, row=2, column=2, includeQueryColumnNames=true );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	it( "Doesn't error if the workbook is SXSSF and autoSizeColumns is true", function(){
+	it( "Doesn't error if the workbook is SXSSF and autoSizeColumns is true", ()=>{
 		var wb = s.newStreamingXlsx();
 		s.addRows( workbook=local.wb, data=data, autoSizeColumns=true );
-	});
+	})
 
-	describe( "addRows() data type overriding", function(){
+	describe( "addRows() data type overriding", ()=>{
 
-		it( "throws an error if invalid types are specified in the datatypes struct", function(){
+		it( "throws an error if invalid types are specified in the datatypes struct", ()=>{
 			var data = [ [ "a", "b" ] ];
 			var datatypes = { numeric: [ 1 ], varchar: [ 2 ] };
-			workbooks.Each( function( wb ){
-				expect( function(){
+			workbooks.Each( ( wb )=>{
+				expect( ()=>{
 					s.addRows( workbook=wb, data=data, datatypes=datatypes );
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidDatatype" );
-			});
-		});
+			})
+		})
 
-		it( "throws an error if columns to override are not specified as arrays in the datatypes struct", function(){
+		it( "throws an error if columns to override are not specified as arrays in the datatypes struct", ()=>{
 			var data = [ [ "a", "b" ] ];
 			var datatypes = { numeric: "1", string: "2" };
-			workbooks.Each( function( wb ){
-				expect( function(){
+			workbooks.Each( ( wb )=>{
+				expect( ()=>{
 					s.addRows( workbook=wb, data=data, datatypes=datatypes );
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidDatatype" );
-			});
-		});
+			})
+		})
 
-		it( "Allows column data types in data passed as an array to be overridden by column number", function(){
+		it( "Allows column data types in data passed as an array to be overridden by column number", ()=>{
 			var data = [ [ "01234", 1234567890123456 ] ];
 			var datatypes = { numeric: [ 1 ], string: [ 2 ] };// can't test dates: date strings are always converted correctly!
-			workbooks.Each( function( wb ){
+			workbooks.Each( ( wb )=>{
 				s.addRows( wb, data );
 				expect( s.getCellValue( wb, 1, 1 ) ).toBe( "01234" );
 				expect( s.getCellType( wb, 1, 1 ) ).toBe( "string" );
@@ -352,11 +352,11 @@ describe( "addRows", function(){
 				expect( s.getCellValue( wb, 2, 1 ) ).toBe( "1234" );
 				expect( s.getCellType( wb, 2, 1 ) ).toBe( "numeric" );
 				expect( s.getCellType( wb, 2, 2 ) ).toBe( "string" );
-			});
-		});
+			})
+		})
 
-		it( "Allows column data types in data passed as a query to be overridden by column name or number", function(){
-			workbooks.Each( function( wb ){
+		it( "Allows column data types in data passed as a query to be overridden by column name or number", ()=>{
+			workbooks.Each( ( wb )=>{
 				var data = QueryNew( "Number,Date,String,Time,Boolean", "VarChar,VarChar,BigInt,VarChar,VarChar", [ [ "01234", "2020-08-24", 1234567890123456, "2020-08-24 09:15:00", "yes" ] ] );
 				s.addRows( wb, data );
 				expect( s.getCellValue( wb, 1, 1 ) ).toBe( "01234" );
@@ -383,26 +383,26 @@ describe( "addRows", function(){
 				expect( s.getCellValue( wb, 3, 2 ) ).toBe( "1234" );
 				expect( s.getCellType( wb, 3, 1 ) ).toBe( "numeric" );
 				expect( s.getCellType( wb, 3, 2 ) ).toBe( "numeric" );
-			});
-		});
+			})
+		})
 
-		it( "check multiple datatypes of the same type", function(){
+		it( "check multiple datatypes of the same type", ()=>{
 			var testUri = "https://w3c.org";
 			var data = QueryNew( "urls,urls2", "VarChar,VarChar", [ [ testUri, testUri ] ] );
 			var datatypes = { url: [ "urls", "urls2" ] };
-			workbooks.Each( function( wb ){
+			workbooks.Each( ( wb )=>{
 				s.addRows( workbook=wb, data=data, datatypes=datatypes );
 				expect( s.getCellHyperlink( wb, 1, 1 ) ).toBe( testUri );
 				expect( s.getCellValue( wb, 1, 1 ) ).toBe( testUri );
 				expect( s.getCellHyperlink( wb, 1, 2 ) ).toBe( testUri );
 				expect( s.getCellValue( wb, 1, 2 ) ).toBe( testUri );
-			});
-		});
+			})
+		})
 
-		it( "Values in array data fall back to the autodetected type if they don't match the overridden type", function(){
+		it( "Values in array data fall back to the autodetected type if they don't match the overridden type", ()=>{
 			var data = [ [ "01234", "alpha", "alpha", "alpha", "alpha" ] ];
 			var datatypes = { numeric: [ 1, 2 ], date: [ 3 ], time: [ 4 ], boolean: [ 5 ] };
-			workbooks.Each( function( wb ){
+			workbooks.Each( ( wb )=>{
 				s.addRows( workbook=wb, data=data, datatypes=datatypes );
 				expect( s.getCellValue( wb, 1, 1 ) ).toBe( 1234 );
 				expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
@@ -414,13 +414,13 @@ describe( "addRows", function(){
 				expect( s.getCellType( wb, 1, 4 ) ).toBe( "string" );
 				expect( s.getCellValue( wb, 1, 5 ) ).toBe( "alpha" );
 				expect( s.getCellType( wb, 1, 5 ) ).toBe( "string" );
-			});
-		});
+			})
+		})
 
-		it( "Values in query data fall back to the query column type if they don't match the overridden type", function(){
+		it( "Values in query data fall back to the query column type if they don't match the overridden type", ()=>{
 			var data = QueryNew( "Number,String,Date,Time,Boolean", "VarChar,VarChar,VarChar,VarChar,VarChar", [ [ "01234", "alpha", "alpha", "alpha" , "alpha"] ] );
 			var datatypes = { numeric: [ 1, 2 ], date: [ 3 ], time: [ 4 ], boolean: [ 5 ] };
-			workbooks.Each( function( wb ){
+			workbooks.Each( ( wb )=>{
 				s.addRows( workbook=wb, data=data, datatypes=datatypes );
 				expect( s.getCellValue( wb, 1, 1 ) ).toBe( 1234 );
 				expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
@@ -432,23 +432,23 @@ describe( "addRows", function(){
 				expect( s.getCellType( wb, 1, 4 ) ).toBe( "string" );
 				expect( s.getCellValue( wb, 1, 5 ) ).toBe( "alpha" );
 				expect( s.getCellType( wb, 1, 5 ) ).toBe( "string" );
-			});
-		});
+			})
+		})
 
-		it( "Query data values with NO type override, default to query column types", function(){
+		it( "Query data values with NO type override, default to query column types", ()=>{
 			var data = QueryNew( "Number,String", "VarChar,VarChar", [ [ 1234, "01234" ] ] );
 			var datatypes = { numeric: [ 2 ] };
-			workbooks.Each( function( wb ){
+			workbooks.Each( ( wb )=>{
 				s.addRows( workbook=wb, data=data, datatypes=datatypes );
 				expect( s.getCellType( wb, 1, 1 ) ).toBe( "string" );
 				expect( s.getCellType( wb, 1, 2 ) ).toBe( "numeric" );
-			});
-		});
+			})
+		})
 
-		it( "Values in query data fall back to the autodetected type if they don't match the overridden type and ignoreQueryColumnDataTypes is true", function(){
+		it( "Values in query data fall back to the autodetected type if they don't match the overridden type and ignoreQueryColumnDataTypes is true", ()=>{
 			var data = QueryNew( "Number,String,Date,Time,Boolean", "VarChar,VarChar,VarChar,VarChar,VarChar", [ [ "01234", "alpha", "alpha", "alpha" , "alpha"] ] );
 			var datatypes = { numeric: [ 1, 2 ], date: [ 3 ], time: [ 4 ], boolean: [ 5 ] };
-			workbooks.Each( function( wb ){
+			workbooks.Each( ( wb )=>{
 				s.addRows( workbook=wb, data=data, ignoreQueryColumnDataTypes=true, datatypes=datatypes );
 				expect( s.getCellValue( wb, 1, 1 ) ).toBe( 1234 );
 				expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
@@ -460,28 +460,28 @@ describe( "addRows", function(){
 				expect( s.getCellType( wb, 1, 4 ) ).toBe( "string" );
 				expect( s.getCellValue( wb, 1, 5 ) ).toBe( "alpha" );
 				expect( s.getCellType( wb, 1, 5 ) ).toBe( "string" );
-			});
-		});
+			})
+		})
 
-		it( "Query data values in columns with an override type of 'auto' will have their type auto-detected, regardless of the query column type", function(){
+		it( "Query data values in columns with an override type of 'auto' will have their type auto-detected, regardless of the query column type", ()=>{
 			var data = QueryNew( "One,Two", "VarChar,VarChar", [ [ "2020-08-24", "2020-08-24" ], [ "3.1", "3.1" ] ] );
 			var datatypes = { auto: [ 1 ] };
-			workbooks.Each( function( wb ){
+			workbooks.Each( ( wb )=>{
 				s.addRows( workbook=wb, data=data, datatypes=datatypes );
 				expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
 				expect( s.getCellType( wb, 1, 2 ) ).toBe( "string" );
 				expect( s.getCellType( wb, 2, 1 ) ).toBe( "numeric" );
 				expect( s.getCellType( wb, 2, 2 ) ).toBe( "string" );
-			});
-		});
+			})
+		})
 
-		it( "Supports url, email and file types, converting them to hyperlinks", function(){
+		it( "Supports url, email and file types, converting them to hyperlinks", ()=>{
 			var testUri = "https://w3c.org";
 			var testEmail = "test@test.com";
 			var testFilePath = "test.xlsx";
 			var data = QueryNew( "urls,emails,files", "VarChar,VarChar,VarChar", [ [ testUri, testEmail, testFilePath ] ] );
 			var datatypes = { url: [ "urls" ], email: [ "emails" ], file: [ "files" ] };
-			workbooks.Each( function( wb ){
+			workbooks.Each( ( wb )=>{
 				s.addRows( workbook=wb, data=data, datatypes=datatypes );
 				expect( s.getCellHyperlink( wb, 1, 1 ) ).toBe( testUri );
 				expect( s.getCellValue( wb, 1, 1 ) ).toBe( testUri );
@@ -491,31 +491,31 @@ describe( "addRows", function(){
 				expect( s.getCellHyperlink( wb, 1, 3 ) ).toBe( testFilePath );
 				expect( s.getCellValue( wb, 1, 3 ) ).toBe( testFilePath );
 				expect( s.getCellHelper().getCellAt( wb, 1, 3 ).getHyperLink().getType().name() ).toBe( "FILE" );
-			});
-		});
+			})
+		})
 
-		it( "Adds invalid url and email values as strings", function(){
+		it( "Adds invalid url and email values as strings", ()=>{
 			var invalidValue = "not a link";
 			var data = QueryNew( "Urls,emails", "VarChar,VarChar", [ [ invalidValue, invalidValue ] ] );
 			var datatypes = { url: [ "Urls" ], email: [ "Emails" ] };
-			workbooks.Each( function( wb ){
+			workbooks.Each( ( wb )=>{
 				s.addRows( workbook=wb, data=data, datatypes=datatypes );
 				expect( s.getCellHyperlink( wb, 1, 1 ) ).toBeEmpty();
 				expect( s.getCellValue( wb, 1, 1 ) ).toBe( invalidValue );
 				expect( s.getCellHyperlink( wb, 1, 2 ) ).toBeEmpty();
 				expect( s.getCellValue( wb, 1, 2 ) ).toBe( invalidValue );
-			});
-		});
+			})
+		})
 
-	});
+	})
 
-	describe( "addRows throws an exception if", function(){
+	describe( "addRows throws an exception if", ()=>{
 
 		it(
 			title="adding more than 65536 rows to a binary spreadsheet",
-			body=function(){
+			body=()=>{
 				var xls = workbooks[ 1 ];
-				expect( function(){
+				expect( ()=>{
 					var rows = [];
 					for( var i=1; i <= 65537; i++ ){
 						rows.append( [ i ] );
@@ -527,47 +527,47 @@ describe( "addRows", function(){
 			skip=!s.getIsLucee()
 		);
 
-		it( "row is zero or less", function(){
-			workbooks.Each( function( wb ){
-				expect( function(){
+		it( "row is zero or less", ()=>{
+			workbooks.Each( ( wb )=>{
+				expect( ()=>{
 					s.addRows( workbook=wb, data=data, row=0 );
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidRowArgument" );
-			});
-		});
+			})
+		})
 
-		it( "column is zero or less", function(){
-			workbooks.Each( function( wb ){
-				expect( function(){
+		it( "column is zero or less", ()=>{
+			workbooks.Each( ( wb )=>{
+				expect( ()=>{
 					s.addRows( workbook=wb, data=data, column=0 );
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidColumnArgument" );
-			});
-		});
+			})
+		})
 
-		it( "insert is false and no row specified", function(){
-			workbooks.Each( function( wb ){
-				expect( function(){
+		it( "insert is false and no row specified", ()=>{
+			workbooks.Each( ( wb )=>{
+				expect( ()=>{
 					s.addRows( workbook=wb, data=data, insert=false );
 				}).toThrow( type="cfsimplicity.spreadsheet.missingRowArgument" );
-			});
-		});
+			})
+		})
 
-		it( "the data is neither a query nor an array", function(){
-			workbooks.Each( function( wb ){
-				expect( function(){
+		it( "the data is neither a query nor an array", ()=>{
+			workbooks.Each( ( wb )=>{
+				expect( ()=>{
 					s.addRows( wb, "string,list" );
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidDataArgument" );
-			});
-		});
+			})
+		})
 
-		it( "the data is an array which does not contain an array for each row", function(){
-			workbooks.Each( function( wb ){
-				expect( function(){
+		it( "the data is an array which does not contain an array for each row", ()=>{
+			workbooks.Each( ( wb )=>{
+				expect( ()=>{
 					s.addRows( wb, [ { col1: "a" }, { col2: "b" } ] );// array of structs
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidDataArgument" );
-			});
-		});
+			})
+		})
 
-	});
+	})
 
-});	
+})	
 </cfscript>

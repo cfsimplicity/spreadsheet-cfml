@@ -1,6 +1,12 @@
+## 4.5.0 - 19 February 2025
+
+- Enhancements
+	- \#392 Add processLargeFile() method to process large XLSX files without reading the entire data into memory
+
 ## 4.4.0 - 8 February 2025
 
-- \#297 readLargeFile() now works on ACF
+- Enhancements
+	- \#297 readLargeFile() now works on ACF
 
 ## 4.3.1 - 29 January 2025
 

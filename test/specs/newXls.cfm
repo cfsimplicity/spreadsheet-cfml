@@ -1,15 +1,15 @@
 <cfscript>
-describe( "newXls", function(){
+describe( "newXls", ()=>{
 
-	it( "Returns an HSSF workbook", function(){
+	it( "Returns an HSSF workbook", ()=>{
 		var workbook = s.newXls();
 		expect( s.isBinaryFormat( workbook ) ).toBeTrue();
-	});
+	})
 
-	it( "Creates a workbook with the specified sheet name", function(){
+	it( "Creates a workbook with the specified sheet name", ()=>{
 		var workbook = s.newXls( "test" );
 		expect( s.getSheetHelper().getActiveSheetName( workbook ) ).toBe( "test" );
-	});
+	})
 
-});	
+})	
 </cfscript>

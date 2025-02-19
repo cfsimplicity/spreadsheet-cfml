@@ -1,11 +1,7 @@
 <cfscript>
-describe( "write", function(){
+describe( "write", ()=>{
 
-	beforeEach( function(){
-		Sleep( 5 );// allow time for file operations to complete
-	});
-
-	it( "Writes an XLS object correctly", function(){
+	it( "Writes an XLS object correctly", ()=>{
 		data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a","b" ], [ "c","d" ] ] );
 		var workbook = s.newXls();
 		s.addRows( workbook, data )
@@ -13,9 +9,9 @@ describe( "write", function(){
 		var expected = data;
 		var actual = s.read( src=tempXlsPath, format="query" );
 		expect( actual ).toBe( expected );
-	});
+	})
 
-	it( "Writes an XLSX object correctly", function(){
+	it( "Writes an XLSX object correctly", ()=>{
 		var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
 		var workbook = s.newXlsx();
 		s.addRows( workbook, data )
@@ -23,9 +19,9 @@ describe( "write", function(){
 		var expected = data;
 		var actual = s.read( src=tempXlsxPath, format="query" );
 		expect( actual ).toBe( expected );
-	});
+	})
 
-	it( "Writes a streaming XLSX object without error", function(){
+	it( "Writes a streaming XLSX object without error", ()=>{
 		var rows = [];
 		for( i=1; i <= 100; i++ ){
 			rows.append( { column1=i, column2="test" } );
@@ -37,9 +33,9 @@ describe( "write", function(){
 		var expected = data;
 		var actual = s.read( src=tempXlsxPath, format="query" );
 		expect( actual ).toBe( expected );
-	});
+	})
 
-	it( "is chainable", function(){
+	it( "is chainable", ()=>{
 		data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a","b" ], [ "c","d" ] ] );
 		s.newChainable( "xls" )
 			.addRows( data )
@@ -47,9 +43,9 @@ describe( "write", function(){
 		var expected = data;
 		var actual = s.read( src=tempXlsPath, format="query" );
 		expect( actual ).toBe( expected );
-	});
+	})
 
-	it( "Writes a streaming XLSX object with a custom window size without error", function(){
+	it( "Writes a streaming XLSX object with a custom window size without error", ()=>{
 		var rows = [];
 		for( i=1; i <= 100; i++ ){
 			rows.append( { column1=i, column2="test" } );
@@ -61,9 +57,9 @@ describe( "write", function(){
 		var expected = data;
 		var actual = s.read( src=tempXlsxPath, format="query" );
 		expect( actual ).toBe( expected );
-	});
+	})
 		
-	it( "Can write an XLSX file encrypted with a password", function(){
+	it( "Can write an XLSX file encrypted with a password", ()=>{
 		var data = QueryNew( "column1", "VarChar", [ [ "secret" ] ] );
 		var workbook = s.newXlsx();
 		s.addRows( workbook,data )
@@ -71,35 +67,28 @@ describe( "write", function(){
 		var expected = data;
 		var actual = s.read( src=tempXlsxPath, format="query", password="pass" );
 		expect( actual ).toBe( expected );
-	});
+	})
 
-	describe( "write throws an exception if", function(){
+	describe( "write throws an exception if", ()=>{
 
-		it( "the path exists and overwrite is false", function(){
+		it( "the path exists and overwrite is false", ()=>{
 			FileWrite( tempXlsPath, "" );
 			var workbook = s.new();
-			expect( function(){
+			expect( ()=>{
 				s.write( workbook, tempXlsPath, false );
 			}).toThrow( type="cfsimplicity.spreadsheet.fileAlreadyExists" );
-		});
+		})
 
-		it( "the password encryption algorithm is not valid", function(){
+		it( "the password encryption algorithm is not valid", ()=>{
 			var data = QueryNew( "column1", "VarChar", [ [ "secret" ] ] );
 			var workbook = s.newXlsx();
 			s.addRows( workbook,data );
-			expect( function(){
+			expect( ()=>{
 				s.write( workbook=workbook, filepath=tempXlsxPath, overwrite=true, password="pass", algorithm="blah" );
 			}).toThrow( type="cfsimplicity.spreadsheet.invalidAlgorithm" );
-		});
+		})
 
-	});	
-
-	afterEach( function(){
-		if( FileExists( variables.tempXlsPath ) )
-			FileDelete( variables.tempXlsPath );
-		if( FileExists( variables.tempXlsxPath ) )
-			FileDelete( variables.tempXlsxPath );
-	});
+	})
 	
-});	
+})	
 </cfscript>

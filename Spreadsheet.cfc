@@ -1,7 +1,7 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="4.4.0" setter="false";
+	property name="version" default="4.5.0" setter="false";
 	property name="osgiLibBundleVersion" default="5.4.0.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
@@ -1182,6 +1182,10 @@ component accessors="true"{
 
 	public any function newXlsx( string sheetName="Sheet1" ){
 		return new( sheetName=arguments.sheetName, xmlFormat=true );
+	}
+
+	public any function processLargeFile( required string filepath ){
+		return New objects.ProcessLargeFile( this, arguments.filepath );
 	}
 
 	/* row order is not guaranteed if using more than one thread */

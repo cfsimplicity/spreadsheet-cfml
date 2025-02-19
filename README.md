@@ -152,6 +152,7 @@ You may wish to place the spreadsheet library files in a central location with a
 * [newStreamingXlsx](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/newStreamingXlsx)
 * [newXls](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/newXls)
 * [newXlsx](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/newXlsx)
+* [processLargeFile](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/processLargeFile)
 * [queryToCsv](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/queryToCsv)
 * [readCsv](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/readCsv)
 * [readLargeFile](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/readLargeFile)

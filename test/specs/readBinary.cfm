@@ -1,20 +1,20 @@
 <cfscript>
-describe( "readBinary", function(){
+describe( "readBinary", ()=>{
 
-	it( "Returns a binary object", function(){
+	it( "Returns a binary object", ()=>{
 		var workbooks = [ s.newXls(), s.newXlsx() ];
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			expect( IsBinary( s.readBinary( wb ) ) ).toBeTrue();
-		});
-	});
+		})
+	})
 
-	it( "Is chainable", function(){
+	it( "Is chainable", ()=>{
 		var workbooks = [ s.newXls(), s.newXlsx() ];
-		workbooks.Each( function( wb ){
+		workbooks.Each( ( wb )=>{
 			var actual = s.newChainable( wb ).readBinary();
 			expect( IsBinary( actual ) ).toBeTrue();
-		});
-	});
+		})
+	})
 
-});	
+})	
 </cfscript>

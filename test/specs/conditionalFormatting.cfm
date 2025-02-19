@@ -1,21 +1,21 @@
 <cfscript>
-describe( "conditionalFormatting", function(){
+describe( "conditionalFormatting", ()=>{
 
-	it( "can apply a format to cells only when a custom formula evaluates to true", function(){
+	it( "can apply a format to cells only when a custom formula evaluates to true", ()=>{
 		var formatting = s.newConditionalFormatting()
 			.onCells( "A1:B1" )
 			.when( "$A1<0" )
 			.setFormat( { fontColor:"RED" } );
-		spreadsheetTypes.Each( function( type ){
+		spreadsheetTypes.Each( ( type )=>{
 			var chainable = s.newChainable( type ).addConditionalFormatting( formatting );
 			var appliedRules = formatting.rulesAppliedToCell( "B1" );
 			expect( appliedRules ).toBeEmpty();
 			chainable.setCellValue( -1, 1, 1 ); //set A1 to -1
 			appliedColor = formatting.getFormatAppliedToCell( "B1" ).fontColor;
 			expect( appliedColor ).toBe( "255,0,0" ); //RED
-		});
+		})
 		//alternate direct syntax
-		spreadsheetTypes.Each( function( type ){
+		spreadsheetTypes.Each( ( type )=>{
 			//A1 value starts as 0. Rule will make A1 and B1 red if A1 is below zero.
 			var wb = ( type == "xls" )? s.newXls(): s.newXlsx();
 			s.addRow( wb, [ 0, 0 ] );
@@ -25,11 +25,11 @@ describe( "conditionalFormatting", function(){
 			s.setCellValue( wb, -1, 1, 1 ); //set A1 to -1
 			appliedColor = formatting.getFormatAppliedToCell( "B1" ).fontColor;
 			expect( appliedColor ).toBe( "255,0,0" ); //RED
-		});
-	});
+		})
+	})
 
-	it( "can apply a format to cells only when the cell value meets a condition", function(){
-		spreadsheetTypes.Each( function( type ){
+	it( "can apply a format to cells only when the cell value meets a condition", ()=>{
+		spreadsheetTypes.Each( ( type )=>{
 			//A1 and B1 values start as 0. Rule will make A1 red if A1 is LT zero.
 			var wb = s.newChainable( type ).addRow( [ 0, 0 ] ).getWorkBook();
 			var formatting = s.newConditionalFormatting()
@@ -87,16 +87,16 @@ describe( "conditionalFormatting", function(){
 			s.setCellValue( wb, 1, 1, 1 ); //set A1 to 1
 			appliedRules = formatting.rulesAppliedToCell( "A1" );
 			expect( appliedRules ).toHaveLength( 1 );
-		});
-	});
+		})
+	})
 
-	it( "can target a specific sheet name", function(){
+	it( "can target a specific sheet name", ()=>{
 		var formatting = s.newConditionalFormatting()
 			.onCells( "A1:B1" )
 			.onSheetName( "testSheet" )
 			.when( "$A1<0" )
 			.setFormat( { fontColor:"RED" } );
-		spreadsheetTypes.Each( function( type ){
+		spreadsheetTypes.Each( ( type )=>{
 			//A1 value starts as 0. Rule will make A1 and B1 red if A1 is below zero.
 			var chainable = s.newChainable( type )
 				.createSheet( "testSheet" )
@@ -108,16 +108,16 @@ describe( "conditionalFormatting", function(){
 			chainable.setCellValue( -1, 1, 1 ); //set A1 to -1
 			appliedColor = formatting.getFormatAppliedToCell( "B1" ).fontColor;
 			expect( appliedColor ).toBe( "255,0,0" ); //RED
-		});
-	});
+		})
+	})
 
-	it( "can target a specific sheet number", function(){
+	it( "can target a specific sheet number", ()=>{
 		var formatting = s.newConditionalFormatting()
 			.onCells( "A1:B1" )
 			.onSheetNumber( 2 )
 			.when( "$A1<0" )
 			.setFormat( { fontColor:"RED" } );
-		spreadsheetTypes.Each( function( type ){
+		spreadsheetTypes.Each( ( type )=>{
 			//A1 value starts as 0. Rule will make A1 and B1 red if A1 is below zero.
 			var chainable = s.newChainable( type )
 				.createSheet( "testSheet" )
@@ -129,10 +129,10 @@ describe( "conditionalFormatting", function(){
 			chainable.setCellValue( -1, 1, 1 ); //set A1 to -1
 			appliedColor = formatting.getFormatAppliedToCell( "B1" ).fontColor;
 			expect( appliedColor ).toBe( "255,0,0" ); //RED
-		});
-	});
+		})
+	})
 
-	it( "supports a range of font, border and fill pattern formats", function(){
+	it( "supports a range of font, border and fill pattern formats", ()=>{
 		var format = {
 			fontColor:"RED"
 			,fontSize: 12
@@ -173,36 +173,36 @@ describe( "conditionalFormatting", function(){
 			,foregroundFillColor: "255,0,0"//red
 			,fillPattern: "diamonds"
 		};
-		spreadsheetTypes.Each( function( type ){
+		spreadsheetTypes.Each( ( type )=>{
 			s.newChainable( type ).addRow( [ 0 ] ).addConditionalFormatting( formatting );
 			var actual = formatting.getFormatAppliedToCell( "A1" );
 			expect( actual ).toBe( expected );
-		});
-	});
+		})
+	})
 
-	describe( "throws an exception if", function(){
+	describe( "throws an exception if", ()=>{
 
-		it( "the comparison operator is invalid", function(){
-			expect( function(){
+		it( "the comparison operator is invalid", ()=>{
+			expect( ()=>{
 				s.newConditionalFormatting()
 					.onCells( "A1" )
 					.whenCellValueIs( "INVALID OPERATOR", 0 )
 					.setFormat( { color:"RED" } )
 					.addToWorkbook( s.new() );
 			}).toThrow( type="cfsimplicity.spreadsheet.invalidOperatorArgument" );
-		});
+		})
 
-		it( "a BETWEEN operator is used and formula2 is not supplied", function(){
-			expect( function(){
+		it( "a BETWEEN operator is used and formula2 is not supplied", ()=>{
+			expect( ()=>{
 				s.newConditionalFormatting()
 					.onCells( "A1" )
 					.whenCellValueIs( "BETWEEN", 0 )
 					.setFormat( { color:"RED" } )
 					.addToWorkbook( s.new() );
 			}).toThrow( type="cfsimplicity.spreadsheet.missingSecondFormulaArgument" );
-		});
+		})
 
-	});
+	})
 
-});	
+})	
 </cfscript>
