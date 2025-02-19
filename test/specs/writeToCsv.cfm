@@ -2,7 +2,6 @@
 describe( "writeToCsv", ()=>{
 
 	beforeEach( ()=>{
-		Sleep( 5 );// allow time for file operations to complete
 		var data = [ [ "a", "b" ], [ "c", "d" ] ];
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( ( wb )=>{

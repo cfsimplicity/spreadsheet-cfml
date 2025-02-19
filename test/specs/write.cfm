@@ -1,10 +1,6 @@
 <cfscript>
 describe( "write", ()=>{
 
-	beforeEach( ()=>{
-		Sleep( 5 );// allow time for file operations to complete
-	})
-
 	it( "Writes an XLS object correctly", ()=>{
 		data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a","b" ], [ "c","d" ] ] );
 		var workbook = s.newXls();

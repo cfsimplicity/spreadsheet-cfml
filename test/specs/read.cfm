@@ -1,10 +1,6 @@
 <cfscript>
 describe( "read", ()=>{
 
-	beforeEach( ()=>{
-		Sleep( 5 );// allow time for file operations to complete
-	})
-
 	it( "Can read a traditional XLS file", ()=>{
 		var path = getTestFilePath( "test.xls" );
 		var workbook = s.read( src=path );
