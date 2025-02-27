@@ -91,6 +91,8 @@ component extends="base"{
 	}
 
 	numeric function getSheetNumberFromArguments( required workbook, string sheetName, numeric sheetNumber ){
+		if( !arguments.KeyExists( "sheetName" ) && !arguments.KeyExists( "sheetNumber" ) )
+			return getActiveSheetNumber( arguments.workbook );
 		validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
 		if( arguments.KeyExists( "sheetName" ) ){
 			validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
