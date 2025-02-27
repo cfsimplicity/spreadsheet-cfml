@@ -1,7 +1,7 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="4.5.0" setter="false";
+	property name="version" default="4.6.0" setter="false";
 	property name="osgiLibBundleVersion" default="5.4.0.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
@@ -1027,6 +1027,12 @@ component accessors="true"{
 		return this;
 	}
 
+	public Spreadsheet function hideSheet( required workbook, string sheetName, numeric sheetNumber ){
+		arguments.sheetNumber = getSheetHelper().getSheetNumberFromArguments( argumentCollection=arguments );
+		getSheetHelper().setVisibility( arguments.workbook, arguments.sheetNumber, "HIDDEN" );
+		return this;
+	}
+
 	public struct function info( required workbookOrPath ){
 		/*
 		properties returned in the struct are:
@@ -1713,6 +1719,12 @@ component accessors="true"{
 
 	public Spreadsheet function showRow( required workbook, required numeric row ){
 		getRowHelper().toggleRowHidden( arguments.workbook, arguments.row, false );
+		return this;
+	}
+
+	public Spreadsheet function unhideSheet( required workbook, string sheetName, numeric sheetNumber ){
+		arguments.sheetNumber = getSheetHelper().getSheetNumberFromArguments( argumentCollection=arguments );
+		getSheetHelper().setVisibility( arguments.workbook, arguments.sheetNumber, "VISIBLE" );
 		return this;
 	}
 

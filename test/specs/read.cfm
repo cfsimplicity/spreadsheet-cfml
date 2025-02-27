@@ -67,7 +67,7 @@ describe( "read", ()=>{
 				.setActiveSheetNumber( 2 )
 				.setCellValue( "I'm in a visible sheet", 1, 1 )
 				.getWorkbook();
-			s.getSheetHelper().setVisibility( wb, 1, "VERY_HIDDEN" );
+			s.hideSheet( workbook=wb, sheetNumber=1 );
 			s.write( wb, path, true );
 			var expected = QueryNew( "column1", "VarChar", [ [ "I'm in a visible sheet" ] ] );
 			var actual = s.read( src=path, format="query" );
@@ -82,7 +82,7 @@ describe( "read", ()=>{
 				.renameSheet( "hidden sheet", 1 )
 				.setCellValue( "I'm in a hidden sheet", 1, 1 )
 				.getWorkbook();
-			s.getSheetHelper().setVisibility( wb, 1, "VERY_HIDDEN" );
+			s.hideSheet( workbook=wb, sheetNumber=1 );
 			s.write( wb, path, true );
 			var expected = QueryNew( "" );
 			var actual = s.read( src=path, format="query" );

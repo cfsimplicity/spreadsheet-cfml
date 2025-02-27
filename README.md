@@ -6,7 +6,7 @@ Standalone library for working with spreadsheets and CSV in CFML ([Lucee](http:/
 
 - Java 8 or higher
 - Lucee 5.x or higher
-- Adobe ColdFusion 2018 or higher
+- Adobe ColdFusion 2018, 2021 or 2023
 
 ## Installation
 
@@ -68,7 +68,7 @@ You may wish to place the spreadsheet library files in a central location with a
 
 [Full function reference](https://github.com/cfsimplicity/spreadsheet-cfml/wiki)
 
-## Supported ColdFusion functions
+## Supported ColdFusion (2018-2023) functions
 
 * [addAutofilter](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addAutofilter)
 * [addColumn](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addColumn)
@@ -116,7 +116,7 @@ You may wish to place the spreadsheet library files in a central location with a
 * [shiftRows](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/shiftRows)
 * [write](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/write)
 
-### Extra functions not available in ColdFusion
+### Extra functions not available in ColdFusion (2018-2023)
 
 * [addConditionalFormatting](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addConditionalFormatting)
 * [addDataValidation](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addDataValidation)
@@ -143,6 +143,7 @@ You may wish to place the spreadsheet library files in a central location with a
 * [getRowCount](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getRowCount)
 * [hideColumn](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/hideColumn)
 * [hideRow](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/hideRow)
+* [hideSheet](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/hideSheet)
 * [isBinaryFormat](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isBinaryFormat)
 * [isColumnHidden](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isColumnHidden)
 * [isRowHidden](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isRowHidden)
@@ -182,6 +183,7 @@ You may wish to place the spreadsheet library files in a central location with a
 * [sheetInfo](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/sheetInfo)
 * [showColumn](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/showColumn)
 * [showRow](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/showRow)
+* [unhideSheet](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/unhideSheet)
 * [workbookFromCsv](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/workbookFromCsv)
 * [workbookFromQuery](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/workbookFromQuery)
 * [writeFileFromQuery](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/writeFileFromQuery)

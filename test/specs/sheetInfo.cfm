@@ -103,9 +103,9 @@ describe( "sheetInfo", ()=>{
 			expect( chainable.sheetInfo().hasComments ).toBeTrue();
 			chainable.createSheet( "hidden sheet" );
 			//visibility etc
-			s.getSheetHelper().setVisibility( wb, 2, "VERY_HIDDEN" );
+			s.hideSheet( workbook=wb, sheetNumber=2 );
 			var hiddenSheetInfo = chainable.sheetInfo( 2 );
-			expect( hiddenSheetInfo.visibility ).toBe( "VERY_HIDDEN" );
+			expect( hiddenSheetInfo.visibility ).toBe( "HIDDEN" );
 			expect( hiddenSheetInfo.isHidden ).toBeTrue();
 			expect( hiddenSheetInfo.name ).toBe( "hidden sheet" );
 			expect( hiddenSheetInfo.isCurrentActiveSheet ).toBeFalse;
