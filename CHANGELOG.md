@@ -1,3 +1,9 @@
+## 4.6.1 - 27 February 2025
+
+- Fixes
+	- \#399 hideSheet() and unhideSheet() should not require the sheet to be specified, and default to the currently active sheet
+	- \#400 Allow hideSheet() and unhideSheet() to specify the sheet number positionally
+
 ## 4.6.0 - 27 February 2025
 
 - Enhancements

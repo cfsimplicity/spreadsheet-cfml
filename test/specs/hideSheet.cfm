@@ -5,6 +5,17 @@ describe( "hideSheet", ()=>{
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 	})
 
+	it( "hides the active sheet by default", ()=>{
+		variables.workbooks.Each( ( wb )=>{
+			s.createSheet( wb, "sheet2" ).setActiveSheet( wb, "sheet2" )
+			var sheetInfo = s.sheetInfo( wb, 2 );
+			expect( sheetInfo.isHidden ).toBeFalse();
+			s.hideSheet( wb );
+			sheetInfo = s.sheetInfo( wb, 2 );
+			expect( sheetInfo.isHidden ).toBeTrue();
+		})
+	})
+
 	it( "can hide a visible sheet by name or number", ()=>{
 		variables.workbooks.Each( ( wb )=>{
 			// by name
@@ -21,6 +32,13 @@ describe( "hideSheet", ()=>{
 			s.hideSheet( workbook=wb, sheetNumber=3 );
 			sheetInfo = s.sheetInfo( wb, 3 );
 			expect( sheetInfo.isHidden ).toBeTrue();
+			// by number positionally
+			s.createSheet( wb, "sheet4" );
+			var sheetInfo = s.sheetInfo( wb, 4 );
+			expect( sheetInfo.isHidden ).toBeFalse();
+			s.hideSheet( wb, "", 4 );
+			sheetInfo = s.sheetInfo( wb, 4 );
+			expect( sheetInfo.isHidden ).toBeTrue();
 		})
 	})
 
@@ -32,6 +50,19 @@ describe( "hideSheet", ()=>{
 				.hideSheet( wb, "sheet2" );
 			var activeSheet = s.getSheetHelper().getActiveSheetName( wb );
 			expect( activeSheet ).toBe( "sheet1" );
+		})
+	})
+
+	it( "unhides the active sheet by default", ()=>{
+		variables.workbooks.Each( ( wb )=>{
+			s.createSheet( wb, "sheet2" )
+				.hideSheet( wb, "sheet2" );
+			sheetInfo = s.sheetInfo( wb, 2 );
+			expect( sheetInfo.isHidden ).toBeTrue();
+			s.setActiveSheet( wb, "sheet2" )
+				.unhideSheet( wb );
+			sheetInfo = s.sheetInfo( wb, 2 );
+			expect( sheetInfo.isHidden ).toBeFalse();
 		})
 	})
 
@@ -50,6 +81,13 @@ describe( "hideSheet", ()=>{
 			expect( sheetInfo.isHidden ).toBeTrue();
 			s.unhideSheet( workbook=wb, sheetNumber=3 );
 			sheetInfo = s.sheetInfo( wb, 3 );
+			expect( sheetInfo.isHidden ).toBeFalse();
+			// by number positionally
+			s.createSheet( wb, "sheet4" ).hideSheet( wb, "sheet4" );
+			sheetInfo = s.sheetInfo( wb, 4 );
+			expect( sheetInfo.isHidden ).toBeTrue();
+			s.unhideSheet( wb, "", 4 );
+			sheetInfo = s.sheetInfo( wb, 4 );
 			expect( sheetInfo.isHidden ).toBeFalse();
 		})
 	})
