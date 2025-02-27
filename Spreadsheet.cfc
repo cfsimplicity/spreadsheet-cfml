@@ -1027,6 +1027,12 @@ component accessors="true"{
 		return this;
 	}
 
+	public Spreadsheet function hideSheet( required workbook, string sheetName, numeric sheetNumber ){
+		arguments.sheetNumber = getSheetHelper().getSheetNumberFromArguments( argumentCollection=arguments );
+		getSheetHelper().setVisibility( arguments.workbook, arguments.sheetNumber, "HIDDEN" );
+		return this;
+	}
+
 	public struct function info( required workbookOrPath ){
 		/*
 		properties returned in the struct are:
@@ -1713,6 +1719,12 @@ component accessors="true"{
 
 	public Spreadsheet function showRow( required workbook, required numeric row ){
 		getRowHelper().toggleRowHidden( arguments.workbook, arguments.row, false );
+		return this;
+	}
+
+	public Spreadsheet function unhideSheet( required workbook, string sheetName, numeric sheetNumber ){
+		arguments.sheetNumber = getSheetHelper().getSheetNumberFromArguments( argumentCollection=arguments );
+		getSheetHelper().setVisibility( arguments.workbook, arguments.sheetNumber, "VISIBLE" );
 		return this;
 	}
 

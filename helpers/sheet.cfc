@@ -28,6 +28,10 @@ component extends="base"{
 		return getActiveSheet( arguments.workbook ).getSheetName();
 	}
 
+	numeric function getActiveSheetNumber( required workbook ){
+		return arguments.workbook.getActiveSheetIndex()+1;
+	}
+
 	any function setActiveSheetNameOrNumber( required workbook, required sheetNameOrNumber ){
 		if( IsValid( "integer", arguments.sheetNameOrNumber ) && IsNumeric( arguments.sheetNameOrNumber ) ){
 			var sheetNumber = arguments.sheetNameOrNumber;
@@ -86,6 +90,16 @@ component extends="base"{
 		return arguments.workbook.getSheetAt( sheetIndex );
 	}
 
+	numeric function getSheetNumberFromArguments( required workbook, string sheetName, numeric sheetNumber ){
+		validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
+		if( arguments.KeyExists( "sheetName" ) ){
+			validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
+			arguments.sheetNumber = ( arguments.workbook.getSheetIndex( JavaCast( "string", arguments.sheetName ) ) + 1 );
+		}
+		validateSheetNumber( arguments.workbook, arguments.sheetNumber );
+		return arguments.sheetNumber;
+	}
+
 	any function getSpecifiedOrActiveSheet( required workbook, string sheetName, numeric sheetNumber ){
 		throwErrorIFSheetNameAndNumberArgumentsBothPassed( argumentCollection=arguments );
 		if( !sheetNameArgumentWasProvided( argumentCollection=arguments ) && !sheetNumberArgumentWasProvided( argumentCollection=arguments ) )
@@ -132,7 +146,6 @@ component extends="base"{
 	}
 
 	void function setVisibility( required workbook, required numeric sheetNumber, required string visibility ){
-		/* POI Docs: "Please note that the sheet currently set as active sheet (sheet 0 in a newly created workbook or the one set via setActiveSheet()) cannot be hidden." */
 		validateSheetNumber( arguments.workbook, arguments.sheetNumber );
 		var validStates = [ "HIDDEN", "VERY_HIDDEN", "VISIBLE" ];
 		if( !validStates.Find( arguments.visibility ) )
@@ -140,6 +153,10 @@ component extends="base"{
 		var visibilityEnum = library().createJavaObject( "org.apache.poi.ss.usermodel.SheetVisibility" )[ JavaCast( "string", arguments.visibility ) ];
 		var sheetIndex = ( arguments.sheetNumber -1 );
 		arguments.workbook.setSheetVisibility( sheetIndex, visibilityEnum );
+		/* POI Docs: "Please note that the sheet currently set as active sheet (sheet 0 in a newly created workbook or the one set via setActiveSheet()) cannot be hidden." */
+		if( arguments.visibility == "VISIBLE" || ( arguments.sheetNumber != getActiveSheetNumber( arguments.workbook ) ) )
+			return;
+		activateFirstVisibleSheet( arguments.workbook );
 	}
 
 	boolean function isVisible( required workbook, required numeric sheetNumber ){
@@ -442,6 +459,13 @@ component extends="base"{
 				getRowHelper().addRowToSheetData( argumentCollection=addRowToSheetDataArgs );
 			}
 		}
+	}
+
+	private void function activateFirstVisibleSheet( required workbook ){
+		var firstVisibleSheetNumber = getFirstVisibleSheetNumber( arguments.workbook );
+		if( firstVisibleSheetNumber == 0  ) // there are no visible sheets
+			return;
+		library().setActiveSheetNumber( arguments.workbook, firstVisibleSheetNumber );
 	}
 
 }

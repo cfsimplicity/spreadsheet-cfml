@@ -407,6 +407,12 @@ component{
 		return this;
 	}
 
+	public SpreadsheetChainable function hideSheet( string sheetName, numeric sheetNumber ){
+		addWorkbookArgument( arguments );
+		variables.library.hideSheet( argumentCollection=arguments );
+		return this;
+	}
+
 	// Ends chain
 	public struct function info(){
 		// argument name is workbookOrPath not workbook so custom handling
@@ -710,6 +716,12 @@ component{
 	public SpreadsheetChainable function showRow( required numeric row ){
 		addWorkbookArgument( arguments );
 		variables.library.showRow( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function unhideSheet( string sheetName, numeric sheetNumber ){
+		addWorkbookArgument( arguments );
+		variables.library.unhideSheet( argumentCollection=arguments );
 		return this;
 	}
 
