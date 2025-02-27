@@ -1,3 +1,8 @@
+## 4.6.0 - 27 February 2025
+
+- Enhancements
+	- \#394 Add hideSheet() and unhideSheet()
+
 ## 4.5.0 - 19 February 2025
 
 - Enhancements
@@ -19,7 +24,7 @@ Fixes:
 - Enhancements
 	-	\#383 Support java class loading via a dynamic path and improve configurability
 	- \#384 Add java version to getEnvironment() details
-	- **Experimental and only partial** support for Boxlang
+	- **Experimental and only partial** support for BoxLang
 
 - Maintenance
 	- \#385 Upgrade POI to 5.4.0
