@@ -94,7 +94,7 @@ component extends="base"{
 		if( !arguments.KeyExists( "sheetName" ) && !arguments.KeyExists( "sheetNumber" ) )
 			return getActiveSheetNumber( arguments.workbook );
 		validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
-		if( arguments.KeyExists( "sheetName" ) ){
+		if( arguments.KeyExists( "sheetName" ) && Len( Trim( arguments.sheetName ) ) ){
 			validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
 			arguments.sheetNumber = ( arguments.workbook.getSheetIndex( JavaCast( "string", arguments.sheetName ) ) + 1 );
 		}

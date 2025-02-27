@@ -32,6 +32,13 @@ describe( "hideSheet", ()=>{
 			s.hideSheet( workbook=wb, sheetNumber=3 );
 			sheetInfo = s.sheetInfo( wb, 3 );
 			expect( sheetInfo.isHidden ).toBeTrue();
+			// by number positionally
+			s.createSheet( wb, "sheet4" );
+			var sheetInfo = s.sheetInfo( wb, 4 );
+			expect( sheetInfo.isHidden ).toBeFalse();
+			s.hideSheet( wb, "", 4 );
+			sheetInfo = s.sheetInfo( wb, 4 );
+			expect( sheetInfo.isHidden ).toBeTrue();
 		})
 	})
 
@@ -74,6 +81,13 @@ describe( "hideSheet", ()=>{
 			expect( sheetInfo.isHidden ).toBeTrue();
 			s.unhideSheet( workbook=wb, sheetNumber=3 );
 			sheetInfo = s.sheetInfo( wb, 3 );
+			expect( sheetInfo.isHidden ).toBeFalse();
+			// by number positionally
+			s.createSheet( wb, "sheet4" ).hideSheet( wb, "sheet4" );
+			sheetInfo = s.sheetInfo( wb, 4 );
+			expect( sheetInfo.isHidden ).toBeTrue();
+			s.unhideSheet( wb, "", 4 );
+			sheetInfo = s.sheetInfo( wb, 4 );
 			expect( sheetInfo.isHidden ).toBeFalse();
 		})
 	})
