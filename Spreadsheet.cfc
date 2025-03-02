@@ -1304,12 +1304,14 @@ component accessors="true"{
 		,boolean makeColumnNamesSafe=false
 		,string password
 		,string csvDelimiter=","
-		,struct streamingReaderOptions
+		,struct streamingOptions
 		,boolean returnVisibleValues=false
 	){
 		getFileHelper().throwErrorIFfileNotExists( arguments.src );
 		getExceptionHelper().throwExceptionIFreadFormatIsInvalid( argumentCollection=arguments );
 		getSheetHelper().throwErrorIFSheetNameAndNumberArgumentsBothPassed( argumentCollection=arguments );
+		if( arguments.KeyExists( "streamingReaderOptions" ) ) //support legacy naming
+			arguments.streamingOptions = arguments.streamingReaderOptions;
 		var builderOptions = arguments.streamingReaderOptions?:{};
 		if( arguments.KeyExists( "password" ) )
 			builderOptions.password = arguments.password;
