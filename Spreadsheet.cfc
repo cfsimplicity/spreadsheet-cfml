@@ -98,6 +98,10 @@ component accessors="true"{
 		return variables.engine == "Boxlang";
 	}
 
+	public boolean function getIsACF2025(){
+		return getIsACF() && ( getEngineVersion().Left( 4 ) == 2025 );
+	}
+
 	private string function getEngineVersion(){
 		if( this.getIsACF() )
 			return server.coldfusion.productversion;

@@ -6,7 +6,7 @@ Standalone library for working with spreadsheets and CSV in CFML ([Lucee](http:/
 
 - Java 8 or higher
 - Lucee 5.x or higher
-- Adobe ColdFusion 2018, 2021 or 2023
+- Adobe ColdFusion 2018 or higher
 
 ## Installation
 

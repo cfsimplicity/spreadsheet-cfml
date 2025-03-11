@@ -130,6 +130,8 @@ describe( "csvToQuery", ()=>{
 			FileWrite( tempCsvPath, csv );
 			var actual = s.csvToQuery( filepath: tempCsvPath, trim: false );
 			expected = QueryNew( "column1,column2", "", [ [ "", "" ], [ "Frumpo McNugget", "12345" ] ] );
+			if( s.getIsACF2025() ) //ACF2025 FileWrite() adds an extra line
+				expected.AddRow( { "column1": "", "column2": "" } );
 			expect( actual ).toBe( expected ); 
 		})
 
