@@ -1354,6 +1354,11 @@ component accessors="true"{
 		return getQueryHelper().queryToHtml( generatedQuery, arguments.includeHeaderRow );
 	}
 
+	public Spreadsheet function recalculateAllFormulas( required workbook ){
+		arguments.workbook.getCreationHelper().createFormulaEvaluator().evaluateAllFormulaCells( arguments.workbook );
+		return this;
+	}
+
 	public Spreadsheet function removePrintGridlines( required workbook ){
 		getSheetHelper().getActiveSheet( arguments.workbook ).setPrintGridlines( JavaCast( "boolean", false ) );
 		return this;

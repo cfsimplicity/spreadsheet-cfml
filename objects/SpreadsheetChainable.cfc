@@ -471,6 +471,12 @@ component{
 		return variables.library.readBinary( argumentCollection=arguments );
 	}
 
+	public SpreadsheetChainable function recalculateAllFormulas(){
+		addWorkbookArgument( arguments );
+		variables.library.recalculateAllFormulas( argumentCollection=arguments );
+		return this;
+	}
+
 	public SpreadsheetChainable function removePrintGridlines(){
 		addWorkbookArgument( arguments );
 		variables.library.removePrintGridlines( argumentCollection=arguments );
