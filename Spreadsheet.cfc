@@ -12,7 +12,7 @@ component accessors="true"{
 	property name="javaLoaderName" default="" setter="false";
 	property name="loadJavaClassesUsing";
 	property name="requiresJavaLoader" type="boolean" default="false";
-	property name="returnCachedFormulaValues" type="boolean" default="true";//TODO How to test?
+	property name="returnCachedFormulaValues" type="boolean" default="true";
 	//detected state
 	property name="engine" setter="false";
 	property name="javaClassesLastLoadedVia" default="Nothing loaded yet";

@@ -65,6 +65,25 @@ describe( "cellFormula", ()=>{
 			expect( wb.getForceFormulaRecalculation() ).toBeTrue();
 		})
 
+		it( "returns cached calculated values by default", ()=> {
+			workbooks.Each( ( wb )=>{
+				s.setCellFormula( wb, theFormula, 3, 1 );
+				expect( s.getCellValue( wb, 3, 1 ) ).toBe( 2 );
+				s.setCellValue( wb, 2, 1, 1 )
+				expect( s.getCellValue( wb, 3, 1 ) ).toBe( 2 );
+			})
+		})
+
+		it( "can return recalculated formula values", ()=> {
+			local.s = newSpreadsheetInstance().setReturnCachedFormulaValues( false );
+			workbooks.Each( ( wb )=>{
+				s.setCellFormula( wb, theFormula, 3, 1 );
+				expect( s.getCellValue( wb, 3, 1 ) ).toBe( 2 );
+				s.setCellValue( wb, 2, 1, 1 )
+				expect( s.getCellValue( wb, 3, 1 ) ).toBe( 3 );
+			})
+		})
+
 	})
 
 })	
