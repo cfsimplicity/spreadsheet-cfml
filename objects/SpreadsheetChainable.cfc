@@ -318,6 +318,12 @@ component{
 	}
 
 	// Ends chain
+	public struct function getActiveCell(){
+		addWorkbookArgument( arguments );
+		return variables.library.getActiveCell( argumentCollection=arguments );
+	}
+
+	// Ends chain
 	public string function getCellAddress( required numeric row, required numeric column ){
 		addWorkbookArgument( arguments );
 		return variables.library.getCellAddress( argumentCollection=arguments );

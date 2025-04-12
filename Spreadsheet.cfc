@@ -867,6 +867,11 @@ component accessors="true"{
 		return this;
 	}
 
+	public struct function getActiveCell( required workbook ){
+		var activeCell = getSheetHelper().getActiveSheet( arguments.workbook ).getActiveCell();
+		return { column: activeCell.getColumn()+1, row: activeCell.getRow()+1 };
+	}
+
 	public string function getCellAddress( required workbook, required numeric row, required numeric column ){
 		var cell = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column );
 		if( IsNull( cell ) )
