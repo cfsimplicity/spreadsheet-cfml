@@ -195,6 +195,18 @@ component{
 		return this;
 	}
 
+	public SpreadsheetChainable function collapseColumnGroup( required numeric column ){
+		addWorkbookArgument( arguments );
+		variables.library.collapseColumnGroup( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function collapseRowGroup( required numeric row ){
+		addWorkbookArgument( arguments );
+		variables.library.collapseRowGroup( argumentCollection=arguments );
+		return this;
+	}
+
 	// Ends chain - returns CellStyle object
 	public any function createCellStyle( required struct format ){
 		addWorkbookArgument( arguments );
@@ -235,6 +247,18 @@ component{
 	public void function download( required string filename, string contentType ){
 		addWorkbookArgument( arguments );
 		variables.library.download( argumentCollection=arguments );
+	}
+
+	public SpreadsheetChainable function expandColumnGroup( required numeric column ){
+		addWorkbookArgument( arguments );
+		variables.library.expandColumnGroup( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function expandRowGroup( required numeric row ){
+		addWorkbookArgument( arguments );
+		variables.library.expandRowGroup( argumentCollection=arguments );
+		return this;
 	}
 
 	public SpreadsheetChainable function formatCell(
@@ -399,6 +423,18 @@ component{
 	public numeric function getRowCount( sheetNameOrNumber ){
 		addWorkbookArgument( arguments );
 		return variables.library.getRowCount( argumentCollection=arguments );
+	}
+
+	public SpreadsheetChainable function groupColumns( required numeric startColumn, required numeric endColumn ){
+		addWorkbookArgument( arguments );
+		variables.library.groupColumns( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function groupRows( required numeric startRow, required numeric endRow ){
+		addWorkbookArgument( arguments );
+		variables.library.groupRows( argumentCollection=arguments );
+		return this;
 	}
 
 	public SpreadsheetChainable function hideColumn( required numeric column ){
@@ -728,6 +764,18 @@ component{
 	public SpreadsheetChainable function showRow( required numeric row ){
 		addWorkbookArgument( arguments );
 		variables.library.showRow( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function ungroupColumns( required numeric startColumn, required numeric endColumn ){
+		addWorkbookArgument( arguments );
+		variables.library.ungroupColumns( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function ungroupRows( required numeric startRow, required numeric endRow ){
+		addWorkbookArgument( arguments );
+		variables.library.ungroupRows( argumentCollection=arguments );
 		return this;
 	}
 

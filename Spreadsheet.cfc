@@ -549,6 +549,16 @@ component accessors="true"{
 		return this;
 	}
 
+	public SpreadSheet function collapseColumnGroup( required workbook, required numeric column ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).setColumnGroupCollapsed( JavaCast( "int", arguments.column-1 ), JavaCast( "boolean", true ) );
+		return this;
+	}
+
+	public SpreadSheet function collapseRowGroup( required workbook, required numeric row ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).setRowGroupCollapsed( JavaCast( "int", arguments.row-1 ), JavaCast( "boolean", true ) );
+		return this;
+	}
+
 	public any function createCellStyle( required workbook, required struct format ){
 		return getFormatHelper().buildCellStyle( arguments.workbook, arguments.format );
 	}
@@ -732,6 +742,21 @@ component accessors="true"{
 		if( !arguments.KeyExists( "contentType" ) )
 			arguments.contentType = arguments.xmlFormat? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/msexcel";
 		getFileHelper().downloadBinaryVariable( binary, arguments.filename, arguments.contentType );
+	}
+
+	public SpreadSheet function expandColumnGroup( required workbook, required numeric column ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).setColumnGroupCollapsed( JavaCast( "int", arguments.column-1 ), JavaCast( "boolean", false ) );
+		return this;
+	}
+
+	public SpreadSheet function expandRowGroup( required workbook, required numeric row ){
+		/*
+			20250413: bug in POI XSSF? Expansion fails unless row is unhidden first. Also errors if group begins on row 1
+		*/
+		if( isXmlFormat( arguments.workbook ) && isRowHidden( arguments.workbook, arguments.row ) )
+			showRow( arguments.workbook, arguments.row );
+		getSheetHelper().getActiveSheet( arguments.workbook ).setRowGroupCollapsed( JavaCast( "int", arguments.row-1 ), JavaCast( "boolean", false ) );
+		return this;
 	}
 
 	public Spreadsheet function formatCell(
@@ -1024,6 +1049,16 @@ component accessors="true"{
 
 	public numeric function getRowCount( required workbook, sheetNameOrNumber ){
 		return getLastRowNumber( argumentCollection=arguments );
+	}
+
+	public SpreadSheet function groupColumns( required workbook, required numeric startColumn, required numeric endColumn ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).groupColumn( JavaCast( "int", arguments.startColumn-1 ), JavaCast( "int", arguments.endColumn-1 ) );
+		return this;
+	}
+
+	public SpreadSheet function groupRows( required workbook, required numeric startRow, required numeric endRow ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).groupRow( JavaCast( "int", arguments.startRow-1 ), JavaCast( "int", arguments.endRow-1 ) );
+		return this;
 	}
 
 	public Spreadsheet function hideColumn( required workbook, required numeric column ){
@@ -1735,6 +1770,16 @@ component accessors="true"{
 
 	public Spreadsheet function showRow( required workbook, required numeric row ){
 		getRowHelper().toggleRowHidden( arguments.workbook, arguments.row, false );
+		return this;
+	}
+
+	public SpreadSheet function ungroupColumns( required workbook, required numeric startColumn, required numeric endColumn ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).ungroupColumn( JavaCast( "int", arguments.startColumn-1 ), JavaCast( "int", arguments.endColumn-1 ) );
+		return this;
+	}
+
+	public SpreadSheet function ungroupRows( required workbook, required numeric startRow, required numeric endRow ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).ungroupRow( JavaCast( "int", arguments.startRow-1 ), JavaCast( "int", arguments.endRow-1 ) );
 		return this;
 	}
 
