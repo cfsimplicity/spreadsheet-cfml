@@ -519,6 +519,18 @@ component{
 		return this;
 	}
 
+	public SpreadsheetChainable function removeColumnBreak( required numeric column ){
+		addWorkbookArgument( arguments );
+		variables.library.removeColumnBreak( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function removeRowBreak( required numeric row ){
+		addWorkbookArgument( arguments );
+		variables.library.removeRowBreak( argumentCollection=arguments );
+		return this;
+	}
+
 	public SpreadsheetChainable function removePrintGridlines(){
 		addWorkbookArgument( arguments );
 		variables.library.removePrintGridlines( argumentCollection=arguments );
@@ -686,6 +698,18 @@ component{
 	public SpreadsheetChainable function setRepeatingRows( required string rowRange ){
 		addWorkbookArgument( arguments );
 		variables.library.setRepeatingRows( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function setColumnBreak( required numeric column ){
+		addWorkbookArgument( arguments );
+		variables.library.setColumnBreak( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function setRowBreak( required numeric row ){
+		addWorkbookArgument( arguments );
+		variables.library.setRowBreak( argumentCollection=arguments );
 		return this;
 	}
 

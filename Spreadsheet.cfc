@@ -380,7 +380,7 @@ component accessors="true"{
 		for( var rowNumber in arguments.rowBreaks )
 			sheet.setRowBreak( JavaCast( "int", ( rowNumber -1 ) ) );
 		for( var columnNumber in arguments.columnBreaks )
-			sheet.setcolumnBreak( JavaCast( "int", ( columnNumber -1 ) ) );
+			sheet.setColumnBreak( JavaCast( "int", ( columnNumber -1 ) ) );
 		return this;
 	}
 
@@ -1399,6 +1399,16 @@ component accessors="true"{
 		return this;
 	}
 
+	public SpreadSheet function removeColumnBreak( required workbook, required numeric column ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).removeColumnBreak( JavaCast( "int", ( arguments.column-1 ) ) );
+		return this;
+	}
+
+	public SpreadSheet function removeRowBreak( required workbook, required numeric row ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).removeRowBreak( JavaCast( "int", ( arguments.row-1 ) ) );
+		return this;
+	}
+
 	public Spreadsheet function removePrintGridlines( required workbook ){
 		getSheetHelper().getActiveSheet( arguments.workbook ).setPrintGridlines( JavaCast( "boolean", false ) );
 		return this;
@@ -1669,6 +1679,16 @@ component accessors="true"{
 			Throw( type=this.getExceptionType() & ".invalidRowRangeArgument", message="Invalid rowRange argument", detail="The 'rowRange' argument should be in the form 'n:n', e.g. '1:5'" );
 		var cellRangeAddress = getRangeHelper().getCellRangeAddressFromReference( arguments.rowRange );
 		getSheetHelper().getActiveSheet( arguments.workbook ).setRepeatingRows( cellRangeAddress );
+		return this;
+	}
+
+	public SpreadSheet function setColumnBreak( required workbook, required numeric column ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).setColumnBreak( JavaCast( "int", ( arguments.column-1 ) ) );
+		return this;
+	}
+
+	public SpreadSheet function setRowBreak( required workbook, required numeric row ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).setRowBreak( JavaCast( "int", ( arguments.row-1 ) ) );
 		return this;
 	}
 
