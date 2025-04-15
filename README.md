@@ -1,6 +1,6 @@
 # Spreadsheet CFML
 
-Standalone library for working with spreadsheets and CSV in CFML ([Lucee](http://lucee.org/) and Adobe ColdFusion), supporting all of ColdFusion's native spreadsheet functionality and much more besides.
+Standalone library for working with spreadsheets and CSV in CFML ([Lucee](http://lucee.org/) and Adobe ColdFusion), [supporting all of ColdFusion's native spreadsheet functionality](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/ColdFusion-spreadsheet-functionality-support) and [much more](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/Functions-not-available-in-ColdFusion) besides.
 
 ## Minimum Requirements
 
@@ -36,14 +36,13 @@ Spreadsheet.cfc
 The following example assumes the file containing the script is in the same directory as the folder containing the spreadsheet library files, i.e.:
 
 - root/
-  - spreadsheetLibrary/
+  - spreadsheetCFML/
     - Spreadsheet.cfc
     - etc.
   - script.cfm
- 
 ```
 <cfscript>
-spreadsheet = New spreadsheetLibrary.Spreadsheet();
+spreadsheet = New spreadsheetCFML.Spreadsheet();
 data = QueryNew( "First,Last", "VarChar, VarChar", [ [ "Susi", "Sorglos" ], [ "Frumpo", "McNugget" ] ] );
 workbook = spreadsheet.new();
 spreadsheet.addRows( workbook, data );
@@ -54,11 +53,11 @@ spreadsheet.write( workbook, "c:/temp/data.xls" );
 
 When instantiating the library, the `init()` method **must** be called. This will happen automatically if you use the `New` keyword:
 ```
-spreadsheet = New spreadsheetLibrary.Spreadsheet();
+spreadsheet = New spreadsheetCFML.Spreadsheet();
 ```
 If using `CreateObject()` then you must call `init()` explicitly:
 ```
-spreadsheet = CreateObject( "component", "spreadsheetLibrary.Spreadsheet" ).init();
+spreadsheet = CreateObject( "component", "spreadsheetCFML.Spreadsheet" ).init();
 ```
 ### Using a mapping
 
@@ -68,150 +67,13 @@ You may wish to place the spreadsheet library files in a central location with a
 
 [Full function reference](https://github.com/cfsimplicity/spreadsheet-cfml/wiki)
 
-## Supported ColdFusion (2018-2023) functions
+### ColdFusion spreadsheet functionality support
 
-* [addAutofilter](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addAutofilter)
-* [addColumn](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addColumn)
-* [addFreezePane](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addFreezePane)
-* [addImage](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addImage)
-* [addInfo](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addInfo)
-* [addPageBreaks](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addPageBreaks)
-* [addRow](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addRow)
-* [addRows](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addRows)
-* [addSplitPane](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addSplitPane)
-* autosize, implemented as [autoSizeColumn](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/autoSizeColumn)
-* [createSheet](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/createSheet)
-* [deleteColumn](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/deleteColumn)
-* [deleteColumns](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/deleteColumns)
-* [deleteRow](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/deleteRow)
-* [deleteRows](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/deleteRows)
-* [formatCell](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/formatCell)
-* [formatCellRange](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/formatCellRange)
-* [formatColumn](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/formatColumn)
-* [formatColumns](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/formatColumns)
-* [formatRow](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/formatRow)
-* [formatRows](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/formatRows)
-* [getCellComment](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellComment)
-* [getCellFormula](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellFormula)
-* [getCellValue](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellValue)
-* [getColumnCount](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getColumnCount)
-* [info](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/info)
-* [isSpreadsheetFile](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isSpreadsheetFile)
-* [isSpreadsheetObject](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isSpreadsheetObject)
-* [mergeCells](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/mergeCells)
-* [new](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/new)
-* [read](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/read)
-* [readBinary](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/readBinary)
-* [removeSheet](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/removeSheet)
-* [setActiveSheet](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setActiveSheet)
-* [setActiveSheetNumber](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setActiveSheetNumber)
-* [setCellComment](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setCellComment)
-* [setCellFormula](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setCellFormula)
-* [setCellValue](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setCellValue)
-* [setColumnWidth](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setColumnWidth)
-* [setFooter](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setFooter)
-* [setHeader](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setHeader)
-* [setRowHeight](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setRowHeight)
-* [shiftColumns](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/shiftColumns)
-* [shiftRows](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/shiftRows)
-* [write](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/write)
+The library supports all of Adobe ColdFusion's spreadsheet functionality with a similar syntax. It can be run alongside existing ColdFusion spreadsheet code you don't wish to modify.
 
-### Extra functions not available in ColdFusion (2018-2023)
-
-* [addConditionalFormatting](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addConditionalFormatting)
-* [addDataValidation](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addDataValidation)
-* [addPrintGridlines](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/addPrintGridlines)
-* [binaryFromQuery](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/binaryFromQuery)
-* [cleanUpStreamingXml](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/cleanUpStreamingXml)
-* [clearCell](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/clearCell)
-* [clearCellRange](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/clearCellRange)
-* [createCellStyle](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/createCellStyle)
-* [csvToQuery](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/csvToQuery)
-* [download](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/download)
-* [downloadCsvFromFile](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/downloadCsvFromFile)
-* [downloadFileFromQuery](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/downloadFileFromQuery)
-* [getCellAddress](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellAddress)
-* [getCellComments](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellComments)
-* [getCellFormat](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellFormat)
-* [getCellHyperLink](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellHyperLink)
-* [getCellType](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getCellType)
-* [getColumnWidth](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getColumnWidth)
-* [getColumnWidthInPixels](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getColumnWidthInPixels)
-* [getLastRowNumber](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getLastRowNumber)
-* [getPOIVersion](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getPOIVersion)
-* [getPresetColorNames](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getPresetColorNames)
-* [getRowCount](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/getRowCount)
-* [hideColumn](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/hideColumn)
-* [hideRow](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/hideRow)
-* [hideSheet](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/hideSheet)
-* [isBinaryFormat](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isBinaryFormat)
-* [isColumnHidden](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isColumnHidden)
-* [isRowHidden](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isRowHidden)
-* [isStreamingXmlFormat](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isStreamingXmlFormat)
-* [isXmlFormat](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/isXmlFormat)
-* [moveSheet](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/moveSheet)
-* [newStreamingXlsx](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/newStreamingXlsx)
-* [newXls](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/newXls)
-* [newXlsx](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/newXlsx)
-* [processLargeFile](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/processLargeFile)
-* [queryToCsv](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/queryToCsv)
-* [readCsv](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/readCsv)
-* [readLargeFile](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/readLargeFile)
-* [removePrintGridlines](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/removePrintGridlines)
-* [renameSheet](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/renameSheet)
-* [removeSheetNumber](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/removeSheetNumber)
-* [setActiveCell](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setActiveCell)
-* [setCellHyperLink](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setCellHyperLink)
-* [setCellRangeValue](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setCellRangeValue)
-* [setDateFormats](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setDateFormats)
-* [setDefaultWorkbookFormat](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setDefaultWorkbookFormat)
-* [setFitToPage](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setFitToPage)
-* [setFooterImage](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setFooterImage)
-* [setHeaderImage](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setHeaderImage)
-* [setReadOnly](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setReadOnly)
-* [setRecalculateFormulasOnNextOpen](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setRecalculateFormulasOnNextOpen)
-* [setRepeatingColumns](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setRepeatingColumns)
-* [setRepeatingRows](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setRepeatingRows)
-* [setReturnCachedFormulaValues](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setReturnCachedFormulaValues)
-* [setSheetTopMargin](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetTopMargin)
-* [setSheetBottomMargin](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetBottomMargin)
-* [setSheetLeftMargin](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetLeftMargin)
-* [setSheetRightMargin](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetRightMargin)
-* [setSheetHeaderMargin](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetHeaderMargin)
-* [setSheetFooterMargin](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetFooterMargin)
-* [setSheetPrintOrientation](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/setSheetPrintOrientation)
-* [sheetInfo](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/sheetInfo)
-* [showColumn](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/showColumn)
-* [showRow](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/showRow)
-* [unhideSheet](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/unhideSheet)
-* [workbookFromCsv](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/workbookFromCsv)
-* [workbookFromQuery](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/workbookFromQuery)
-* [writeFileFromQuery](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/writeFileFromQuery)
-* [writeCsv](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/writeCsv)
-* [writeToCsv](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/writeToCsv)
-
-### Enhanced Read() method
-
-In Adobe ColdFusion, the `SpreadsheetRead()` script function is limited to just returning a spreadsheet object, whereas the `<cfspreadsheet action="read">` tag has a range of options for reading and returning data from a spreadsheet file. 
-
-The `read()` method in this library allows you to read a spreadsheet file into a query and return that instead of a spreadsheet object. It includes all of the options available in `<cfspreadsheet action="read">`.
-
-```
-<cfscript>
-myQuery = spreadsheet.read( src=mypath, format="query" );
-</cfscript>
-```
-
-The `read()` method also features the following additional options not available in ColdFusion or the Spreadsheet Extension:
-
-* `fillMergedCellsWithVisibleValue`
-* `includeHiddenColumns`
-* `includeRichTextFormatting`
-* `password` to open encrypted spreadsheets
-* `csvDelimiter`
-* `queryColumnTypes`
-
-[Full documentation of read()](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/read)
+* [ColdFusion Spreadsheet functionality support](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/ColdFusion-spreadsheet-functionality-support)
+)
+* [Extra functions not available in ColdFusion](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/Functions-not-available-in-ColdFusion)
 
 ### Chainable syntax
 
@@ -241,13 +103,13 @@ NB: _Do not confuse `DATETIME` and `TIMESTAMP`._ In general you should override 
 Each of these can be overridden by passing in a struct including the value(s) to be overridden when instantiating the Spreadsheet component. For example:
 ```
 <cfscript>
-spreadsheet = New spreadsheetLibrary.Spreadsheet( dateFormats={ DATE: "mm/dd/yyyy" } );
+spreadsheet = New spreadsheetCFML.Spreadsheet( dateFormats={ DATE: "mm/dd/yyyy" } );
 </cfscript>
 ```
 Or by using the `setDateFormats()` method on an existing instance.
 ```
 <cfscript>
-spreadsheet = New spreadsheetLibrary.Spreadsheet();
+spreadsheet = New spreadsheetCFML.Spreadsheet();
 spreadsheet.setDateFormats( { DATE: "mm/dd/yyyy" } );
 </cfscript>
 ```
