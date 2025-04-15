@@ -6,6 +6,7 @@
 	- \#396 Add support for column/row breaks
 	- \#398 Add getActiveCell()
 	- \#403 Add recalculateAllFormulas() to update cached values
+	- \#407 Add row/column group collapsing and expansion
 	- \#408 Add getSheetPrintOrientation()
 	- \#409 Add getRecalculateFormulasOnNextOpen()
 	- \#410 Add printOrientation to sheetInfo() properties
