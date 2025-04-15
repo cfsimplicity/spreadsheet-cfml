@@ -1051,6 +1051,10 @@ component accessors="true"{
 		return getLastRowNumber( argumentCollection=arguments );
 	}
 
+	public string function getSheetPrintOrientation( required workbook, string sheetName, numeric sheetNumber ){
+		return getSheetHelper().getSpecifiedOrActiveSheet( argumentCollection=arguments ).getPrintSetup().getLandscape()? "landscape": "portrait";
+	}
+
 	public SpreadSheet function groupColumns( required workbook, required numeric startColumn, required numeric endColumn ){
 		getSheetHelper().getActiveSheet( arguments.workbook ).groupColumn( JavaCast( "int", arguments.startColumn-1 ), JavaCast( "int", arguments.endColumn-1 ) );
 		return this;

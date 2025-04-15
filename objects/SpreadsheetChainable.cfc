@@ -425,6 +425,12 @@ component{
 		return variables.library.getRowCount( argumentCollection=arguments );
 	}
 
+	// Ends chain
+	public string function getSheetPrintOrientation( string sheetName, numeric sheetNumber ){
+		addWorkbookArgument( arguments );
+		return variables.library.getSheetPrintOrientation( argumentCollection=arguments );
+	}
+
 	public SpreadsheetChainable function groupColumns( required numeric startColumn, required numeric endColumn ){
 		addWorkbookArgument( arguments );
 		variables.library.groupColumns( argumentCollection=arguments );
