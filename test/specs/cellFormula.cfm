@@ -49,20 +49,21 @@ describe( "cellFormula", ()=>{
 
 	describe( "recalculation", ()=>{
 
-		it( "can set a flag for all formulas to be recalculated in the workbook the next time the file is opened", ()=>{
-			// only xlsx seems to reflect the flag status
-			var wb = s.newXlsx();
-			expect( wb.getForceFormulaRecalculation() ).toBeFalse();
-			s.setRecalculateFormulasOnNextOpen( wb );
-			expect( wb.getForceFormulaRecalculation() ).toBeTrue();
+		it( "can set a flag for all formulas in the workbook to be recalculated the next time the file is opened", ()=>{
+			workbooks.Each( ( wb )=>{
+				expect( s.getRecalculateFormulasOnNextOpen( wb ) ).toBeFalse();
+				s.setRecalculateFormulasOnNextOpen( wb );
+				expect( s.getRecalculateFormulasOnNextOpen( wb ) ).toBeTrue();
+			})
 		})
 
-		it( "getForceFormulaRecalculation is chainable", ()=>{
-			// only xlsx seems to reflect the flag status
-			var wb = s.newXlsx();
-			expect( wb.getForceFormulaRecalculation() ).toBeFalse();
-			s.newChainable( wb ).setRecalculateFormulasOnNextOpen();
-			expect( wb.getForceFormulaRecalculation() ).toBeTrue();
+		it( "setForceFormulaRecalculation is chainable", ()=>{
+			workbooks.Each( ( wb )=>{
+				var chainable = s.newChainable( wb );
+				expect( chainable.getRecalculateFormulasOnNextOpen() ).toBeFalse();
+				chainable.setRecalculateFormulasOnNextOpen();
+				expect( chainable.getRecalculateFormulasOnNextOpen() ).toBeTrue();
+			})
 		})
 
 		it( "returns cached calculated values by default", ()=> {

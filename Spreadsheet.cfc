@@ -1047,6 +1047,13 @@ component accessors="true"{
 		return result.Sort( "text" );
 	}
 
+	public boolean function getRecalculateFormulasOnNextOpen( required workbook ){
+		if( isXmlFormat( arguments.workbook ) )
+			return arguments.workbook.getForceFormulaRecalculation();
+		// HSSF doesn't seem to work at the workbook level, so just decide based on the active sheet's flag
+		return getSheetHelper().getActiveSheet( arguments.workbook ).getForceFormulaRecalculation();
+	}
+
 	public numeric function getRowCount( required workbook, sheetNameOrNumber ){
 		return getLastRowNumber( argumentCollection=arguments );
 	}
@@ -1665,6 +1672,14 @@ component accessors="true"{
 
 	public Spreadsheet function setRecalculateFormulasOnNextOpen( required workbook, boolean value=true ){
 		arguments.workbook.setForceFormulaRecalculation( JavaCast( "boolean", arguments.value ) );
+		if( isXmlFormat( arguments.workbook ) )
+			return this;
+		// HSSF setForceFormulaRecalculation() doesn't seem to work at the workbook level, so set all sheets to recalculate
+		var sheetIterator = arguments.workbook.sheetIterator();
+		while( sheetIterator.hasNext() ){
+			var sheet = sheetIterator.next();
+			sheet.setForceFormulaRecalculation( JavaCast( "boolean", arguments.value ) );
+		}
 		return this;
 	}
 

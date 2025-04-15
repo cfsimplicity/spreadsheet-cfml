@@ -420,6 +420,12 @@ component{
 	}
 
 	// Ends chain
+	public boolean function getRecalculateFormulasOnNextOpen(){
+		addWorkbookArgument( arguments );
+		return variables.library.getRecalculateFormulasOnNextOpen( argumentCollection=arguments );
+	}
+
+	// Ends chain
 	public numeric function getRowCount( sheetNameOrNumber ){
 		addWorkbookArgument( arguments );
 		return variables.library.getRowCount( argumentCollection=arguments );
