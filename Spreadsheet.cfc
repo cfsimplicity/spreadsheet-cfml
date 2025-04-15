@@ -1047,7 +1047,11 @@ component accessors="true"{
 		return result.Sort( "text" );
 	}
 
-	public boolean function getRecalculateFormulasOnNextOpen( required workbook ){
+	public boolean function getRecalculateFormulasOnNextOpen( required workbook, string sheetName ){
+		if( arguments.KeyExists( "sheetName" ) ){
+			var sheet = getSheetHelper().getSheetByName( arguments.workbook, arguments.sheetName );
+			return sheet.getForceFormulaRecalculation();
+		}
 		if( isXmlFormat( arguments.workbook ) )
 			return arguments.workbook.getForceFormulaRecalculation();
 		// HSSF doesn't seem to work at the workbook level, so just decide based on the active sheet's flag
@@ -1670,7 +1674,12 @@ component accessors="true"{
 		return this;
 	}
 
-	public Spreadsheet function setRecalculateFormulasOnNextOpen( required workbook, boolean value=true ){
+	public Spreadsheet function setRecalculateFormulasOnNextOpen( required workbook, boolean value=true, string sheetName ){
+		if( arguments.KeyExists( "sheetName" ) ){
+			var sheet = getSheetHelper().getSheetByName( arguments.workbook, arguments.sheetName );
+			sheet.setForceFormulaRecalculation( JavaCast( "boolean", arguments.value ) );
+			return this;
+		}
 		arguments.workbook.setForceFormulaRecalculation( JavaCast( "boolean", arguments.value ) );
 		if( isXmlFormat( arguments.workbook ) )
 			return this;

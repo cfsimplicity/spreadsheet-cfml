@@ -49,7 +49,7 @@ describe( "cellFormula", ()=>{
 
 	describe( "recalculation", ()=>{
 
-		it( "can set a flag for all formulas in the workbook to be recalculated the next time the file is opened", ()=>{
+		it( "can set and get a flag for all formulas in the workbook to be recalculated the next time the file is opened", ()=>{
 			workbooks.Each( ( wb )=>{
 				expect( s.getRecalculateFormulasOnNextOpen( wb ) ).toBeFalse();
 				s.setRecalculateFormulasOnNextOpen( wb );
@@ -57,12 +57,33 @@ describe( "cellFormula", ()=>{
 			})
 		})
 
-		it( "setForceFormulaRecalculation is chainable", ()=>{
+		it( "can set and get a flag for all formulas in a specific sheet to be recalculated the next time the file is opened", ()=>{
 			workbooks.Each( ( wb )=>{
+				s.createSheet( wb, "sheet2" );
+				expect( s.getRecalculateFormulasOnNextOpen( wb, "sheet2" ) ).toBeFalse();
+				s.setRecalculateFormulasOnNextOpen( wb, true, "sheet2" );
+				expect( s.getRecalculateFormulasOnNextOpen( wb, "sheet2" ) ).toBeTrue();
+				expect( s.getRecalculateFormulasOnNextOpen( wb, "sheet1" ) ).toBeFalse();
+			})
+		})
+
+		it( "setForceFormulaRecalculation on all sheets is chainable", ()=>{
+			workbooks.Each( ( wb )=>{
+				//all sheets
 				var chainable = s.newChainable( wb );
 				expect( chainable.getRecalculateFormulasOnNextOpen() ).toBeFalse();
 				chainable.setRecalculateFormulasOnNextOpen();
 				expect( chainable.getRecalculateFormulasOnNextOpen() ).toBeTrue();
+			})
+		})
+
+		it( "setForceFormulaRecalculation on a specific sheet is chainable", ()=>{
+			workbooks.Each( ( wb )=>{
+				chainable = s.newChainable( wb ).createSheet( "sheet2" );
+				expect( chainable.getRecalculateFormulasOnNextOpen( "sheet2" ) ).toBeFalse();
+				chainable.setRecalculateFormulasOnNextOpen( true, "sheet2" );
+				expect( chainable.getRecalculateFormulasOnNextOpen( "sheet2" ) ).toBeTrue();
+				expect( chainable.getRecalculateFormulasOnNextOpen( "sheet1" ) ).toBeFalse();
 			})
 		})
 

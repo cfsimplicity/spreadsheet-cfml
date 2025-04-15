@@ -420,7 +420,7 @@ component{
 	}
 
 	// Ends chain
-	public boolean function getRecalculateFormulasOnNextOpen(){
+	public boolean function getRecalculateFormulasOnNextOpen( string sheetName ){
 		addWorkbookArgument( arguments );
 		return variables.library.getRecalculateFormulasOnNextOpen( argumentCollection=arguments );
 	}
@@ -695,7 +695,7 @@ component{
 		return this;
 	}
 
-	public SpreadsheetChainable function setRecalculateFormulasOnNextOpen( boolean value=true ){
+	public SpreadsheetChainable function setRecalculateFormulasOnNextOpen( boolean value=true, string sheetName ){
 		addWorkbookArgument( arguments );
 		variables.library.setRecalculateFormulasOnNextOpen( argumentCollection=arguments );
 		return this;
