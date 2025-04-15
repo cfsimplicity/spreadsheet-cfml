@@ -1063,7 +1063,7 @@ component accessors="true"{
 	}
 
 	public string function getSheetPrintOrientation( required workbook, string sheetName, numeric sheetNumber ){
-		return getSheetHelper().getSpecifiedOrActiveSheet( argumentCollection=arguments ).getPrintSetup().getLandscape()? "landscape": "portrait";
+		return getSheetHelper().getPrintOrientation( argumentCollection=arguments );
 	}
 
 	public SpreadSheet function groupColumns( required workbook, required numeric startColumn, required numeric endColumn ){
