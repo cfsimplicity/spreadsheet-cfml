@@ -19,6 +19,7 @@ describe( "sheetInfo", ()=>{
 				,numberOfDataValidations: 0
 				,numberOfMergedRegions: 0
 				,position: 1
+				,printOrientation: "portrait"
 				,printsFitToPage: ( type == "xls" )//xlsx=false xls=true
 				,printsGridlines: false
 				,printsHorizontallyCentered: false
@@ -69,6 +70,9 @@ describe( "sheetInfo", ()=>{
 			expect( chainable.sheetInfo().isRightToLeft ).toBeTrue();
 			sheet.setRightToLeft( JavaCast( "boolean", false ) );
 			expect( chainable.sheetInfo().isRightToLeft ).toBeFalse();
+			// printOrientation
+			sheet.getPrintSetup().setLandscape( JavaCast( "boolean", true ) );
+			expect( chainable.sheetInfo().printOrientation ).toBe( "landscape" );
 			// printsFitToPage
 			chainable.setFitToPage( true );
 			expect( chainable.sheetInfo().printsFitToPage ).toBeTrue();

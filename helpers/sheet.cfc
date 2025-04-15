@@ -79,6 +79,10 @@ component extends="base"{
 		return ( getLastRowIndex( arguments.sheet ) +1 );
 	}
 
+	string function getPrintOrientation( required workbook, string sheetName, numeric sheetNumber ){
+		return getSpecifiedOrActiveSheet( argumentCollection=arguments ).getPrintSetup().getLandscape()? "landscape": "portrait";
+	}
+
 	any function getSheetByName( required workbook, required string sheetName ){
 		validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
 		return arguments.workbook.getSheet( JavaCast( "string", arguments.sheetName ) );
@@ -132,6 +136,7 @@ component extends="base"{
 			,numberOfDataValidations: sheet.getDataValidations().Len()
 			,numberOfMergedRegions: sheet.getNumMergedRegions()
 			,position: getSheetIndexFromName( arguments.workbook, sheet.getSheetName() )+1
+			,printOrientation: getPrintOrientation( arguments.workbook, sheet.getSheetName() )
 			,printsFitToPage: sheet.getFitToPage()
 			,printsGridlines: sheet.isPrintGridlines()
 			,printsHorizontallyCentered: sheet.getHorizontallyCenter()

@@ -195,6 +195,18 @@ component{
 		return this;
 	}
 
+	public SpreadsheetChainable function collapseColumnGroup( required numeric column ){
+		addWorkbookArgument( arguments );
+		variables.library.collapseColumnGroup( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function collapseRowGroup( required numeric row ){
+		addWorkbookArgument( arguments );
+		variables.library.collapseRowGroup( argumentCollection=arguments );
+		return this;
+	}
+
 	// Ends chain - returns CellStyle object
 	public any function createCellStyle( required struct format ){
 		addWorkbookArgument( arguments );
@@ -235,6 +247,18 @@ component{
 	public void function download( required string filename, string contentType ){
 		addWorkbookArgument( arguments );
 		variables.library.download( argumentCollection=arguments );
+	}
+
+	public SpreadsheetChainable function expandColumnGroup( required numeric column ){
+		addWorkbookArgument( arguments );
+		variables.library.expandColumnGroup( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function expandRowGroup( required numeric row ){
+		addWorkbookArgument( arguments );
+		variables.library.expandRowGroup( argumentCollection=arguments );
+		return this;
 	}
 
 	public SpreadsheetChainable function formatCell(
@@ -318,6 +342,12 @@ component{
 	}
 
 	// Ends chain
+	public struct function getActiveCell(){
+		addWorkbookArgument( arguments );
+		return variables.library.getActiveCell( argumentCollection=arguments );
+	}
+
+	// Ends chain
 	public string function getCellAddress( required numeric row, required numeric column ){
 		addWorkbookArgument( arguments );
 		return variables.library.getCellAddress( argumentCollection=arguments );
@@ -390,9 +420,33 @@ component{
 	}
 
 	// Ends chain
+	public boolean function getRecalculateFormulasOnNextOpen( string sheetName ){
+		addWorkbookArgument( arguments );
+		return variables.library.getRecalculateFormulasOnNextOpen( argumentCollection=arguments );
+	}
+
+	// Ends chain
 	public numeric function getRowCount( sheetNameOrNumber ){
 		addWorkbookArgument( arguments );
 		return variables.library.getRowCount( argumentCollection=arguments );
+	}
+
+	// Ends chain
+	public string function getSheetPrintOrientation( string sheetName, numeric sheetNumber ){
+		addWorkbookArgument( arguments );
+		return variables.library.getSheetPrintOrientation( argumentCollection=arguments );
+	}
+
+	public SpreadsheetChainable function groupColumns( required numeric startColumn, required numeric endColumn ){
+		addWorkbookArgument( arguments );
+		variables.library.groupColumns( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function groupRows( required numeric startRow, required numeric endRow ){
+		addWorkbookArgument( arguments );
+		variables.library.groupRows( argumentCollection=arguments );
+		return this;
 	}
 
 	public SpreadsheetChainable function hideColumn( required numeric column ){
@@ -469,6 +523,24 @@ component{
 	public binary function readBinary(){
 		addWorkbookArgument( arguments );
 		return variables.library.readBinary( argumentCollection=arguments );
+	}
+
+	public SpreadsheetChainable function recalculateAllFormulas(){
+		addWorkbookArgument( arguments );
+		variables.library.recalculateAllFormulas( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function removeColumnBreak( required numeric column ){
+		addWorkbookArgument( arguments );
+		variables.library.removeColumnBreak( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function removeRowBreak( required numeric row ){
+		addWorkbookArgument( arguments );
+		variables.library.removeRowBreak( argumentCollection=arguments );
+		return this;
 	}
 
 	public SpreadsheetChainable function removePrintGridlines(){
@@ -623,7 +695,7 @@ component{
 		return this;
 	}
 
-	public SpreadsheetChainable function setRecalculateFormulasOnNextOpen( boolean value=true ){
+	public SpreadsheetChainable function setRecalculateFormulasOnNextOpen( boolean value=true, string sheetName ){
 		addWorkbookArgument( arguments );
 		variables.library.setRecalculateFormulasOnNextOpen( argumentCollection=arguments );
 		return this;
@@ -638,6 +710,18 @@ component{
 	public SpreadsheetChainable function setRepeatingRows( required string rowRange ){
 		addWorkbookArgument( arguments );
 		variables.library.setRepeatingRows( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function setColumnBreak( required numeric column ){
+		addWorkbookArgument( arguments );
+		variables.library.setColumnBreak( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function setRowBreak( required numeric row ){
+		addWorkbookArgument( arguments );
+		variables.library.setRowBreak( argumentCollection=arguments );
 		return this;
 	}
 
@@ -716,6 +800,18 @@ component{
 	public SpreadsheetChainable function showRow( required numeric row ){
 		addWorkbookArgument( arguments );
 		variables.library.showRow( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function ungroupColumns( required numeric startColumn, required numeric endColumn ){
+		addWorkbookArgument( arguments );
+		variables.library.ungroupColumns( argumentCollection=arguments );
+		return this;
+	}
+
+	public SpreadsheetChainable function ungroupRows( required numeric startRow, required numeric endRow ){
+		addWorkbookArgument( arguments );
+		variables.library.ungroupRows( argumentCollection=arguments );
 		return this;
 	}
 

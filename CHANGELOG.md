@@ -1,3 +1,24 @@
+## 4.7.0 - 15 April 2025
+
+- Enhancements
+	- \#397 Support Adobe ColdFusion 2025
+	- \#395 Add support for column/row grouping
+	- \#396 Add support for column/row breaks
+	- \#398 Add getActiveCell()
+	- \#403 Add recalculateAllFormulas() to update cached values
+	- \#408 Add getSheetPrintOrientation()
+	- \#409 Add getRecalculateFormulasOnNextOpen()
+	- \#410 Add printOrientation to sheetInfo() properties
+	- \#411 Allow setRecalculateFormulasOnNextOpen() on a specific sheet
+
+- Fixes
+	- \#401 readLargeFile(): rename streamingReaderOptions argument for brevity and consistency with processLargeFile()
+
+- Maintenance
+	-	\#404 Upgrade POI to 5.4.1
+	-	\#405 Upgrade Excel Streaming Reader to 5.0.4
+	- \#406 Upgrade Commons CSV to 1.14.0
+
 ## 4.6.1 - 27 February 2025
 
 - Fixes

@@ -1,8 +1,8 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="4.6.1" setter="false";
-	property name="osgiLibBundleVersion" default="5.4.0.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="version" default="4.7.0" setter="false";
+	property name="osgiLibBundleVersion" default="5.4.1.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
 	//configurable
@@ -12,7 +12,7 @@ component accessors="true"{
 	property name="javaLoaderName" default="" setter="false";
 	property name="loadJavaClassesUsing";
 	property name="requiresJavaLoader" type="boolean" default="false";
-	property name="returnCachedFormulaValues" type="boolean" default="true";//TODO How to test?
+	property name="returnCachedFormulaValues" type="boolean" default="true";
 	//detected state
 	property name="engine" setter="false";
 	property name="javaClassesLastLoadedVia" default="Nothing loaded yet";
@@ -96,6 +96,10 @@ component accessors="true"{
 
 	public boolean function getIsBoxlang(){
 		return variables.engine == "Boxlang";
+	}
+
+	public boolean function getIsACF2025(){
+		return getIsACF() && ( getEngineVersion().Left( 4 ) == 2025 );
 	}
 
 	private string function getEngineVersion(){
@@ -376,7 +380,7 @@ component accessors="true"{
 		for( var rowNumber in arguments.rowBreaks )
 			sheet.setRowBreak( JavaCast( "int", ( rowNumber -1 ) ) );
 		for( var columnNumber in arguments.columnBreaks )
-			sheet.setcolumnBreak( JavaCast( "int", ( columnNumber -1 ) ) );
+			sheet.setColumnBreak( JavaCast( "int", ( columnNumber -1 ) ) );
 		return this;
 	}
 
@@ -542,6 +546,16 @@ component accessors="true"{
 				clearCell( arguments.workbook, rowNumber, columnNumber );
 			}
 		}
+		return this;
+	}
+
+	public SpreadSheet function collapseColumnGroup( required workbook, required numeric column ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).setColumnGroupCollapsed( JavaCast( "int", arguments.column-1 ), JavaCast( "boolean", true ) );
+		return this;
+	}
+
+	public SpreadSheet function collapseRowGroup( required workbook, required numeric row ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).setRowGroupCollapsed( JavaCast( "int", arguments.row-1 ), JavaCast( "boolean", true ) );
 		return this;
 	}
 
@@ -730,6 +744,21 @@ component accessors="true"{
 		getFileHelper().downloadBinaryVariable( binary, arguments.filename, arguments.contentType );
 	}
 
+	public SpreadSheet function expandColumnGroup( required workbook, required numeric column ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).setColumnGroupCollapsed( JavaCast( "int", arguments.column-1 ), JavaCast( "boolean", false ) );
+		return this;
+	}
+
+	public SpreadSheet function expandRowGroup( required workbook, required numeric row ){
+		/*
+			20250413: bug in POI XSSF? Expansion fails unless row is unhidden first. Also errors if group begins on row 1
+		*/
+		if( isXmlFormat( arguments.workbook ) && isRowHidden( arguments.workbook, arguments.row ) )
+			showRow( arguments.workbook, arguments.row );
+		getSheetHelper().getActiveSheet( arguments.workbook ).setRowGroupCollapsed( JavaCast( "int", arguments.row-1 ), JavaCast( "boolean", false ) );
+		return this;
+	}
+
 	public Spreadsheet function formatCell(
 		required workbook
 		,any format //struct or cellStyle
@@ -861,6 +890,11 @@ component accessors="true"{
 			}
 		}
 		return this;
+	}
+
+	public struct function getActiveCell( required workbook ){
+		var activeCell = getSheetHelper().getActiveSheet( arguments.workbook ).getActiveCell();
+		return { column: activeCell.getColumn()+1, row: activeCell.getRow()+1 };
 	}
 
 	public string function getCellAddress( required workbook, required numeric row, required numeric column ){
@@ -1013,8 +1047,33 @@ component accessors="true"{
 		return result.Sort( "text" );
 	}
 
+	public boolean function getRecalculateFormulasOnNextOpen( required workbook, string sheetName ){
+		if( arguments.KeyExists( "sheetName" ) ){
+			var sheet = getSheetHelper().getSheetByName( arguments.workbook, arguments.sheetName );
+			return sheet.getForceFormulaRecalculation();
+		}
+		if( isXmlFormat( arguments.workbook ) )
+			return arguments.workbook.getForceFormulaRecalculation();
+		// HSSF doesn't seem to work at the workbook level, so just decide based on the active sheet's flag
+		return getSheetHelper().getActiveSheet( arguments.workbook ).getForceFormulaRecalculation();
+	}
+
 	public numeric function getRowCount( required workbook, sheetNameOrNumber ){
 		return getLastRowNumber( argumentCollection=arguments );
+	}
+
+	public string function getSheetPrintOrientation( required workbook, string sheetName, numeric sheetNumber ){
+		return getSheetHelper().getPrintOrientation( argumentCollection=arguments );
+	}
+
+	public SpreadSheet function groupColumns( required workbook, required numeric startColumn, required numeric endColumn ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).groupColumn( JavaCast( "int", arguments.startColumn-1 ), JavaCast( "int", arguments.endColumn-1 ) );
+		return this;
+	}
+
+	public SpreadSheet function groupRows( required workbook, required numeric startRow, required numeric endRow ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).groupRow( JavaCast( "int", arguments.startRow-1 ), JavaCast( "int", arguments.endRow-1 ) );
+		return this;
 	}
 
 	public Spreadsheet function hideColumn( required workbook, required numeric column ){
@@ -1304,12 +1363,14 @@ component accessors="true"{
 		,boolean makeColumnNamesSafe=false
 		,string password
 		,string csvDelimiter=","
-		,struct streamingReaderOptions
+		,struct streamingOptions
 		,boolean returnVisibleValues=false
 	){
 		getFileHelper().throwErrorIFfileNotExists( arguments.src );
 		getExceptionHelper().throwExceptionIFreadFormatIsInvalid( argumentCollection=arguments );
 		getSheetHelper().throwErrorIFSheetNameAndNumberArgumentsBothPassed( argumentCollection=arguments );
+		if( arguments.KeyExists( "streamingReaderOptions" ) ) //support legacy naming
+			arguments.streamingOptions = arguments.streamingReaderOptions;
 		var builderOptions = arguments.streamingReaderOptions?:{};
 		if( arguments.KeyExists( "password" ) )
 			builderOptions.password = arguments.password;
@@ -1346,6 +1407,21 @@ component accessors="true"{
 		}
 		// format = html
 		return getQueryHelper().queryToHtml( generatedQuery, arguments.includeHeaderRow );
+	}
+
+	public Spreadsheet function recalculateAllFormulas( required workbook ){
+		arguments.workbook.getCreationHelper().createFormulaEvaluator().evaluateAllFormulaCells( arguments.workbook );
+		return this;
+	}
+
+	public SpreadSheet function removeColumnBreak( required workbook, required numeric column ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).removeColumnBreak( JavaCast( "int", ( arguments.column-1 ) ) );
+		return this;
+	}
+
+	public SpreadSheet function removeRowBreak( required workbook, required numeric row ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).removeRowBreak( JavaCast( "int", ( arguments.row-1 ) ) );
+		return this;
 	}
 
 	public Spreadsheet function removePrintGridlines( required workbook ){
@@ -1598,8 +1674,21 @@ component accessors="true"{
 		return this;
 	}
 
-	public Spreadsheet function setRecalculateFormulasOnNextOpen( required workbook, boolean value=true ){
+	public Spreadsheet function setRecalculateFormulasOnNextOpen( required workbook, boolean value=true, string sheetName ){
+		if( arguments.KeyExists( "sheetName" ) ){
+			var sheet = getSheetHelper().getSheetByName( arguments.workbook, arguments.sheetName );
+			sheet.setForceFormulaRecalculation( JavaCast( "boolean", arguments.value ) );
+			return this;
+		}
 		arguments.workbook.setForceFormulaRecalculation( JavaCast( "boolean", arguments.value ) );
+		if( isXmlFormat( arguments.workbook ) )
+			return this;
+		// HSSF setForceFormulaRecalculation() doesn't seem to work at the workbook level, so set all sheets to recalculate
+		var sheetIterator = arguments.workbook.sheetIterator();
+		while( sheetIterator.hasNext() ){
+			var sheet = sheetIterator.next();
+			sheet.setForceFormulaRecalculation( JavaCast( "boolean", arguments.value ) );
+		}
 		return this;
 	}
 
@@ -1618,6 +1707,16 @@ component accessors="true"{
 			Throw( type=this.getExceptionType() & ".invalidRowRangeArgument", message="Invalid rowRange argument", detail="The 'rowRange' argument should be in the form 'n:n', e.g. '1:5'" );
 		var cellRangeAddress = getRangeHelper().getCellRangeAddressFromReference( arguments.rowRange );
 		getSheetHelper().getActiveSheet( arguments.workbook ).setRepeatingRows( cellRangeAddress );
+		return this;
+	}
+
+	public SpreadSheet function setColumnBreak( required workbook, required numeric column ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).setColumnBreak( JavaCast( "int", ( arguments.column-1 ) ) );
+		return this;
+	}
+
+	public SpreadSheet function setRowBreak( required workbook, required numeric row ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).setRowBreak( JavaCast( "int", ( arguments.row-1 ) ) );
 		return this;
 	}
 
@@ -1719,6 +1818,16 @@ component accessors="true"{
 
 	public Spreadsheet function showRow( required workbook, required numeric row ){
 		getRowHelper().toggleRowHidden( arguments.workbook, arguments.row, false );
+		return this;
+	}
+
+	public SpreadSheet function ungroupColumns( required workbook, required numeric startColumn, required numeric endColumn ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).ungroupColumn( JavaCast( "int", arguments.startColumn-1 ), JavaCast( "int", arguments.endColumn-1 ) );
+		return this;
+	}
+
+	public SpreadSheet function ungroupRows( required workbook, required numeric startRow, required numeric endRow ){
+		getSheetHelper().getActiveSheet( arguments.workbook ).ungroupRow( JavaCast( "int", arguments.startRow-1 ), JavaCast( "int", arguments.endRow-1 ) );
 		return this;
 	}
 

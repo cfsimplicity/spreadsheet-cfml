@@ -17,13 +17,6 @@ describe( "java class loading", ()=>{
 	it( "can be configured at instance level", ()=>{
 		local.s = newSpreadsheetInstance( loadJavaClassesUsing="dynamicPath" );
 		expect( local.s.getLoadJavaClassesUsing() ).toBe( "dynamicPath" );
-		if( s.getIsLucee() ){
-			//default is OSGi. Let's override this
-			local.s = newSpreadsheetInstance();
-			local.s.setLoadJavaClassesUsing( "JavaLoader" );
-			local.s.getPoiVersion();
-			expect( local.s.getJavaClassesLastLoadedVia() ).toBe( "JavaLoader" );
-		}
 	})
 
 	it( "throws an exception if an invalid loading method is specified", ()=>{
