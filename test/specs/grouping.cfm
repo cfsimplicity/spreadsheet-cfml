@@ -5,9 +5,9 @@ describe( "column/row grouping", ()=>{
 
 	beforeEach( ()=>{
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
-		var columnData = [ "a", "b", "c", "d", "e" ];
+		var rowData = [ "a", "b", "c", "d", "e" ];
 		workbooks.Each( ( wb )=>{
-			s.addRows( wb, [ columnData, columnData, columnData, columnData, columnData ] );
+			s.addRows( wb, [ rowData, rowData, rowData, rowData, rowData ] );
 		})
 	})
 
