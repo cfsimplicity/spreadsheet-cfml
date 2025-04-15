@@ -132,6 +132,7 @@ component extends="base"{
 			,numberOfDataValidations: sheet.getDataValidations().Len()
 			,numberOfMergedRegions: sheet.getNumMergedRegions()
 			,position: getSheetIndexFromName( arguments.workbook, sheet.getSheetName() )+1
+			,printOrientation: sheet.getPrintSetup().getLandscape()? "landscape": "portrait"
 			,printsFitToPage: sheet.getFitToPage()
 			,printsGridlines: sheet.isPrintGridlines()
 			,printsHorizontallyCentered: sheet.getHorizontallyCenter()
