@@ -46,8 +46,7 @@ component extends="BaseCsv" accessors="true"{
 
 	// final execution
 	public any function execute(){
-		if( variables.returnFormat == "array" )
-			var result = [ columns: [], data: [] ];//ordered struct
+		var result = [ columns: [], data: [] ];//ordered struct
 		var skippedRecords = 0;
 		var currentRecordNumber = 0;
 		try {
@@ -69,10 +68,10 @@ component extends="BaseCsv" accessors="true"{
 					result.columns = values;
 					continue;
 				}
-				if( !IsNull( variables.rowFilter ) && !variables.rowFilter( values ) )
+				if( !IsNull( variables.rowFilter ) && !variables.rowFilter( values, result.columns ) )
 					continue;
 				if( !IsNull( variables.rowProcessor ) )
-					values = variables.rowProcessor( values, ++currentRecordNumber );
+					values = variables.rowProcessor( values, ++currentRecordNumber, result.columns );
 				if( variables.returnFormat == "array" )
 					result.data.Append( values );
 			}

@@ -148,6 +148,45 @@ describe( "readCsv", ()=>{
 			expect( temp ).toBe( expected );
 		})
 
+		it( "passes column names/headers to the processor UDF", ()=>{
+			var csv = 'name,number#newline#"Frumpo McNugget",12345#newline#"Susi Sorglos",67890';
+			var expected = [ "Frumpo McNugget", "Susi Sorglos" ];
+			FileWrite( tempCsvPath, csv );
+			variables.temp = [];
+			var processor = ( rowValues, rowNumber, columns )=>{
+				var row = {};
+				ArrayEach( columns, ( column, index )=>{
+					row[ column ] = rowValues[ index ]
+				});
+				temp.Append( row.name );
+			};
+			s.readCsv( tempCsvPath )
+				.withFirstRowIsHeader()
+				.withRowProcessor( processor )
+				.execute();
+			expect( temp ).toBe( expected );
+		})
+
+		it( "passes column names/headers to the filter UDF", ()=>{
+			var csv = 'name,number#newline#"Frumpo McNugget",12345#newline#"Susi Sorglos",67890';
+			var expected = { columns: [ "name", "number" ], data: [ [ "Susi Sorglos", "67890" ] ] };
+			FileWrite( tempCsvPath, csv );
+			variables.temp = [];
+			var filter = ( rowValues, columns )=>{
+				var row = {};
+				ArrayEach( columns, ( column, index )=>{
+					row[ column ] = rowValues[ index ]
+				});
+				return !FindNoCase( "Frumpo", row.name );
+			};
+			var actual = s.readCsv( tempCsvPath )
+				.intoAnArray()
+				.withFirstRowIsHeader()
+				.withRowFilter( filter )
+				.execute();
+			expect( actual ).toBe( expected );
+		})
+
 	})
 
 	it( "allows Commons CSV format options to be applied", ()=>{
