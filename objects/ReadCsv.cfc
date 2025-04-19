@@ -2,6 +2,7 @@ component extends="BaseCsv" accessors="true"{
 
 	property name="firstRowIsHeader" type="boolean" default="false";
 	property name="numberOfRowsToSkip" default=0;
+	property name="processRowsAsJavaArrays" type="boolean" default="true";
 	property name="returnFormat" default="none";
 	property name="rowFilter";
 	property name="rowProcessor";
@@ -44,6 +45,11 @@ component extends="BaseCsv" accessors="true"{
 		return this;
 	}
 
+	public ReadCsv function processRowsAsJavaArrays( boolean state=true ){
+		variables.processRowsAsJavaArrays = arguments.state;
+		return this;
+	}
+
 	// final execution
 	public any function execute(){
 		var result = [ columns: [], data: [] ];//ordered struct
@@ -63,6 +69,8 @@ component extends="BaseCsv" accessors="true"{
 					skippedRecords++;
 					continue;
 				}
+				if( !variables.processRowsAsJavaArrays )
+					values = convertJavaArrayToCFML( values );
 				if( variables.firstRowIsHeader && IsNull( variables.headerValues ) ){
 					variables.headerValues = values;
 					result.columns = values;
@@ -95,6 +103,10 @@ component extends="BaseCsv" accessors="true"{
 
 	private boolean function skipThisRecord( required numeric skippedRecords ){
 		return variables.numberOfRowsToSkip && ( arguments.skippedRecords < variables.numberOfRowsToSkip );
+	}
+
+	private function convertJavaArrayToCFML( required javaArray ){
+		return ArrayNew( 1 ).Append( arguments.javaArray, true );
 	}
 
 }

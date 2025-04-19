@@ -10,6 +10,23 @@ describe( "readCsv", ()=>{
 		expect( actual ).toBe( expected );
 	})
 
+	it( "processes each row as a java array by default", ()=>{
+		var path = getTestFilePath( "test.csv" );
+		var result = s.readCsv( path )
+			.intoAnArray()
+			.execute();
+		expect( result.data[ 1 ].getClass().getCanonicalName() ).toBe( "java.lang.String[]" );
+	})
+
+	it( "can process each row as a cfml array", ()=>{
+		var path = getTestFilePath( "test.csv" );
+		var result = s.readCsv( path )
+			.intoAnArray()
+			.processRowsAsJavaArrays( false )
+			.execute();
+		expect( result.data[ 1 ].getClass().getCanonicalName() ).notToBe( "java.lang.String[]" );
+	})
+
 	it( "allows predefined formats to be specified", ()=>{
 		var csv = '"Frumpo McNugget"#Chr( 9 )#12345';
 		FileWrite( tempCsvPath, csv );
