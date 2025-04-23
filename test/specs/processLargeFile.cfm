@@ -21,9 +21,29 @@ describe( "processLargeFile", ()=>{
     var result = [];
     var processor = ( rowValues, rowNumber )=> result.Append( rowNumber );
     s.processLargeFile( tempXlsxPath )
-    .withRowProcessor( processor )
-    .execute();
+      .withRowProcessor( processor )
+      .execute();
     var expected = [ 1, 2 ];
+    expect( result ).toBe( expected );
+  })
+
+  it( "passes column names/headers to the processor UDF", ()=>{
+    s.newChainable( "xlsx" )
+      .addRows( [ [ "first", "last" ], [ "Frumpo", "McNugget" ], [ "Susi", "Sorglos" ] ] )
+      .write( tempXlsxPath, true );
+    var result = [];
+    var processor = ( rowValues, rowNumber, columnNames )=>{
+      var row = {};
+      ArrayEach( columnNames, ( columnName, index )=>{
+        row[ columnName ] = rowValues[ index ]
+      });
+      result.Append( row.first );
+    };
+    s.processLargeFile( tempXlsxPath )
+      .withRowProcessor( processor )
+      .withFirstRowIsHeader()
+      .execute();
+    var expected = [ "Frumpo", "Susi" ];
     expect( result ).toBe( expected );
   })
 
