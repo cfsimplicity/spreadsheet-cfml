@@ -117,7 +117,7 @@ component extends="base"{
 			sheet.removeRow( row ); // forcibly remove existing row and all cells
 		if( arguments.overwrite || IsNull( sheet.getRow( JavaCast( "int", arguments.rowIndex ) ) ) ){
 			try{
-				row = sheet.createRow( JavaCast( "int", arguments.rowIndex ) );
+				return sheet.createRow( JavaCast( "int", arguments.rowIndex ) );
 			}
 			catch( java.lang.IllegalArgumentException exception ){
 				if( exception.message.FindNoCase( "Invalid row number (65536)" ) )
@@ -159,12 +159,9 @@ component extends="base"{
 					result.Append( "" );
 					continue;
 				}
-				if( arguments.returnVisibleValues && !getCellHelper().cellIsOfType( cell, "FORMULA" ) )
-					var cellValue = getCellHelper().getFormattedCellValue( cell );
-				else
-					var cellValue = getCellHelper().getCellValueAsType( arguments.workbook, cell );
+				var cellValue = getCellValue( arguments.workbook, cell, arguments.returnVisibleValues );
 				if( arguments.includeRichTextFormatting && getCellHelper().cellIsOfType( cell, "STRING" ) )
-					cellValue = getFormatHelper().richStringCellValueToHtml( arguments.workbook, cell,cellValue );
+					cellValue = getFormatHelper().richStringCellValueToHtml( arguments.workbook, cell, cellValue );
 				result.Append( cellValue );
 			}
 		}
@@ -276,6 +273,12 @@ component extends="base"{
 	}
 
 	/* Private */
+
+	private any function getCellValue( required workbook, required cell, required boolean returnVisibleValues ){
+		if( arguments.returnVisibleValues && !getCellHelper().cellIsOfType( arguments.cell, "FORMULA" ) )
+			return getCellHelper().getFormattedCellValue( arguments.cell );
+		return getCellHelper().getCellValueAsType( arguments.workbook, arguments.cell );
+	}
 
 	private any function populateFromQueryRow(
 		required workbook
