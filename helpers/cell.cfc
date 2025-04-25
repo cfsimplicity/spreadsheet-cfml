@@ -90,6 +90,8 @@ component extends="base"{
 	}
 
 	any function setCellValueAsType( required workbook, required cell, required value, string type ){
+		if( Trim( arguments.value ).IsEmpty() )
+			return setEmptyValue( arguments.cell );
 		var validCellTypes = getDataTypeHelper().validCellOverrideTypes().Append( "blank" );
 		if( !arguments.KeyExists( "type" ) ) //autodetect type
 			arguments.type = getDataTypeHelper().detectValueDataType( arguments.value );
@@ -154,21 +156,12 @@ component extends="base"{
 	}
 
 	private any function setNumericValue( required any cell, required any value ){
-		if( Trim( arguments.value ).IsEmpty() ){
-			setEmptyValue( arguments.cell );
-			return this;
-		}
 		arguments.cell.setCellValue( JavaCast( "double", Val( arguments.value ) ) );
 		return this;
 	}
 
 	private any function setDateOrTimeValue( required workbook, required cell, required value, required string type ){
 		getDateHelper().matchPoiTimeZoneToEngine();
-		//handle empty strings which can't be treated as dates
-		if( Trim( arguments.value ).IsEmpty() ){
-			setEmptyValue( arguments.cell );
-			return this;
-		}
 		var dateTimeValue = getDateHelper()._ParseDateTime( arguments.value );
 		if( arguments.type == "time" )
 			var dateTimeFormat = library().getDateFormats().TIME; //don't include the epoch date in the display
@@ -195,17 +188,13 @@ component extends="base"{
 	}
 
 	private any function setBooleanValue( required any cell, required any value ){
-		//handle empty strings/nulls which can't be treated as booleans
-		if( Trim( arguments.value ).IsEmpty() ){
-			setEmptyValue( arguments.cell );
-			return this;
-		}
 		arguments.cell.setCellValue( JavaCast( "boolean", arguments.value ) );
 		return this;
 	}
 
-	private void function setEmptyValue( required any cell ){
+	private any function setEmptyValue( required any cell ){
 		arguments.cell.setBlank(); //no need to set the value: it will be blank
+		return this;
 	}
 
 	private void function setUrlHyperLinkValue( required workbook, required cell, required value ){
