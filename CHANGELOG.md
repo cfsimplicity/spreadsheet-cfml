@@ -1,3 +1,10 @@
+## 4.8.0 - 25 April 2025
+
+- Enhancements
+	- \#412 ReadCSV(): Pass column names to row processor and filter UDFs
+	- \#413 ReadCSV(): provide option to process rows as CFML arrays instead of java arrays
+	- \#414 ProcessLargeFile(): Pass header row as columns argument to rowProcessor
+
 ## 4.7.0 - 15 April 2025
 
 - Enhancements
