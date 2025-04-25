@@ -162,29 +162,31 @@ component extends="base"{
 
 	private any function setDateOrTimeValue( required workbook, required cell, required value, required string type ){
 		getDateHelper().matchPoiTimeZoneToEngine();
-		var dateTimeValue = getDateHelper()._ParseDateTime( arguments.value );
-		if( arguments.type == "time" )
-			var dateTimeFormat = library().getDateFormats().TIME; //don't include the epoch date in the display
-		else
-			var dateTimeFormat = getDateHelper().getDefaultDateMaskFor( dateTimeValue );// check if DATE, TIME or TIMESTAMP
-		var dateFormat = arguments.workbook.getCreationHelper().createDataFormat().getFormat( JavaCast( "string", dateTimeFormat ) );
-		//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
-		getCellUtil().setCellStyleProperty( arguments.cell, getDataFormatPropertyType(), dateFormat );
+		var dateTimeValue = getDateHelper().isDateObject( arguments.value )? arguments.value: getDateHelper()._ParseDateTime( arguments.value );
 		if( arguments.type == "time" || getDateHelper().isTimeOnlyValue( dateTimeValue ) )
-			return setTimeValue( dateTimeValue, arguments.cell );
-		// POI needs a java date to be able to detect the value as a date
-		var javaDate = getDateHelper().convertDateToJava( dateTimeValue );
-		arguments.cell.setCellValue( javaDate );
+			return setTimeValue( arguments.workbook, arguments.cell, dateTimeValue );
+		return setDateValue( arguments.workbook, arguments.cell, dateTimeValue );
+	}
+
+	private any function setDateValue( required workbook, required cell, required date dateTimeValue ){
+		var dateTimeFormat = getDateHelper().getDefaultDateMaskFor( dateTimeValue );
+		setCellDateTimeFormat( arguments.workbook, arguments.cell, dateTimeFormat );
+		arguments.cell.setCellValue( dateTimeValue );
 		return this;
 	}
 
-	private any function setTimeValue( required dateTimeValue, required cell ){
-		/*  Excel uses a different epoch than CF (1900-01-01 versus 1899-12-30). "Time" only values will not display properly without special handling */
-		var excelEpochDateTimeValue = arguments.dateTimeValue.Add( "d", 2 ); //shift the epoch forward to match Excel's
-		var javaDate = getDateHelper().convertDateToJava( excelEpochDateTimeValue );
-		var timeAsExcelDate = ( getDateHelper().getDateUtil().getExcelDate( javaDate ) -1 );//Convert to Excel's double value for dates, minus the 1 complete day to leave the day fraction (= time value)
-		arguments.cell.setCellValue( JavaCast( "double", timeAsExcelDate ) );
+	private any function setTimeValue( required workbook, required cell, required date dateTimeValue ){
+		var dateTimeFormat = library().getDateFormats().TIME; //don't include the epoch date in the display
+		setCellDateTimeFormat( arguments.workbook, arguments.cell, dateTimeFormat );
+		var excelTimeValue = getDateHelper().getDateUtil().convertTime( JavaCast( "string", TimeFormat( arguments.dateTimeValue, "HH:mm:ss" ) ) );
+		arguments.cell.setCellValue( excelTimeValue );
 		return this;
+	}
+
+	private void function setCellDateTimeFormat( required workbook, required cell, required string dateTimeFormat ){
+		var dateFormat = arguments.workbook.getCreationHelper().createDataFormat().getFormat( JavaCast( "string", arguments.dateTimeFormat ) );
+		//Use setCellStyleProperty() which will try to re-use an existing style rather than create a new one for every cell which may breach the 4009 styles per wookbook limit
+		getCellUtil().setCellStyleProperty( arguments.cell, getDataFormatPropertyType(), dateFormat );
 	}
 
 	private any function setBooleanValue( required any cell, required any value ){

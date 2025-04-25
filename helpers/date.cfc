@@ -74,10 +74,6 @@ component extends="base"{
 		return this;
 	}
 
-	any function convertDateToJava( required date object ){
-		return CreateObject( "java", "java.util.Date" ).init( arguments.object.getTime() );
-	}
-
 	// alternative BIFS
 	boolean function _IsDate( required value ){
 		if( library().getIsBoxlang() ) // no special handling for boxlang
