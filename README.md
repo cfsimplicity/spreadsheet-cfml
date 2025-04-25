@@ -61,7 +61,7 @@ spreadsheet = CreateObject( "component", "spreadsheetCFML.Spreadsheet" ).init();
 ```
 ### Using a mapping
 
-You may wish to place the spreadsheet library files in a central location with an application mapping, and instantiate the component using its dot path (e.g. `New myLibrary.spreadsheet.Spreadsheet();`).
+You may wish to place the spreadsheet library files in a central location with an application mapping, and instantiate the component using its dot path (e.g. `New myLibrary.spreadsheetCFML.Spreadsheet();`).
 
 [How to create mappings (StackOverflow)](http://stackoverflow.com/questions/12073714/components-mapping-in-railo).
 

@@ -10,6 +10,23 @@ describe( "readCsv", ()=>{
 		expect( actual ).toBe( expected );
 	})
 
+	it( "processes each row as a java array by default", ()=>{
+		var path = getTestFilePath( "test.csv" );
+		var result = s.readCsv( path )
+			.intoAnArray()
+			.execute();
+		expect( result.data[ 1 ].getClass().getCanonicalName() ).toBe( "java.lang.String[]" );
+	})
+
+	it( "can process each row as a cfml array", ()=>{
+		var path = getTestFilePath( "test.csv" );
+		var result = s.readCsv( path )
+			.intoAnArray()
+			.processRowsAsJavaArrays( false )
+			.execute();
+		expect( result.data[ 1 ].getClass().getCanonicalName() ).notToBe( "java.lang.String[]" );
+	})
+
 	it( "allows predefined formats to be specified", ()=>{
 		var csv = '"Frumpo McNugget"#Chr( 9 )#12345';
 		FileWrite( tempCsvPath, csv );
@@ -146,6 +163,45 @@ describe( "readCsv", ()=>{
 				.withRowProcessor( processor )
 				.execute();
 			expect( temp ).toBe( expected );
+		})
+
+		it( "passes column names/headers to the processor UDF", ()=>{
+			var csv = 'name,number#newline#"Frumpo McNugget",12345#newline#"Susi Sorglos",67890';
+			var expected = [ "Frumpo McNugget", "Susi Sorglos" ];
+			FileWrite( tempCsvPath, csv );
+			variables.temp = [];
+			var processor = ( rowValues, rowNumber, columns )=>{
+				var row = {};
+				ArrayEach( columns, ( column, index )=>{
+					row[ column ] = rowValues[ index ]
+				});
+				temp.Append( row.name );
+			};
+			s.readCsv( tempCsvPath )
+				.withFirstRowIsHeader()
+				.withRowProcessor( processor )
+				.execute();
+			expect( temp ).toBe( expected );
+		})
+
+		it( "passes column names/headers to the filter UDF", ()=>{
+			var csv = 'name,number#newline#"Frumpo McNugget",12345#newline#"Susi Sorglos",67890';
+			var expected = { columns: [ "name", "number" ], data: [ [ "Susi Sorglos", "67890" ] ] };
+			FileWrite( tempCsvPath, csv );
+			variables.temp = [];
+			var filter = ( rowValues, columns )=>{
+				var row = {};
+				ArrayEach( columns, ( column, index )=>{
+					row[ column ] = rowValues[ index ]
+				});
+				return !FindNoCase( "Frumpo", row.name );
+			};
+			var actual = s.readCsv( tempCsvPath )
+				.intoAnArray()
+				.withFirstRowIsHeader()
+				.withRowFilter( filter )
+				.execute();
+			expect( actual ).toBe( expected );
 		})
 
 	})

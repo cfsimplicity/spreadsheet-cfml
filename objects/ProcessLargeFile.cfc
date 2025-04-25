@@ -74,6 +74,7 @@ component accessors="true"{
 				var workbook = getLibrary().getStreamingReaderHelper().getBuilder( getStreamingOptions() ).open( file );
 				var rowIterator = getSheetToProcess( workbook ).rowIterator();
 				var currentRecordNumber = 0;
+				var columns = [];
 				var headerRowSkipped = false;
 				var skippedRecords = 0;
 				var rowProcessor = getRowProcessor()
@@ -88,13 +89,14 @@ component accessors="true"{
 						skippedRecords++;
 						continue;
 					}
+					var data = getLibrary().getRowHelper().getRowData( argumentCollection=rowDataArgs );
 					if( getFirstRowIsHeader() && !headerRowSkipped ){
 						headerRowSkipped = true;
+						columns	=	data; 
 						continue;
 					}
-					var data = getLibrary().getRowHelper().getRowData( argumentCollection=rowDataArgs );
 					if( !IsNull( rowProcessor ) )
-						rowProcessor( data, ++currentRecordNumber );
+						rowProcessor( data, ++currentRecordNumber, columns );
 				}
 			}
 			catch( any exception ){

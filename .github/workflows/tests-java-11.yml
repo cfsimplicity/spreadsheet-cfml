@@ -1,4 +1,4 @@
-name: Run test suite
+name: Run test suite on older engines using Java 11
 
 on:
   [ workflow_dispatch, workflow_call ]
@@ -8,15 +8,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        cfengine: [ "lucee@6", "adobe@2025" ]
+        cfengine: [ "lucee@5", "adobe@2018", "adobe@2021", "adobe@2023" ]
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Set up JDK 21
+    - name: Set up JDK 11
       uses: actions/setup-java@v3
       with:
-        java-version: '21'
+        java-version: '11'
         distribution: 'temurin'
 
     - name: Install the ortus security key
@@ -35,7 +35,7 @@ jobs:
       run: box server start cfengine=${{ matrix.cfengine }} port=8080
 
     - name: Install ACF packages
-      if: ${{ matrix.cfengine == 'adobe@2025' }}
+      if: ${{ matrix.cfengine == 'adobe@2021' || matrix.cfengine == 'adobe@2023' }}
       run: box run-script cfpmInstall
 
     - name: Run TestBox Tests
