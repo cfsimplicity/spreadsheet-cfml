@@ -18,11 +18,9 @@ describe( "addRows", ()=>{
 	})
 
 	it( "Is chainable", ()=>{
-		var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "x", "y" ], [ "a", "b" ], [ "c", "d" ] ] );
+		var expected = variables.data;
 		workbooks.Each( ( wb )=>{
-			s.newChainable( wb )
-				.addRow( "x,y" )
-				.addRows( data );
+			s.newChainable( wb ).addRows( data );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		})
@@ -68,17 +66,16 @@ describe( "addRows", ()=>{
 
 	it( "Replaces rows if insert is false", ()=>{
 		var expected = data;
+		var rowsToReplace = [ [ "e", "f" ], [ "g", "h" ] ];
 		workbooks.Each( ( wb )=>{
-			s.addRow( wb, "e,f" )
-				.addRow( wb, "g,h" )
+			s.addRows( wb, rowsToReplace )
 				.addRows( workbook=wb, data=data, row=1, insert=false );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
 		})
 		var workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( ( wb )=>{
-			s.addRow( wb, "e,f" )
-				.addRow( wb, "g,h" )
+			s.addRows( wb, rowsToReplace )
 				.addRows( workbook=wb, data=dataAsArray, row=1, insert=false );
 			actual = s.getSheetHelper().sheetToQuery( wb );
 			expect( actual ).toBe( expected );
