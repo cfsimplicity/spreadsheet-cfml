@@ -17,6 +17,10 @@ describe( "java class loading", ()=>{
 	it( "can be configured at instance level", ()=>{
 		local.s = newSpreadsheetInstance( loadJavaClassesUsing="dynamicPath" );
 		expect( local.s.getLoadJavaClassesUsing() ).toBe( "dynamicPath" );
+		s = newSpreadsheetInstance( loadJavaClassesUsing="javaSettings" );
+		expect( local.s.getLoadJavaClassesUsing() ).toBe( "javaSettings" );
+		s = newSpreadsheetInstance( loadJavaClassesUsing="classPath" );
+		expect( local.s.getLoadJavaClassesUsing() ).toBe( "classPath" );
 	})
 
 	it( "throws an exception if an invalid loading method is specified", ()=>{

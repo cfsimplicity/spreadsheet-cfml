@@ -21,14 +21,10 @@ component extends="base"{
 			case "osgi": return loadClassUsingOsgi( arguments.javaclass );
 			case "dynamicPath": return loadClassUsingDynamicPath( arguments.javaclass );
 		}
-		// If ACF and not using JL or dynamic path, *the correct* POI jars must be in the class path and any older versions *removed*
-		try{
-			library().setJavaClassesLastLoadedVia( "The java class path" );
-			return CreateObject( "java", arguments.javaclass );
-		}
-		catch( any exception ){
-			return loadClassUsingJavaLoader( arguments.javaclass );
-		}
+		//classPath or app's javaSettings
+		var lastLoadedVia = ( library().getLoadJavaClassesUsing() == "javaSettings" )? "Application javaSettings": "The java class path";
+		library().setJavaClassesLastLoadedVia( lastLoadedVia );
+		return CreateObject( "java", arguments.javaclass );
 	}
 
 	string function validateLoadingMethod( required string method ){
@@ -40,7 +36,7 @@ component extends="base"{
 	/* Private */
 
 	private array function validLoadingMethods(){
-		return [ "osgi", "JavaLoader", "dynamicPath" ];
+		return [ "osgi", "JavaLoader", "dynamicPath", "classPath", "javaSettings" ];
 	}
 
 	private boolean function isValidLoadingMethod( required string method ){

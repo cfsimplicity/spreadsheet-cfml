@@ -127,7 +127,7 @@ component accessors="true"{
 		//configurable
 		if( arguments.KeyExists( "loadJavaClassesUsing" ) )
 			variables.loadJavaClassesUsing = getClassHelper().validateLoadingMethod( arguments.loadJavaClassesUsing );
-		if( variables.loadJavaClassesUsing == "dynamicPath" )
+		if( ListFindNoCase( "dynamicPath,javaSettings,classPath", variables.loadJavaClassesUsing ) )
 			return;
 		if( variables.loadJavaClassesUsing == "osgi" ){
 			variables.osgiLoader = New osgiLoader();
@@ -155,6 +155,7 @@ component accessors="true"{
 			,javaLoaderDotPath: this.getJavaLoaderDotPath()
 			,javaClassesLastLoadedVia: this.getJavaClassesLastLoadedVia()
 			,javaLoaderName: this.getJavaLoaderName()
+			,loadJavaClassesUsing: this.getLoadJavaClassesUsing()
 			,requiresJavaLoader: this.getRequiresJavaLoader()
 			,version: this.getVersion()
 			,poiVersion: this.getPoiVersion()
