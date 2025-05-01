@@ -9,6 +9,7 @@ describe( "getEnvironment", ()=>{
 			,"javaClassesLastLoadedVia"
 			,"javaLoaderName"
 			,"javaVersion"
+			,"loadJavaClassesUsing"
 			,"requiresJavaLoader"
 			,"version"
 			,"poiVersion"
