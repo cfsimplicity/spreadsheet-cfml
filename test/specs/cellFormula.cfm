@@ -47,6 +47,14 @@ describe( "cellFormula", ()=>{
 		})
 	})
 
+	it( "Returns the string 'ERROR!' if the formula evaluates to an error", ()=>{
+		workbooks.Each( ( wb )=>{
+			s.setCellValue( wb, 0, 2, 1 ).setCellFormula( wb, "A1/A2", 3, 1 );//Divide by zero error
+			var actual = s.getCellValue( wb, 3, 1 );
+			expect( actual ).toBe( "ERROR!" );
+		})
+	})
+
 	describe( "recalculation", ()=>{
 
 		it( "can set and get a flag for all formulas in the workbook to be recalculated the next time the file is opened", ()=>{

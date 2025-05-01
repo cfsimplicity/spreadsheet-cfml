@@ -72,12 +72,7 @@ component extends="base"{
 			return arguments.cell.getBooleanCellValue();
 	 	if( cellIsOfType( arguments.cell, "BLANK" ) )
 	 		return "";
-		try{
-			return arguments.cell.getStringCellValue();
-		}
-		catch( any exception ){
-			return "";
-		}
+		return getStringValue( arguments.cell );
 	}
 
 	any function initializeCell( required workbook, required numeric rowNumber, required numeric columnNumber ){
@@ -222,17 +217,23 @@ component extends="base"{
 		return this;
 	}
 
+	private string function getStringValue( required any cell ){
+		try{
+			return arguments.cell.getStringCellValue();
+		}
+		catch( any exception ){
+			if( exception.message.FindNoCase( "ERROR formula cell" ) )
+				return "ERROR!";
+			return "";
+		}
+	}
+
 	private any function getCachedFormulaValue( required cell ){
 		if( arguments.cell.getCachedFormulaResultType() == arguments.cell.getCellType().NUMERIC )
 			return getCellNumericOrDateValue( arguments.cell ); 
 		if( arguments.cell.getCachedFormulaResultType() == arguments.cell.getCellType().BOOLEAN )
 			return arguments.cell.getBooleanCellValue();
-		try{
-			return arguments.cell.getStringCellValue();
-		}
-		catch( any exception ){
-			return "";
-		}
+		return getStringValue( arguments.cell );
 	}
 
 }
