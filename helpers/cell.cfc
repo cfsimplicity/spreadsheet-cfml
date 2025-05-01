@@ -227,7 +227,12 @@ component extends="base"{
 			return getCellNumericOrDateValue( arguments.cell ); 
 		if( arguments.cell.getCachedFormulaResultType() == arguments.cell.getCellType().BOOLEAN )
 			return arguments.cell.getBooleanCellValue();
-		return arguments.cell.getStringCellValue();
+		try{
+			return arguments.cell.getStringCellValue();
+		}
+		catch( any exception ){
+			return "";
+		}
 	}
 
 }
