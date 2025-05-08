@@ -24,7 +24,7 @@ component extends="base"{
 	}
 
 	boolean function cellIsOfType( required cell, required string type ){
-		return ( arguments.cell.getCellType() == arguments.cell.getCellType()[ arguments.type ] );
+		return arguments.cell.getCellType().Equals( arguments.cell.getCellType()[ arguments.type ] );
 	}
 
 	any function createCell( required row, numeric cellNum=arguments.row.getLastCellNum(), overwrite=true ){
@@ -234,11 +234,11 @@ component extends="base"{
 	}
 
 	private any function getCachedFormulaValue( required cell ){
-		if( arguments.cell.getCachedFormulaResultType() == arguments.cell.getCellType().NUMERIC )
+		if( arguments.cell.getCachedFormulaResultType().Equals( arguments.cell.getCellType().NUMERIC ) )
 			return getCellNumericOrDateValue( arguments.cell ); 
-		if( arguments.cell.getCachedFormulaResultType() == arguments.cell.getCellType().BOOLEAN )
+		if( arguments.cell.getCachedFormulaResultType().Equals( arguments.cell.getCellType().BOOLEAN ) )
 			return arguments.cell.getBooleanCellValue();
-		return getStringValue( arguments.cell );
+		return arguments.cell.getStringCellValue();
 	}
 
 }
