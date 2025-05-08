@@ -51,7 +51,10 @@ component extends="base"{
 			return getFormatHelper().getDataFormatter().formatCellValue( arguments.cell, formulaEvaluator );
 		}
 		catch( any exception ){
-			Throw( type=library().getExceptionType() & ".failedFormula", message="Failed to run formula", detail="There is a problem with the formula in sheet #arguments.cell.getSheet().getSheetName()# row #( arguments.cell.getRowIndex() +1 )# column #( arguments.cell.getColumnIndex() +1 )#");
+			if( library().getThrowExceptionOnFormulaError() )
+				getExceptionHelper().throwFormulaEvaluationException( arguments.cell );
+			// for some reason the cell value will be returned implicitly here
+			arguments.cell.setCellValue( JavaCast( "string", "##ERROR!" ) );
 		}
 	}
 
@@ -222,9 +225,11 @@ component extends="base"{
 			return arguments.cell.getStringCellValue();
 		}
 		catch( any exception ){
-			if( exception.message.FindNoCase( "ERROR formula cell" ) )
-				return "ERROR!";
-			return "";
+			if( !exception.message.FindNoCase( "ERROR formula cell" ) )
+				rethrow;
+			if( library().getThrowExceptionOnFormulaError() )
+				getExceptionHelper().throwFormulaEvaluationException( arguments.cell );
+			return "##ERROR!";
 		}
 	}
 

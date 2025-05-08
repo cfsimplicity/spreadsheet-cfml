@@ -47,14 +47,6 @@ describe( "cellFormula", ()=>{
 		})
 	})
 
-	it( "Returns the string 'ERROR!' if the formula evaluates to an error", ()=>{
-		workbooks.Each( ( wb )=>{
-			s.setCellValue( wb, 0, 2, 1 ).setCellFormula( wb, "A1/A2", 3, 1 );//Divide by zero error
-			var actual = s.getCellValue( wb, 3, 1 );
-			expect( actual ).toBe( "ERROR!" );
-		})
-	})
-
 	describe( "recalculation", ()=>{
 
 		it( "can set and get a flag for all formulas in the workbook to be recalculated the next time the file is opened", ()=>{
@@ -133,6 +125,48 @@ describe( "cellFormula", ()=>{
 				expect( chainable.getCellValue( 3, 1 ) ).toBe( 2 );//cached
 				chainable.recalculateAllFormulas();
 				expect( chainable.getCellValue( 3, 1 ) ).toBe( 3 );//recalculated
+			})
+		})
+
+	})
+
+	describe( "evaluation errors", ()=>{
+
+		it( "By default returns the string '##ERROR!' if the formula is malformed", ()=>{
+			workbooks.Each( ( wb )=>{
+				s.setCellFormula( wb, "SUS(A1:A2)", 3, 1 );
+				var actual = s.getCellValue( wb, 3, 1 );
+				expect( actual ).toBe( "##ERROR!" );
+			})
+		})
+
+		it( "By default returns the string '##ERROR!' if the formula evaluates to an error", ()=>{
+			workbooks.Each( ( wb )=>{
+				s.setCellValue( wb, 0, 2, 1 ).setCellFormula( wb, "A1/A2", 3, 1 );//Divide by zero error
+				var actual = s.getCellValue( wb, 3, 1 );
+				expect( actual ).toBe( "##ERROR!" );
+			})
+		})
+
+		it( "Can be configured to throw an exception on any formula evaluation error", ()=>{
+			workbooks.Each( ( wb )=>{
+				expect( ( wb )=>{
+					newSpreadsheetInstance()
+						.setThrowExceptionOnFormulaError( true )
+						.setCellFormula( wb, "SUS(A1:A2)", 3, 1 )
+						.getCellValue( wb, 3, 1 );
+				})
+				.toThrow( type="cfsimplicity.spreadsheet.failedFormula" );
+			})
+			workbooks.Each( ( wb )=>{
+				expect( ( wb )=>{
+					newSpreadsheetInstance()
+						.setThrowExceptionOnFormulaError( true )
+						.setCellValue( wb, 0, 2, 1 )
+						.setCellFormula( wb, "A1/A2", 3, 1 ) //Divide by zero error
+						.getCellValue( wb, 3, 1 );
+				})
+				.toThrow( type="cfsimplicity.spreadsheet.failedFormula" );
 			})
 		})
 

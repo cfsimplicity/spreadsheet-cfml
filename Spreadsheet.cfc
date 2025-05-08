@@ -13,6 +13,7 @@ component accessors="true"{
 	property name="loadJavaClassesUsing";
 	property name="requiresJavaLoader" type="boolean" default="false";
 	property name="returnCachedFormulaValues" type="boolean" default="true";
+	property name="throwExceptionOnFormulaError" type="boolean" default="false";
 	//detected state
 	property name="engine" setter="false";
 	property name="javaClassesLastLoadedVia" default="Nothing loaded yet";

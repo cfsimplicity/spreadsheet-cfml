@@ -705,17 +705,6 @@ describe( "read", ()=>{
 			}).toThrow( type="cfsimplicity.spreadsheet.invalidQueryColumnTypesArgument" );
 		})
 
-		it( "a formula can't be evaluated", ()=>{
-			expect( ()=>{
-				var workbook = s.new();
-				s.addColumn( workbook, "1,1" );
-				var theFormula="SUS(A1:A2)";//invalid formula
-				s.setCellFormula( workbook, theFormula, 3, 1 )
-					.write( workbook=workbook, filepath=tempXlsPath, overwrite=true )
-					.read( src=tempXlsPath, format="query" );
-			}).toThrow( type="cfsimplicity.spreadsheet.failedFormula" );
-		})
-
 		it( "the 'query' argument is passed", ()=>{
 			expect( ()=>{
 				s.read( src=tempXlsPath, query="q" );

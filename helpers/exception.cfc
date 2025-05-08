@@ -43,4 +43,8 @@ component extends="base"{
 		Throw( type=library().getExceptionType() & ".invalidCell", message="Invalid cell", detail="The requested cell [#arguments.rowNumber#,#arguments.columnNumber#] does not exist in the active sheet" );
 	}
 
+	void function throwFormulaEvaluationException( required cell ){
+		Throw( type=library().getExceptionType() & ".failedFormula", message="Failed to run formula", detail="There is a problem with the formula in sheet #arguments.cell.getSheet().getSheetName()# row #( arguments.cell.getRowIndex() +1 )# column #( arguments.cell.getColumnIndex() +1 )#");
+	}
+
 }
