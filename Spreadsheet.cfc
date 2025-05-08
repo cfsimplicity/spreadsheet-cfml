@@ -11,7 +11,6 @@ component accessors="true"{
 	property name="javaLoaderDotPath" default="javaLoader.JavaLoader" setter="false";
 	property name="javaLoaderName" default="" setter="false";
 	property name="loadJavaClassesUsing";
-	property name="requiresJavaLoader" type="boolean" default="false";
 	property name="returnCachedFormulaValues" type="boolean" default="true";
 	property name="throwExceptionOnFormulaError" type="boolean" default="false";
 	//detected state
@@ -44,7 +43,7 @@ component accessors="true"{
 	property name="stringHelper" setter="false";
 	property name="workbookHelper" setter="false";
 
-	public Spreadsheet function init( struct dateFormats, string javaLoaderDotPath, boolean requiresJavaLoader, string loadJavaClassesUsing ){
+	public Spreadsheet function init( struct dateFormats, string javaLoaderDotPath, string loadJavaClassesUsing ){
 		variables.engine = determineEngine();
 		loadHelpers();
 		initializeDateFormats( argumentCollection=arguments );
@@ -119,10 +118,8 @@ component accessors="true"{
 		//engine defaults
 		if( getIsLucee() )
 			variables.loadJavaClassesUsing = "osgi";
-		if( getIsACF() || ( arguments?.requiresJavaLoader?:false ) ){
-			variables.requiresJavaLoader = true;
+		if( getIsACF() )
 			variables.loadJavaClassesUsing = "JavaLoader";
-		}
 		if( getIsBoxlang() )
 			variables.loadJavaClassesUsing = "dynamicPath";
 		//configurable
@@ -157,7 +154,6 @@ component accessors="true"{
 			,javaClassesLastLoadedVia: this.getJavaClassesLastLoadedVia()
 			,javaLoaderName: this.getJavaLoaderName()
 			,loadJavaClassesUsing: this.getLoadJavaClassesUsing()
-			,requiresJavaLoader: this.getRequiresJavaLoader()
 			,version: this.getVersion()
 			,poiVersion: this.getPoiVersion()
 			,osgiLibBundleVersion: this.getOsgiLibBundleVersion()

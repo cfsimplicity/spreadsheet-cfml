@@ -10,7 +10,6 @@ describe( "getEnvironment", ()=>{
 			,"javaLoaderName"
 			,"javaVersion"
 			,"loadJavaClassesUsing"
-			,"requiresJavaLoader"
 			,"version"
 			,"poiVersion"
 			,"osgiLibBundleVersion"
