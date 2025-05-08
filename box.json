@@ -15,7 +15,7 @@
     },
     "engines" : [
         { "type" : "lucee", "version" : ">=5.x.x" },
-        { "type" : "adobe", "version" : ">=2018.0.0" }
+        { "type" : "adobe", "version" : ">=2021.0.0" }
     ],
     "defaultEngine" : "lucee",
     "license" : [

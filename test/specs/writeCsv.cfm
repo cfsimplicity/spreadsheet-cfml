@@ -240,18 +240,6 @@ describe( "writeCsv", ()=>{
 			}).toThrow( type="cfsimplicity.spreadsheet.invalidDataForCsv" );
 		})
 
-		it(
-			title="parallel threads are specified and the engine does not support it"
-			,body=function(){
-				expect( ()=>{
-					s.writeCsv().withParallelThreads();
-				}).toThrow( type="cfsimplicity.spreadsheet.parallelOptionNotSupported" );
-			}
-			,skip=function(){
-				return s.engineSupportsParallelLoopProcessing();
-			}
-		);
-
 		it( "the file path specified is VFS", ()=>{
 			expect( ()=>{
 				var data = [ [ "a", "b" ], [ "c", "d" ] ];

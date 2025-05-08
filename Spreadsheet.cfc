@@ -233,10 +233,6 @@ component accessors="true"{
 		return getFormatHelper().getCachedCellStyles();
 	}
 
-	public boolean function engineSupportsParallelLoopProcessing(){
-		return ( !this.getIsACF() || ( this.getIsACF() && ( server.coldfusion.productVersion.ListFirst() >= 2021 ) ) );
-	}
-
 	/* MAIN PUBLIC API */
 
 	public Spreadsheet function addAutofilter( required workbook, string cellRange="", numeric row=1 ){

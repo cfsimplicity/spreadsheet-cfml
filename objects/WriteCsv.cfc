@@ -32,8 +32,6 @@ component extends="BaseCsv" accessors="true"{
 			variables.parallelThreadsToUse = 0;
 			return this;
 		}
-		if( !variables.library.engineSupportsParallelLoopProcessing() )
-			variables.library.getExceptionHelper().throwParallelOptionNotSupportedException();
 		variables.parallelThreadsToUse = Int( arguments.numberOfThreads );
 		return this;
 	}
@@ -191,7 +189,7 @@ component extends="BaseCsv" accessors="true"{
 	}
 
 	private boolean function useParallelThreads(){
-		return ( variables.library.engineSupportsParallelLoopProcessing() && ( variables.parallelThreadsToUse > 1 ) );
+		return ( variables.parallelThreadsToUse > 1 );
 	}
 
 	private array function _StructValueArray( required struct data ){

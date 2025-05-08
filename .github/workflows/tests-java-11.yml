@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        cfengine: [ "lucee@5", "adobe@2018", "adobe@2021", "adobe@2023" ]
+        cfengine: [ "lucee@5", "adobe@2021", "adobe@2023" ]
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4

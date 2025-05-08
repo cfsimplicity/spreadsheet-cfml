@@ -75,19 +75,5 @@ describe( "queryToCsv", ()=>{
 		}
 	);
 
-	describe( "queryToCsv throws an exception if", ()=>{
-
-		it(
-			title="parallel threads are specified and the engine does not support it"
-			,body=function(){
-				expect( ()=>{
-					s.queryToCsv( query=data, threads=2 );
-				}).toThrow( type="cfsimplicity.spreadsheet.parallelOptionNotSupported" );
-			}
-			,skip=s.engineSupportsParallelLoopProcessing()
-		);
-
-	})
-
 })
 </cfscript>
