@@ -238,7 +238,7 @@ component extends="base"{
 			return getCellNumericOrDateValue( arguments.cell ); 
 		if( arguments.cell.getCachedFormulaResultType().Equals( arguments.cell.getCellType().BOOLEAN ) )
 			return arguments.cell.getBooleanCellValue();
-		return arguments.cell.getStringCellValue();
+		return getStringValue( arguments.cell );
 	}
 
 }
