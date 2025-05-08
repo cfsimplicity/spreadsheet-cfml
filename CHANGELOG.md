@@ -1,3 +1,16 @@
+## 5.0.0 - 8 May 2025
+
+- Breaking changes
+ - \#421 Drop support for Adobe ColdFusion 2018
+ - \#419 Formula errors no longer cause an exception or return an empty string by default
+ - \#416 Remove requiresJavaLoader property
+
+- Enhancements
+ - \#417 Allow the library jars to be loaded explicitly via application "javaSettings" instead of OSGi or JavaLoader
+
+- Fixes
+ - \#420 Fix celltype check on Mac
+
 ## 4.8.0 - 25 April 2025
 
 - Enhancements
