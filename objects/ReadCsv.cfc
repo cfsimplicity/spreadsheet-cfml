@@ -56,12 +56,15 @@ component extends="BaseCsv" accessors="true"{
 		var skippedRecords = 0;
 		var currentRecordNumber = 0;
 		try {
-			var parser = variables.library.createJavaObject( "org.apache.commons.csv.CSVParser" )
-				.parse(
-					CreateObject( "java", "java.io.File" ).init( variables.filepath )
-					,CreateObject( "java", "java.nio.charset.Charset" ).forName( "UTF-8" )
-					,variables.format
-				);
+			// Remove any Byte Order Mark from beginning of CSV
+			var BOMInputStream = variables.library.createJavaObject( "org.apache.commons.io.input.BOMInputStream" )
+				.builder()
+				.setPath( variables.filepath )
+				.get();
+			var inputStreamReader = CreateObject( "java", "java.io.InputStreamReader" ).init( BOMInputStream, "UTF-8" );
+			var parser = variables.format.builder()
+				.get()
+				.parse( inputStreamReader );
 			var recordIterator = parser.iterator();
 			while( recordIterator.hasNext() ) {
 				var values = recordIterator.next().values();

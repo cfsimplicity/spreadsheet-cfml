@@ -63,6 +63,17 @@ describe( "readCsv", ()=>{
 		expect( actual ).toBe( expected );
 	})
 
+	it( "removes any BOM so it is not parsed with the first value", ()=>{
+		var path = getTestFilePath( "csvWithBom.csv" );
+		var expected = { columns: [ "Region" ], data: [ [ "UK" ] ] };
+		var actual = s.readCsv( path )
+			.intoAnArray()
+			.withFirstRowIsHeader()
+			.execute();
+		expect( actual ).toBe( expected );
+		expect( actual.columns[ 1 ] == "Region" ).toBeTrue();//comparison will fail if file has BOM
+	})
+
 	describe( "auto header/column handling", ()=>{
 
 		it( "can auto extract the column names from first row if specified", ()=>{
