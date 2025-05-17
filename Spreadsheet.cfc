@@ -1317,6 +1317,8 @@ component accessors="true"{
 		args.includeRichTextFormatting = arguments.includeRichTextFormatting;
 		args.makeColumnNamesSafe = arguments.makeColumnNamesSafe;
 		args.returnVisibleValues = arguments.returnVisibleValues;
+		if( arguments.format == "array" )
+			return getSheetHelper().sheetToArray( argumentCollection=args );
 		var generatedQuery = getSheetHelper().sheetToQuery( argumentCollection=args );
 		if( arguments.format == "query" )
 			return generatedQuery;

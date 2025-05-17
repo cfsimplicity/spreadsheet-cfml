@@ -18,8 +18,8 @@ component extends="base"{
 	}
 
 	void function throwExceptionIFreadFormatIsInvalid(){
-		if( arguments.KeyExists( "format" ) && !ListFindNoCase( "query,html,csv", arguments.format ) )
-			Throw( type=library().getExceptionType() & ".invalidReadFormat", message="Invalid format", detail="Supported formats are: 'query', 'html' and 'csv'" );
+		if( arguments.KeyExists( "format" ) && !ListFindNoCase( "query,array,html,csv", arguments.format ) )
+			Throw( type=library().getExceptionType() & ".invalidReadFormat", message="Invalid format", detail="Supported formats are: 'query', 'array', 'html' and 'csv'" );
 	}
 
 	void function throwExceptionIfFileIsInvalidForStreamingReader( required exception ){

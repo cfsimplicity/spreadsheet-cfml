@@ -184,6 +184,45 @@ component extends="base"{
 		return ( arguments.sheet.getNumMergedRegions() > 0 );
 	}
 
+	struct function sheetToArray(
+		required workbook
+		,string sheetName
+		,numeric sheetNumber
+		,numeric headerRow
+		,boolean includeHeaderRow=false
+		,boolean includeBlankRows=false
+		,boolean includeHiddenColumns=false
+		,boolean includeHiddenRows=false
+		,boolean fillMergedCellsWithVisibleValue=false
+		,boolean includeRichTextFormatting=false
+		,string rows //range
+		,string columns //range
+		,any columnNames //list or array
+		,boolean returnVisibleValues=false
+	){
+		var result = [ columns: [], data: [] ];//ordered struct
+		if( arguments.KeyExists( "sheetName" ) ){
+			validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
+			arguments.sheetNumber = ( getSheetIndexFromName( arguments.workbook, arguments.sheetName ) +1 );
+		}
+		else if( !arguments.KeyExists( "sheetNumber" ) )
+			arguments.sheetNumber = getFirstVisibleSheetNumber( arguments.workbook );
+		if( arguments.sheetNumber == 0 )
+			return result;//no visible sheets
+		var sheet = readSheet( argumentCollection=arguments );
+		if( sheet.hasHeaderRow || sheet.columnNames.Len() ){
+			generateColumnNames( arguments.workbook, sheet );
+			result.columns = sheet.columnNames;
+		}
+		if( !arguments.includeHiddenColumns && sheet.hasRows ){
+			sheet = deleteHiddenColumnsFromArray( sheet );
+			if( sheet.totalColumnCount == 0 )
+				return result;// all columns were hidden
+		}
+		result.data = sheet.data;
+		return result;
+	}
+
 	query function sheetToQuery(
 		required workbook
 		,string sheetName
@@ -202,23 +241,6 @@ component extends="base"{
 		,boolean makeColumnNamesSafe=false
 		,boolean returnVisibleValues=false
 	){
-		var sheet = {
-			includeHeaderRow: arguments.includeHeaderRow
-			,hasHeaderRow: ( arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) )
-			,includeBlankRows: arguments.includeBlankRows
-			,includeHiddenRows: arguments.includeHiddenRows
-			,columnNames: []
-			,columnRanges: []
-			,totalColumnCount: 0
-			,data: []
-		};
-		if( arguments.KeyExists( "columnNames" ) && arguments.columnNames.Len() )
-			sheet.columnNames = IsArray( arguments.columnNames )? arguments.columnNames: arguments.columnNames.ListToArray();
-		sheet.headerRowIndex = sheet.hasHeaderRow? ( arguments.headerRow -1 ): -1;
-		if( arguments.KeyExists( "columns" ) ){
-			sheet.columnRanges = getRangeHelper().extractRanges( arguments.columns, arguments.workbook, "column" );
-			sheet.totalColumnCount = getColumnHelper().columnCountFromRanges( sheet.columnRanges );
-		}
 		if( arguments.KeyExists( "sheetName" ) ){
 			validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
 			arguments.sheetNumber = ( getSheetIndexFromName( arguments.workbook, arguments.sheetName ) +1 );
@@ -227,24 +249,11 @@ component extends="base"{
 			arguments.sheetNumber = getFirstVisibleSheetNumber( arguments.workbook );
 		if( arguments.sheetNumber == 0 )
 			return QueryNew( "" );//no visible sheets
-		sheet.object = getSheetByNumber( arguments.workbook, arguments.sheetNumber );
-		var sheetHasRows = !sheetIsEmpty( sheet.object, arguments.workbook );
-		if( sheetHasRows ){
-			var populateDataArgs = {
-				workbook: arguments.workbook
-				,sheet: sheet
-				,fillMergedCellsWithVisibleValue: arguments.fillMergedCellsWithVisibleValue
-				,includeRichTextFormatting: arguments.includeRichTextFormatting
-				,returnVisibleValues: arguments.returnVisibleValues
-			};
-			if( arguments.KeyExists( "rows" ) )
-				populateDataArgs.rows = arguments.rows;
-			populateSheetData( argumentCollection=populateDataArgs );
-		}
-		generateQueryColumnNames( arguments.workbook, sheet );
+		var sheet = readSheet( argumentCollection=arguments );
+		generateColumnNames( arguments.workbook, sheet );
 		arguments.queryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, sheet.columnNames, sheet.totalColumnCount, sheet.data );
 		var result = getQueryHelper()._QueryNew( sheet.columnNames, arguments.queryColumnTypes, sheet.data, arguments.makeColumnNamesSafe );
-		if( !arguments.includeHiddenColumns && sheetHasRows ){
+		if( !arguments.includeHiddenColumns && sheet.hasRows ){
 			result = getQueryHelper().deleteHiddenColumnsFromQuery( sheet, result );
 			if( sheet.totalColumnCount == 0 )
 				return QueryNew( "" );// all columns were hidden: return a blank query.
@@ -303,9 +312,9 @@ component extends="base"{
 		return "";
 	}
 
-	private any function generateQueryColumnNames( required workbook, required struct sheet ){
+	private any function generateColumnNames( required workbook, required struct sheet ){
 		if( arguments.sheet.columnNames.Len() ){
-			forceQueryColumnsToMatchSpecifiedColumns( arguments.sheet );
+			forceColumnsToMatchSpecifiedColumns( arguments.sheet );
 			return this; // already generated
 		}
 		if( sheetIsEmpty( arguments.sheet.object, arguments.workbook ) )
@@ -316,7 +325,7 @@ component extends="base"{
 			var headerRowData = getRowHelper().getRowData( arguments.workbook, headerRowObject, arguments.sheet.columnRanges );
 			// adds default column names if header row column count is less than total data column count
 			cfloop( from=1, to=arguments.sheet.totalColumnCount, index="local.i" ){
-				arguments.sheet.columnNames.Append( getQueryColumnNameFromSpecifiedNames( headerRowData, i ) );
+				arguments.sheet.columnNames.Append( getColumnNameFromSpecifiedNames( headerRowData, i ) );
 			}
 			return this;
 		}
@@ -327,14 +336,14 @@ component extends="base"{
 		return this;
 	}
 
-	private any function forceQueryColumnsToMatchSpecifiedColumns( required struct sheet ){
+	private any function forceColumnsToMatchSpecifiedColumns( required struct sheet ){
 		if( arguments.sheet.columnNames.Len() >= arguments.sheet.totalColumnCount )
 			return this;
 		// Not enough columns have been specified. Stash, reset and pad out with defaults
 		var specifiedNames = arguments.sheet.columnNames;
 		arguments.sheet.columnNames = [];
 		cfloop( from=1, to=arguments.sheet.totalColumnCount, index="local.i" ){
-			arguments.sheet.columnNames.Append( getQueryColumnNameFromSpecifiedNames( specifiedNames, i ) );
+			arguments.sheet.columnNames.Append( getColumnNameFromSpecifiedNames( specifiedNames, i ) );
 		}
 	}
 
@@ -359,7 +368,7 @@ component extends="base"{
 		return 0;
 	}
 
-	private string function getQueryColumnNameFromSpecifiedNames( required array specifiedNames, required numeric index ){
+	private string function getColumnNameFromSpecifiedNames( required array specifiedNames, required numeric index ){
 		var defaultColumnName = "column" & arguments.index;
 		if( arguments.index > arguments.specifiedNames.Len() ) //ACF won't accept IsNull( specifiedNames[ index ] )
 			return defaultColumnName;
@@ -473,6 +482,75 @@ component extends="base"{
 		if( firstVisibleSheetNumber == 0  ) // there are no visible sheets
 			return;
 		library().setActiveSheetNumber( arguments.workbook, firstVisibleSheetNumber );
+	}
+
+	private struct function readSheet(
+		required workbook
+		,numeric sheetNumber
+		,numeric headerRow
+		,boolean includeHeaderRow=false
+		,boolean includeBlankRows=false
+		,boolean includeHiddenRows=false
+		,boolean fillMergedCellsWithVisibleValue=false
+		,boolean includeRichTextFormatting=false
+		,string rows //range
+		,string columns //range
+		,any columnNames //list or array
+		,boolean returnVisibleValues=false
+	){
+		var sheet = {
+			includeHeaderRow: arguments.includeHeaderRow
+			,hasHeaderRow: ( arguments.KeyExists( "headerRow" ) && Val( arguments.headerRow ) )
+			,includeBlankRows: arguments.includeBlankRows
+			,includeHiddenRows: arguments.includeHiddenRows
+			,columnNames: []
+			,columnRanges: []
+			,totalColumnCount: 0
+			,data: []
+			,hasRows: false
+		};
+		if( arguments.KeyExists( "columnNames" ) && arguments.columnNames.Len() )
+			sheet.columnNames = IsArray( arguments.columnNames )? arguments.columnNames: arguments.columnNames.ListToArray();
+		sheet.headerRowIndex = sheet.hasHeaderRow? ( arguments.headerRow -1 ): -1;
+		if( arguments.KeyExists( "columns" ) ){
+			sheet.columnRanges = getRangeHelper().extractRanges( arguments.columns, arguments.workbook, "column" );
+			sheet.totalColumnCount = getColumnHelper().columnCountFromRanges( sheet.columnRanges );
+		}
+		sheet.object = getSheetByNumber( arguments.workbook, arguments.sheetNumber );
+		sheet.hasRows = !sheetIsEmpty( sheet.object, arguments.workbook );
+		if( sheet.hasRows  ){
+			var populateDataArgs = {
+				workbook: arguments.workbook
+				,sheet: sheet
+				,fillMergedCellsWithVisibleValue: arguments.fillMergedCellsWithVisibleValue
+				,includeRichTextFormatting: arguments.includeRichTextFormatting
+				,returnVisibleValues: arguments.returnVisibleValues
+			};
+			if( arguments.KeyExists( "rows" ) )
+				populateDataArgs.rows = arguments.rows;
+			populateSheetData( argumentCollection=populateDataArgs );
+		}
+		return sheet;
+	}
+
+	private struct function deleteHiddenColumnsFromArray( required sheet ){
+		var startIndex = ( arguments.sheet.totalColumnCount -1 );
+		for( var colIndex = startIndex; colIndex >= 0; colIndex-- ){
+			if( !arguments.sheet.object.isColumnHidden( JavaCast( "int", colIndex ) ) )
+				continue;
+			var columnNumber = ( colIndex +1 );
+			arguments.sheet.data = _ArrayDeleteColumn( arguments.sheet.data, columnNumber );
+			arguments.sheet.totalColumnCount--;
+			if( arguments.sheet.columnNames.Len() )
+				arguments.sheet.columnNames.DeleteAt( columnNumber );
+		}
+		return arguments.sheet;
+	}
+
+	private array function _ArrayDeleteColumn( required array data, required numeric position ){
+		for( var row in arguments.data )
+			ArrayDeleteAt( row, arguments.position );
+		return arguments.data;
 	}
 
 }
