@@ -1,3 +1,10 @@
+## 5.1.0 - 19 May 2025
+
+- Enhancements
+	- \#424 Allow read() to return an array
+	- \#425 Allow read() to return an array of structs
+	- \#423 ReadCSV: remove any BOM from the input file so it is not part of the first row
+
 ## 5.0.0 - 8 May 2025
 
 - Breaking changes
