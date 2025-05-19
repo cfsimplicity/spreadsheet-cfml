@@ -184,7 +184,7 @@ component extends="base"{
 		return ( arguments.sheet.getNumMergedRegions() > 0 );
 	}
 
-	struct function sheetToArray(
+	array function sheetToArrayOfStructs(
 		required workbook
 		,string sheetName
 		,numeric sheetNumber
@@ -200,6 +200,33 @@ component extends="base"{
 		,any columnNames //list or array
 		,boolean returnVisibleValues=false
 	){
+		var intermediateResult = sheetToArray( argumentCollection=arguments, forceColumnGeneration=true );
+		return ArrayMap( intermediateResult.data, ( row )=>{
+			var rowAsOrderedStruct = [:];
+			ArrayEach( intermediateResult.columns, ( column, index )=>
+				rowAsOrderedStruct[ column ] = row[ index ]
+			)
+			return rowAsOrderedStruct
+		})
+	}
+
+	struct function sheetToArray(
+		required workbook
+		,string sheetName
+		,numeric sheetNumber
+		,numeric headerRow
+		,boolean includeHeaderRow=false
+		,boolean includeBlankRows=false
+		,boolean includeHiddenColumns=false
+		,boolean includeHiddenRows=false
+		,boolean fillMergedCellsWithVisibleValue=false
+		,boolean includeRichTextFormatting=false
+		,string rows //range
+		,string columns //range
+		,any columnNames //list or array
+		,boolean returnVisibleValues=false
+		,boolean forceColumnGeneration=false
+	){
 		var result = [ columns: [], data: [] ];//ordered struct
 		if( arguments.KeyExists( "sheetName" ) ){
 			validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
@@ -210,7 +237,7 @@ component extends="base"{
 		if( arguments.sheetNumber == 0 )
 			return result;//no visible sheets
 		var sheet = readSheet( argumentCollection=arguments );
-		if( sheet.hasHeaderRow || sheet.columnNames.Len() ){
+		if( sheet.hasHeaderRow || sheet.columnNames.Len() || arguments.forceColumnGeneration ){
 			generateColumnNames( arguments.workbook, sheet );
 			result.columns = sheet.columnNames;
 		}

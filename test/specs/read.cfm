@@ -25,7 +25,7 @@ describe( "read", ()=>{
 		})
 	})
 
-	it( "can read a spreadsheet into a query or array", ()=>{
+	it( "can read a spreadsheet into a query, array or array of structs", ()=>{
 		var data = [ [ "Frumpo McNugget", "12345" ] ];
     spreadsheetTypes.Each( ( type )=>{
 			var path = variables[ "temp" & type & "Path" ];
@@ -34,8 +34,12 @@ describe( "read", ()=>{
 				.write( path, true );
 			//array
 			var expected = { columns: [], data: data };
-			var actual = s.read( src=path, format="array");
+			var actual = s.read( src=path, format="array" );
       expect( actual ).toBe( expected );
+			//array of structs
+			expected = [ [ column1: "Frumpo McNugget", column2:"12345" ] ];
+			actual = s.read( src=path, format="arrayOfStructs" );
+			expect( actual ).toBe( expected );
 			//query
 			expected = QueryNew( "column1,column2", "VarChar,VarChar", data );
 			actual = s.read( src=path, format="query");
@@ -98,6 +102,10 @@ describe( "read", ()=>{
 				//array
 				var expected = { columns: columns, data: data };
 				var actual = s.read( src=path, format="array", headerRow=1 );
+				expect( actual ).toBe( expected );
+				//arry of structs
+				expected = [ [ name: "Frumpo McNugget", number: "12345" ] ];
+				actual = s.read( src=path, format="arrayOfStructs", headerRow=1 );
 				expect( actual ).toBe( expected );
 				//query
 				expected = QueryNew( columns.ToList(), "VarChar,VarChar", data );

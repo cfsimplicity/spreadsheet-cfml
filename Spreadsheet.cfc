@@ -1319,6 +1319,8 @@ component accessors="true"{
 		args.returnVisibleValues = arguments.returnVisibleValues;
 		if( arguments.format == "array" )
 			return getSheetHelper().sheetToArray( argumentCollection=args );
+		if( arguments.format == "arrayOfStructs" )
+			return getSheetHelper().sheetToArrayOfStructs( argumentCollection=args );
 		var generatedQuery = getSheetHelper().sheetToQuery( argumentCollection=args );
 		if( arguments.format == "query" )
 			return generatedQuery;
