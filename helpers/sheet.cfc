@@ -191,8 +191,8 @@ component extends="base"{
 		,numeric headerRow
 		,boolean includeHeaderRow=false
 		,boolean includeBlankRows=false
-		,boolean includeHiddenColumns=false
-		,boolean includeHiddenRows=false
+		,boolean includeHiddenColumns=true
+		,boolean includeHiddenRows=true
 		,boolean fillMergedCellsWithVisibleValue=false
 		,boolean includeRichTextFormatting=false
 		,string rows //range
@@ -203,10 +203,10 @@ component extends="base"{
 		var intermediateResult = sheetToArray( argumentCollection=arguments, forceColumnGeneration=true );
 		return ArrayMap( intermediateResult.data, ( row )=>{
 			var rowAsOrderedStruct = [:];
-			ArrayEach( intermediateResult.columns, ( column, index )=>
-				rowAsOrderedStruct[ column ] = row[ index ]
-			)
-			return rowAsOrderedStruct
+			ArrayEach( intermediateResult.columns, ( column, index )=>{
+				rowAsOrderedStruct[ column ] = row[ index ];
+			});
+			return rowAsOrderedStruct;
 		})
 	}
 
@@ -217,8 +217,8 @@ component extends="base"{
 		,numeric headerRow
 		,boolean includeHeaderRow=false
 		,boolean includeBlankRows=false
-		,boolean includeHiddenColumns=false
-		,boolean includeHiddenRows=false
+		,boolean includeHiddenColumns=true
+		,boolean includeHiddenRows=true
 		,boolean fillMergedCellsWithVisibleValue=false
 		,boolean includeRichTextFormatting=false
 		,string rows //range
@@ -245,6 +245,8 @@ component extends="base"{
 			sheet = deleteHiddenColumnsFromArray( sheet );
 			if( sheet.totalColumnCount == 0 )
 				return result;// all columns were hidden
+			if( sheet.columnNames.Len() )
+				result.columns = sheet.columnNames;
 		}
 		result.data = sheet.data;
 		return result;
@@ -257,8 +259,8 @@ component extends="base"{
 		,numeric headerRow
 		,boolean includeHeaderRow=false
 		,boolean includeBlankRows=false
-		,boolean includeHiddenColumns=false
-		,boolean includeHiddenRows=false
+		,boolean includeHiddenColumns=true
+		,boolean includeHiddenRows=true
 		,boolean fillMergedCellsWithVisibleValue=false
 		,boolean includeRichTextFormatting=false
 		,string rows //range
@@ -517,7 +519,7 @@ component extends="base"{
 		,numeric headerRow
 		,boolean includeHeaderRow=false
 		,boolean includeBlankRows=false
-		,boolean includeHiddenRows=false
+		,boolean includeHiddenRows=true
 		,boolean fillMergedCellsWithVisibleValue=false
 		,boolean includeRichTextFormatting=false
 		,string rows //range
@@ -569,14 +571,23 @@ component extends="base"{
 			arguments.sheet.data = _ArrayDeleteColumn( arguments.sheet.data, columnNumber );
 			arguments.sheet.totalColumnCount--;
 			if( arguments.sheet.columnNames.Len() )
-				arguments.sheet.columnNames.DeleteAt( columnNumber );
+				arguments.sheet.columnNames = _ArrayDeleteAt( arguments.sheet.columnNames, columnNumber );
 		}
 		return arguments.sheet;
 	}
 
 	private array function _ArrayDeleteColumn( required array data, required numeric position ){
-		for( var row in arguments.data )
+		cfloop( array=arguments.data, item="local.row", index="local.i" ){
 			ArrayDeleteAt( row, arguments.position );
+			if( library().getIsACF() )
+				arguments.data[ i ] = row; //ACF doesn't replace the row
+		}
+		return arguments.data;
+	}
+
+	private array function _ArrayDeleteAt( required array data, required numeric position ){
+		// return the resulting array rather than a boolean flag
+		ArrayDeleteAt( arguments.data, arguments.position );
 		return arguments.data;
 	}
 
