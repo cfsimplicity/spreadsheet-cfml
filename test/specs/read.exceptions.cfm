@@ -69,7 +69,7 @@ describe( "read throws an exception if", ()=>{
 		}).toThrow( type="cfsimplicity.spreadsheet.invalidFile" );
 	})
 
-	it( "the source file appears to contain CSV or TSV, and suggests using 'csvToQuery'", ()=>{
+	it( "the source file appears to contain CSV or TSV, and suggests using 'readCSV()'", ()=>{
 		expect( ()=>{
 			var path = getTestFilePath( "csv.xls" );
 			s.read( src=path );

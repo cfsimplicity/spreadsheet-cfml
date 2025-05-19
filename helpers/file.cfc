@@ -79,7 +79,7 @@ component extends="base"{
 	void function handleInvalidSpreadsheetFile( required string path ){
 		var detail = "The file #arguments.path# does not appear to be a binary or xml spreadsheet.";
 		if( isCsvTsvOrTextFile( arguments.path ) )
-			detail &= " It may be a CSV/TSV file, in which case use 'csvToQuery()' to read it";
+			detail &= " It may be a CSV/TSV file, in which case use 'readCSV()' to read it";
 		Throw( type="cfsimplicity.spreadsheet.invalidFile", message="Invalid spreadsheet file", detail=detail );
 	}
 
