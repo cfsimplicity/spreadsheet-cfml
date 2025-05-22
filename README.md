@@ -86,38 +86,6 @@ spreadsheet.newChainable( "xlsx" )
 ```
 [More on chaining calls](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/chaining)
 
-### Date formats
-
-The following international date masks are used by default to read and write cell values formatted as dates:
-
-* DATE = `yyyy-mm-dd`
-* TIME = `hh:mm:ss`
-* TIMESTAMP = `yyyy-mm-dd hh:mm:ss`
-
-An additional mask is used to output datetime values from the `read()` method into HTML or CSV formats:
-
-* DATETIME = `yyyy-mm-dd HH:nn:ss`
-
-NB: _Do not confuse `DATETIME` and `TIMESTAMP`._ In general you should override the `TIMESTAMP` mask.
-
-Each of these can be overridden by passing in a struct including the value(s) to be overridden when instantiating the Spreadsheet component. For example:
-```
-<cfscript>
-spreadsheet = New spreadsheetCFML.Spreadsheet( dateFormats={ DATE: "mm/dd/yyyy" } );
-</cfscript>
-```
-Or by using the `setDateFormats()` method on an existing instance.
-```
-<cfscript>
-spreadsheet = New spreadsheetCFML.Spreadsheet();
-spreadsheet.setDateFormats( { DATE: "mm/dd/yyyy" } );
-</cfscript>
-```
-While the above will set the library defaults, you can format cells with specific masks using the `dataFormat` attribute which can be passed to [formatCell](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/formatCell) and the other [formatting](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/Formatting-options) methods, as part of the `format` argument:
-```
-// display datetime value with millisecond precision
-spreadsheet.formatColumn( workbook , { dataformat: "yyyy-mm-dd hh:mm:ss.000" }, 1 );
-```
 ### JavaLoader
 
 From version 2.14.0, Lucee loads the POI and other required java libraries using OSGi. This is not yet supported with Adobe ColdFusion which by default uses an included version of Mark Mandel's [JavaLoader](https://github.com/markmandel/JavaLoader). 
