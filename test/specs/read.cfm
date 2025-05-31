@@ -192,6 +192,26 @@ describe( "read", ()=>{
 			})
 		})
 
+		it( "Includes trailing empty columns when using a header row and specifying rows", ()=>{
+			var columns = [ "column1", "emptyColumn" ]; //2 columns
+			var data = [ [ "column 1 row 1 value" ], [ "column 1 row 2 value" ] ];//2 rows, 1 column per row
+			spreadsheetTypes.Each( ( type )=>{
+				var path = variables[ "temp" & type & "Path" ];
+				s.newChainable( type )
+					.addRow( columns )
+					.addRows( data )
+					.write( path, true );
+				//array
+				var expected = { columns: columns, data: [ data[ 1 ] ] };
+				var actual = s.read( src=path, format="array", headerRow=1, rows=2 );
+				expect( actual ).toBe( expected );
+				//query
+				expected = QueryNew( columns.ToList(), "VarChar,VarChar", [ data[ 1 ] ] );
+				actual = s.read( src=path, format="query", headerRow=1, rows=2 );
+				expect( actual ).toBe( expected );
+			})
+		})
+
 	})
 
 	describe( "read with sheetName or sheetNumber", ()=>{

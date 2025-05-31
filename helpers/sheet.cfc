@@ -352,6 +352,7 @@ component extends="base"{
 			// use specified header row values as column names
 			var headerRowObject = getRowHelper().getRowFromSheet( arguments.workbook, arguments.sheet.object, arguments.sheet.headerRowIndex );
 			var headerRowData = getRowHelper().getRowData( arguments.workbook, headerRowObject, arguments.sheet.columnRanges );
+			getRowHelper().setSheetColumnCountFromRow( headerRowObject, arguments.sheet );
 			// adds default column names if header row column count is less than total data column count
 			cfloop( from=1, to=arguments.sheet.totalColumnCount, index="local.i" ){
 				arguments.sheet.columnNames.Append( getColumnNameFromSpecifiedNames( headerRowData, i ) );

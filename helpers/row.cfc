@@ -272,6 +272,12 @@ component extends="base"{
 		return this;
 	}
 
+	void function setSheetColumnCountFromRow( required any row, required struct sheet ){
+		if( arguments.sheet.columnRanges.Len() )//don't change the column count if specific columns have been specified
+			return;
+		arguments.sheet.totalColumnCount = Max( arguments.sheet.totalColumnCount, arguments.row.getLastCellNum() );
+	}
+
 	/* Private */
 
 	private any function getCellValue( required workbook, required cell, required boolean returnVisibleValues ){
@@ -340,12 +346,6 @@ component extends="base"{
 	    	return false;
 	  }
 	  return true;
-	}
-
-	private void function setSheetColumnCountFromRow( required any row, required struct sheet ){
-		if( arguments.sheet.columnRanges.Len() )//don't change the column count if specific columns have been specified
-			return;
-		arguments.sheet.totalColumnCount = Max( arguments.sheet.totalColumnCount, arguments.row.getLastCellNum() );
 	}
 
 }
