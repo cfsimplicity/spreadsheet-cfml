@@ -72,7 +72,6 @@ You may wish to place the spreadsheet library files in a central location with a
 The library supports all of Adobe ColdFusion's spreadsheet functionality with a similar syntax. It can be run alongside existing ColdFusion spreadsheet code you don't wish to modify.
 
 * [ColdFusion Spreadsheet functionality support](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/ColdFusion-spreadsheet-functionality-support)
-)
 * [Extra functions not available in ColdFusion](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/Functions-not-available-in-ColdFusion)
 
 ### Chainable syntax
