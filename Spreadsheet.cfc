@@ -1086,7 +1086,7 @@ component accessors="true"{
 		return this;
 	}
 
-	public struct function info( required workbookOrPath ){
+	public struct function info( required workbookOrPath, string password ){
 		/*
 		properties returned in the struct are:
 			* AUTHOR
@@ -1105,8 +1105,7 @@ component accessors="true"{
 			* SHEETNAMES
 			* SPREADSHEETTYPE
 		*/
-		 //use this.isSpreadsheetObject to avoid clash with ACF built-in function
-		var workbook = this.isSpreadsheetObject( arguments[ 1 ] )? arguments[ 1 ]: getWorkbookHelper().workbookFromFile( arguments[ 1 ] );
+		var workbook = getWorkbookHelper().getObjectFromWorkbookOrPath( argumentCollection=arguments );
 		//format specific metadata
 		var info = isBinaryFormat( workbook )? getInfoHelper().binaryInfo( workbook ): getInfoHelper().xmlInfo( workbook );
 		//common properties

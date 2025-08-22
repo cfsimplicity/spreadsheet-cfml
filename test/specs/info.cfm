@@ -64,6 +64,14 @@ describe( "info", ()=>{
 		})
 	})
 
+	it( "Can access a password-protected xlsx file", ()=>{
+		spreadsheetTypes.Each( ( type )=>{
+			var path = getTestFilePath( "passworded." & type );
+			var actual = s.info( path, "pass" );
+			expect( actual ).toBeStruct();
+		})
+	})
+
 	it( "addInfo and info are chainable", ()=>{
 		workbooks.Each( ( wb )=>{
 			var actual = s.newChainable( wb )

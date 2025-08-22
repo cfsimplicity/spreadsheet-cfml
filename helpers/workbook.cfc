@@ -47,4 +47,13 @@ component extends="base"{
 		return "xlsx";
 	}
 
+	any function getObjectFromWorkbookOrPath( required any workbookOrPath, string password ){
+		if( library().isSpreadsheetObject( arguments.workbookOrPath ) )
+			return arguments.workbookOrPath;
+		var args = { path: arguments.workbookOrPath };
+		if( arguments.KeyExists( "password" ) )
+			args.password = arguments.password;
+		return workbookFromFile( argumentCollection=args );
+	}
+
 }
