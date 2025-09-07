@@ -128,6 +128,20 @@ describe( "dataValidation", ()=>{
 			})
 		})
 
+		it( "can constrain input to a dates derived from formulas", ()=>{
+			variables.spreadsheetTypes.Each( ( type )=>{
+				var dv = s.newDataValidation()
+					.onCells( "B1" )
+					.withMinDate( "=$A1" )
+					.withMaxDate( "=$A2" );
+				var chainable = s.newChainable( type )
+					.addColumn( [ minDate, maxDate ] ) //A1-2
+					.addDataValidation( dv );
+				expect( dv.getConstraintType() ).toBe( "date" );
+				expect( dv.getConstraintOperator() ).toBe( "BETWEEN" );
+			})
+		})
+
 	})
 
 	describe( "integer constraints", ()=>{
@@ -161,6 +175,21 @@ describe( "dataValidation", ()=>{
 					.withMinInteger( 0 )
 					.withMaxInteger( 100 );
 				var chainable = s.newChainable( type ).addDataValidation( dv );
+				expect( dv.getConstraintType() ).toBe( "integer" );
+				expect( dv.getConstraintOperator() ).toBe( "BETWEEN" );
+			})
+		})
+
+		it( "can constrain input to integers derived from formulas", ()=>{
+			variables.spreadsheetTypes.Each( ( type )=>{
+				var dv = s.newDataValidation()
+					.onCells( "C1" )
+					.withMinInteger( "=SUM($A1:$A3)" )
+					.withMaxInteger( "=SUM($B1:$B3)" );
+				var chainable = s.newChainable( type )
+					.addColumn( [ 1, 1, 1 ] ) //A1-3
+					.addColumn( [ 2, 2, 2 ] ) //B1-3
+					.addDataValidation( dv );
 				expect( dv.getConstraintType() ).toBe( "integer" );
 				expect( dv.getConstraintOperator() ).toBe( "BETWEEN" );
 			})

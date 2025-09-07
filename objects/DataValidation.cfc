@@ -49,22 +49,22 @@ component{
 		return this;
 	}
 
-	public DataValidation function withMinDate( required date date ){
+	public DataValidation function withMinDate( required string date ){
 		variables.minDate = arguments.date;
 		return this;
 	}
 
-	public DataValidation function withMaxDate( required date date ){
+	public DataValidation function withMaxDate( required string date ){
 		variables.maxDate = arguments.date;
 		return this;
 	}
 
-	public DataValidation function withMinInteger( required numeric value ){
+	public DataValidation function withMinInteger( required string value ){
 		variables.minInteger = arguments.value;
 		return this;
 	}
 
-	public DataValidation function withMaxInteger( required numeric value ){
+	public DataValidation function withMaxInteger( required string value ){
 		variables.maxInteger = arguments.value;
 		return this;
 	}
@@ -175,14 +175,14 @@ component{
 			return createListConstraintFromArray();
 		if( variables.valuesSourceCellRange.Len() )
 			return createListConstraintFromCells();
-		if( IsDate( variables.minDate ) || IsDate( variables.maxDate ) )
+		if( Len( variables.minDate ) || Len( variables.maxDate ) )
 			return createDateConstraint();
-		if( IsValid( "integer", variables.minInteger ) || IsValid( "integer", variables.maxInteger ) )
+		if( Len( variables.minInteger ) || Len( variables.maxInteger ) )
 			return createIntegerConstraint();
 	}
 
 	private void function createDateConstraint(){
-		if( !IsDate( variables.maxDate ) ){
+		if( !Len( variables.maxDate ) ){
 			variables.validationConstraint = variables.dataValidationHelper.createDateConstraint(
 				getConstraintOperatorObject( "GREATER_OR_EQUAL" )
 				,getWorkbookSpecificDateValue( variables.minDate )
@@ -191,7 +191,7 @@ component{
 			);
 			return;
 		}
-		if( !IsDate( variables.minDate ) ){
+		if( !Len( variables.minDate ) ){
 			variables.validationConstraint = variables.dataValidationHelper.createDateConstraint(
 				getConstraintOperatorObject( "LESS_OR_EQUAL" )
 				,getWorkbookSpecificDateValue( variables.maxDate )
@@ -243,7 +243,9 @@ component{
 		variables.validationConstraint =  variables.dataValidationHelper.createFormulaListConstraint( sheetAndCellReference );
 	}
 
-	private string function getWorkbookSpecificDateValue( required date date ){
+	private string function getWorkbookSpecificDateValue( required date ){
+		if( !IsDate( arguments.date ) ) //formula string
+			return arguments.date;
 		if( variables.workbookIsXlsx )
 			return "Date( #arguments.date.Year()#, #arguments.date.Month()#, #arguments.date.Day()# )";
 		return DateFormat( arguments.date, "yyyy-mm-dd" );
