@@ -11,10 +11,10 @@ describe( "dataValidation", ()=>{
 	describe( "drop-downs", ()=>{
 
 		it( "can create a validation drop-down using an array of values", ()=>{
-			var dv = s.newDataValidation()
-				.onCells( cellRange )
-				.withValues( validValues );
 			variables.spreadsheetTypes.Each( ( type )=>{
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withValues( validValues );
 				var chainable = s.newChainable( type ).addDataValidation( dv );
 				expect( dv.validValueArrayAppliedToSheet() ).toBe( validValues );
 				expect( dv.targetCellRangeAppliedToSheet() ).toBe( cellRange );
@@ -32,10 +32,10 @@ describe( "dataValidation", ()=>{
 		})
 
 		it( "can create a validation drop-down from values in other cells in the same sheet", ()=>{
-			var dv = s.newDataValidation()
-				.onCells( cellRange )
-				.withValuesFromCells( "C1:C3" );
 			variables.spreadsheetTypes.Each( ( type )=>{
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withValuesFromCells( "C1:C3" );
 				var chainable = s.newChainable( type )
 					.addColumn( data=validValues, startColumn=3 )
 					.addDataValidation( dv );
@@ -45,11 +45,11 @@ describe( "dataValidation", ()=>{
 		})
 
 		it( "can create a validation drop-down from values in other cells in a different sheet", ()=>{
-			var dv = s.newDataValidation()
-				.onCells( cellRange )
-				.withValuesFromSheetName( "cities" )
-				.withValuesFromCells( "A1:A3" );
 			variables.spreadsheetTypes.Each( ( type )=>{
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withValuesFromSheetName( "cities" )
+					.withValuesFromCells( "A1:A3" );
 				var chainable = s.newChainable( type )
 					.createSheet( "cities" )
 					.setActiveSheetNumber( 2 )
@@ -62,11 +62,11 @@ describe( "dataValidation", ()=>{
 		})
 
 		it( "can create a validation drop-down from values in other cells in a different sheet the name of which includes a space", ()=>{
-			var dv = s.newDataValidation()
-				.onCells( cellRange )
-				.withValuesFromSheetName( "towns and cities" )
-				.withValuesFromCells( "A1:A3" );
 			variables.spreadsheetTypes.Each( ( type )=>{
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withValuesFromSheetName( "towns and cities" )
+					.withValuesFromCells( "A1:A3" );
 				var chainable = s.newChainable( type )
 					.createSheet( "towns and cities" )
 					.setActiveSheetNumber( 2 )
@@ -79,11 +79,11 @@ describe( "dataValidation", ()=>{
 		})
 
 		it( "the drop-down arrow can be suppressed for a passed array of data", ()=>{
-			var dv = s.newDataValidation()
-				.onCells( cellRange )
-				.withValues( validValues )
-				.withNoDropdownArrow();
 			variables.spreadsheetTypes.Each( ( type )=>{
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withValues( validValues )
+					.withNoDropdownArrow();
 				var chainable = s.newChainable( type ).addDataValidation( dv );
 				var falseForXlsxTrueForXls = ( type != "xlsx" );// XLSX requires the OPPOSITE explicit boolean setting (WTF!)
 				expect( dv.suppressDropdownSettingArrowAppliedToSheet() ).toBe( falseForXlsxTrueForXls );
@@ -95,10 +95,10 @@ describe( "dataValidation", ()=>{
 	describe( "date constraints", ()=>{
 
 		it( "can constrain input to a minimum date", ()=>{
-			var dv = s.newDataValidation()
-				.onCells( cellRange )
-				.withMinDate( minDate );
 			variables.spreadsheetTypes.Each( ( type )=>{
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withMinDate( minDate );
 				var chainable = s.newChainable( type ).addDataValidation( dv );
 				expect( dv.getConstraintType() ).toBe( "date" );
 				expect( dv.getConstraintOperator() ).toBe( "GREATER_OR_EQUAL" );
@@ -106,10 +106,10 @@ describe( "dataValidation", ()=>{
 		})
 
 		it( "can constrain input to a maximum date", ()=>{
-			var dv = s.newDataValidation()
-				.onCells( cellRange )
-				.withMaxDate( minDate );
 			variables.spreadsheetTypes.Each( ( type )=>{
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withMaxDate( minDate );
 				var chainable = s.newChainable( type ).addDataValidation( dv );
 				expect( dv.getConstraintType() ).toBe( "date" );
 				expect( dv.getConstraintOperator() ).toBe( "LESS_OR_EQUAL" );
@@ -117,11 +117,11 @@ describe( "dataValidation", ()=>{
 		})
 
 		it( "can constrain input to a date range", ()=>{
-			var dv = s.newDataValidation()
-				.onCells( cellRange )
-				.withMinDate( minDate )
-				.withMaxDate( maxDate );
 			variables.spreadsheetTypes.Each( ( type )=>{
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withMinDate( minDate )
+					.withMaxDate( maxDate );
 				var chainable = s.newChainable( type ).addDataValidation( dv );
 				expect( dv.getConstraintType() ).toBe( "date" );
 				expect( dv.getConstraintOperator() ).toBe( "BETWEEN" );
@@ -133,10 +133,10 @@ describe( "dataValidation", ()=>{
 	describe( "integer constraints", ()=>{
 
 		it("can constrain input to a minimum integer", () => {
-			var dv = s.newDataValidation()
-				.onCells( cellRange )
-				.withMinInteger( 140 );
 			variables.spreadsheetTypes.Each( ( type ) => {
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withMinInteger( 140 );
 				var chainable = s.newChainable(type).addDataValidation( dv );
 				expect( dv.getConstraintType() ).toBe( "integer" );
 				expect( dv.getConstraintOperator() ).toBe( "GREATER_OR_EQUAL" );
@@ -144,10 +144,10 @@ describe( "dataValidation", ()=>{
 		})
 
 		it("can constrain input to a maximum integer", () => {
-			var dv = s.newDataValidation()
-				.onCells( cellRange )
-				.withMaxInteger( 5 );
 			variables.spreadsheetTypes.Each( ( type ) => {
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withMaxInteger( 5 );
 				var chainable = s.newChainable(type).addDataValidation( dv );
 				expect( dv.getConstraintType() ).toBe( "integer" );
 				expect( dv.getConstraintOperator() ).toBe( "LESS_OR_EQUAL" );
@@ -155,11 +155,11 @@ describe( "dataValidation", ()=>{
 		})
 
 		it( "can constrain input to an integer range", ()=>{
-			var dv = s.newDataValidation()
-				.onCells( cellRange )
-				.withMinInteger( 0 )
-				.withMaxInteger( 100 );
 			variables.spreadsheetTypes.Each( ( type )=>{
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withMinInteger( 0 )
+					.withMaxInteger( 100 );
 				var chainable = s.newChainable( type ).addDataValidation( dv );
 				expect( dv.getConstraintType() ).toBe( "integer" );
 				expect( dv.getConstraintOperator() ).toBe( "BETWEEN" );
@@ -169,10 +169,10 @@ describe( "dataValidation", ()=>{
 	})
 
 	it( "knows its constraint type", ()=>{
-		var dv = s.newDataValidation()
-			.onCells( cellRange )
-			.withValues( validValues );
 		variables.spreadsheetTypes.Each( ( type )=>{
+			var dv = s.newDataValidation()
+				.onCells( cellRange )
+				.withValues( validValues );
 			var chainable = s.newChainable( type ).addDataValidation( dv );
 			expect( dv.getConstraintType() ).toBe( "list" );
 		})
@@ -181,12 +181,12 @@ describe( "dataValidation", ()=>{
 	it( "allows the validation error message to be customised", ()=>{
 		var errorTitle = "Wrong";
 		var errorMessage = "Think again, dude.";
-		var dv = s.newDataValidation()
-			.onCells( cellRange )
-			.withValues( validValues )
-			.withErrorTitle( errorTitle )
-			.withErrorMessage( errorMessage );
 		variables.spreadsheetTypes.Each( ( type )=>{
+			var dv = s.newDataValidation()
+				.onCells( cellRange )
+				.withValues( validValues )
+				.withErrorTitle( errorTitle )
+				.withErrorMessage( errorMessage );
 			var chainable = s.newChainable( type ).addDataValidation( dv );
 			expect( dv.errorTitleAppliedToSheet() ).toBe( errorTitle );
 			expect( dv.errorMessageAppliedToSheet() ).toBe( errorMessage );
@@ -196,11 +196,11 @@ describe( "dataValidation", ()=>{
 	describe( "throws an exception if", ()=>{
 
 		it( "the specified source sheet doesn't exist", ()=>{
-			var dv = s.newDataValidation()
-				.onCells( cellRange )
-				.withValuesFromSheetName( "nonexistant" )
-				.withValuesFromCells( "A1:A3" );
 			variables.spreadsheetTypes.Each( ( type )=>{
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withValuesFromSheetName( "nonexistant" )
+					.withValuesFromCells( "A1:A3" );
 				expect( ()=>{
 					var chainable = s.newChainable( type ).addDataValidation( dv );
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetName" );
