@@ -94,6 +94,28 @@ describe( "dataValidation", ()=>{
 
 	describe( "date constraints", ()=>{
 
+		it( "can constrain input to a minimum date", ()=>{
+			var dv = s.newDataValidation()
+				.onCells( cellRange )
+				.withMinDate( minDate );
+			variables.spreadsheetTypes.Each( ( type )=>{
+				var chainable = s.newChainable( type ).addDataValidation( dv );
+				expect( dv.getConstraintType() ).toBe( "date" );
+				expect( dv.getConstraintOperator() ).toBe( "GREATER_OR_EQUAL" );
+			})
+		})
+
+		it( "can constrain input to a maximum date", ()=>{
+			var dv = s.newDataValidation()
+				.onCells( cellRange )
+				.withMaxDate( minDate );
+			variables.spreadsheetTypes.Each( ( type )=>{
+				var chainable = s.newChainable( type ).addDataValidation( dv );
+				expect( dv.getConstraintType() ).toBe( "date" );
+				expect( dv.getConstraintOperator() ).toBe( "LESS_OR_EQUAL" );
+			})
+		})
+
 		it( "can constrain input to a date range", ()=>{
 			var dv = s.newDataValidation()
 				.onCells( cellRange )
@@ -109,6 +131,28 @@ describe( "dataValidation", ()=>{
 	})
 
 	describe( "integer constraints", ()=>{
+
+		it("can constrain input to a minimum integer", () => {
+			var dv = s.newDataValidation()
+				.onCells( cellRange )
+				.withMinInteger( 140 );
+			variables.spreadsheetTypes.Each( ( type ) => {
+				var chainable = s.newChainable(type).addDataValidation( dv );
+				expect( dv.getConstraintType() ).toBe( "integer" );
+				expect( dv.getConstraintOperator() ).toBe( "GREATER_OR_EQUAL" );
+			})
+		})
+
+		it("can constrain input to a maximum integer", () => {
+			var dv = s.newDataValidation()
+				.onCells( cellRange )
+				.withMaxInteger( 5 );
+			variables.spreadsheetTypes.Each( ( type ) => {
+				var chainable = s.newChainable(type).addDataValidation( dv );
+				expect( dv.getConstraintType() ).toBe( "integer" );
+				expect( dv.getConstraintOperator() ).toBe( "LESS_OR_EQUAL" );
+			})
+		})
 
 		it( "can constrain input to an integer range", ()=>{
 			var dv = s.newDataValidation()
@@ -160,46 +204,6 @@ describe( "dataValidation", ()=>{
 				expect( ()=>{
 					var chainable = s.newChainable( type ).addDataValidation( dv );
 				}).toThrow( type="cfsimplicity.spreadsheet.invalidSheetName" );
-			})
-
-		})
-
-		it( "a minDate is specified but no maxDate or vice versa", ()=>{
-			var dv = s.newDataValidation()
-				.onCells( cellRange )
-				.withMinDate( minDate );
-			variables.spreadsheetTypes.Each( ( type )=>{
-				expect( ()=>{
-					var chainable = s.newChainable( type ).addDataValidation( dv );
-				}).toThrow( type="cfsimplicity.spreadsheet.invalidValidationConstraint" );
-			})
-			dv = s.newDataValidation()
-				.onCells( cellRange )
-				.withMaxDate( maxDate );
-			variables.spreadsheetTypes.Each( ( type )=>{
-				expect( ()=>{
-					var chainable = s.newChainable( type ).addDataValidation( dv );
-				}).toThrow( type="cfsimplicity.spreadsheet.invalidValidationConstraint" );
-			})
-
-		})
-
-		it( "a minInteger is specified but no maxInteger or vice versa", ()=>{
-			var dv = s.newDataValidation()
-				.onCells( cellRange )
-				.withMinInteger( 0 );
-			variables.spreadsheetTypes.Each( ( type )=>{
-				expect( ()=>{
-					var chainable = s.newChainable( type ).addDataValidation( dv );
-				}).toThrow( type="cfsimplicity.spreadsheet.invalidValidationConstraint" );
-			})
-			dv = s.newDataValidation()
-				.onCells( cellRange )
-				.withMaxInteger( 100 );
-			variables.spreadsheetTypes.Each( ( type )=>{
-				expect( ()=>{
-					var chainable = s.newChainable( type ).addDataValidation( dv );
-				}).toThrow( type="cfsimplicity.spreadsheet.invalidValidationConstraint" );
 			})
 
 		})

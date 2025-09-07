@@ -181,6 +181,57 @@ component{
 			return createIntegerConstraint();
 	}
 
+	private void function createDateConstraint(){
+		if( !IsDate( variables.maxDate ) ){
+			variables.validationConstraint = variables.dataValidationHelper.createDateConstraint(
+				getConstraintOperatorObject( "GREATER_OR_EQUAL" )
+				,getWorkbookSpecificDateValue( variables.minDate )
+				,JavaCast( "null", "" )
+				,"yyyy-MM-dd" //xlsx ignores this? https://stackoverflow.com/a/44312964/204620
+			);
+			return;
+		}
+		if( !IsDate( variables.minDate ) ){
+			variables.validationConstraint = variables.dataValidationHelper.createDateConstraint(
+				getConstraintOperatorObject( "LESS_OR_EQUAL" )
+				,getWorkbookSpecificDateValue( variables.maxDate )
+				,JavaCast( "null", "" )
+				,"yyyy-MM-dd"
+			);
+			return;
+		}
+		variables.validationConstraint = variables.dataValidationHelper.createDateConstraint(
+			getConstraintOperatorObject( "BETWEEN" )
+			,getWorkbookSpecificDateValue( variables.minDate )
+			,getWorkbookSpecificDateValue( variables.maxDate )
+			,"yyyy-MM-dd"
+		);
+	}
+
+	private void function createIntegerConstraint(){
+		if( !Len( variables.maxInteger ) ){
+			variables.validationConstraint = variables.dataValidationHelper.createIntegerConstraint(
+				getConstraintOperatorObject( "GREATER_OR_EQUAL" )
+				,variables.minInteger
+				,JavaCast( "null", "" ) //HSSF won't accept an empty string
+			);
+			return;
+		}
+		if( !Len( variables.minInteger ) ){
+			variables.validationConstraint = variables.dataValidationHelper.createIntegerConstraint(
+				getConstraintOperatorObject( "LESS_OR_EQUAL" )
+				,variables.maxInteger
+				,JavaCast( "null", "" )
+			);
+			return;
+		}
+		variables.validationConstraint = variables.dataValidationHelper.createIntegerConstraint(
+			getConstraintOperatorObject( "BETWEEN" )
+			,variables.minInteger
+			,variables.maxInteger
+		);
+	}
+
 	private void function createListConstraintFromArray(){
 		variables.validationConstraint = variables.dataValidationHelper.createExplicitListConstraint( variables.validValues );
 	}
@@ -190,29 +241,6 @@ component{
 		var cellReference = variables.library.getRangeHelper().convertRangeReferenceToAbsoluteAddress( variables.valuesSourceCellRange );
 		var sheetAndCellReference = quoteSheetNameIfRequired( sheetName ) & "!" & cellReference;
 		variables.validationConstraint =  variables.dataValidationHelper.createFormulaListConstraint( sheetAndCellReference );
-	}
-
-	private void function createDateConstraint(){
-		if( !IsDate( variables.minDate ) || !IsDate( variables.maxDate ) )
-			Throw( type=variables.library.getExceptionType() & ".invalidValidationConstraint", message="Invalid date validation constraint", detail="You must specify a date range with both minimum and maximum dates" );
-		var comparisonOperator = variables.library.createJavaObject( "org.apache.poi.ss.usermodel.DataValidationConstraint$OperatorType" )[ "BETWEEN" ];
-		variables.validationConstraint = variables.dataValidationHelper.createDateConstraint(
-			comparisonOperator
-			,getWorkbookSpecificDateValue( variables.minDate )
-			,getWorkbookSpecificDateValue( variables.maxDate )
-			,"yyyy-MM-dd" //xlsx ignores this? https://stackoverflow.com/a/44312964/204620
-		);
-	}
-
-	private void function createIntegerConstraint(){
-		if( !IsValid( "integer", variables.minInteger ) || !IsValid( "integer", variables.maxInteger ) )
-			Throw( type=variables.library.getExceptionType() & ".invalidValidationConstraint", message="Invalid integer validation constraint", detail="You must specify an integer range with both minimum and maximum values" );
-		var comparisonOperator = variables.library.createJavaObject( "org.apache.poi.ss.usermodel.DataValidationConstraint$OperatorType" )[ "BETWEEN" ];
-		variables.validationConstraint = variables.dataValidationHelper.createIntegerConstraint(
-			comparisonOperator
-			,variables.minInteger
-			,variables.maxInteger
-		);
 	}
 
 	private string function getWorkbookSpecificDateValue( required date date ){
@@ -252,6 +280,10 @@ component{
 
 	private any function constraintAppliedToSheet(){
 		return validationAppliedToSheet().getValidationConstraint();
+	}
+
+	private any function getConstraintOperatorObject( required string type ){
+		return variables.library.createJavaObject( "org.apache.poi.ss.usermodel.DataValidationConstraint$OperatorType" )[ arguments.type ];
 	}
 
 }
