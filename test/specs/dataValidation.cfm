@@ -132,8 +132,8 @@ describe( "dataValidation", ()=>{
 			variables.spreadsheetTypes.Each( ( type )=>{
 				var dv = s.newDataValidation()
 					.onCells( "B1" )
-					.withMinDate( "=$A1" )
-					.withMaxDate( "=$A2" );
+					.withMinDate( "=$A$1" )
+					.withMaxDate( "=$A$2" );
 				var chainable = s.newChainable( type )
 					.addColumn( [ minDate, maxDate ] ) //A1-2
 					.addDataValidation( dv );
@@ -184,8 +184,8 @@ describe( "dataValidation", ()=>{
 			variables.spreadsheetTypes.Each( ( type )=>{
 				var dv = s.newDataValidation()
 					.onCells( "C1" )
-					.withMinInteger( "=SUM($A1:$A3)" )
-					.withMaxInteger( "=SUM($B1:$B3)" );
+					.withMinInteger( "=SUM($A$1:$A$3)" )
+					.withMaxInteger( "=SUM($B$1:$B$3)" );
 				var chainable = s.newChainable( type )
 					.addColumn( [ 1, 1, 1 ] ) //A1-3
 					.addColumn( [ 2, 2, 2 ] ) //B1-3
@@ -237,8 +237,8 @@ describe( "dataValidation", ()=>{
 			variables.spreadsheetTypes.Each( ( type )=>{
 				var dv = s.newDataValidation()
 					.onCells( "C1" )
-					.withMinDecimal( "=SUM($A1:$A3)" )
-					.withMaxDecimal( "=SUM($B1:$B3)" );
+					.withMinDecimal( "=SUM($A$1:$A$3)" )
+					.withMaxDecimal( "=SUM($B$1:$B$3)" );
 				var chainable = s.newChainable( type )
 					.addColumn( [ 1.1, 1.1, 1.1 ] ) //A1-3
 					.addColumn( [ 2.2, 2.2, 2.2 ] ) //B1-3
@@ -288,6 +288,30 @@ describe( "dataValidation", ()=>{
 
 	})
 
+	describe( "custom constraints", ()=>{
+
+		it( "can constrain using a formula which must evaluate to true", ()=>{
+			variables.spreadsheetTypes.Each( ( type ) => {
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withFormula( "ISTEXT(A1)" );
+				var chainable = s.newChainable( type ).addDataValidation( dv );
+				expect( dv.getConstraintType() ).toBe( "formula" );
+			})
+		})
+
+		it( "will strip any leading '=' from the formula which POI won't allow", ()=>{
+			variables.spreadsheetTypes.Each( ( type ) => {
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withFormula( "=ISTEXT(A1)" );
+				var chainable = s.newChainable( type ).addDataValidation( dv );
+				expect( dv.getConstraintType() ).toBe( "formula" );
+			})
+		})
+
+	})
+
 	it( "knows its constraint type", ()=>{
 		variables.spreadsheetTypes.Each( ( type )=>{
 			var dv = s.newDataValidation()
@@ -300,7 +324,7 @@ describe( "dataValidation", ()=>{
 
 	it( "allows the validation error message to be customised", ()=>{
 		var errorTitle = "Wrong";
-		var errorMessage = "Think again, dude.";
+		var errorMessage = "Think again!";
 		variables.spreadsheetTypes.Each( ( type )=>{
 			var dv = s.newDataValidation()
 				.onCells( cellRange )

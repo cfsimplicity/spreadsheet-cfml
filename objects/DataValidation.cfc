@@ -12,6 +12,7 @@ component{
 	property name="maxInteger" default="";
 	property name="minLength" default="";
 	property name="maxLength" default="";
+	property name="customFormula" default="";
 	property name="errorMessage" default="";
 	property name="errorTitle" default="";
 	property name="suppressDropdown" type="boolean" default="false";
@@ -90,6 +91,11 @@ component{
 
 	public DataValidation function withMaxLength( required string value ){
 		variables.maxLength = arguments.value;
+		return this;
+	}
+
+	public DataValidation function withFormula( required string value ){
+		variables.customFormula = removeLeadingEqualsSignFrom( arguments.value );
 		return this;
 	}
 
@@ -207,6 +213,8 @@ component{
 			return createDecimalConstraint();
 		if( Len( variables.minLength ) || Len( variables.maxLength ) )
 			return createTextLengthConstraint();
+		if( Len( variables.customFormula ) )
+			return createCustomConstraint();
 	}
 
 	private void function createDateConstraint(){
@@ -308,6 +316,10 @@ component{
 		);
 	}
 
+	private void function createCustomConstraint(){
+		variables.validationConstraint = variables.dataValidationHelper.createCustomConstraint( variables.customFormula ); 
+	}
+
 	private void function createListConstraintFromArray(){
 		variables.validationConstraint = variables.dataValidationHelper.createExplicitListConstraint( variables.validValues );
 	}
@@ -362,6 +374,12 @@ component{
 
 	private any function getConstraintOperatorObject( required string type ){
 		return variables.library.createJavaObject( "org.apache.poi.ss.usermodel.DataValidationConstraint$OperatorType" )[ arguments.type ];
+	}
+
+	private string function removeLeadingEqualsSignFrom( required string input ){
+		if( arguments.input.Left( 1 ) !=  "=" )
+			return arguments.input;
+		return arguments.input.RemoveChars( 1, 1 );
 	}
 
 }
