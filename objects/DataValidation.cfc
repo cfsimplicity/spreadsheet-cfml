@@ -16,6 +16,7 @@ component{
 	property name="errorMessage" default="";
 	property name="errorTitle" default="";
 	property name="suppressDropdown" type="boolean" default="false";
+	property name="allowEmptyCells" type="boolean" default="true";
 	/* Internal */
 	property name="library";
 	property name="workbookIsXlsx" type="boolean";
@@ -99,6 +100,11 @@ component{
 		return this;
 	}
 
+	public DataValidation function withAllowEmptyCells( boolean value=true ){
+		variables.allowEmptyCells = arguments.value;
+		return this;
+	}
+
 	public DataValidation function withErrorTitle( required string errorTitle ){
 		variables.errorTitle = arguments.errorTitle;
 		return this;
@@ -130,6 +136,7 @@ component{
 			variables.dataValidation.createErrorBox( variables.errorTitle, variables.errorMessage );
 		if( variables.suppressDropdown )
 			setDropdownSuppression();
+		setAllowEmptyCells();
 		variables.sheet.addValidationData( variables.dataValidation );
 		return this;
 	}
@@ -163,6 +170,10 @@ component{
 		if( !sheetHasValidation() )
 			return "";
 		return validationAppliedToSheet().getErrorBoxText();
+	}
+
+	public boolean function allowEmptyCellsSettingAppliedToSheet(){
+		return validationAppliedToSheet().getEmptyCellAllowed();
 	}
 
 	public boolean function suppressDropdownSettingArrowAppliedToSheet(){
@@ -358,6 +369,10 @@ component{
 		// See https://poi.apache.org/components/spreadsheet/quick-guide.html#Validation
 		var falseForXlsxTrueForXls = !variables.workbookIsXlsx;
 		variables.dataValidation.setSuppressDropDownArrow( JavaCast( "boolean", falseForXlsxTrueForXls ) );
+	}
+
+	private void function setAllowEmptyCells(){
+		variables.dataValidation.setEmptyCellAllowed( JavaCast( "boolean", variables.allowEmptyCells ) );
 	}
 
 	private boolean function sheetHasValidation(){

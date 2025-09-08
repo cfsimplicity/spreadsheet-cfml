@@ -337,6 +337,17 @@ describe( "dataValidation", ()=>{
 		})
 	})
 
+	it( "allows the 'Ignore blanks' or 'Allow empty cells' flag to be turned off", ()=>{
+		variables.spreadsheetTypes.Each( ( type )=>{
+			var dv = s.newDataValidation()
+				.onCells( cellRange )
+				.withMinInteger( 10 )
+				.withAllowEmptyCells( false );
+			var chainable = s.newChainable( type ).addDataValidation( dv );
+			expect( dv.allowEmptyCellsSettingAppliedToSheet() ).toBeFalse();
+		})
+	})
+
 	describe( "throws an exception if", ()=>{
 
 		it( "the specified source sheet doesn't exist", ()=>{
