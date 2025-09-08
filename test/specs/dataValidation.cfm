@@ -151,7 +151,7 @@ describe( "dataValidation", ()=>{
 				var dv = s.newDataValidation()
 					.onCells( cellRange )
 					.withMinInteger( 140 );
-				var chainable = s.newChainable(type).addDataValidation( dv );
+				var chainable = s.newChainable( type ).addDataValidation( dv );
 				expect( dv.getConstraintType() ).toBe( "integer" );
 				expect( dv.getConstraintOperator() ).toBe( "GREATER_OR_EQUAL" );
 			})
@@ -162,7 +162,7 @@ describe( "dataValidation", ()=>{
 				var dv = s.newDataValidation()
 					.onCells( cellRange )
 					.withMaxInteger( 5 );
-				var chainable = s.newChainable(type).addDataValidation( dv );
+				var chainable = s.newChainable( type ).addDataValidation( dv );
 				expect( dv.getConstraintType() ).toBe( "integer" );
 				expect( dv.getConstraintOperator() ).toBe( "LESS_OR_EQUAL" );
 			})
@@ -204,7 +204,7 @@ describe( "dataValidation", ()=>{
 				var dv = s.newDataValidation()
 					.onCells( cellRange )
 					.withMinDecimal( 1.5 );
-				var chainable = s.newChainable(type).addDataValidation( dv );
+				var chainable = s.newChainable( type ).addDataValidation( dv );
 				expect( dv.getConstraintType() ).toBe( "decimal" );
 				expect( dv.getConstraintOperator() ).toBe( "GREATER_OR_EQUAL" );
 			})
@@ -215,7 +215,7 @@ describe( "dataValidation", ()=>{
 				var dv = s.newDataValidation()
 					.onCells( cellRange )
 					.withMaxDecimal( 2.5 );
-				var chainable = s.newChainable(type).addDataValidation( dv );
+				var chainable = s.newChainable( type ).addDataValidation( dv );
 				expect( dv.getConstraintType() ).toBe( "decimal" );
 				expect( dv.getConstraintOperator() ).toBe( "LESS_OR_EQUAL" );
 			})
@@ -244,6 +244,44 @@ describe( "dataValidation", ()=>{
 					.addColumn( [ 2.2, 2.2, 2.2 ] ) //B1-3
 					.addDataValidation( dv );
 				expect( dv.getConstraintType() ).toBe( "decimal" );
+				expect( dv.getConstraintOperator() ).toBe( "BETWEEN" );
+			})
+		})
+
+	})
+
+	describe( "text length constraints", ()=>{
+
+		it("can constrain input to a minimum text length", () => {
+			variables.spreadsheetTypes.Each( ( type ) => {
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withMinLength( 5 );
+				var chainable = s.newChainable( type ).addDataValidation( dv );
+				expect( dv.getConstraintType() ).toBe( "length" );
+				expect( dv.getConstraintOperator() ).toBe( "GREATER_OR_EQUAL" );
+			})
+		})
+
+		it("can constrain input to a maximum text length", () => {
+			variables.spreadsheetTypes.Each( ( type ) => {
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withMaxLength( 10 );
+				var chainable = s.newChainable( type ).addDataValidation( dv );
+				expect( dv.getConstraintType() ).toBe( "length" );
+				expect( dv.getConstraintOperator() ).toBe( "LESS_OR_EQUAL" );
+			})
+		})
+
+		it( "can constrain input to a text length range", ()=>{
+			variables.spreadsheetTypes.Each( ( type )=>{
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withMinLength( 5 )
+					.withMaxLength( 10 );
+				var chainable = s.newChainable( type ).addDataValidation( dv );
+				expect( dv.getConstraintType() ).toBe( "length" );
 				expect( dv.getConstraintOperator() ).toBe( "BETWEEN" );
 			})
 		})

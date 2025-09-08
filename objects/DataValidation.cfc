@@ -10,6 +10,8 @@ component{
 	property name="maxDecimal" default="";
 	property name="minInteger" default="";
 	property name="maxInteger" default="";
+	property name="minLength" default="";
+	property name="maxLength" default="";
 	property name="errorMessage" default="";
 	property name="errorTitle" default="";
 	property name="suppressDropdown" type="boolean" default="false";
@@ -78,6 +80,16 @@ component{
 
 	public DataValidation function withMaxInteger( required string value ){
 		variables.maxInteger = arguments.value;
+		return this;
+	}
+
+	public DataValidation function withMinLength( required string value ){
+		variables.minLength = arguments.value;
+		return this;
+	}
+
+	public DataValidation function withMaxLength( required string value ){
+		variables.maxLength = arguments.value;
 		return this;
 	}
 
@@ -193,6 +205,8 @@ component{
 			return createIntegerConstraint();
 		if( Len( variables.minDecimal ) || Len( variables.maxDecimal ) )
 			return createDecimalConstraint();
+		if( Len( variables.minLength ) || Len( variables.maxLength ) )
+			return createTextLengthConstraint();
 	}
 
 	private void function createDateConstraint(){
@@ -267,6 +281,30 @@ component{
 			getConstraintOperatorObject( "BETWEEN" )
 			,variables.minDecimal
 			,variables.maxDecimal
+		);
+	}
+
+	private void function createTextLengthConstraint(){
+		if( !Len( variables.maxLength ) ){
+			variables.validationConstraint = variables.dataValidationHelper.createTextLengthConstraint(
+				getConstraintOperatorObject( "GREATER_OR_EQUAL" )
+				,variables.minLength
+				,JavaCast( "null", "" ) //HSSF won't accept an empty string
+			);
+			return;
+		}
+		if( !Len( variables.minLength ) ){
+			variables.validationConstraint = variables.dataValidationHelper.createTextLengthConstraint(
+				getConstraintOperatorObject( "LESS_OR_EQUAL" )
+				,variables.maxLength
+				,JavaCast( "null", "" )
+			);
+			return;
+		}
+		variables.validationConstraint = variables.dataValidationHelper.createTextLengthConstraint(
+			getConstraintOperatorObject( "BETWEEN" )
+			,variables.minLength
+			,variables.maxLength
 		);
 	}
 
