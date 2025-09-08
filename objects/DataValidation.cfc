@@ -6,6 +6,8 @@ component{
 	property name="valuesSourceCellRange" default="";
 	property name="minDate" default="";
 	property name="maxDate" default="";
+	property name="minDecimal" default="";
+	property name="maxDecimal" default="";
 	property name="minInteger" default="";
 	property name="maxInteger" default="";
 	property name="errorMessage" default="";
@@ -56,6 +58,16 @@ component{
 
 	public DataValidation function withMaxDate( required string date ){
 		variables.maxDate = arguments.date;
+		return this;
+	}
+
+	public DataValidation function withMinDecimal( required string value ){
+		variables.minDecimal = arguments.value;
+		return this;
+	}
+
+	public DataValidation function withMaxDecimal( required string value ){
+		variables.maxDecimal = arguments.value;
 		return this;
 	}
 
@@ -179,6 +191,8 @@ component{
 			return createDateConstraint();
 		if( Len( variables.minInteger ) || Len( variables.maxInteger ) )
 			return createIntegerConstraint();
+		if( Len( variables.minDecimal ) || Len( variables.maxDecimal ) )
+			return createDecimalConstraint();
 	}
 
 	private void function createDateConstraint(){
@@ -229,6 +243,30 @@ component{
 			getConstraintOperatorObject( "BETWEEN" )
 			,variables.minInteger
 			,variables.maxInteger
+		);
+	}
+
+	private void function createDecimalConstraint(){
+		if( !Len( variables.maxDecimal ) ){
+			variables.validationConstraint = variables.dataValidationHelper.createDecimalConstraint(
+				getConstraintOperatorObject( "GREATER_OR_EQUAL" )
+				,variables.minDecimal
+				,JavaCast( "null", "" ) //HSSF won't accept an empty string
+			);
+			return;
+		}
+		if( !Len( variables.minDecimal ) ){
+			variables.validationConstraint = variables.dataValidationHelper.createDecimalConstraint(
+				getConstraintOperatorObject( "LESS_OR_EQUAL" )
+				,variables.maxDecimal
+				,JavaCast( "null", "" )
+			);
+			return;
+		}
+		variables.validationConstraint = variables.dataValidationHelper.createDecimalConstraint(
+			getConstraintOperatorObject( "BETWEEN" )
+			,variables.minDecimal
+			,variables.maxDecimal
 		);
 	}
 

@@ -197,6 +197,59 @@ describe( "dataValidation", ()=>{
 
 	})
 
+	describe( "decimal constraints", ()=>{
+
+		it("can constrain input to a minimum decimal", () => {
+			variables.spreadsheetTypes.Each( ( type ) => {
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withMinDecimal( 1.5 );
+				var chainable = s.newChainable(type).addDataValidation( dv );
+				expect( dv.getConstraintType() ).toBe( "decimal" );
+				expect( dv.getConstraintOperator() ).toBe( "GREATER_OR_EQUAL" );
+			})
+		})
+
+		it("can constrain input to a maximum decimal", () => {
+			variables.spreadsheetTypes.Each( ( type ) => {
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withMaxDecimal( 2.5 );
+				var chainable = s.newChainable(type).addDataValidation( dv );
+				expect( dv.getConstraintType() ).toBe( "decimal" );
+				expect( dv.getConstraintOperator() ).toBe( "LESS_OR_EQUAL" );
+			})
+		})
+
+		it( "can constrain input to a decimal range", ()=>{
+			variables.spreadsheetTypes.Each( ( type )=>{
+				var dv = s.newDataValidation()
+					.onCells( cellRange )
+					.withMinDecimal( 1.5 )
+					.withMaxDecimal( 2.5 );
+				var chainable = s.newChainable( type ).addDataValidation( dv );
+				expect( dv.getConstraintType() ).toBe( "decimal" );
+				expect( dv.getConstraintOperator() ).toBe( "BETWEEN" );
+			})
+		})
+
+		it( "can constrain input to decimals derived from formulas", ()=>{
+			variables.spreadsheetTypes.Each( ( type )=>{
+				var dv = s.newDataValidation()
+					.onCells( "C1" )
+					.withMinDecimal( "=SUM($A1:$A3)" )
+					.withMaxDecimal( "=SUM($B1:$B3)" );
+				var chainable = s.newChainable( type )
+					.addColumn( [ 1.1, 1.1, 1.1 ] ) //A1-3
+					.addColumn( [ 2.2, 2.2, 2.2 ] ) //B1-3
+					.addDataValidation( dv );
+				expect( dv.getConstraintType() ).toBe( "decimal" );
+				expect( dv.getConstraintOperator() ).toBe( "BETWEEN" );
+			})
+		})
+
+	})
+
 	it( "knows its constraint type", ()=>{
 		variables.spreadsheetTypes.Each( ( type )=>{
 			var dv = s.newDataValidation()
