@@ -1,3 +1,21 @@
+## 5.2.0 - 9 September 2025
+
+- Enhancements
+	- \#429 Allow info() to read a password protected file
+	- \#433 Data validation: support minimum or maximum date or integer values
+	- \#434 Data validation: allow integer and date inputs to accept a formula
+	- \#435 Data validation: support decimal min/max/range constraints
+	- \#436 Data validation: support text length constraint
+	- \#437 Data validation: support custom constraints using formula
+	- \#438 Data validation: Allow the 'Ignore blanks' or 'Allow empty cells' flag to be turned off
+
+- Fixes
+ - \#426 Read() not importing trailing empty columns when headerRow and rows arguments specified
+
+- Maintenance
+	-	\#439 Upgrade Excel Streaming Reader to 5.1.1
+	- \#432 Upgrade Commons CSV to 1.14.1
+
 ## 5.1.0 - 19 May 2025
 
 - Enhancements
