@@ -1,3 +1,9 @@
+## 5.2.1 - 16 November 2025
+
+- Maintenance
+	- \#441 Upgrade POI to 5.5.0
+	- \#442 Upgrade Excel Streaming Reader to 5.1.2
+
 ## 5.2.0 - 9 September 2025
 
 - Enhancements

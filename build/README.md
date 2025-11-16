@@ -31,6 +31,8 @@ Here is the current list of required jars:
 	https://mvnrepository.com/artifact/org.apache.commons/commons-compress
 * commons-io
 	https://mvnrepository.com/artifact/commons-io/commons-io
+* commons-lang3 (seems to be required from v5.5.0)
+	https://mvnrepository.com/artifact/org.apache.commons/commons-lang3/
 * commons-math3
 	https://mvnrepository.com/artifact/org.apache.commons/commons-math3
 * log4j-api
