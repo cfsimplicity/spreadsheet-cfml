@@ -274,12 +274,54 @@ describe( "readCsv", ()=>{
 		expect( object.getFormat().getTrim() ).toBeFalse();
 	})
 
+	describe( "readCsv() into a query object", ()=>{
+
+		it( "it can return a CSV with headers as a query", ()=>{
+			var csv = 'name,number#newline#"Frumpo McNugget",12345';
+			FileWrite( tempCsvPath, csv );
+			var expected = QueryNew( "name,number", "VarChar,VarChar", [ [ "Frumpo McNugget", "12345" ] ] );
+			var actual = s.readCsv( tempCsvPath )
+				.intoAQuery()
+				.withFirstRowIsHeader()
+				.execute();
+			expect( actual ).toBe( expected );
+		})
+
+		it( "it can return a CSV with no headers as a query with auto-generated columns", ()=>{
+			var path = getTestFilePath( "test.csv" );
+			var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "Frumpo McNugget", "12345" ] ] );
+			var actual = s.readCsv( path )
+				.intoAQuery()
+				.execute();
+			expect( actual ).toBe( expected );
+		})
+
+		it( "it can return a CSV with no headers and variable length rows as a query with auto-generated columns", ()=>{
+			var csv = 'one#newline#two,three';
+			FileWrite( tempCsvPath, csv );
+			var expected = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "one", "" ], [ "two", "three" ] ] );
+			var actual = s.readCsv( tempCsvPath )
+				.intoAQuery()
+				.execute();
+			expect( actual ).toBe( expected );
+		})
+
+	})
+
 	describe( "readCsv() throws an exception if", ()=>{
 
 		it( "a zero or positive integer is not passed to withSkipFirstRows()", ()=>{
 			expect( ()=>{
 				var actual = s.readCsv( getTestFilePath( "test.csv" ) ).withSkipFirstRows( -1 );
 			}).toThrow( type="cfsimplicity.spreadsheet.invalidArgument" );
+		})
+
+		it( "returning a query and the number of headers doesn't match the number of columns", ()=>{
+			expect( ()=>{
+				var csv = 'name#newline#"Frumpo McNugget",12345';
+				FileWrite( tempCsvPath, csv );
+				var actual = s.readCsv( tempCsvPath ).intoAQuery().withFirstRowIsHeader().execute();
+			}).toThrow( type="cfsimplicity.spreadsheet.invalidCsvHeaders" );
 		})
 
 	})

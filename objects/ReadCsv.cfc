@@ -1,6 +1,7 @@
 component extends="BaseCsv" accessors="true"{
 
 	property name="firstRowIsHeader" type="boolean" default="false";
+	property name="maxNumberOfColumns" type="integer" default=0;
 	property name="numberOfRowsToSkip" default=0;
 	property name="processRowsAsJavaArrays" type="boolean" default="true";
 	property name="returnFormat" default="none";
@@ -20,6 +21,11 @@ component extends="BaseCsv" accessors="true"{
 
 	public ReadCsv function intoAnArray(){
 		variables.returnFormat = "array";
+		return this;
+	}
+
+	public ReadCsv function intoAQuery(){
+		variables.returnFormat = "query";
 		return this;
 	}
 
@@ -72,7 +78,7 @@ component extends="BaseCsv" accessors="true"{
 					skippedRecords++;
 					continue;
 				}
-				if( !variables.processRowsAsJavaArrays )
+				if( !variables.processRowsAsJavaArrays || ( variables.returnFormat == "query" ) )
 					values = convertJavaArrayToCFML( values );
 				if( variables.firstRowIsHeader && IsNull( variables.headerValues ) ){
 					variables.headerValues = values;
@@ -83,8 +89,11 @@ component extends="BaseCsv" accessors="true"{
 					continue;
 				if( !IsNull( variables.rowProcessor ) )
 					values = variables.rowProcessor( values, ++currentRecordNumber, result.columns );
-				if( variables.returnFormat == "array" )
+				if( ( variables.returnFormat == "array" ) || ( variables.returnFormat == "query" ) )
 					result.data.Append( values );
+
+				if( variables.returnFormat == "query" )
+					variables.maxNumberOfColumns = Max( ArrayLen( values ), variables.maxNumberOfColumns );//query conversion requires consistency between headers/data
 			}
 		}
 		finally {
@@ -93,6 +102,10 @@ component extends="BaseCsv" accessors="true"{
 		if( variables.returnFormat == "array" ){
 			useManuallySpecifiedHeaderForColumnsIfRequired( result );
 			return result;
+		}
+		if( variables.returnFormat == "query" ){
+			useManuallySpecifiedHeaderForColumnsIfRequired( result );
+			return convertResultToQuery( result );
 		}
 		return this;
 	}
@@ -110,6 +123,33 @@ component extends="BaseCsv" accessors="true"{
 
 	private function convertJavaArrayToCFML( required javaArray ){
 		return ArrayNew( 1 ).Append( arguments.javaArray, true );
+	}
+
+	private query function convertResultToQuery( required struct result ){
+		var numberOfHeaders = ArrayLen( arguments.result.columns );
+		throwErrorIfHeaderColumnMismatch( numberOfHeaders );
+		if( numberOfHeaders == 0 )
+			generateDefaultColumns( arguments.result );
+		equalizeColumnLengths( arguments.result );
+		return DeserializeJson( SerializeJson( arguments.result ), false );
+	}
+
+	private void function generateDefaultColumns( required struct result ){
+		for( var i=1; i <= variables.maxNumberOfColumns; i++ )
+			ArrayAppend( arguments.result.columns, "column" & i );
+	}
+
+	private void function equalizeColumnLengths( required struct result ){
+		arguments.result.data.Each( function( row, index ){
+			ArrayResize( result.data[ index ], variables.maxNumberOfColumns );//don't scope arguments within closure
+		});
+	}
+
+	private void function throwErrorIfHeaderColumnMismatch( required numeric numberOfHeaders ){
+		if( arguments.numberOfHeaders == 0 )
+			return;
+		if( arguments.numberOfHeaders != variables.maxNumberOfColumns )
+ 			Throw( type=variables.library.getExceptionType() & ".invalidCsvHeaders", message="Invalid CSV headers/column names", detail="The number of headers (#arguments.numberOfHeaders#) doesn't match the number of columns (#variables.maxNumberOfColumns#)" );
 	}
 
 }
