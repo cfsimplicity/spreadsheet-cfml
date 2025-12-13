@@ -1,3 +1,11 @@
+## 5.3.0 - 13 December 2025
+
+- Enhancements
+	- \#444 ReadCSV(): add option to return a query object
+
+- Maintenance
+	- \#445 Upgrade POI to 5.5.1 and Excel Streaming Reader to 5.2.0
+
 ## 5.2.1 - 16 November 2025
 
 - Maintenance
