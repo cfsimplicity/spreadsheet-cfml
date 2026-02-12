@@ -204,7 +204,7 @@ component extends="base"{
 		return ArrayMap( intermediateResult.data, ( row )=>{
 			var rowAsOrderedStruct = [:];
 			ArrayEach( intermediateResult.columns, ( column, index )=>{
-				rowAsOrderedStruct[ column ] = row[ index ];
+				rowAsOrderedStruct[ column ] = ( index <= row.Len() ) ? row[ index ] : "";
 			});
 			return rowAsOrderedStruct;
 		})
