@@ -47,6 +47,22 @@ describe( "read", ()=>{
     })
   })
 
+	it( "can handle blank trailing cells when reading into an array of structs", ()=>{
+		var columns = [ "name", "number" ];
+		var data = [ [ "Frumpo McNugget" ] ];
+		spreadsheetTypes.Each( ( type )=>{
+			var path = variables[ "temp" & type & "Path" ];
+			s.newChainable( type )
+				.addRow( columns )
+				.addRows( data )
+				.write( path, true );
+			//arry of structs
+			expected = [ [ name: "Frumpo McNugget", number: "" ] ];
+			actual = s.read( src=path, format="arrayOfStructs", headerRow=1 );
+			expect( actual ).toBe( expected );
+		})
+	})
+
 	it( "Returns no data if there are no *visible* sheets", ()=>{
 		spreadsheetTypes.Each( ( type )=>{
 			var path = variables[ "temp" & type & "Path" ];
