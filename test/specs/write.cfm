@@ -1,24 +1,15 @@
 <cfscript>
 describe( "write", ()=>{
 
-	it( "Writes an XLS object correctly", ()=>{
-		data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a","b" ], [ "c","d" ] ] );
-		var workbook = s.newXls();
-		s.addRows( workbook, data )
-			.write( workbook, tempXlsPath, true );
-		var expected = data;
-		var actual = s.read( src=tempXlsPath, format="query" );
-		expect( actual ).toBe( expected );
-	})
-
-	it( "Writes an XLSX object correctly", ()=>{
-		var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "b" ], [ "c", "d" ] ] );
-		var workbook = s.newXlsx();
-		s.addRows( workbook, data )
-			.write( workbook, tempXlsxPath, true );
-		var expected = data;
-		var actual = s.read( src=tempXlsxPath, format="query" );
-		expect( actual ).toBe( expected );
+	it( "Writes a spreadsheet object correctly", ()=>{
+		var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a","b" ], [ "c","d" ] ] );
+		spreadsheetTypes.Each( ( type )=>{
+			var path = variables[ "temp" & type & "Path" ];
+			s.newChainable( type ).addRows( data ).write( path, true );
+			var expected = data;
+			var actual = s.read( src=path, format="query" );
+			expect( actual ).toBe( expected );
+		});
 	})
 
 	it( "Writes a streaming XLSX object without error", ()=>{
