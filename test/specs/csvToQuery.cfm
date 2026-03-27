@@ -24,7 +24,7 @@ describe( "csvToQuery", ()=>{
 	it( "can read the csv from a VFS file", ()=>{
 		var path = "ram:///test.csv";
 		if( !DirectoryExists( GetDirectoryFromPath( path ) ) ) //Skip when there's an issue with the ram drive
-			return;
+			skip();
 		FileCopy( getTestFilePath( "test.csv" ), path );
 		var actual = s.csvToQuery( filepath=path );
 		expect( actual ).toBe( basicExpectedQuery );

@@ -178,17 +178,14 @@ describe( "addRow", ()=>{
 		})
 	})
 
-	it(
-		title="Can insert more than 4009 rows containing dates without triggering an exception",
-		body=()=>{
-			workbooks.Each( ( wb )=>{
-				for( var i=1; i LTE 4010; i++ ){
-					variables.s.addRow( wb, "2016-07-14" );
-				}
-			})
-		},
-		skip=s.getIsACF()
-	);
+	it( "Can insert more than 4009 rows containing dates without triggering an exception", ()=>{
+		if( s.getIsACF() ) skip();
+		workbooks.Each( ( wb )=>{
+			for( var i=1; i LTE 4010; i++ ){
+				variables.s.addRow( wb, "2016-07-14" );
+			}
+		})
+	})
 
 	it( "Doesn't error if the workbook is SXSSF and autoSizeColumns is true", ()=>{
 		var wb = s.newStreamingXlsx();

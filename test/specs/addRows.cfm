@@ -508,21 +508,18 @@ describe( "addRows", ()=>{
 
 	describe( "addRows throws an exception if", ()=>{
 
-		it(
-			title="adding more than 65536 rows to a binary spreadsheet",
-			body=()=>{
-				var xls = workbooks[ 1 ];
-				expect( ()=>{
-					var rows = [];
-					for( var i=1; i <= 65537; i++ ){
-						rows.append( [ i ] );
-					}
-					var data = QueryNew( "ID","Integer",rows );
-					variables.s.addRows( xls, data );
-				}).toThrow( type="cfsimplicity.spreadsheet.tooManyRows" );
-			},
-			skip=!s.getIsLucee()
-		);
+		it( "adding more than 65536 rows to a binary spreadsheet", ()=>{
+			if( !s.getIsLucee() ) skip();
+			var xls = workbooks[ 1 ];
+			expect( ()=>{
+				var rows = [];
+				for( var i=1; i <= 65537; i++ ){
+					rows.append( [ i ] );
+				}
+				var data = QueryNew( "ID","Integer",rows );
+				variables.s.addRows( xls, data );
+			}).toThrow( type="cfsimplicity.spreadsheet.tooManyRows" );
+		})
 
 		it( "row is zero or less", ()=>{
 			workbooks.Each( ( wb )=>{
