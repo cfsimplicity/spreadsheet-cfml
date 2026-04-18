@@ -8,7 +8,7 @@ component extends="base"{
 		// Numeric must precede date test
 		// Golden default rule: treat numbers with leading zeros as STRINGS: not numbers (lucee) or dates (ACF);
 		// Do not detect booleans: leave as strings
-		if( REFind( "^0[\d]+", arguments.value ) )
+		if( JavaCast( "String", arguments.value ).matches( "^0[\d]+" ) )
 			return "string";
 		if( _IsNumeric( arguments.value ) )
 			return "numeric";

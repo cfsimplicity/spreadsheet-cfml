@@ -84,10 +84,7 @@ component extends="base"{
 		if( ParseDateTime( arguments.value ).Year() > 9999 ) //ACF future limit
 			return false;
 		// ACF accepts "9a", "9p", "9 a" as dates
-		// ACF no member function
-		if( REFind( "^\d+\s*[apAP]{1,1}$", arguments.value ) )
-			return false;
-		return true;
+		return !JavaCast( "String", arguments.value ).matches( "^\d+\s*[apAP]{1,1}$" )
 	}
 
 	any function _ParseDateTime( required value ){

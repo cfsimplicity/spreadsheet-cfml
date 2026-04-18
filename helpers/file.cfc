@@ -61,7 +61,7 @@ component extends="base"{
 
 	string function filenameSafe( required string input ){
 		var charsToRemove	=	"\|\\\*\/\:""<>~&";
-		var result = arguments.input.reReplace( "[#charsToRemove#]+", "", "ALL" ).Left( 255 );
+		var result = JavaCast( "String", arguments.input ).replaceAll( "[#charsToRemove#]+", "" ).Left( 255 );
 		if( result.IsEmpty() )
 			return "renamed"; // in case all chars have been replaced (unlikely but possible)
 		return result;

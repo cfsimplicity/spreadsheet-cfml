@@ -351,7 +351,8 @@ component{
 	}
 
 	private string function quoteSheetNameIfRequired( required string sheetName ){
-		if( arguments.sheetName.REFindNoCase( "\W" ) ) //any non word character: space, hyphen etc... (but not underscore)
+		var pattern = CreateObject( "java", "java.util.regex.Pattern" ).compile( "\W" );//any non word character: space, hyphen etc... (but not underscore)
+		if( pattern.matcher( arguments.sheetName ).find() ) 
 			return "'" & sheetName & "'";
 		return arguments.sheetName;
 	}

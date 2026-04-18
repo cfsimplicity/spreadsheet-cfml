@@ -669,7 +669,7 @@ component accessors="true"{
 
 	public void function download( required workbook, required string filename, string contentType ){
 		var safeFilename = getFileHelper().filenameSafe( arguments.filename );
-		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$", "" );
+		var filenameWithoutExtension = safeFilename.replaceAll( "\.xlsx?$", "" );
 		var extension = isXmlFormat( arguments.workbook )? "xlsx": "xls";
 		arguments.filename = filenameWithoutExtension & "." & extension;
 		var binary = readBinary( arguments.workbook );
@@ -699,7 +699,7 @@ component accessors="true"{
 		var csv = read( argumentCollection=arguments );
 		var binary = ToBinary( ToBase64( csv.Trim() ) );
 		var safeFilename = getFileHelper().filenameSafe( arguments.filename );
-		var filenameWithoutExtension = safeFilename.REReplace( "\.csv$","" );
+		var filenameWithoutExtension = safeFilename.replaceAll( "\.csv$", "" );
 		var extension = "csv";
 		arguments.filename = filenameWithoutExtension & "." & extension;
 		getFileHelper().downloadBinaryVariable( binary, arguments.filename, arguments.contentType );
@@ -718,7 +718,7 @@ component accessors="true"{
 		,struct datatypes
 	){
 		var safeFilename = getFileHelper().filenameSafe( arguments.filename );
-		var filenameWithoutExtension = safeFilename.REReplace( "\.xlsx?$","" );
+		var filenameWithoutExtension = safeFilename.replaceAll( "\.xlsx?$", "" );
 		var extension = ( arguments.xmlFormat || arguments.streamingXml )? "xlsx": "xls";
 		arguments.filename = filenameWithoutExtension & "." & extension;
 		var binaryFromQueryArgs = {

@@ -133,7 +133,7 @@ component extends="base"{
 	}
 
 	private boolean function isHexColor( required string inputString ){
-		return arguments.inputString.REFind( "^##?[0-9A-Fa-f]{6,6}$" );
+		return JavaCast( "String", arguments.inputString ).matches( "^##?[0-9A-Fa-f]{6,6}$" );
 	}
 
 	private string function hexToRGB( required string hexColor ){
