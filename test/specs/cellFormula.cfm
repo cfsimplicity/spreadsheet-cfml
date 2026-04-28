@@ -148,6 +148,14 @@ describe( "cellFormula", ()=>{
 			})
 		})
 
+		it( "By default returns the string '##ERROR!' if the cell is an error type", ()=>{
+			workbooks.Each( ( wb )=>{
+				s.setCellValue( wb, 0, 2, 1 ).setCellFormula( wb, "##REF!", 3, 1 ); //reference error
+				var actual = s.getCellValue( wb, 3, 1 );
+				expect( actual ).toBe( "##ERROR!" );
+			})
+		})
+
 		it( "Can be configured to throw an exception on any formula evaluation error", ()=>{
 			workbooks.Each( ( wb )=>{
 				expect( ( wb )=>{
@@ -164,6 +172,16 @@ describe( "cellFormula", ()=>{
 						.setThrowExceptionOnFormulaError( true )
 						.setCellValue( wb, 0, 2, 1 )
 						.setCellFormula( wb, "A1/A2", 3, 1 ) //Divide by zero error
+						.getCellValue( wb, 3, 1 );
+				})
+				.toThrow( type="cfsimplicity.spreadsheet.failedFormula" );
+			})
+			workbooks.Each( ( wb )=>{
+				expect( ( wb )=>{
+					newSpreadsheetInstance()
+						.setThrowExceptionOnFormulaError( true )
+						.setCellValue( wb, 0, 2, 1 )
+						.setCellFormula( wb, "##REF!", 3, 1 ) //reference error
 						.getCellValue( wb, 3, 1 );
 				})
 				.toThrow( type="cfsimplicity.spreadsheet.failedFormula" );

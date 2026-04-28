@@ -51,8 +51,7 @@ component extends="base"{
 			return getFormatHelper().getDataFormatter().formatCellValue( arguments.cell, formulaEvaluator );
 		}
 		catch( any exception ){
-			if( library().getThrowExceptionOnFormulaError() )
-				getExceptionHelper().throwFormulaEvaluationException( arguments.cell );
+			throwCellErrorExceptionIfConfigured( arguments.cell );
 			// for some reason the cell value will be returned implicitly here
 			arguments.cell.setCellValue( JavaCast( "string", "##ERROR!" ) );
 		}
@@ -75,6 +74,10 @@ component extends="base"{
 			return arguments.cell.getBooleanCellValue();
 	 	if( cellIsOfType( arguments.cell, "BLANK" ) )
 	 		return "";
+		if( cellIsOfType( arguments.cell, "ERROR" ) ){
+			throwCellErrorExceptionIfConfigured( arguments.cell );
+			return "##ERROR!";
+		}
 		return getStringValue( arguments.cell );
 	}
 
@@ -227,8 +230,7 @@ component extends="base"{
 		catch( any exception ){
 			if( !exception.message.FindNoCase( "ERROR formula cell" ) )
 				rethrow;
-			if( library().getThrowExceptionOnFormulaError() )
-				getExceptionHelper().throwFormulaEvaluationException( arguments.cell );
+			throwCellErrorExceptionIfConfigured( arguments.cell );
 			return "##ERROR!";
 		}
 	}
@@ -239,6 +241,11 @@ component extends="base"{
 		if( arguments.cell.getCachedFormulaResultType().Equals( arguments.cell.getCellType().BOOLEAN ) )
 			return arguments.cell.getBooleanCellValue();
 		return getStringValue( arguments.cell );
+	}
+
+	private void function throwCellErrorExceptionIfConfigured( required cell ){
+		if( library().getThrowExceptionOnFormulaError() )
+			getExceptionHelper().throwFormulaEvaluationException( arguments.cell );
 	}
 
 }
