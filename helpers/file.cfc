@@ -14,7 +14,7 @@ component extends="base"{
 			Throw( type=library().getExceptionType() & ".invalidAlgorithm", message="Invalid algorithm", detail="'#arguments.algorithm#' is not a valid algorithm. Supported algorithms are: #validAlgorithms.ToList( ', ')#" );
 		lock name="#arguments.filepath#" timeout=5 {
 			var mode = library().createJavaObject( "org.apache.poi.poifs.crypt.EncryptionMode" );
-			var info = library().createJavaObject( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode[ arguments.algorithm ] );
+			var info = library().createJavaObject( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.valueOf( JavaCast( "string", arguments.algorithm ) ) );
 			var encryptor = info.getEncryptor();
 			encryptor.confirmPassword( JavaCast( "string", arguments.password ) );
 			try{

@@ -7,7 +7,7 @@ component extends="base"{
 	){
 		// TODO image objects don't always work, depending on how they're created: POI accepts it but the image is not displayed (broken)
 		var imageArgumentIsObject = IsImage( arguments.image );
-		if( imageArgumentIsObject && !arguments.KeyExists( "imageType" ) )
+		if( imageArgumentIsObject && ( !arguments.KeyExists( "imageType" ) || isNull( arguments.imageType ) ) )
 			Throw( type=library().getExceptionType() & ".invalidArgumentCombination", message="Invalid argument combination", detail="If you specify an image object, you must also provide the imageType argument" );
 		var imageArgumentIsFile = ( !imageArgumentIsObject && IsSimpleValue( arguments.image ) && FileExists( arguments.image ) );
 		if( !imageArgumentIsObject && IsSimpleValue( arguments.image ) && !imageArgumentIsFile )

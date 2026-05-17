@@ -73,7 +73,10 @@ component{
 		else
 			setFormulaRule();
 		setRuleFormat();
-		variables.sheetConditionalFormatting.addConditionalFormatting( [ variables.cellRangeAddress ], variables.conditionalFormattingRule );
+		var reflectArray = CreateObject( "java", "java.lang.reflect.Array" );
+		var addressArray = reflectArray.newInstance( variables.cellRangeAddress.getClass(), JavaCast( "int", 1 ) );
+		reflectArray.set( addressArray, JavaCast( "int", 0 ), variables.cellRangeAddress );
+		variables.sheetConditionalFormatting.addConditionalFormatting( addressArray, variables.conditionalFormattingRule );
 		return this;
 	}
 

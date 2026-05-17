@@ -37,7 +37,7 @@ describe( "cellValue", ()=>{
 		var value = CreateDate( 2015, 04, 12 );
 		workbooks.Each( ( wb )=>{
 			s.setCellValue( wb, value, 1, 1 );
-			var expected = DateFormat( value, "yyyy-mm-dd" );
+			var expected = DateFormat( value, s.getDateFormats().DATE );
 			var actual = s.getCellValue( wb, 1, 1 );
 			expect( actual ).toBe( expected );
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
@@ -191,7 +191,7 @@ describe( "cellValue", ()=>{
 			workbooks.Each( ( wb )=>{
 				s.setCellValue( wb, value, 1, 1, "date" );
 				var actual = s.getCellValue( wb, 1, 1 );
-				expect( DateFormat( actual, "yyyy-mm-dd" ) ).toBe( "1990-01-01" );
+				expect( DateFormat( actual, s.getDateFormats().DATE ) ).toBe( "1990-01-01" );
 				expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );// dates are numeric in Excel
 			})
 		})

@@ -23,20 +23,20 @@ component extends="base"{
 		if( !commentHasFontStyles( arguments.comment ) )
 			return this;
 		var font = arguments.workbook.createFont();
-		if( arguments.comment.KeyExists( "bold" ) )
+		if( arguments.comment.KeyExists( "bold" ) && !isNull(arguments.comment.bold))
 			font.setBold( JavaCast( "boolean", arguments.comment.bold ) );
-		if( arguments.comment.KeyExists( "color" ) )
+		if( arguments.comment.KeyExists( "color" )  && !isNull(arguments.comment.color))
 			font.setColor( getColorHelper().getColor( arguments.workbook, arguments.comment.color ) );
-		if( arguments.comment.KeyExists( "font" ) )
+		if( arguments.comment.KeyExists( "font" )  && !isNull(arguments.comment.front))
 			font.setFontName( JavaCast( "string", arguments.comment.font ) );
-		if( arguments.comment.KeyExists( "italic" ) )
+		if( arguments.comment.KeyExists( "italic" )  && !isNull(arguments.comment.italic))
 			font.setItalic( JavaCast( "string", arguments.comment.italic ) );
-		if( arguments.comment.KeyExists( "size" ) )
+		if( arguments.comment.KeyExists( "size" )  && !isNull(arguments.comment.size))
 			font.setFontHeightInPoints( JavaCast( "int", arguments.comment.size ) );
-		if( arguments.comment.KeyExists( "strikeout" ) )
+		if( arguments.comment.KeyExists( "strikeout" )  && !isNull(arguments.comment.strikeout))
 			font.setStrikeout( JavaCast( "boolean", arguments.comment.strikeout ) );
-		if( arguments.comment.KeyExists( "underline" ) )
-			font.setUnderline( JavaCast( "byte", arguments.comment.underline ) );
+		if( arguments.comment.KeyExists( "underline" )  && !isNull(arguments.comment.underline))
+			font.setUnderline( JavaCast( "byte", booleanFormat(arguments.comment.underline) ? 1 : 0 ) );
 		arguments.commentString.applyFont( font );
 		return this;
 	}

@@ -15,7 +15,8 @@
     },
     "engines" : [
         { "type" : "lucee", "version" : ">=5.x.x" },
-        { "type" : "adobe", "version" : ">=2021.0.0" }
+        { "type" : "adobe", "version" : ">=2021.0.0" },
+        { "type" : "boxlang", "version": ">=1.13.0+50" }
     ],
     "defaultEngine" : "lucee",
     "license" : [
@@ -29,6 +30,7 @@
     "private" : "false",
     "ignore" : [ ".github", "build", "src", "test", ".gitattributes", "CHANGELOG.md", "README.md" ],
     "scripts":{
-        "cfpmInstall": "cfpm install image"
+        "cfpmInstall": "cfpm install image",
+        "boxLangInstall":"install bx-image"
     }
 }

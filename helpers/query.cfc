@@ -69,13 +69,39 @@ component extends="base"{
 	}
 
 	array function getQueryColumnTypeToCellTypeMappings( required query query ){
-		// extract the query columns and data types
 		var metadata = GetMetaData( arguments.query );
-		// assign default formats based on the data type of each column
-		for( var columnMetadata in metadata )
-			mapQueryColumnTypeToCellType( columnMetadata );
+
+		// Boxlang returns column metadata as a struct
+		if(library().getIsBoxlang()) {
+			return parseMetadata(metadata);
+		}
+		else {
+			for( var columnMetadata in metadata ) {
+				mapQueryColumnTypeToCellType( columnMetadata );
+			}
+		}
+
 		return metadata;
 	}
+
+	// Convert Boxlang metadata to same formatted array and match ACF/Lucee keys
+	function parseMetadata(required any metadata) {
+		if(library().getIsBoxlang()) {
+			return metaData.columnMetadata.reduce((result, col, val) => {
+				var curr = {
+					cellDataType: '',
+					isCaseSensitive: false,
+					name: val.name,
+					typeName: val.type
+				};
+				mapQueryColumnTypeToCellType(curr);
+				result.append(curr);
+				return result;
+			}, []);
+		}
+		return metaData;
+	}
+
 
 	string function parseQueryColumnTypesArgument(
 		required any queryColumnTypes
@@ -115,7 +141,7 @@ component extends="base"{
 	}
 
 	void function throwErrorIFinvalidQueryColumnTypesArgument( required queryColumnTypes ){
-		if( IsStruct( arguments.queryColumnTypes ) && !arguments.KeyExists( "headerRow" ) && !arguments.KeyExists( "columnNames" ) )
+		if( IsStruct( arguments.queryColumnTypes ) && ( !arguments.KeyExists( "headerRow" ) || isNull( arguments.headerRow ) ) && ( !arguments.KeyExists( "columnNames" ) || isNull( arguments.columnNames ) ) )
 			Throw( type=library().getExceptionType() & ".invalidQueryColumnTypesArgument", message="Invalid argument 'queryColumnTypes'.", detail="When specifying 'queryColumnTypes' as a struct you must also specify the 'headerRow' or provide 'columnNames'" );
 	}
 
@@ -234,12 +260,24 @@ component extends="base"{
 	}
 
 	private query function QueryNewBoxlang( required array columnNames, required string columnTypeList, required array data ){
-		var result = QueryNew( arguments.columnNames.ToList(), arguments.columnTypeList );
-		arguments.data.Each( function( row ){
+		var columnTypes = arguments.columnTypeList.Len() ? ListToArray( arguments.columnTypeList ) : [];
+
+		// Create empty query
+		var result = QueryNew( "" );
+
+		// Loop over each column and add
+		arguments.columnNames.Each( ( colName, i ) => {
+			QueryAddColumn( result, colName, ( columnTypes.Len() >= i ? columnTypes[ i ] : "VARCHAR" ), [] );
+		});
+
+		// Add each data row
+		arguments.data.Each( (row) => {
 			QuerySetRow( result, 0, convertJavaArrayToCFMLArray( row ) );
 		});
+
 		return replaceNullsWithEmptyValues( result );
 	}
+
 
 	private array function convertJavaArrayToCFMLArray( required any value ){
 		//Boxlang BIFs may not accept java string arrays

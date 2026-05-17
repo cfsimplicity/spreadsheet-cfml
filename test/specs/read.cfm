@@ -146,7 +146,7 @@ describe( "read", ()=>{
 				var actual = s.read( src=path, format="array", headerRow=1 );
 				expect( actual ).toBe( expected );
 				//query
-				expected = QueryNew( "firstColumn,column2", "VarChar,VarChar", [ dataRow1, dataRow2 ] );
+				expected = normalizeExpectedQuery( QueryNew( "firstColumn,column2", "VarChar,VarChar", [ dataRow1, dataRow2 ] ) );
 				actual = s.read( src=path, format="query", headerRow=1 );
 				expect( actual ).toBe( expected );
 			})
@@ -202,7 +202,7 @@ describe( "read", ()=>{
 				var actual = s.read( src=path, format="array", headerRow=1 );
 				expect( actual ).toBe( expected );
 				//query
-				expected = QueryNew( columns.ToList(), "VarChar,VarChar", data );
+				expected = normalizeExpectedQuery( QueryNew( columns.ToList(), "VarChar,VarChar", data ) );
 				actual = s.read( src=path, format="query", headerRow=1 );
 				expect( actual ).toBe( expected );
 			})
@@ -222,7 +222,7 @@ describe( "read", ()=>{
 				var actual = s.read( src=path, format="array", headerRow=1, rows=2 );
 				expect( actual ).toBe( expected );
 				//query
-				expected = QueryNew( columns.ToList(), "VarChar,VarChar", [ data[ 1 ] ] );
+				expected = normalizeExpectedQuery( QueryNew( columns.ToList(), "VarChar,VarChar", [ data[ 1 ] ] ) );
 				actual = s.read( src=path, format="query", headerRow=1, rows=2 );
 				expect( actual ).toBe( expected );
 			})
@@ -683,7 +683,7 @@ describe( "read", ()=>{
 				var actual = s.read( src=path, format="array", columnNames=columnNames );
 				expect( actual ).toBe( expected );
 				//query
-				expected = QueryNew( "firstColumn,column2", "VarChar,VarChar", [ dataRow1, dataRow2 ] );
+				expected = normalizeExpectedQuery( QueryNew( "firstColumn,column2", "VarChar,VarChar", [ dataRow1, dataRow2 ] ) );
 				var actual = s.read( src=path, format="query", columnNames=columnNames );
 				expect( actual ).toBe( expected );
 			})

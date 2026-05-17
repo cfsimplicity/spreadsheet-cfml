@@ -183,8 +183,8 @@ describe( "addRows", ()=>{
 		var timeValue = CreateObject( "java", "java.util.Date" ).init( JavaCast( "long", 360000999 ) );
 		var dateTimeValue = CreateObject( "java", "java.util.Date" ).init( JavaCast( "long", 1428796800999 ) );
 		var data = QueryNew( "column1,column2", "Time,Timestamp", [ [ timeValue, dateTimeValue ] ] );
-		var expectedTimeValue = data.column1[ 1 ].TimeFormat( "hh:nn:ss:l" );
-		var expectedDateTimeValue = data.column2[ 1 ].DateTimeFormat( "yyyy-mm-dd hh:nn:ss:l" );
+		var expectedTimeValue = data.column1[ 1 ].TimeFormat( "#TIME_WITH_MILLISECONDS_MASK#" );
+		var expectedDateTimeValue = data.column2[ 1 ].DateTimeFormat( "yyyy-mm-dd #TIME_WITH_MILLISECONDS_MASK#" );
 		workbooks.Each( ( wb )=>{
 			s.addRows( wb, data );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
@@ -195,8 +195,8 @@ describe( "addRows", ()=>{
 		var workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( ( wb )=>{
 			s.addRows( wb, dataAsArray );
-			expectedTimeValue = data.column1[ 1 ].TimeFormat( "hh:nn:ss:l" );
-			expectedDateTimeValue = data.column2[ 1 ].DateTimeFormat( "yyyy-mm-dd hh:nn:ss:l" );
+			expectedTimeValue = data.column1[ 1 ].TimeFormat( "#TIME_WITH_MILLISECONDS_MASK#" );
+			expectedDateTimeValue = data.column2[ 1 ].DateTimeFormat( "yyyy-mm-dd #TIME_WITH_MILLISECONDS_MASK#" );
 			actual = s.getSheetHelper().sheetToQuery( wb );
 			actualTimeValue = actual.column1[ 1 ];
 			actualDateTimeValue = actual.column2[ 1 ];

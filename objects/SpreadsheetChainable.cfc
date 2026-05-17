@@ -513,7 +513,7 @@ component{
 		,boolean makeColumnNamesSafe=false
 		,boolean returnVisibleValues=false
 	){
-		if( arguments.KeyExists( "format" ) )
+		if( arguments.KeyExists( "format" ) && !isNull( arguments.format ) )
 			return variables.library.read( argumentCollection=arguments );
 		variables.workbook = variables.library.read( argumentCollection=arguments );
 		return this;

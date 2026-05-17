@@ -319,10 +319,10 @@ describe( "readLargeFile", ()=>{
 		it( "allows the query column types to be manually set using list", ()=>{
 			s.newChainable( "xlsx" ).addRow( [ 1, 1.1, "string", _CreateTime( 1, 0, 0 ) ] ).write( tempXlsxPath, true );
 			var q = s.readLargeFile( src=tempXlsxPath, queryColumnTypes="Integer,Double,VarChar,Time" );
-			var columns = GetMetaData( q );
+			var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
 			expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
-			expect( columns[ 2 ].typeName ).toBe( "DOUBLE" );
-			expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 2 ].typeName ).toBe( DOUBLE_CHECK );
+			expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );
 			expect( columns[ 4 ].typeName ).toBe( "TIME" );
 		})
 
@@ -332,10 +332,10 @@ describe( "readLargeFile", ()=>{
 				.write( tempXlsxPath, true );
 			var columnTypes = { "string column": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
 			var q = s.readLargeFile( src=tempXlsxPath, format="query", queryColumnTypes=columnTypes, headerRow=1 );
-			var columns = GetMetaData( q );
+			var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
 			expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
-			expect( columns[ 2 ].typeName ).toBe( "DOUBLE" );
-			expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 2 ].typeName ).toBe( DOUBLE_CHECK );
+			expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );
 			expect( columns[ 4 ].typeName ).toBe( "TIME" );
 		})
 
@@ -344,20 +344,20 @@ describe( "readLargeFile", ()=>{
 			var columnNames = "integer,double,string column,time";
 			var columnTypes = { "string": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
 			var q = s.readLargeFile( src=tempXlsxPath, queryColumnTypes=columnTypes, queryColumnNames=columnNames );
-			var columns = GetMetaData( q );
+			var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
 			expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
-			expect( columns[ 2 ].typeName ).toBe( "DOUBLE" );
-			expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
+			expect( columns[ 2 ].typeName ).toBe( DOUBLE_CHECK );
+			expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );
 			expect( columns[ 4 ].typeName ).toBe( "TIME" );
 		})
 
 		it( "allows the query column types to be automatically set", ()=>{
 			s.newChainable( "xlsx" ).addRow( [ 1, 1.1, "string", Now() ] ).write( tempXlsxPath, true );
 			var q = s.readLargeFile( src=tempXlsxPath, queryColumnTypes="auto" );
-			var columns = GetMetaData( q );
-			expect( columns[ 1 ].typeName ).toBe( "DOUBLE" );
-			expect( columns[ 2 ].typeName ).toBe( "DOUBLE" );
-			expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
+			var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
+			expect( columns[ 1 ].typeName ).toBe( DOUBLE_CHECK );
+			expect( columns[ 2 ].typeName ).toBe( DOUBLE_CHECK );
+			expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );
 			expect( columns[ 4 ].typeName ).toBe( "TIMESTAMP" );
 		})
 
@@ -370,21 +370,21 @@ describe( "readLargeFile", ()=>{
 			];
 			s.newChainable( "xlsx" ).addRows( data ).write( tempXlsxPath, true );
 			var q = s.readLargeFile( src=tempXlsxPath, queryColumnTypes="auto" );
-			var columns = GetMetaData( q );
-			expect( columns[ 1 ].typeName ).toBe( "DOUBLE" );
-			expect( columns[ 2 ].typeName ).toBe( "DOUBLE" );
-			expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
+			var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
+			expect( columns[ 1 ].typeName ).toBe( DOUBLE_CHECK );
+			expect( columns[ 2 ].typeName ).toBe( DOUBLE_CHECK );
+			expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );
 			expect( columns[ 4 ].typeName ).toBe( "TIMESTAMP" );
 		})
 
 		it( "allows a default type to be set for all query columns", ()=>{
 			s.newChainable( "xlsx" ).addRow( [ 1, 1.1, "string", Now() ] ).write( tempXlsxPath, true );
 			var q = s.readLargeFile( src=tempXlsxPath, queryColumnTypes="VARCHAR" );
-			var columns = GetMetaData( q );
-			expect( columns[ 1 ].typeName ).toBe( "VARCHAR" );
-			expect( columns[ 2 ].typeName ).toBe( "VARCHAR" );
-			expect( columns[ 3 ].typeName ).toBe( "VARCHAR" );
-			expect( columns[ 4 ].typeName ).toBe( "VARCHAR" );
+			var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
+			expect( columns[ 1 ].typeName ).toBe( VARCHAR_CHECK );
+			expect( columns[ 2 ].typeName ).toBe( VARCHAR_CHECK );
+			expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );
+			expect( columns[ 4 ].typeName ).toBe( VARCHAR_CHECK );
 		})
 
 	})

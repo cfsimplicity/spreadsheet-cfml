@@ -16,6 +16,15 @@ component extends="base"{
 	}
 
 	struct function defaultFormats(){
+		if( library().getIsBoxlang() ) {
+			return {
+				DATE: "yyyy-MM-dd"
+				,DATETIME: "yyyy-MM-dd HH:mm:ss"
+				,TIME: "hh:mm:ss"
+				,TIMESTAMP: "yyyy-MM-dd HH:mm:ss"
+			};
+		}
+			
 		return {
 			DATE: "yyyy-mm-dd"
 			,DATETIME: "yyyy-mm-dd HH:nn:ss"
@@ -43,13 +52,18 @@ component extends="base"{
 	}
 
 	boolean function isDateObject( required input ){
-		return IsInstanceOf( arguments.input, "java.util.Date" );
+		if( IsInstanceOf( arguments.input, "java.util.Date" ) )
+			return true;
+		if( library().getIsBoxlang() )
+			return IsInstanceOf( arguments.input, "ortus.boxlang.runtime.types.DateTime" );
+		return false;
 	}
+
 
 	//TODO improve these imperfect tests!
 	boolean function isDateOnlyValue( required date value ){
 		if( library().getIsBoxlang() )
-			return ( arguments.value.TimeFormat( "hh:mm:ss" ) == "00:00:00" );
+			return ( arguments.value.TimeFormat( "HH:mm:ss" ) == "00:00:00" );
 		var dateOnly = CreateDate( Year( arguments.value ), Month( arguments.value ), Day( arguments.value ) );
 		return ( DateCompare( arguments.value, dateOnly, "s" ) == 0 );
 	}
@@ -109,10 +123,10 @@ component extends="base"{
 			return ParseDateTime( arguments.value, "EEE MMM d HH:mm:ss zzz yyyy" );
 		 //e.g. 08:21
 		if( arguments.value.REFindNoCase( "^\d{2,2}:\d{2,2}$" ) )
-			return ParseDateTime( "1899-12-30T#arguments.value#:00Z" );
+			return ParseDateTime( "1899-12-30T#arguments.value#:00" );
 		//e.g. 08:21:30
 		if( arguments.value.REFindNoCase( "^\d{2,2}:\d{2,2}:\d{2,2}$" ) )
-			return ParseDateTime( "1899-12-30T#arguments.value#Z" );
+			return ParseDateTime( "1899-12-30T#arguments.value#" );
 		return ParseDateTime( arguments.value );
 	}
 

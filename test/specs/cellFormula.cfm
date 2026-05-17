@@ -158,7 +158,7 @@ describe( "cellFormula", ()=>{
 
 		it( "Can be configured to throw an exception on any formula evaluation error", ()=>{
 			workbooks.Each( ( wb )=>{
-				expect( ( wb )=>{
+				expect( ()=>{
 					newSpreadsheetInstance()
 						.setThrowExceptionOnFormulaError( true )
 						.setCellFormula( wb, "SUS(A1:A2)", 3, 1 )
@@ -167,7 +167,7 @@ describe( "cellFormula", ()=>{
 				.toThrow( type="cfsimplicity.spreadsheet.failedFormula" );
 			})
 			workbooks.Each( ( wb )=>{
-				expect( ( wb )=>{
+				expect( ()=>{
 					newSpreadsheetInstance()
 						.setThrowExceptionOnFormulaError( true )
 						.setCellValue( wb, 0, 2, 1 )
@@ -177,7 +177,7 @@ describe( "cellFormula", ()=>{
 				.toThrow( type="cfsimplicity.spreadsheet.failedFormula" );
 			})
 			workbooks.Each( ( wb )=>{
-				expect( ( wb )=>{
+				expect( ()=>{
 					newSpreadsheetInstance()
 						.setThrowExceptionOnFormulaError( true )
 						.setCellValue( wb, 0, 2, 1 )
