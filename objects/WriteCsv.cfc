@@ -80,7 +80,7 @@ component extends="BaseCsv" accessors="true"{
 				&& !IsNull( variables.filepath ) 
 				&& local.KeyExists( "printer" )
 			)
-				printRowFromArray([], printer);
+				printRowFromArray( [], printer );
 			if( local.KeyExists( "printer" ) )
 				printer.close( JavaCast( "boolean", true ) );
 		}
