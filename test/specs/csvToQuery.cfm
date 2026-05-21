@@ -33,6 +33,7 @@ describe( "csvToQuery", ()=>{
 	})
 
 	it( "can read the csv from a text file with an .xls extension", ()=>{
+		if( s.getIsBoxlang() ) skip(); // Boxlang FileGetMimeType() apparently only looks at file extension
 		var path = getTestFilePath( "csv.xls" );
 		var actual = s.csvToQuery( filepath=path );
 		expect( actual ).toBe( basicExpectedQuery ); 	
