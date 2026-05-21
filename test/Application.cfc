@@ -4,5 +4,4 @@ component{
 	this.applicationTimeout = CreateTimeSpan( 0, 0, 5, 0 );
 	variables.relativePathToRoot = "../";
 	this.mappings[ "/root" ] = GetDirectoryFromPath( GetCurrentTemplatePath() ) & relativePathToRoot;
-	this.mappings[ "/testbox" ] = GetDirectoryFromPath( GetCurrentTemplatePath() ) & relativePathToRoot & '/testbox';
 }
