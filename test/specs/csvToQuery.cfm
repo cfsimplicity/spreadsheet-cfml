@@ -191,7 +191,7 @@ describe( "csvToQuery", ()=>{
 		it( "allows the query column types to be manually set using a list", ()=>{
 			var csv = '1,1.1,"string",#_CreateTime( 1, 0, 0 )#';
 			var q = s.csvToQuery( csv=csv, queryColumnTypes="Integer,Double,VarChar,Time" );
-			var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
+			var columns = s.getQueryHelper().parseMetadata( GetMetaData( q ) );
 			expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
 			expect( columns[ 2 ].typeName ).toBe( DOUBLE_CHECK );
 			expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );
@@ -202,7 +202,7 @@ describe( "csvToQuery", ()=>{
 			var csv = 'integer,double,"string column",time#newline#1,1.1,string,12:00';
 			var columnTypes = { "string column": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
 			var q = s.csvToQuery( csv=csv, queryColumnTypes="Integer,Double,VarChar,Time", firstRowIsHeader=true );
-			var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
+			var columns = s.getQueryHelper().parseMetadata( GetMetaData( q ) );
 			expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
 			expect( columns[ 2 ].typeName ).toBe( DOUBLE_CHECK );
 			expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );
@@ -214,7 +214,7 @@ describe( "csvToQuery", ()=>{
 			var columnNames = [ "integer", "double", "string column", "time" ];
 			var columnTypes = { "string": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
 			var q = s.csvToQuery( csv=csv, queryColumnTypes=columnTypes, queryColumnNames=columnNames );
-			var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
+			var columns = s.getQueryHelper().parseMetadata( GetMetaData( q ) );
 			expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
 			expect( columns[ 2 ].typeName ).toBe( DOUBLE_CHECK );
 			expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );
@@ -224,7 +224,7 @@ describe( "csvToQuery", ()=>{
 		it( "allows the query column types to be automatically set", ()=>{
 			var csv = '1,1.1,"string",2021-03-10 12:00:00';
 			var q = s.csvToQuery( csv=csv, queryColumnTypes="auto" );
-			var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
+			var columns = s.getQueryHelper().parseMetadata( GetMetaData( q ) );
 			expect( columns[ 1 ].typeName ).toBe( DOUBLE_CHECK );
 			expect( columns[ 2 ].typeName ).toBe( DOUBLE_CHECK );
 			expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );
@@ -234,7 +234,7 @@ describe( "csvToQuery", ()=>{
 		it( "automatic detecting of query column types ignores blank cells", ()=>{
 			var csv = ',,,#newline#,2,test,2021-03-10 12:00:00#newline#1,1.1,string,2021-03-10 12:00:00#newline#1,,,';
 			var q = s.csvToQuery( csv=csv, queryColumnTypes="auto" );
-			var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
+			var columns = s.getQueryHelper().parseMetadata( GetMetaData( q ) );
 			expect( columns[ 1 ].typeName ).toBe( DOUBLE_CHECK );
 			expect( columns[ 2 ].typeName ).toBe( DOUBLE_CHECK );
 			expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );
@@ -244,7 +244,7 @@ describe( "csvToQuery", ()=>{
 		it( "allows a default type to be set for all query columns", ()=>{
 			var csv = '1,1.1,"string",#_CreateTime( 1, 0, 0 )#';
 			var q = s.csvToQuery( csv=csv, queryColumnTypes="VARCHAR" );
-			var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
+			var columns = s.getQueryHelper().parseMetadata( GetMetaData( q ) );
 			expect( columns[ 1 ].typeName ).toBe( VARCHAR_CHECK );
 			expect( columns[ 2 ].typeName ).toBe( VARCHAR_CHECK );
 			expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );

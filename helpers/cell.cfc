@@ -97,7 +97,7 @@ component extends="base"{
 		if( Trim( arguments.value ).IsEmpty() )
 			return setEmptyValue( arguments.cell );
 		var validCellTypes = getDataTypeHelper().validCellOverrideTypes().Append( "blank" );
-		if( !arguments.KeyExists( "type" ) || isNull( arguments.type ) ) //autodetect type
+		if( !arguments.KeyExists( "type" ) || IsNull( arguments.type ) ) //autodetect type
 			arguments.type = getDataTypeHelper().detectValueDataType( arguments.value );
 		else if( !validCellTypes.FindNoCase( arguments.type ) )
 			Throw( type=library().getExceptionType() & ".invalidDatatype", message="Invalid data type: '#arguments.type#'", detail="The data type must be one of the following: #validCellTypes.ToList( ', ' )#." );

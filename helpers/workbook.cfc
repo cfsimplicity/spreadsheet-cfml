@@ -19,7 +19,7 @@ component extends="base"{
 			try{
 				var factory = library().createJavaObject( "org.apache.poi.ss.usermodel.WorkbookFactory" );
 				var file = CreateObject( "java", "java.io.FileInputStream" ).init( arguments.path );
-				if( arguments.KeyExists( "password" ) && !isNull( arguments.password ) )
+				if( arguments.KeyExists( "password" ) && !IsNull( arguments.password ) )
 					return factory.create( file, arguments.password );
 				return factory.create( file );
 			}
@@ -51,7 +51,7 @@ component extends="base"{
 		if( library().isSpreadsheetObject( arguments.workbookOrPath ) )
 			return arguments.workbookOrPath;
 		var args = { path: arguments.workbookOrPath };
-		if( arguments.KeyExists( "password" ) && !isNull( arguments.password ) )
+		if( arguments.KeyExists( "password" ) && !IsNull( arguments.password ) )
 			args.password = arguments.password;
 		return workbookFromFile( argumentCollection=args );
 	}

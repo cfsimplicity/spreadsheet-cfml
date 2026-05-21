@@ -24,7 +24,6 @@ component extends="base"{
 				,TIMESTAMP: "yyyy-MM-dd HH:mm:ss"
 			};
 		}
-			
 		return {
 			DATE: "yyyy-mm-dd"
 			,DATETIME: "yyyy-mm-dd HH:nn:ss"
@@ -58,7 +57,6 @@ component extends="base"{
 			return IsInstanceOf( arguments.input, "ortus.boxlang.runtime.types.DateTime" );
 		return false;
 	}
-
 
 	//TODO improve these imperfect tests!
 	boolean function isDateOnlyValue( required date value ){

@@ -38,7 +38,7 @@ component extends="base"{
 	/* Data type overriding */
 
 	any function checkDataTypesArgument( required struct args ){
-		if( arguments.args.KeyExists( "datatypes" ) && !isNull( arguments.args.datatypes ) && datatypeOverridesContainInvalidTypes( arguments.args.datatypes ) )
+		if( arguments.args.KeyExists( "datatypes" ) && !IsNull( arguments.args.datatypes ) && datatypeOverridesContainInvalidTypes( arguments.args.datatypes ) )
 			Throw( type=library().getExceptionType() & ".invalidDatatype", message="Invalid datatype(s)", detail="One or more of the datatypes specified is invalid. Valid types are #validCellOverrideTypes().ToList( ', ' )# and the columns they apply to should be passed as an array" );
 		return this;
 	}
@@ -78,7 +78,7 @@ component extends="base"{
 			}
 		}
 		// if no override, use an already set default (i.e. query column type)
-		if( arguments.KeyExists( "defaultType" ) && !isNull( arguments.defaultType ) ){
+		if( arguments.KeyExists( "defaultType" ) && !IsNull( arguments.defaultType ) ){
 			getCellHelper().setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue, arguments.defaultType );
 			return this;
 		}

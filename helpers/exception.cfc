@@ -18,7 +18,7 @@ component extends="base"{
 	}
 
 	void function throwExceptionIFreadFormatIsInvalid(){
-		if( arguments.KeyExists( "format" ) && !isNull( arguments.format ) && !ListFindNoCase( "query,array,arrayOfStructs,html,csv", arguments.format ) )
+		if( arguments.KeyExists( "format" ) && !IsNull( arguments.format ) && !ListFindNoCase( "query,array,arrayOfStructs,html,csv", arguments.format ) )
 			Throw( type=library().getExceptionType() & ".invalidReadFormat", message="Invalid format", detail="Supported formats are: 'query', 'array', 'arrayOfStructs', 'html' and 'csv'" );
 	}
 
@@ -28,8 +28,9 @@ component extends="base"{
 			catch( com.github.pjfanning.xlsx.exceptions.ReadException exception ){} hence using an if-test
 		*/
 		if( 
-			arguments.exception.type == "com.github.pjfanning.xlsx.exceptions.ReadException" 
-			|| library().getIsBoxlang() && arguments.exception.getClass().getName() == "com.github.pjfanning.xlsx.exceptions.ReadException" 
+			( arguments.exception.type == "com.github.pjfanning.xlsx.exceptions.ReadException" )
+			||
+			( library().getIsBoxlang() && ( arguments.exception.getClass().getName() == "com.github.pjfanning.xlsx.exceptions.ReadException" ) )
 		) {
 			Throw( type=library().getExceptionType() & ".invalidSpreadsheetType", message="Invalid spreadsheet file", detail="readLargeFile() and processLargeFile() can only be used with XLSX files. The file you are trying to read does not appear to be an XLSX file." );
 		}

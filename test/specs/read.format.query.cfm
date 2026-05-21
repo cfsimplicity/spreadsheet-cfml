@@ -30,7 +30,7 @@ describe( "read: format=query", ()=>{
 					.addRows( data )
 					.write( path, true )
 				var q = s.read( src=path, format="query", queryColumnTypes="Integer,Double,VarChar,Time" );
-				var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
+				var columns = s.getQueryHelper().parseMetadata( GetMetaData( q ) );
 				expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
 				expect( columns[ 2 ].typeName ).toBe( DOUBLE_CHECK );
 				expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );
@@ -47,7 +47,7 @@ describe( "read: format=query", ()=>{
 					.write( path, true );
 				var columnTypes = { "string column": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
 				var q = s.read( src=path, format="query", queryColumnTypes=columnTypes, headerRow=1 );
-				var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
+				var columns = s.getQueryHelper().parseMetadata( GetMetaData( q ) );
 				expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
 				expect( columns[ 2 ].typeName ).toBe( DOUBLE_CHECK );
 				expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );
@@ -65,7 +65,7 @@ describe( "read: format=query", ()=>{
 				var columnNames = "integer,double,string column,time";
 				var columnTypes = { "string": "VARCHAR", "integer": "INTEGER", "time": "TIME", "double": "DOUBLE" };//not in order
 				var q = s.read( src=path, format="query", queryColumnTypes=columnTypes, columnNames=columnNames );
-				var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
+				var columns = s.getQueryHelper().parseMetadata( GetMetaData( q ) );
 				expect( columns[ 1 ].typeName ).toBe( "INTEGER" );
 				expect( columns[ 2 ].typeName ).toBe( DOUBLE_CHECK );
 				expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );
@@ -81,7 +81,7 @@ describe( "read: format=query", ()=>{
 					.addRows( data )
 					.write( path, true );
 				var q = s.read( src=path, format="query", queryColumnTypes="auto" );
-				var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
+				var columns = s.getQueryHelper().parseMetadata( GetMetaData( q ) );
 				expect( columns[ 1 ].typeName ).toBe( DOUBLE_CHECK );
 				expect( columns[ 2 ].typeName ).toBe( DOUBLE_CHECK );
 				expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );
@@ -102,7 +102,7 @@ describe( "read: format=query", ()=>{
 					.addRows( data )
 					.write( path, true );
 				var q = s.read( src=path, format="query", queryColumnTypes="auto" );
-				var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
+				var columns = s.getQueryHelper().parseMetadata( GetMetaData( q ) );
 				expect( columns[ 1 ].typeName ).toBe( DOUBLE_CHECK );
 				expect( columns[ 2 ].typeName ).toBe( DOUBLE_CHECK );
 				expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );
@@ -118,7 +118,7 @@ describe( "read: format=query", ()=>{
 					.addRows( data )
 					.write( path, true );
 				var q = s.read( src=path, format="query", queryColumnTypes="VARCHAR" );
-				var columns = s.getQueryHelper().parseMetadata(GetMetaData( q ));
+				var columns = s.getQueryHelper().parseMetadata( GetMetaData( q ) );
 				expect( columns[ 1 ].typeName ).toBe( VARCHAR_CHECK );
 				expect( columns[ 2 ].typeName ).toBe( VARCHAR_CHECK );
 				expect( columns[ 3 ].typeName ).toBe( VARCHAR_CHECK );

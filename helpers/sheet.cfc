@@ -1,7 +1,7 @@
 component extends="base"{
 
 	string function createOrValidateSheetName( required workbook ){
-		if( !arguments.KeyExists( "sheetName" ) || isNull( arguments.sheetName ) )
+		if( !arguments.KeyExists( "sheetName" ) || IsNull( arguments.sheetName ) )
 			return generateUniqueSheetName( arguments.workbook );
 		validateSheetName( arguments.sheetName );
 		return arguments.sheetName;
@@ -95,10 +95,10 @@ component extends="base"{
 	}
 
 	numeric function getSheetNumberFromArguments( required workbook, string sheetName, numeric sheetNumber ){
-		if( ( !arguments.KeyExists( "sheetName" ) || isNull( arguments.sheetName ) ) && ( !arguments.KeyExists( "sheetNumber" ) || isNull( arguments.sheetNumber ) ) )
+		if( ( !arguments.KeyExists( "sheetName" ) || IsNull( arguments.sheetName ) ) && ( !arguments.KeyExists( "sheetNumber" ) || IsNull( arguments.sheetNumber ) ) )
 			return getActiveSheetNumber( arguments.workbook );
 		validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
-		if( arguments.KeyExists( "sheetName" ) && !isNull( arguments.sheetName ) && Len( Trim( arguments.sheetName ) ) ){
+		if( arguments.KeyExists( "sheetName" ) && !IsNull( arguments.sheetName ) && Len( Trim( arguments.sheetName ) ) ){
 			validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
 			arguments.sheetNumber = ( arguments.workbook.getSheetIndex( JavaCast( "string", arguments.sheetName ) ) + 1 );
 		}
@@ -116,7 +116,7 @@ component extends="base"{
 	}
 
 	struct function info( required workbook, numeric sheetNumber ){
-		if( !arguments.KeyExists( "sheetNumber" ) || isNull( arguments.sheetNumber ) )
+		if( !arguments.KeyExists( "sheetNumber" ) || IsNull( arguments.sheetNumber ) )
 			arguments.sheetNumber = ( arguments.workbook.getActiveSheetIndex() +1 );
 		var sheet = getSheetByNumber( argumentCollection=arguments );
 		var isXlsx = library().isXmlFormat( arguments.workbook );
@@ -172,7 +172,7 @@ component extends="base"{
 
 	boolean function sheetExists( required workbook, string sheetName, numeric sheetNumber ){
 		validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
-		if( arguments.KeyExists( "sheetName" ) && !isNull( arguments.sheetName ) )
+		if( arguments.KeyExists( "sheetName" ) && !IsNull( arguments.sheetName ) )
 			arguments.sheetNumber = ( getSheetIndexFromName( arguments.workbook, arguments.sheetName ) +1 );
 			//the position is valid if it's an integer between 1 and the total number of sheets in the workbook
 		if( arguments.sheetNumber && ( arguments.sheetNumber == Round( arguments.sheetNumber ) ) && ( arguments.sheetNumber <= arguments.workbook.getNumberOfSheets() ) )
@@ -228,11 +228,11 @@ component extends="base"{
 		,boolean forceColumnGeneration=false
 	){
 		var result = [ columns: [], data: [] ];//ordered struct
-		if( arguments.KeyExists( "sheetName" ) && !isNull( arguments.sheetName ) ){
+		if( arguments.KeyExists( "sheetName" ) && !IsNull( arguments.sheetName ) ){
 			validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
 			arguments.sheetNumber = ( getSheetIndexFromName( arguments.workbook, arguments.sheetName ) +1 );
 		}
-		else if( !arguments.KeyExists( "sheetNumber" ) || isNull( arguments.sheetNumber ) )
+		else if( !arguments.KeyExists( "sheetNumber" ) || IsNull( arguments.sheetNumber ) )
 			arguments.sheetNumber = getFirstVisibleSheetNumber( arguments.workbook );
 		if( arguments.sheetNumber == 0 )
 			return result;//no visible sheets
@@ -270,11 +270,11 @@ component extends="base"{
 		,boolean makeColumnNamesSafe=false
 		,boolean returnVisibleValues=false
 	){
-		if( arguments.KeyExists( "sheetName" ) && !isNull( arguments.sheetName ) ){
+		if( arguments.KeyExists( "sheetName" ) && !IsNull( arguments.sheetName ) ){
 			validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
 			arguments.sheetNumber = ( getSheetIndexFromName( arguments.workbook, arguments.sheetName ) +1 );
 		}
-		else if( !arguments.KeyExists( "sheetNumber" ) || isNull( arguments.sheetNumber ) )
+		else if( !arguments.KeyExists( "sheetNumber" ) || IsNull( arguments.sheetNumber ) )
 			arguments.sheetNumber = getFirstVisibleSheetNumber( arguments.workbook );
 		if( arguments.sheetNumber == 0 )
 			return QueryNew( "" );//no visible sheets
@@ -438,11 +438,11 @@ component extends="base"{
 	}
 
 	private boolean function sheetNameArgumentWasProvided(){
-		return ( arguments.KeyExists( "sheetName" ) && !isNull( arguments.sheetName ) && Len( arguments.sheetName ) );
+		return ( arguments.KeyExists( "sheetName" ) && !IsNull( arguments.sheetName ) && Len( arguments.sheetName ) );
 	}
 
 	private boolean function sheetNumberArgumentWasProvided(){
-		return ( arguments.KeyExists( "sheetNumber" ) && !isNull( arguments.sheetNumber ) && Len( arguments.sheetNumber ) );
+		return ( arguments.KeyExists( "sheetNumber" ) && !IsNull( arguments.sheetNumber ) && Len( arguments.sheetNumber ) );
 	}
 
 	private any function throwErrorIFSheetNameAndNumberArgumentsBothMissing(){
@@ -530,7 +530,7 @@ component extends="base"{
 	){
 		var sheet = {
 			includeHeaderRow: arguments.includeHeaderRow
-			,hasHeaderRow: ( arguments.KeyExists( "headerRow" ) && !isNull( arguments.headerRow ) && Val( arguments.headerRow ) )
+			,hasHeaderRow: ( arguments.KeyExists( "headerRow" ) && !IsNull( arguments.headerRow ) && Val( arguments.headerRow ) )
 			,includeBlankRows: arguments.includeBlankRows
 			,includeHiddenRows: arguments.includeHiddenRows
 			,columnNames: []
@@ -539,10 +539,10 @@ component extends="base"{
 			,data: []
 			,hasRows: false
 		};
-		if( arguments.KeyExists( "columnNames" ) && !isNull( arguments.columnNames ) && arguments.columnNames.Len() )
+		if( arguments.KeyExists( "columnNames" ) && !IsNull( arguments.columnNames ) && arguments.columnNames.Len() )
 			sheet.columnNames = IsArray( arguments.columnNames )? arguments.columnNames: arguments.columnNames.ListToArray();
 		sheet.headerRowIndex = sheet.hasHeaderRow? ( arguments.headerRow -1 ): -1;
-		if( arguments.KeyExists( "columns" ) && !isNull( arguments.columns ) ){
+		if( arguments.KeyExists( "columns" ) && !IsNull( arguments.columns ) ){
 			sheet.columnRanges = getRangeHelper().extractRanges( arguments.columns, arguments.workbook, "column" );
 			sheet.totalColumnCount = getColumnHelper().columnCountFromRanges( sheet.columnRanges );
 		}
@@ -556,7 +556,7 @@ component extends="base"{
 				,includeRichTextFormatting: arguments.includeRichTextFormatting
 				,returnVisibleValues: arguments.returnVisibleValues
 			};
-			if( arguments.KeyExists( "rows" ) && !isNull( arguments.rows ) )
+			if( arguments.KeyExists( "rows" ) && !IsNull( arguments.rows ) )
 				populateDataArgs.rows = arguments.rows;
 			populateSheetData( argumentCollection=populateDataArgs );
 		}

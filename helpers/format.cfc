@@ -34,7 +34,7 @@ component extends="base"{
 			var newCellStyleForThisWorkbook = workbook.createCellStyle();
 			newCellStyleForThisWorkbook.cloneStyleFrom( arguments.cellStyle );
 			arguments.cell.setCellStyle( newCellStyleForThisWorkbook );
-			if( !arguments.KeyExists( "format" ) || isNull( arguments.format ) || StructIsEmpty( arguments.format ) )
+			if( !arguments.KeyExists( "format" ) || IsNull( arguments.format ) || StructIsEmpty( arguments.format ) )
 				return;
 			var spreadsheetType = library().isXmlFormat( workbook )? "xlsx": "xls";
 			var cellStyleID = getCellStyleIDfromFormat( arguments.format );
@@ -54,7 +54,7 @@ component extends="base"{
 
 	any function buildCellStyle( required workbook, required struct format, existingStyle ){
 		var cellStyle = arguments.workbook.createCellStyle();
-		if( arguments.KeyExists( "existingStyle" ) && !isNull( arguments.existingStyle ) )
+		if( arguments.KeyExists( "existingStyle" ) && !IsNull( arguments.existingStyle ) )
 			cellStyle.cloneStyleFrom( arguments.existingStyle );
 		for( var setting in arguments.format )
 			setCellStyleFromFormatSetting( arguments.workbook, cellStyle, arguments.format, setting );
@@ -68,14 +68,14 @@ component extends="base"{
 	}
 
 	struct function checkFormatArguments( required workbook, boolean overwriteCurrentStyle=true ){
-		if( ( !arguments.KeyExists( "format" ) || isNull( arguments.format ) ) && ( !arguments.KeyExists( "cellStyle" ) || isNull( arguments.cellStyle ) ) )
+		if( ( !arguments.KeyExists( "format" ) || IsNull( arguments.format ) ) && ( !arguments.KeyExists( "cellStyle" ) || IsNull( arguments.cellStyle ) ) )
 			Throw( type=library().getExceptionType() & ".missingRequiredArgument", message="Missing argument: 'format'", detail="The 'format' argument is required" );
 		if( arguments.KeyExists( "format" ) && IsStruct( arguments.format ) )
 			return arguments;
 		//assume a cellStyle object has been supplied either as cellStyle or format
 		if( !arguments.overwriteCurrentStyle )
 			Throw( type=library().getExceptionType() & ".invalidArgumentCombination", message="Invalid argument combination", detail="If you supply a 'cellStyle' the 'overwriteCurrentStyle' cannot be false" );
-		if( !arguments.KeyExists( "cellStyle" ) || isNull( arguments.cellStyle ) )
+		if( !arguments.KeyExists( "cellStyle" ) || IsNull( arguments.cellStyle ) )
 			arguments.cellStyle = arguments.format;
 		if( !isValidCellStyleObject( arguments.workbook, arguments.cellStyle ) )
 			Throw( type=library().getExceptionType() & ".invalidCellStyleArgument", message="Invalid argument", detail="The 'cellStyle' supplied is not a valid POI cellStyle object" );

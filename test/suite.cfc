@@ -20,7 +20,7 @@ component extends="testbox.system.BaseSpec"{
 			return q;
 		q.Each( ( row, rowNumber ) => {
 			row.Each( ( key, value ) => {
-				if( IsNull( value ) || !value.len())
+				if( IsNull( value ) || !value.Len() )
 					QuerySetCell( q, key, "", rowNumber );
 			});
 		});
@@ -48,7 +48,8 @@ component extends="testbox.system.BaseSpec"{
 	}
 
 	function afterAll(){
-		if(!url.keyExists('reporter') || url.reporter != 'json') WriteDump( var=s.getEnvironment(), label="Environment and settings" );
+		if( !url.keyExists( "reporter" ) || url.reporter != "json" )
+			WriteDump( var=s.getEnvironment(), label="Environment and settings" );
 		if( FileExists( variables.tempXlsPath ) )
 			FileDelete( variables.tempXlsPath );
 		if( FileExists( variables.tempXlsxPath ) )

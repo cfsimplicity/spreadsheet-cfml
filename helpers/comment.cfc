@@ -23,20 +23,20 @@ component extends="base"{
 		if( !commentHasFontStyles( arguments.comment ) )
 			return this;
 		var font = arguments.workbook.createFont();
-		if( arguments.comment.KeyExists( "bold" ) && !isNull(arguments.comment.bold))
+		if( arguments.comment.KeyExists( "bold" ) && !IsNull(arguments.comment.bold))
 			font.setBold( JavaCast( "boolean", arguments.comment.bold ) );
-		if( arguments.comment.KeyExists( "color" )  && !isNull(arguments.comment.color))
+		if( arguments.comment.KeyExists( "color" )  && !IsNull(arguments.comment.color))
 			font.setColor( getColorHelper().getColor( arguments.workbook, arguments.comment.color ) );
-		if( arguments.comment.KeyExists( "font" )  && !isNull(arguments.comment.front))
+		if( arguments.comment.KeyExists( "font" )  && !IsNull(arguments.comment.front))
 			font.setFontName( JavaCast( "string", arguments.comment.font ) );
-		if( arguments.comment.KeyExists( "italic" )  && !isNull(arguments.comment.italic))
+		if( arguments.comment.KeyExists( "italic" )  && !IsNull(arguments.comment.italic))
 			font.setItalic( JavaCast( "string", arguments.comment.italic ) );
-		if( arguments.comment.KeyExists( "size" )  && !isNull(arguments.comment.size))
+		if( arguments.comment.KeyExists( "size" )  && !IsNull(arguments.comment.size))
 			font.setFontHeightInPoints( JavaCast( "int", arguments.comment.size ) );
-		if( arguments.comment.KeyExists( "strikeout" )  && !isNull(arguments.comment.strikeout))
+		if( arguments.comment.KeyExists( "strikeout" )  && !IsNull(arguments.comment.strikeout))
 			font.setStrikeout( JavaCast( "boolean", arguments.comment.strikeout ) );
-		if( arguments.comment.KeyExists( "underline" )  && !isNull(arguments.comment.underline))
-			font.setUnderline( JavaCast( "byte", booleanFormat(arguments.comment.underline) ? 1 : 0 ) );
+		if( arguments.comment.KeyExists( "underline" )  && !IsNull(arguments.comment.underline))
+			font.setUnderline( JavaCast( "byte", BooleanFormat( arguments.comment.underline ) ? 1 : 0 ) );
 		arguments.commentString.applyFont( font );
 		return this;
 	}

@@ -1,7 +1,5 @@
 <cfscript>
 describe( "dateFormats customisability", ()=>{
-
-	
 	
 	it( "the default dateFormats can be overridden individually on init", ()=>{
 		// Default formats loaded
@@ -10,7 +8,6 @@ describe( "dateFormats customisability", ()=>{
 		var expected = defaultFormats
 		var actual = local.s.getDateFormats();
 		expect( actual ).toBe( expected );
-
 		// Override date mask pre instance creation
 		local.s = newSpreadsheetInstance( dateFormats={ DATE: "mm/dd/yyyy" } );
 		expected.DATE = "mm/dd/yyyy";
@@ -36,7 +33,6 @@ describe( "dateFormats customisability", ()=>{
 	it( "allows the format of date and time values to be customised", ()=>{
 		// Formats change between engines
 		var defaultFormats = s.getDateHelper().defaultFormats();
-
 		variables.workbooks = [ s.newXls(), s.newXlsx() ];
 		//Dates
 		var dateValue =  CreateDate( 2019, 04, 12 );

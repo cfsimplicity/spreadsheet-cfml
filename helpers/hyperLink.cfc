@@ -8,7 +8,7 @@ component extends="base"{
 	}
 
 	any function throwErrorIfTooltipAndWorkbookIsXls( required workbook ){
-		if( arguments.KeyExists( "tooltip" ) && !isNull( arguments.tooltip ) && !library().isXmlFormat( arguments.workbook ) )
+		if( arguments.KeyExists( "tooltip" ) && !IsNull( arguments.tooltip ) && !library().isXmlFormat( arguments.workbook ) )
 			Throw( type=library().getExceptionType() & ".invalidSpreadsheetType", message="Invalid spreadsheet type", detail="Hyperlink tooltips can only be added to XLSX spreadsheets." );
 		return this;
 	}
@@ -17,7 +17,7 @@ component extends="base"{
 		var hyperlinkType = library().createJavaObject( "org.apache.poi.common.usermodel.HyperlinkType" );
 		var hyperLink = arguments.workbook.getCreationHelper().createHyperlink( hyperlinkType.valueOf( JavaCast( "string", arguments.type ) ) );
 		hyperLink.setAddress( JavaCast( "string", arguments.link ) );
-		if( arguments.KeyExists( "tooltip" ) && !isNull( arguments.tooltip ) )
+		if( arguments.KeyExists( "tooltip" ) && !IsNull( arguments.tooltip ) )
 			hyperLink.setTooltip( JavaCast( "string", arguments.tooltip ) );
 		arguments.cell.setHyperlink( hyperLink );
 		return this;
