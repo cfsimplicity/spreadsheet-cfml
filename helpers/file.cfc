@@ -22,12 +22,9 @@ component extends="base"{
 				var poifs = library().createJavaObject( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
 				try{
 					// set up an encrypted stream within the POI filesystem
-					// ACF gets confused by encryptor.getDataStream( POIFSFileSystem ) signature. Using getRoot() means getDataStream( DirectoryNode ) will be used
-					if( library().getIsACF() )
-						var encryptedStream = encryptor.getDataStream( poifs.getRoot() );
-					else
-						var encryptedStream = encryptor.getDataStream( poifs );
-					// read in the unencrypted wb file and write it to the encrypted stream
+					// Using getRoot() means getDataStream( DirectoryNode ) will be used
+					var encryptedStream = encryptor.getDataStream( poifs.getRoot() );
+					// read in the unencrypted wb file and write it to the encrypted str*/eam
 					var workbook = getWorkbookHelper().workbookFromFile( arguments.filepath );
 					workbook.write( encryptedStream );
 				}
