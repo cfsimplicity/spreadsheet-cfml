@@ -37,7 +37,7 @@ component{
 		variables.conditionType = "cellValueIs";
 		variables.comparisonOperator = arguments.comparisonOperator;
 		variables.formula = arguments.valueOrFormula;
-		if( arguments.KeyExists( "valueOrFormula2" ) )
+		if( variables.library.keyExistsAndIsNotNull( arguments, "valueOrFormula2" ) )
 			variables.formula2 = arguments.valueOrFormula2;
 		return this;
 	}

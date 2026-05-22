@@ -110,7 +110,7 @@ component accessors="true"{
 
 	private void function initializeDateFormats( struct dateFormats ){
 		variables.dateFormats = getDateHelper().defaultFormats();
-		if( arguments.KeyExists( "dateFormats" ) && !IsNull( arguments.dateFormats ) )
+		if( keyExistsAndIsNotNull( arguments, "dateFormats" ) )
 			setDateFormats( arguments.dateFormats );
 	}
 
@@ -123,7 +123,7 @@ component accessors="true"{
 		if( getIsBoxlang() )
 			variables.loadJavaClassesUsing = "dynamicPath";
 		//configurable
-		if( arguments.KeyExists( "loadJavaClassesUsing" ) && !IsNull( arguments.loadJavaClassesUsing ) )
+		if( keyExistsAndIsNotNull( arguments, "loadJavaClassesUsing" ) )
 			variables.loadJavaClassesUsing = getClassHelper().validateLoadingMethod( arguments.loadJavaClassesUsing );
 		if( ListFindNoCase( "dynamicPath,javaSettings,classPath", variables.loadJavaClassesUsing ) )
 			return;
@@ -133,7 +133,7 @@ component accessors="true"{
 		}
 		variables.javaLoaderName = "spreadsheetLibraryClassLoader-#this.getVersion()#-#Hash( GetCurrentTemplatePath() )#";
 		 // Option to use the dot path of an existing javaloader installation to save duplication
-		if( arguments.KeyExists( "javaLoaderDotPath" ) && !IsNull( arguments.javaLoaderDotPath ) )
+		if( keyExistsAndIsNotNull( arguments, "javaLoaderDotPath" ) )
 			variables.javaLoaderDotPath = arguments.javaLoaderDotPath;
 	}
 
@@ -146,17 +146,20 @@ component accessors="true"{
 	/* Utilities */
 
 	public struct function getEnvironment(){
+		//ACF2021 has this key but the elvis operator reports null for some reason. Boxlang doesn't have it
+		var nullSupportEnabled = IsNull( GetApplicationMetadata().enableNullSupport )? "Unknown": GetApplicationMetadata().enableNullSupport;
 		return {
 			dateFormats: this.getDateFormats()
 			,engine: this.getEngine() & " " & getEngineVersion()
-			,javaVersion: getJavaVersion()
-			,javaLoaderDotPath: this.getJavaLoaderDotPath()
 			,javaClassesLastLoadedVia: this.getJavaClassesLastLoadedVia()
+			,javaLoaderDotPath: this.getJavaLoaderDotPath()
 			,javaLoaderName: this.getJavaLoaderName()
+			,javaVersion: getJavaVersion()
 			,loadJavaClassesUsing: this.getLoadJavaClassesUsing()
-			,version: this.getVersion()
-			,poiVersion: this.getPoiVersion()
+			,nullSupportEnabled: nullSupportEnabled
 			,osgiLibBundleVersion: this.getOsgiLibBundleVersion()
+			,poiVersion: this.getPoiVersion()
+			,version: this.getVersion()
 		};
 	}
 
@@ -196,7 +199,7 @@ component accessors="true"{
 		var spreadsheetBundles = ArrayFilter( allBundles, function( bundle ){
 			return ( bundle.getSymbolicName() == this.getOsgiLibBundleSymbolicName() );
 		});
-		if( arguments.KeyExists( "version" ) && !IsNull( arguments.version ) ){
+		if( keyExistsAndIsNotNull( arguments, "version" ) ){
 			getOsgiLoader().uninstallBundle( this.getOsgiLibBundleSymbolicName(), arguments.version );
 			return this;
 		}
@@ -233,6 +236,10 @@ component accessors="true"{
 		return getFormatHelper().getCachedCellStyles();
 	}
 
+	public boolean function keyExistsAndIsNotNull( required struct args, required string keyName ){
+		return arguments.args.KeyExists( arguments.keyName ) && !IsNull( arguments.args[ arguments.keyName ] );
+	}
+
 	/* MAIN PUBLIC API */
 
 	public Spreadsheet function addAutofilter( required workbook, string cellRange="", numeric row=1 ){
@@ -259,7 +266,7 @@ component accessors="true"{
 		,string datatype
 	){
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
-		var rowIndex = ( arguments.KeyExists( "startRow" ) && !IsNull( arguments.startRow ) )? ( arguments.startRow -1 ): 0;
+		var rowIndex = keyExistsAndIsNotNull( arguments, "startRow" )? ( arguments.startRow -1 ): 0;
 		var columnIndex = getColumnHelper().getNewColumnIndex( sheet, rowIndex, arguments.startColumn?:0 );
 		if( arguments.autoSize )
 			var columnNumber = ( columnIndex +1 ); //stash the starting column number
@@ -269,7 +276,7 @@ component accessors="true"{
 			if( rowIndex > getSheetHelper().getLastRowIndex( sheet ) || IsNull( row ) )
 				row = getRowHelper().createRow( arguments.workbook, rowIndex );
 			// NB: row.getLastCellNum() returns the cell index PLUS ONE or -1 if not found
-			var insertRequired = ( arguments.KeyExists( "startColumn" ) && !IsNull( arguments.startColumn ) && arguments.insert && ( columnIndex < row.getLastCellNum() ) );
+			var insertRequired = ( keyExistsAndIsNotNull( arguments, "startColumn" ) && arguments.insert && ( columnIndex < row.getLastCellNum() ) );
 			if( insertRequired )
 				getColumnHelper().shiftColumnsRightStartingAt( columnIndex, row, arguments.workbook );
 			var cellValueArgs = {
@@ -277,7 +284,7 @@ component accessors="true"{
 				,cell: getCellHelper().createCell( row, columnIndex )
 				,value: cellValue
 			};
-			if( arguments.KeyExists( "datatype" ) && !IsNull( arguments.datatype ) )
+			if( keyExistsAndIsNotNull( arguments, "datatype" ) )
 				cellValueArgs.type = arguments.datatype;
 			getCellHelper().setCellValueAsType( argumentCollection=cellValueArgs );
 			rowIndex++;
@@ -305,8 +312,8 @@ component accessors="true"{
 		,numeric topRow //top row visible in bottom pane
 	){
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
-		var leftmostColumnProvided = ( arguments.KeyExists( "leftmostColumn" ) && !IsNull( arguments.leftmostColumn ) );
-		var topRowProvided = ( arguments.KeyExists( "topRow" ) && !IsNull( arguments.topRow ) );
+		var leftmostColumnProvided = keyExistsAndIsNotNull( arguments, "leftmostColumn" );
+		var topRowProvided = keyExistsAndIsNotNull( arguments, "topRow" );
 		if( leftmostColumnProvided && !topRowProvided )
 			arguments.topRow = arguments.freezeRow;
 		if( topRowProvided && !leftmostColumnProvided )
@@ -337,13 +344,13 @@ component accessors="true"{
 		if( ( numberOfAnchorCoordinates != 4 ) && ( numberOfAnchorCoordinates != 8 ) )
 			Throw( type=this.getExceptionType() & ".invalidAnchorArgument", message="Invalid anchor argument", detail="The anchor argument must be a comma-delimited list of integers with either 4 or 8 elements" );
 		var args = { workbook: arguments.workbook };
-		if( arguments.KeyExists( "image" ) && !IsNull( arguments.image ) )
+		if( keyExistsAndIsNotNull( arguments, "image" ) )
 			args.image = arguments.image;//new alias instead of filepath/imageData
-		if( arguments.KeyExists( "filepath" ) && !IsNull( arguments.filepath ) )
+		if( keyExistsAndIsNotNull( arguments, "filepath" ) )
 			args.image = arguments.filepath;
-		if( arguments.KeyExists( "imageData" ) && !IsNull( arguments.imageData ) )
+		if( keyExistsAndIsNotNull( arguments, "imageData" ) )
 			args.image = arguments.imageData;
-		if( arguments.KeyExists( "imageType" ) && !IsNull( arguments.imageType ) )
+		if( keyExistsAndIsNotNull( arguments, "imageType" ) )
 			args.imageType = arguments.imageType;
 		if( !args.KeyExists( "image" ) )
 			Throw( type=this.getExceptionType() & ".missingImageArgument", message="Missing image path or object", detail="Please supply either the 'filepath' or 'imageData' argument" );
@@ -413,9 +420,9 @@ component accessors="true"{
 		,boolean ignoreQueryColumnDataTypes=false
 		,struct datatypes
 	){
-		if( arguments.KeyExists( "row" ) && !IsNull( arguments.row )  && ( arguments.row <= 0 ) )
+		if( keyExistsAndIsNotNull( arguments, "row" ) && ( arguments.row <= 0 ) )
 			Throw( type=this.getExceptionType() & ".invalidRowArgument", message="Invalid row value", detail="The value for row must be greater than or equal to 1." );
-		if( arguments.KeyExists( "column" ) && !IsNull( arguments.column ) && ( arguments.column <= 0 ) )
+		if( keyExistsAndIsNotNull( arguments, "column" ) && ( arguments.column <= 0 ) )
 			Throw( type=this.getExceptionType() & ".invalidColumnArgument", message="Invalid column value", detail="The value for column must be greater than or equal to 1." );
 		if( !arguments.insert && ( !arguments.KeyExists( "row") || IsNull( arguments.row ) ) )
 			Throw( type=this.getExceptionType() & ".missingRowArgument", message="Missing row value", detail="To replace a row using 'insert', please specify the row to replace." );
@@ -432,11 +439,11 @@ component accessors="true"{
 			Throw( type=this.getExceptionType() & ".invalidDataArgument", message="Invalid data argument", detail="Data passed as an array must be an array of arrays, one per row" );
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		var nextRowIndex = getSheetHelper().getNextEmptyRowIndex( sheet );
-		var insertAtRowIndex = ( arguments.KeyExists( "row" ) && !IsNull( arguments.row ) )? arguments.row -1: nextRowIndex;
-		if( arguments.KeyExists( "row" ) && !IsNull( arguments.row ) && ( arguments.row <= nextRowIndex ) && arguments.insert )
+		var insertAtRowIndex = keyExistsAndIsNotNull( arguments, "row" )? arguments.row -1: nextRowIndex;
+		if( keyExistsAndIsNotNull( arguments, "row" ) && ( arguments.row <= nextRowIndex ) && arguments.insert )
 			shiftRows( arguments.workbook, arguments.row, nextRowIndex, totalRows );
 		var currentRowIndex = insertAtRowIndex;
-		var overrideDataTypes = arguments.KeyExists( "datatypes" ) && !IsNull( arguments.datatypes );
+		var overrideDataTypes = keyExistsAndIsNotNull( arguments, "datatypes" );
 		if( arguments.autoSizeColumns && isStreamingXmlFormat( arguments.workbook ) )
 			getSheetHelper().getActiveSheet( arguments.workbook ).trackAllColumnsForAutoSizing();
 			/* this will affect performance but is needed for autoSizeColumns to work properly with SXSSF: https://poi.apache.org/apidocs/dev/org/apache/poi/xssf/streaming/SXSSFSheet.html#trackAllColumnsForAutoSizing */
@@ -601,7 +608,7 @@ component accessors="true"{
 			getCsvHelper().parseFromString( arguments.csv, arguments.trim, format );
 		var data = parsed.data;
 		var maxColumnCount = parsed.maxColumnCount;
-		if( arguments.KeyExists( "queryColumnNames" ) && !IsNull( arguments.queryColumnNames ) && arguments.queryColumnNames.Len() ){
+		if( keyExistsAndIsNotNull( arguments, "queryColumnNames" ) && arguments.queryColumnNames.Len() ){
 			var columnNames = arguments.queryColumnNames;
 			var parsedQueryColumnTypes = getQueryHelper().parseQueryColumnTypesArgument( arguments.queryColumnTypes, columnNames, maxColumnCount, data );
 			return getQueryHelper()._QueryNew( columnNames, parsedQueryColumnTypes, data, arguments.makeColumnNamesSafe );
@@ -732,7 +739,7 @@ component accessors="true"{
 			,streamingWindowSize: arguments.streamingWindowSize
 			,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
 		};
-		if( arguments.KeyExists( "datatypes" ) && !IsNull( arguments.datatypes ) )
+		if( keyExistsAndIsNotNull( arguments, "datatypes" ) )
 			binaryFromQueryArgs.datatypes = arguments.datatypes;
 		var binary = binaryFromQuery( argumentCollection=binaryFromQueryArgs );
 		if( !arguments.KeyExists( "contentType" ) || IsNull( arguments.contentType ) )
@@ -764,7 +771,7 @@ component accessors="true"{
 	){
 		arguments = getFormatHelper().checkFormatArguments( argumentCollection=arguments );
 		var cell = getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column );
-		if( arguments.KeyExists( "cellStyle" ) && !IsNull( arguments.cellStyle ) ){
+		if( keyExistsAndIsNotNull( arguments, "cellStyle" ) ){
 			getFormatHelper().setCellStyle( cell, arguments.cellStyle );
 			return this;
 		}
@@ -902,8 +909,8 @@ component accessors="true"{
 
 	public any function getCellComment( required workbook, numeric row, numeric column ){
 		// returns struct OR array of structs
-		var rowProvided = ( arguments.KeyExists( "row" ) && !IsNull( arguments.row ) );
-		var columnProvided = ( arguments.KeyExists( "column" ) && !IsNull( arguments.column ) );
+		var rowProvided = keyExistsAndIsNotNull( arguments, "row" );
+		var columnProvided = keyExistsAndIsNotNull( arguments, "column" );
 		if( rowProvided && !columnProvided )
 			Throw( type=this.getExceptionType() & ".invalidArgumentCombination", message="Invalid argument combination", detail="If you specify the row you must also specify the column" );
 		if( columnProvided && !rowProvided )
@@ -976,7 +983,7 @@ component accessors="true"{
 	}
 
 	public any function getCellFormula( required workbook, numeric row, numeric column ){
-		if( !( arguments.KeyExists( "row" ) && !IsNull( arguments.row ) ) || !( arguments.KeyExists( "column" ) && !IsNull( arguments.column ) ) )
+		if( !keyExistsAndIsNotNull( arguments, "row" ) || !keyExistsAndIsNotNull( arguments, "column" ) )
 			return getSheetHelper().getAllSheetFormulas( arguments.workbook );
 		var cell = getCellHelper().getCellAt( arguments.workbook, arguments.row, arguments.column );
 		if( IsNull( cell ) )
@@ -1011,7 +1018,7 @@ component accessors="true"{
 	}
 
 	public numeric function getColumnCount( required workbook, sheetNameOrNumber ){
-		if( arguments.KeyExists( "sheetNameOrNumber" ) && !IsNull( arguments.sheetNameOrNumber ) )
+		if( keyExistsAndIsNotNull( arguments, "sheetNameOrNumber" ) )
 			getSheetHelper().setActiveSheetNameOrNumber( argumentCollection=arguments );
 		var result = 0;
 		var rowIterator = getSheetHelper().getActiveSheetRowIterator( arguments.workbook );
@@ -1033,7 +1040,7 @@ component accessors="true"{
 	}
 
 	public numeric function getLastRowNumber( required workbook, sheetNameOrNumber ){
-		if( arguments.KeyExists( "sheetNameOrNumber" ) && !IsNull( arguments.sheetNameOrNumber ) )
+		if( keyExistsAndIsNotNull( arguments, "sheetNameOrNumber" ) )
 			getSheetHelper().setActiveSheetNameOrNumber( argumentCollection=arguments );
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
 		var lastRowIndex = getSheetHelper().getLastRowIndex( sheet );
@@ -1049,7 +1056,7 @@ component accessors="true"{
 	}
 
 	public boolean function getRecalculateFormulasOnNextOpen( required workbook, string sheetName ){
-		if( arguments.KeyExists( "sheetName" ) && !IsNull( arguments.sheetName ) ){
+		if( keyExistsAndIsNotNull( arguments, "sheetName" ) ){
 			var sheet = getSheetHelper().getSheetByName( arguments.workbook, arguments.sheetName );
 			return sheet.getForceFormulaRecalculation();
 		}
@@ -1212,7 +1219,7 @@ component accessors="true"{
 		if( arguments.streamingXml && !arguments.xmlFormat )
 			arguments.xmlFormat = true;
 		var createArgs.type = getWorkbookHelper().typeFromArguments( arguments.xmlFormat, arguments.streamingXml );
-		if( arguments.KeyExists( "streamingWindowSize" ) && !IsNull( arguments.streamingWindowSize ) )
+		if( keyExistsAndIsNotNull( arguments, "streamingWindowSize" ) )
 			createArgs.streamingWindowSize = arguments.streamingWindowSize;
 		var workbook = getWorkbookHelper().createWorkBook( argumentCollection=createArgs );
 		getSheetHelper().validateSheetName( arguments.sheetName );
@@ -1289,30 +1296,30 @@ component accessors="true"{
 		getExceptionHelper().throwExceptionIFreadFormatIsInvalid( argumentCollection=arguments );
 		getSheetHelper().throwErrorIFSheetNameAndNumberArgumentsBothPassed( argumentCollection=arguments );
 		getFileHelper().throwErrorIFfileNotExists( arguments.src );
-		var passwordProtected = ( arguments.KeyExists( "password" ) && !IsNull( arguments.password ) && !arguments.password.Trim().IsEmpty() );
+		var passwordProtected = ( keyExistsAndIsNotNull( arguments, "password" ) && !arguments.password.Trim().IsEmpty() );
 		var workbook = passwordProtected? getWorkbookHelper().workbookFromFile( arguments.src, arguments.password ): getWorkbookHelper().workbookFromFile( arguments.src );
-		if( arguments.KeyExists( "sheetName" ) && !IsNull( arguments.sheetName ) )
+		if( keyExistsAndIsNotNull( arguments, "sheetName" ) )
 			setActiveSheet( workbook=workbook, sheetName=arguments.sheetName );
-		if( !arguments.KeyExists( "format" ) || IsNull( arguments.format ) )
+		if( !keyExistsAndIsNotNull( arguments, "format" ) )
 			return workbook;
 		var args = { workbook: workbook };
-		if( arguments.KeyExists( "sheetName" ) && !IsNull( arguments.sheetName ) )
+		if( keyExistsAndIsNotNull( arguments, "sheetName" ) )
 			args.sheetName = arguments.sheetName;
-		if( arguments.KeyExists( "sheetNumber" ) && !IsNull( arguments.sheetNumber ) )
+		if( keyExistsAndIsNotNull( arguments, "sheetNumber" ) )
 			args.sheetNumber = arguments.sheetNumber;
-		if( arguments.KeyExists( "headerRow" ) && !IsNull( arguments.headerRow ) ){
+		if( keyExistsAndIsNotNull( arguments, "headerRow" ) ){
 			args.headerRow = arguments.headerRow;
 			args.includeHeaderRow = arguments.includeHeaderRow;
 		}
-		if( arguments.KeyExists( "rows" ) && !IsNull( arguments.rows ) )
+		if( keyExistsAndIsNotNull( arguments, "rows" ) )
 			args.rows = arguments.rows;
-		if( arguments.KeyExists( "columns" ) && !IsNull( arguments.columns ) )
+		if( keyExistsAndIsNotNull( arguments, "columns" ) )
 			args.columns = arguments.columns;
-		if( arguments.KeyExists( "columnNames" ) && !IsNull( arguments.columnNames ) )
+		if( keyExistsAndIsNotNull( arguments, "columnNames" ) )
 			args.columnNames = arguments.columnNames; // columnNames is what cfspreadsheet action="read" uses
-		else if( arguments.KeyExists( "queryColumnNames" ) && !IsNull( arguments.queryColumnNames ) )
+		else if( keyExistsAndIsNotNull( arguments, "queryColumnNames" ) )
 			args.columnNames = arguments.queryColumnNames;// accept better alias `queryColumnNames` to match csvToQuery
-		if( ( arguments.format == "query" ) && arguments.KeyExists( "queryColumnTypes" ) && !IsNull( arguments.queryColumnTypes ) ){
+		if( ( arguments.format == "query" ) && keyExistsAndIsNotNull( arguments, "queryColumnTypes" ) ){
 			args.queryColumnTypes = arguments.queryColumnTypes;
 			getQueryHelper().throwErrorIFinvalidQueryColumnTypesArgument( argumentCollection=args );
 		}
@@ -1373,10 +1380,10 @@ component accessors="true"{
 		getFileHelper().throwErrorIFfileNotExists( arguments.src );
 		getExceptionHelper().throwExceptionIFreadFormatIsInvalid( argumentCollection=arguments );
 		getSheetHelper().throwErrorIFSheetNameAndNumberArgumentsBothPassed( argumentCollection=arguments );
-		if( arguments.KeyExists( "streamingReaderOptions" ) ) //support legacy naming
+		if( keyExistsAndIsNotNull( arguments, "streamingReaderOptions" ) ) //support legacy naming
 			arguments.streamingOptions = arguments.streamingReaderOptions;
 		var builderOptions = arguments.streamingReaderOptions?:{};
-		if( arguments.KeyExists( "password" ) && !IsNull( arguments.password ) )
+		if( keyExistsAndIsNotNull( arguments, "password" ) )
 			builderOptions.password = arguments.password;
 		var sheetToQueryArgs = {
 			includeBlankRows: arguments.includeBlankRows
@@ -1385,17 +1392,17 @@ component accessors="true"{
 			,makeColumnNamesSafe: arguments.makeColumnNamesSafe
 			,returnVisibleValues = arguments.returnVisibleValues
 		};
-		if( arguments.KeyExists( "sheetName" ) && !IsNull( arguments.sheetName ) )
+		if( keyExistsAndIsNotNull( arguments, "sheetName" ) )
 			sheetToQueryArgs.sheetName = arguments.sheetName;
-		if( arguments.KeyExists( "sheetNumber" ) && !IsNull( arguments.sheetNumber ) )
+		if( keyExistsAndIsNotNull( arguments, "sheetNumber" ) )
 			sheetToQueryArgs.sheetNumber = arguments.sheetNumber;
-		if( arguments.KeyExists( "headerRow" ) && !IsNull( arguments.headerRow ) ){
+		if( keyExistsAndIsNotNull( arguments, "headerRow" ) ){
 			sheetToQueryArgs.headerRow = arguments.headerRow;
 			sheetToQueryArgs.includeHeaderRow = arguments.includeHeaderRow;
 		}
-		if( arguments.KeyExists( "queryColumnNames" ) && !IsNull( arguments.queryColumnNames ) )
+		if( keyExistsAndIsNotNull( arguments, "queryColumnNames" ) )
 			sheetToQueryArgs.columnNames = arguments.queryColumnNames;
-		if( ( arguments.format == "query" ) && arguments.KeyExists( "queryColumnTypes" ) && !IsNull( arguments.queryColumnTypes ) ){
+		if( ( arguments.format == "query" ) && keyExistsAndIsNotNull( arguments, "queryColumnTypes" ) ){
 			sheetToQueryArgs.queryColumnTypes = arguments.queryColumnTypes;
 			getQueryHelper().throwErrorIFinvalidQueryColumnTypesArgument( argumentCollection=sheetToQueryArgs );
 		}
@@ -1472,7 +1479,7 @@ component accessors="true"{
 
 	public Spreadsheet function setActiveSheet( required workbook, string sheetName, numeric sheetNumber ){
 		getSheetHelper().validateSheetNameOrNumberWasProvided( argumentCollection=arguments );
-		if( arguments.KeyExists( "sheetName" ) && !IsNull( arguments.sheetName ) ){
+		if( keyExistsAndIsNotNull( arguments, "sheetName" ) ){
 			getSheetHelper().validateSheetExistsWithName( arguments.workbook, arguments.sheetName );
 			arguments.sheetNumber = ( arguments.workbook.getSheetIndex( JavaCast( "string", arguments.sheetName ) ) + 1 );
 		}
@@ -1558,7 +1565,7 @@ component accessors="true"{
 		getHyperLinkHelper().throwErrorIfTooltipAndWorkbookIsXls( argumentCollection=arguments );
 		var cell = getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column );
 		getHyperLinkHelper().addHyperLinkToCell( cell=cell, argumentCollection=arguments );
-		if( arguments.KeyExists( "cellValue" ) && !IsNull( arguments.cellValue ) )
+		if( keyExistsAndIsNotNull( arguments, "cellValue" ) )
 			getCellHelper().setCellValueAsType( arguments.workbook, cell, arguments.cellValue );
 		formatCell( arguments.workbook, arguments.format, arguments.row, arguments.column );
 		return this;
@@ -1585,10 +1592,10 @@ component accessors="true"{
 			,cell: getCellHelper().initializeCell( arguments.workbook, arguments.row, arguments.column )
 			,value: arguments.value
 		};
-		if( arguments.KeyExists( "datatype" ) && !IsNull( arguments.datatype ) )
+		if( keyExistsAndIsNotNull( arguments, "datatype" ) )
 			args.type = arguments.datatype;
 		//support legacy argument name
-		if( arguments.KeyExists( "type" ) && !IsNull( arguments.type ) )
+		if( keyExistsAndIsNotNull( arguments, "type" ) )
 			args.type = arguments.type;
 		getCellHelper().setCellValueAsType( argumentCollection=args );
 		return this;
@@ -1611,9 +1618,9 @@ component accessors="true"{
 		sheet.setAutoBreaks( JavaCast( "boolean", arguments.state ) ); //seems dependent on this matching
 		if( !arguments.state )
 			return this;
-		if( arguments.KeyExists( "pagesWide" ) && !IsNull( arguments.pagesWide ) && IsValid( "integer", arguments.pagesWide ) )
+		if( keyExistsAndIsNotNull( arguments, "pagesWide" ) && IsValid( "integer", arguments.pagesWide ) )
 			sheet.getPrintSetup().setFitWidth( JavaCast( "short", arguments.pagesWide ) );
-		if( arguments.KeyExists( "pagesHigh" ) && !IsNull( arguments.pagesHigh ) && IsValid( "integer", arguments.pagesHigh ) )
+		if( keyExistsAndIsNotNull( arguments, "pagesHigh" ) && IsValid( "integer", arguments.pagesHigh ) )
 			sheet.getPrintSetup().setFitHeight( JavaCast( "short", arguments.pagesHigh ) );
 		return this;
 	}
@@ -1679,7 +1686,7 @@ component accessors="true"{
 	}
 
 	public Spreadsheet function setRecalculateFormulasOnNextOpen( required workbook, boolean value=true, string sheetName ){
-		if( arguments.KeyExists( "sheetName" ) && !IsNull( arguments.sheetName ) ){
+		if( keyExistsAndIsNotNull( arguments, "sheetName" ) ){
 			var sheet = getSheetHelper().getSheetByName( arguments.workbook, arguments.sheetName );
 			sheet.setForceFormulaRecalculation( JavaCast( "boolean", arguments.value ) );
 			return this;
@@ -1787,11 +1794,11 @@ component accessors="true"{
 		*/
 		if( arguments.start <= 0 )
 			Throw( type=this.getExceptionType() & ".invalidStartArgument", message="Invalid start value", detail="The start value must be greater than or equal to 1" );
-		if( arguments.KeyExists( "end" ) && ( ( arguments.end <= 0 ) || ( arguments.end < arguments.start ) ) )
+		if( ( arguments.end <= 0 ) || ( arguments.end < arguments.start ) )
 			Throw( type=this.getExceptionType() & ".invalidEndArgument", message="Invalid end value", detail="The end value must be greater than or equal to the start value" );
 		var rowIterator = getSheetHelper().getActiveSheetRowIterator( arguments.workbook );
 		var startIndex = ( arguments.start -1 );
-		var endIndex = arguments.KeyExists( "end" )? ( arguments.end -1 ): startIndex;
+		var endIndex = ( arguments.end -1 );
 		while( rowIterator.hasNext() ){
 			var row = rowIterator.next();
 			if( arguments.offset > 0 ){
@@ -1854,11 +1861,11 @@ component accessors="true"{
 			firstRowIsHeader: arguments.firstRowIsHeader
 			,trim: arguments.trim
 		};
-		if( arguments.KeyExists( "csv" ) && !IsNull( arguments.csv ) )
+		if( keyExistsAndIsNotNull( arguments, "csv" ) )
 			conversionArgs.csv = arguments.csv;
-		if( arguments.KeyExists( "filepath" ) && !IsNull( arguments.filepath ) )
+		if( keyExistsAndIsNotNull( arguments, "filepath" ) )
 			conversionArgs.filepath = arguments.filepath;
-		if( arguments.KeyExists( "delimiter" ) && !IsNull( arguments.delimiter ) )
+		if( keyExistsAndIsNotNull( arguments, "delimiter" ) )
 			conversionArgs.delimiter = arguments.delimiter;
 		var data = csvToQuery( argumentCollection=conversionArgs );
 		return workbookFromQuery(
@@ -1887,7 +1894,7 @@ component accessors="true"{
 			,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
 			,autoSizeColumns: arguments.autoSizeColumns
 		};
-		if( arguments.KeyExists( "datatypes" ) && !IsNull( arguments.datatypes ) )
+		if( keyExistsAndIsNotNull( arguments, "datatypes" ) )
 			addRowsArgs.datatypes = arguments.datatypes;
 		if( arguments.addHeaderRow ){
 			var columns = getQueryHelper()._QueryColumnArray( arguments.data );
@@ -1910,7 +1917,7 @@ component accessors="true"{
 	){
 		if( !arguments.overwrite && FileExists( arguments.filepath ) )
 			getExceptionHelper().throwFileExistsException( arguments.filepath );
-		var passwordProtect = ( arguments.KeyExists( "password" ) && !IsNull( arguments.password ) && !arguments.password.Trim().IsEmpty() );
+		var passwordProtect = ( keyExistsAndIsNotNull( arguments, "password" ) && !arguments.password.Trim().IsEmpty() );
 		if( passwordProtect && isBinaryFormat( arguments.workbook ) )
 			Throw( type=this.getExceptionType() & ".invalidSpreadsheetType", message="Whole file password protection is not supported for binary workbooks", detail="Password protection only works with XML ('xlsx') workbooks." );
 		try{
@@ -1957,7 +1964,7 @@ component accessors="true"{
 			,streamingWindowSize: arguments.streamingWindowSize
 			,ignoreQueryColumnDataTypes: arguments.ignoreQueryColumnDataTypes
 		};
-		if( arguments.KeyExists( "datatypes" ) && !IsNull( arguments.datatypes ) )
+		if( keyExistsAndIsNotNull( arguments, "datatypes" ) )
 			workbookFromQueryArgs.datatypes = arguments.datatypes;
 		var workbook = workbookFromQuery( argumentCollection=workbookFromQueryArgs );
 		// force to .xlsx if appropriate

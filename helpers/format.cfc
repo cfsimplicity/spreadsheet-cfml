@@ -54,7 +54,7 @@ component extends="base"{
 
 	any function buildCellStyle( required workbook, required struct format, existingStyle ){
 		var cellStyle = arguments.workbook.createCellStyle();
-		if( arguments.KeyExists( "existingStyle" ) && !IsNull( arguments.existingStyle ) )
+		if( keyExistsAndIsNotNull( arguments, "existingStyle" ) )
 			cellStyle.cloneStyleFrom( arguments.existingStyle );
 		for( var setting in arguments.format )
 			setCellStyleFromFormatSetting( arguments.workbook, cellStyle, arguments.format, setting );

@@ -78,7 +78,7 @@ component extends="base"{
 			}
 		}
 		// if no override, use an already set default (i.e. query column type)
-		if( arguments.KeyExists( "defaultType" ) && !IsNull( arguments.defaultType ) ){
+		if( keyExistsAndIsNotNull( arguments, "defaultType" ) ){
 			getCellHelper().setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue, arguments.defaultType );
 			return this;
 		}
