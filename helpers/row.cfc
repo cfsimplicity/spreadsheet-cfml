@@ -110,7 +110,7 @@ component extends="base"{
 	any function createRow( required workbook, numeric rowIndex, boolean overwrite=true ){
 		// get existing row (if any)
 		var sheet = getSheetHelper().getActiveSheet( arguments.workbook );
-		if( !arguments.KeyExists( "rowIndex" ) )
+		if( !arguments.KeyExists( "rowIndex" ) || IsNull( arguments.rowIndex ) )
 			arguments.rowIndex = getSheetHelper().getNextEmptyRowIndex( sheet );
 		var row = sheet.getRow( JavaCast( "int", arguments.rowIndex ) );
 		if( arguments.overwrite && !IsNull( row ) )
@@ -301,15 +301,15 @@ component extends="base"{
 			var cellValue = rowData[ queryColumn.name ];
 			if( arguments.ignoreQueryColumnDataTypes ){
 				if( overrideDataTypes )
-   				getDataTypeHelper().setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes );
-   			else
+					getDataTypeHelper().setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes );
+				else
 					getCellHelper().setCellValueAsType( arguments.workbook, cell, cellValue );
 				cellIndex++;
 				continue;
 			}
 			var cellValueType = getDataTypeHelper().getCellValueTypeFromQueryColumnType( queryColumn.cellDataType, cellValue );
 			if( overrideDataTypes )
- 				getDataTypeHelper().setCellDataTypeWithOverride( arguments.workbook, cell, cellValue, cellIndex, arguments.datatypes, cellValueType );
+				getDataTypeHelper().setCellDataTypeWithOverride( workbook=arguments.workbook, cell=cell, cellValue=cellValue, cellIndex=cellIndex, datatypeOverrides=arguments.datatypes, defaultType=cellValueType );
  			else
 				getCellHelper().setCellValueAsType( arguments.workbook, cell, cellValue, cellValueType );
 			cellIndex++;

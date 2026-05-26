@@ -11,7 +11,7 @@ component extends="base"{
 
 	any function getDataFormatPropertyType(){
 		if( IsNull( variables.dataFormatPropertyType ) )
-			variables.dataFormatPropertyType = library().createJavaObject( "org.apache.poi.ss.usermodel.CellPropertyType" ).DATA_FORMAT;
+			variables.dataFormatPropertyType = library().createJavaObject( "org.apache.poi.ss.usermodel.CellPropertyType" ).valueOf( JavaCast( "string", "DATA_FORMAT" ) );
 		return variables.dataFormatPropertyType;
 	}
 
@@ -24,7 +24,7 @@ component extends="base"{
 	}
 
 	boolean function cellIsOfType( required cell, required string type ){
-		return arguments.cell.getCellType().Equals( arguments.cell.getCellType()[ arguments.type ] );
+		return arguments.cell.getCellType().Equals( arguments.cell.getCellType().valueOf( JavaCast( "string", arguments.type ) ) );
 	}
 
 	any function createCell( required row, numeric cellNum=arguments.row.getLastCellNum(), overwrite=true ){
@@ -39,7 +39,10 @@ component extends="base"{
 
 	any function getCellAt( required workbook, required numeric rowNumber, required numeric columnNumber ){
 		var columnIndex = ( arguments.columnNumber -1 );
-		return getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.rowNumber )?.getCell( JavaCast( "int", columnIndex ) );
+		var row = getRowHelper().getRowFromActiveSheet( arguments.workbook, arguments.rowNumber );
+		if( IsNull( row ) )
+			return;
+		return row.getCell( JavaCast( "int", columnIndex ) );
 	}
 
 	any function getCellFormulaValue( required workbook, required cell, boolean forceEvaluation=false ){
@@ -51,8 +54,7 @@ component extends="base"{
 			return getFormatHelper().getDataFormatter().formatCellValue( arguments.cell, formulaEvaluator );
 		}
 		catch( any exception ){
-			if( library().getThrowExceptionOnFormulaError() )
-				getExceptionHelper().throwFormulaEvaluationException( arguments.cell );
+			throwCellErrorExceptionIfConfigured( arguments.cell );
 			// for some reason the cell value will be returned implicitly here
 			arguments.cell.setCellValue( JavaCast( "string", "##ERROR!" ) );
 		}
@@ -75,6 +77,10 @@ component extends="base"{
 			return arguments.cell.getBooleanCellValue();
 	 	if( cellIsOfType( arguments.cell, "BLANK" ) )
 	 		return "";
+		if( cellIsOfType( arguments.cell, "ERROR" ) ){
+			throwCellErrorExceptionIfConfigured( arguments.cell );
+			return "##ERROR!";
+		}
 		return getStringValue( arguments.cell );
 	}
 
@@ -91,7 +97,7 @@ component extends="base"{
 		if( Trim( arguments.value ).IsEmpty() )
 			return setEmptyValue( arguments.cell );
 		var validCellTypes = getDataTypeHelper().validCellOverrideTypes().Append( "blank" );
-		if( !arguments.KeyExists( "type" ) ) //autodetect type
+		if( !arguments.KeyExists( "type" ) || IsNull( arguments.type ) ) //autodetect type
 			arguments.type = getDataTypeHelper().detectValueDataType( arguments.value );
 		else if( !validCellTypes.FindNoCase( arguments.type ) )
 			Throw( type=library().getExceptionType() & ".invalidDatatype", message="Invalid data type: '#arguments.type#'", detail="The data type must be one of the following: #validCellTypes.ToList( ', ' )#." );
@@ -227,18 +233,22 @@ component extends="base"{
 		catch( any exception ){
 			if( !exception.message.FindNoCase( "ERROR formula cell" ) )
 				rethrow;
-			if( library().getThrowExceptionOnFormulaError() )
-				getExceptionHelper().throwFormulaEvaluationException( arguments.cell );
+			throwCellErrorExceptionIfConfigured( arguments.cell );
 			return "##ERROR!";
 		}
 	}
 
 	private any function getCachedFormulaValue( required cell ){
-		if( arguments.cell.getCachedFormulaResultType().Equals( arguments.cell.getCellType().NUMERIC ) )
-			return getCellNumericOrDateValue( arguments.cell ); 
-		if( arguments.cell.getCachedFormulaResultType().Equals( arguments.cell.getCellType().BOOLEAN ) )
+		if( arguments.cell.getCachedFormulaResultType().Equals( arguments.cell.getCellType().valueOf( JavaCast( "string", "NUMERIC" ) ) ) )
+			return getCellNumericOrDateValue( arguments.cell );
+		if( arguments.cell.getCachedFormulaResultType().Equals( arguments.cell.getCellType().valueOf( JavaCast( "string", "BOOLEAN" ) ) ) )
 			return arguments.cell.getBooleanCellValue();
 		return getStringValue( arguments.cell );
+	}
+
+	private void function throwCellErrorExceptionIfConfigured( required cell ){
+		if( library().getThrowExceptionOnFormulaError() )
+			getExceptionHelper().throwFormulaEvaluationException( arguments.cell );
 	}
 
 }

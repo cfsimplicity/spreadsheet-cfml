@@ -101,7 +101,7 @@ component extends="base"{
 			case "bold":
 				return "font-weight:" & ( arguments.styleValue? "bold;": "normal;" );
 			case "color":
-				if( !arguments.KeyExists( "workbook" ) )
+				if( !arguments.KeyExists( "workbook" ) || IsNull( arguments.workbook ) )
 					Throw( type=library().getExceptionType() & ".missingRequiredArgument", message="Missing required 'workbook' argument", detail="The 'workbook' argument is required when generating color css styles" );
 				//http://ragnarock99.blogspot.co.uk/2012/04/getting-hex-color-from-excel-cell.html
 				var rgb = arguments.workbook.getCustomPalette().getColor( arguments.styleValue ).getTriplet();

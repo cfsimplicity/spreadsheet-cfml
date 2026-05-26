@@ -105,7 +105,7 @@ component extends="base"{
 				<v:imagedata o:relid="#pictureRelationID#" o:title="#pictureRelationID#" />
 				<o:lock v:ext="edit" rotation="t" />
 			</v:shape>
-		' ).REReplace( ">\s+<", "><", "ALL" );
+		' ).replaceAll( ">\s+<", "><" );
 	}
 
 	private string function getNewHeaderImageXML(){

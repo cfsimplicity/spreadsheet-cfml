@@ -37,7 +37,7 @@ describe( "cellValue", ()=>{
 		var value = CreateDate( 2015, 04, 12 );
 		workbooks.Each( ( wb )=>{
 			s.setCellValue( wb, value, 1, 1 );
-			var expected = DateFormat( value, "yyyy-mm-dd" );
+			var expected = DateFormat( value, s.getDateFormats().DATE );
 			var actual = s.getCellValue( wb, 1, 1 );
 			expect( actual ).toBe( expected );
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
@@ -114,20 +114,17 @@ describe( "cellValue", ()=>{
 		})
 	})
 
-	it(
-		title="but does accept date strings with AM or PM",
-		body=()=>{
-			workbooks.Each( ( wb )=>{
-				s.setCellValue( wb, "22/8/2020 10:34 AM", 1, 1 );
-				expect( s.getCellValue( wb, 1, 1 ) ).toBe( "2020-08-22 10:34:00" );
-				expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
-				s.setCellValue( wb, "12:53 pm", 1, 1 );
-				expect( s.getCellValue( wb, 1, 1 ) ).toBe( "12:53:00" );
-				expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
-			})
-		},
-		skip=s.getIsBoxlang()
-	);
+	it( "but does accept date strings with AM or PM", ()=>{
+		if( s.getIsBoxlang() ) skip();
+		workbooks.Each( ( wb )=>{
+			s.setCellValue( wb, "22/8/2020 10:34 AM", 1, 1 );
+			expect( s.getCellValue( wb, 1, 1 ) ).toBe( "2020-08-22 10:34:00" );
+			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
+			s.setCellValue( wb, "12:53 pm", 1, 1 );
+			expect( s.getCellValue( wb, 1, 1 ) ).toBe( "12:53:00" );
+			expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );
+		})
+	})
 
 	it( "getCellValue and setCellValue are chainable", ()=>{
 		var value = "test";
@@ -194,7 +191,7 @@ describe( "cellValue", ()=>{
 			workbooks.Each( ( wb )=>{
 				s.setCellValue( wb, value, 1, 1, "date" );
 				var actual = s.getCellValue( wb, 1, 1 );
-				expect( DateFormat( actual, "yyyy-mm-dd" ) ).toBe( "1990-01-01" );
+				expect( DateFormat( actual, s.getDateFormats().DATE ) ).toBe( "1990-01-01" );
 				expect( s.getCellType( wb, 1, 1 ) ).toBe( "numeric" );// dates are numeric in Excel
 			})
 		})
@@ -252,32 +249,30 @@ describe( "cellValue", ()=>{
 
 	})
 
-	describe(
-		title="Lucee only timezone tests",
-		body=()=>{
+	describe( "Lucee only timezone tests", ()=>{
 
-			it( "Knows if Lucee timezone matches POI", ()=>{
-				s.getDateHelper().matchPoiTimeZoneToEngine();
-				expect( s.getDateHelper().getPoiTimeZone() ).toBe( GetTimeZone() );
+		it( "Knows if Lucee timezone matches POI", ()=>{
+			if( !s.getIsLucee() ) skip();
+			s.getDateHelper().matchPoiTimeZoneToEngine();
+			expect( s.getDateHelper().getPoiTimeZone() ).toBe( GetTimeZone() );
+		})
+
+		it( "Sets the specified cell to the specified date value even if the Lucee timezone doesn't match the system", ()=>{
+			if( !s.getIsLucee() ) skip();
+			variables.currentTZ = GetTimeZone();
+			//Needs manually adjusting if the test Lucee instance TZ is in Central European Time, i.e. same as London e.g. Lisbon
+			variables.tempTZ = ( currentTZ == "Europe/London" )? "Europe/Paris": "Europe/London";
+			SetTimeZone( tempTZ );
+			var value = CreateDate( 2015, 04, 12 );
+			workbooks.Each( ( wb )=>{
+				s.setCellValue( wb, value, 1, 1 );
+				s.formatCell( wb, { dataformat: "0.0" }, 1, 1 );
+				expect( s.getCellValue( wb, 1, 1 ) ).toBe( 42106.0 );// whole number = date, no time
 			})
+			SetTimeZone( currentTZ );
+		})
 
-			it( "Sets the specified cell to the specified date value even if the Lucee timezone doesn't match the system", ()=>{
-				variables.currentTZ = GetTimeZone();
-				//Needs manually adjusting if the test Lucee instance TZ is in Central European Time, i.e. same as London e.g. Lisbon
-				variables.tempTZ = ( currentTZ == "Europe/London" )? "Europe/Paris": "Europe/London";
-				SetTimeZone( tempTZ );
-				var value = CreateDate( 2015, 04, 12 );
-				workbooks.Each( ( wb )=>{
-					s.setCellValue( wb, value, 1, 1 );
-					s.formatCell( wb, { dataformat: "0.0" }, 1, 1 );
-					expect( s.getCellValue( wb, 1, 1 ) ).toBe( 42106.0 );// whole number = date, no time
-				})
-				SetTimeZone( currentTZ );
-			})
-
-		},
-		skip=!s.getIsLucee()
-	);
+	});
 
 	describe( "setCellValue throws an exception if", ()=>{
 

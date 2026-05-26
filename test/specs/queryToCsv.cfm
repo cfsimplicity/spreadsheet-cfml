@@ -60,20 +60,15 @@ describe( "queryToCsv", ()=>{
 		expect( s.queryToCsv( data ) ).toBe( expected );
 	})
 
-	it(
-		title="can process rows in parallel if the engine supports it"
-		,body=function(){
-			//can't test if using threads, just that there are no errors
-			var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "a" ], [ "a", "a" ] ] );
-			var expected = 'a,a#newline#a,a#newline#';//same values because order is not guaranteed
-			expect( s.queryToCsv( query=data, threads=2 ) ).toBe( expected );
-		}
-		,skip=function(){
-			//20231031: ACF 2021 and 2023 won't run the whole suite if this test is included: testbox errors thrown
-			//running just the queryToCsv tests works fine though. Lucee is fine with the whole suite.
-			return s.getIsACF();
-		}
-	);
+	it( "can process rows in parallel if the engine supports it", ()=>{
+		//20231031: ACF 2021 and 2023 won't run the whole suite if this test is included: testbox errors thrown
+		//running just the queryToCsv tests works fine though. Lucee is fine with the whole suite.
+		if( s.getIsACF() ) skip();
+		//can't test if using threads, just that there are no errors
+		var data = QueryNew( "column1,column2", "VarChar,VarChar", [ [ "a", "a" ], [ "a", "a" ] ] );
+		var expected = 'a,a#newline#a,a#newline#';//same values because order is not guaranteed
+		expect( s.queryToCsv( query=data, threads=2 ) ).toBe( expected );
+	});
 
 })
 </cfscript>

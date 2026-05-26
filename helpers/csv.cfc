@@ -1,7 +1,7 @@
 component extends="base"{
 
 	any function getFormatObject( string type="DEFAULT" ){
-		return library().createJavaObject( "org.apache.commons.csv.CSVFormat" )[ JavaCast( "string", arguments.type ) ];	
+		return library().createJavaObject( "org.apache.commons.csv.CSVFormat" ).valueOf( JavaCast( "string", arguments.type ) );
 	}
 
 	boolean function delimiterIsTab( required string delimiter ){

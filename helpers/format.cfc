@@ -34,7 +34,7 @@ component extends="base"{
 			var newCellStyleForThisWorkbook = workbook.createCellStyle();
 			newCellStyleForThisWorkbook.cloneStyleFrom( arguments.cellStyle );
 			arguments.cell.setCellStyle( newCellStyleForThisWorkbook );
-			if( !arguments.KeyExists( "format" ) || StructIsEmpty( arguments.format ) )
+			if( !arguments.KeyExists( "format" ) || IsNull( arguments.format ) || StructIsEmpty( arguments.format ) )
 				return;
 			var spreadsheetType = library().isXmlFormat( workbook )? "xlsx": "xls";
 			var cellStyleID = getCellStyleIDfromFormat( arguments.format );
@@ -54,7 +54,7 @@ component extends="base"{
 
 	any function buildCellStyle( required workbook, required struct format, existingStyle ){
 		var cellStyle = arguments.workbook.createCellStyle();
-		if( arguments.KeyExists( "existingStyle" ) )
+		if( keyExistsAndIsNotNull( arguments, "existingStyle" ) )
 			cellStyle.cloneStyleFrom( arguments.existingStyle );
 		for( var setting in arguments.format )
 			setCellStyleFromFormatSetting( arguments.workbook, cellStyle, arguments.format, setting );
@@ -68,14 +68,14 @@ component extends="base"{
 	}
 
 	struct function checkFormatArguments( required workbook, boolean overwriteCurrentStyle=true ){
-		if( !arguments.KeyExists( "format" ) && !arguments.KeyExists( "cellStyle" ) )
+		if( ( !arguments.KeyExists( "format" ) || IsNull( arguments.format ) ) && ( !arguments.KeyExists( "cellStyle" ) || IsNull( arguments.cellStyle ) ) )
 			Throw( type=library().getExceptionType() & ".missingRequiredArgument", message="Missing argument: 'format'", detail="The 'format' argument is required" );
 		if( arguments.KeyExists( "format" ) && IsStruct( arguments.format ) )
 			return arguments;
 		//assume a cellStyle object has been supplied either as cellStyle or format
 		if( !arguments.overwriteCurrentStyle )
 			Throw( type=library().getExceptionType() & ".invalidArgumentCombination", message="Invalid argument combination", detail="If you supply a 'cellStyle' the 'overwriteCurrentStyle' cannot be false" );
-		if( !arguments.KeyExists( "cellStyle" ) )
+		if( !arguments.KeyExists( "cellStyle" ) || IsNull( arguments.cellStyle ) )
 			arguments.cellStyle = arguments.format;
 		if( !isValidCellStyleObject( arguments.workbook, arguments.cellStyle ) )
 			Throw( type=library().getExceptionType() & ".invalidCellStyleArgument", message="Invalid argument", detail="The 'cellStyle' supplied is not a valid POI cellStyle object" );
@@ -185,7 +185,7 @@ component extends="base"{
 		var settingValue = arguments.format[ arguments.setting ];
 		switch( arguments.setting ){
 			case "alignment":
-				var alignment = arguments.cellStyle.getAlignment()[ JavaCast( "string", UCase( settingValue ) ) ];
+				var alignment = arguments.cellStyle.getAlignment().valueOf( JavaCast( "string", UCase( settingValue ) ) );
 				arguments.cellStyle.setAlignment( alignment );
 			return this;
 			case "bold":
@@ -194,7 +194,7 @@ component extends="base"{
 				arguments.cellStyle.setFont( font );
 			return this;
 			case "bottomborder":
-				var borderStyle = arguments.cellStyle.getBorderBottom()[ JavaCast( "string", UCase( settingValue ) ) ];
+				var borderStyle = arguments.cellStyle.getBorderBottom().valueOf( JavaCast( "string", UCase( settingValue ) ) );
 				arguments.cellStyle.setBorderBottom( borderStyle );
 			return this;
 			case "bottombordercolor":
@@ -213,7 +213,7 @@ component extends="base"{
 				arguments.cellStyle.setFillForegroundColor( getColorHelper().getColor( arguments.workbook, settingValue ) );
 				// make sure we always apply a fill pattern or the color will not be visible
 				if( !arguments.format.KeyExists( "fillpattern" ) ){
-					var fillpattern = arguments.cellStyle.getFillPattern()[ JavaCast( "string", "SOLID_FOREGROUND" ) ];
+					var fillpattern = arguments.cellStyle.getFillPattern().valueOf( JavaCast( "string", "SOLID_FOREGROUND" ) );
 					arguments.cellStyle.setFillPattern( fillpattern );
 				}
 			return this;
@@ -221,7 +221,7 @@ component extends="base"{
 			 //ACF docs list "nofill" as opposed to "no_fill"
 				if( settingValue == "nofill" )
 					settingValue = "NO_FILL";
-				var fillpattern = arguments.cellStyle.getFillPattern()[ JavaCast( "string", UCase( settingValue ) ) ];
+				var fillpattern = arguments.cellStyle.getFillPattern().valueOf( JavaCast( "string", UCase( settingValue ) ) );
 				arguments.cellStyle.setFillPattern( fillpattern );
 			return this;
 			case "font":
@@ -249,7 +249,7 @@ component extends="base"{
 				arguments.cellStyle.setFont( font );
 			return this;
 			case "leftborder":
-				var borderStyle = arguments.cellStyle.getBorderLeft()[ JavaCast( "string", UCase( settingValue ) ) ];
+				var borderStyle = arguments.cellStyle.getBorderLeft().valueOf( JavaCast( "string", UCase( settingValue ) ) );
 				arguments.cellStyle.setBorderLeft( borderStyle );
 			return this;
 			case "leftbordercolor":
@@ -263,7 +263,7 @@ component extends="base"{
 				arguments.cellStyle.setQuotePrefixed( JavaCast( "boolean", settingValue ) );
 			return this;
 			case "rightborder":
-				var borderStyle = arguments.cellStyle.getBorderRight()[ JavaCast( "string", UCase( settingValue ) ) ];
+				var borderStyle = arguments.cellStyle.getBorderRight().valueOf( JavaCast( "string", UCase( settingValue ) ) );
 				arguments.cellStyle.setBorderRight( borderStyle );
 			return this;
 			case "rightbordercolor":
@@ -281,7 +281,7 @@ component extends="base"{
 				arguments.cellStyle.setWrapText( JavaCast( "boolean", settingValue ) );
 			return this;
 			case "topborder":
-				var borderStyle = arguments.cellStyle.getBorderTop()[ JavaCast( "string", UCase( settingValue ) ) ];
+				var borderStyle = arguments.cellStyle.getBorderTop().valueOf( JavaCast( "string", UCase( settingValue ) ) );
 				arguments.cellStyle.setBorderTop( borderStyle );
 			return this;
 			case "topbordercolor":
@@ -296,7 +296,7 @@ component extends="base"{
 				arguments.cellStyle.setFont( font );
 			return this;
 			case "verticalalignment":
-				var alignment = arguments.cellStyle.getVerticalAlignment()[ JavaCast( "string", UCase( settingValue ) ) ];
+				var alignment = arguments.cellStyle.getVerticalAlignment().valueOf( JavaCast( "string", UCase( settingValue ) ) );
 				arguments.cellStyle.setVerticalAlignment( alignment );
 		}
 		return this;

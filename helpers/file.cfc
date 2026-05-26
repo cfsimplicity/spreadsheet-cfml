@@ -14,7 +14,7 @@ component extends="base"{
 			Throw( type=library().getExceptionType() & ".invalidAlgorithm", message="Invalid algorithm", detail="'#arguments.algorithm#' is not a valid algorithm. Supported algorithms are: #validAlgorithms.ToList( ', ')#" );
 		lock name="#arguments.filepath#" timeout=5 {
 			var mode = library().createJavaObject( "org.apache.poi.poifs.crypt.EncryptionMode" );
-			var info = library().createJavaObject( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode[ arguments.algorithm ] );
+			var info = library().createJavaObject( "org.apache.poi.poifs.crypt.EncryptionInfo" ).init( mode.valueOf( JavaCast( "string", arguments.algorithm ) ) );
 			var encryptor = info.getEncryptor();
 			encryptor.confirmPassword( JavaCast( "string", arguments.password ) );
 			try{
@@ -22,12 +22,9 @@ component extends="base"{
 				var poifs = library().createJavaObject( "org.apache.poi.poifs.filesystem.POIFSFileSystem" );
 				try{
 					// set up an encrypted stream within the POI filesystem
-					// ACF gets confused by encryptor.getDataStream( POIFSFileSystem ) signature. Using getRoot() means getDataStream( DirectoryNode ) will be used
-					if( library().getIsACF() )
-						var encryptedStream = encryptor.getDataStream( poifs.getRoot() );
-					else
-						var encryptedStream = encryptor.getDataStream( poifs );
-					// read in the unencrypted wb file and write it to the encrypted stream
+					// Using getRoot() means getDataStream( DirectoryNode ) will be used
+					var encryptedStream = encryptor.getDataStream( poifs.getRoot() );
+					// read in the unencrypted wb file and write it to the encrypted str*/eam
 					var workbook = getWorkbookHelper().workbookFromFile( arguments.filepath );
 					workbook.write( encryptedStream );
 				}
@@ -61,7 +58,7 @@ component extends="base"{
 
 	string function filenameSafe( required string input ){
 		var charsToRemove	=	"\|\\\*\/\:""<>~&";
-		var result = arguments.input.reReplace( "[#charsToRemove#]+", "", "ALL" ).Left( 255 );
+		var result = JavaCast( "String", arguments.input ).replaceAll( "[#charsToRemove#]+", "" ).Left( 255 );
 		if( result.IsEmpty() )
 			return "renamed"; // in case all chars have been replaced (unlikely but possible)
 		return result;

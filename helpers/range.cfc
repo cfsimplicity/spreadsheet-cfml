@@ -11,7 +11,7 @@ component extends="base"{
 		var ranges = ListToArray( arguments.rangeList );
 		for( var thisRange in ranges ){
 			thisRange = removeAllWhiteSpaceFrom( thisRange );
-			if( !thisRange.REFind( rangeTest ) )
+			if( !JavaCast( "String", thisRange ).matches( rangeTest ) )
 				Throw( type=library().getExceptionType() & ".invalidRange", message="Invalid range value", detail="The range value '#thisRange#' is not valid." );
 			thisRange = handleOpenEndedRange( thisRange, arguments.dimension, arguments.workbook );
 			var parts = ListToArray( thisRange, "-" );
@@ -53,17 +53,17 @@ component extends="base"{
 	}
 
 	string function convertRangeReferenceToAbsoluteAddress( required string rangeReference ){
-		return arguments.rangeReference.ReplaceAll( "([A-Za-z]+|\d+)", "\$$1" ).UCase(); //Use java regex for group reference consistency
+		return arguments.rangeReference.replaceAll( "([A-Za-z]+|\d+)", "\$$1" ).UCase(); //Use java regex for group reference consistency
 	}
 
 	/* Private */
 	private string function removeAllWhiteSpaceFrom( required string value ){
-		return arguments.value.REReplace( "\s+", "", "ALL" );
+		return JavaCast( "String", arguments.value ).replaceAll( "\s+", "" );
 	}
 
 	private string function handleOpenEndedRange( required string range, required string dimension, required workbook ){
 		var openEndedRangeTest = "^\d+-$";
-		if( !arguments.range.REFind( openEndedRangeTest ) )
+		if( !JavaCast( "String", arguments.range ).matches( openEndedRangeTest ) )
 			return arguments.range;
 		if( arguments.dimension == "column" )
 			return arguments.range & library().getColumnCount( arguments.workbook );

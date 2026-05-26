@@ -140,8 +140,9 @@ component extends="BaseCsv" accessors="true"{
 	}
 
 	private void function equalizeColumnLengths( required struct result ){
-		arguments.result.data.Each( function( row, index ){
-			ArrayResize( result.data[ index ], variables.maxNumberOfColumns );//don't scope arguments within closure
+		arguments.result.data.Each( ( row, index ) => {
+			while( ArrayLen( result.data[ index ] ) < variables.maxNumberOfColumns )
+				result.data[ index ].Append( "" );
 		});
 	}
 

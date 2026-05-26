@@ -52,8 +52,11 @@ component extends="BaseCsv" accessors="true"{
 			Throw( type=variables.library.getExceptionType() & ".missingDataForCsv", message="Missing data", detail="Please specify the data you want to write using '.fromData( data )'" );
 		var appendable = newAppendableBuffer();
 		printTo( appendable );
-		if( IsNull( variables.filepath ) )
+		if( IsNull( variables.filepath ) ) {
+			if( getLibrary().getIsBoxlang() ) // Boxlang somehow modified the .toString() call, this will ensure we aren't trimming whitespace
+				return appendable.substring( JavaCast( "int", 0 ), JavaCast( "int", appendable.length() ) );
 			return appendable.toString();
+		}
 		return this;
 	}
 
@@ -71,6 +74,13 @@ component extends="BaseCsv" accessors="true"{
 			printFromArray( printer );
 		}
 		finally{
+			// Boxlang needs another explicit row call to have a trailing new row at the end of a file
+			if(
+				getLibrary().getIsBoxlang()
+				&& !IsNull( variables.filepath ) 
+				&& local.KeyExists( "printer" )
+			)
+				printRowFromArray( [], printer );
 			if( local.KeyExists( "printer" ) )
 				printer.close( JavaCast( "boolean", true ) );
 		}
@@ -173,7 +183,7 @@ component extends="BaseCsv" accessors="true"{
 		return arguments.row;
 	}
 
-	private string function formatDateString( required string value ){
+	private string function formatDateString( required any value ){
 		if( !variables.library.getDateHelper().isDateObject( arguments.value ) )
 			return arguments.value;
 		return DateTimeFormat( arguments.value, variables.library.getDateFormats().DATETIME );

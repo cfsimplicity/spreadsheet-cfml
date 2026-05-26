@@ -12,7 +12,10 @@ component extends="base"{
 	array function getRGBFromCellFont( required workbook, required any cellFont ){
 		if( library().isXmlFormat( arguments.workbook ) )
 			return getRGBFromXSSFCellFont( arguments.cellFont );
-		return arguments.cellFont.getHSSFColor( arguments.workbook )?.getTriplet()?:[];
+		var hssfColor = arguments.cellFont.getHSSFColor( arguments.workbook );
+		if( IsNull( hssfColor ) )
+			return [];
+		return hssfColor.getTriplet();
 	}
 
 	any function getColor( required workbook, required string colorValue ){
@@ -133,7 +136,7 @@ component extends="base"{
 	}
 
 	private boolean function isHexColor( required string inputString ){
-		return arguments.inputString.REFind( "^##?[0-9A-Fa-f]{6,6}$" );
+		return JavaCast( "String", arguments.inputString ).matches( "^##?[0-9A-Fa-f]{6,6}$" );
 	}
 
 	private string function hexToRGB( required string hexColor ){
@@ -148,9 +151,13 @@ component extends="base"{
 	}
 
 	private array function getRGBFromXSSFCellFont( required any cellFont ){
-		if( IsNull( arguments.cellFont.getXSSFColor()?.getRGB() ) )
+		var xssfColor = arguments.cellFont.getXSSFColor();
+		if( IsNull( xssfColor ) )
 			return [];
-		return convertSignedRGBToPositiveTriplet( arguments.cellFont.getXSSFColor().getRGB() );
+		var rgb = xssfColor.getRGB();
+		if( IsNull( rgb ) )
+			return [];
+		return convertSignedRGBToPositiveTriplet( rgb );
 	}
 
 }

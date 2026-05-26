@@ -7,6 +7,25 @@ component extends="testbox.system.BaseSpec"{
 
 	//Allow universal access including outside tests
 	variables.s = newSpreadsheetInstance();
+
+	// These are differences between ACF/Lucee and Boxlang engine
+	variables.DOUBLE_CHECK = !s.getIsBoxlang() ? "DOUBLE" : "NUMERIC";
+	variables.VARCHAR_CHECK = !s.getIsBoxlang() ? "VARCHAR" : "STRING";
+	variables.TIME_WITH_MILLISECONDS_MASK = !s.getIsBoxlang() ? "hh:nn:ss:l" : "hh:nn:ss.L";
+
+	// BoxLang's QueryNew stores "" as null for VarChar columns even when explicitly passed.
+	// s.read() always returns "" for blank cells. Replace nulls with "" after building expected queries.
+	variables.normalizeExpectedQuery = ( required query q ) => {
+		if( !s.getIsBoxlang() )
+			return q;
+		q.Each( ( row, rowNumber ) => {
+			row.Each( ( key, value ) => {
+				if( IsNull( value ) || !value.Len() )
+					QuerySetCell( q, key, "", rowNumber );
+			});
+		});
+		return q;
+	};
 	
 	function beforeAll(){
 		s.flushOsgiBundle();
@@ -29,7 +48,8 @@ component extends="testbox.system.BaseSpec"{
 	}
 
 	function afterAll(){
-		WriteDump( var=s.getEnvironment(), label="Environment and settings" );
+		if( !url.keyExists( "reporter" ) || url.reporter != "json" )
+			WriteDump( var=s.getEnvironment(), label="Environment and settings" );
 		if( FileExists( variables.tempXlsPath ) )
 			FileDelete( variables.tempXlsPath );
 		if( FileExists( variables.tempXlsxPath ) )

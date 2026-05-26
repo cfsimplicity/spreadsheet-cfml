@@ -8,7 +8,7 @@ component extends="base"{
 		// Numeric must precede date test
 		// Golden default rule: treat numbers with leading zeros as STRINGS: not numbers (lucee) or dates (ACF);
 		// Do not detect booleans: leave as strings
-		if( REFind( "^0[\d]+", arguments.value ) )
+		if( JavaCast( "String", arguments.value ).matches( "^0[\d]+" ) )
 			return "string";
 		if( _IsNumeric( arguments.value ) )
 			return "numeric";
@@ -38,7 +38,7 @@ component extends="base"{
 	/* Data type overriding */
 
 	any function checkDataTypesArgument( required struct args ){
-		if( arguments.args.KeyExists( "datatypes" ) && datatypeOverridesContainInvalidTypes( arguments.args.datatypes ) )
+		if( arguments.args.KeyExists( "datatypes" ) && !IsNull( arguments.args.datatypes ) && datatypeOverridesContainInvalidTypes( arguments.args.datatypes ) )
 			Throw( type=library().getExceptionType() & ".invalidDatatype", message="Invalid datatype(s)", detail="One or more of the datatypes specified is invalid. Valid types are #validCellOverrideTypes().ToList( ', ' )# and the columns they apply to should be passed as an array" );
 		return this;
 	}
@@ -47,11 +47,11 @@ component extends="base"{
 		for( var type in arguments.datatypeOverrides ){
 			var columnRefs = arguments.datatypeOverrides[ type ];
 			var totalColumnRefs = columnRefs.Len();
-			cfloop( from=1, to=totalColumnRefs, index="local.index" ){
-				if( IsNumeric( columnRefs[ index ] ) ) //position already given
+			for( var i = 1; i <= totalColumnRefs; i++ ){
+				if( IsNumeric( columnRefs[ i ] ) ) //position already given
 					continue;
-				var columnNumber = ArrayFindNoCase( columnNames, columnRefs[ index ] );//ACF won't accept member function on this array for some reason
-				columnRefs[ index ] = columnNumber;
+				var columnNumber = ArrayFindNoCase( columnNames, columnRefs[ i ] );//ACF won't accept member function on this array for some reason
+				columnRefs[ i ] = columnNumber;
 			}
 			arguments.datatypeOverrides[ type ] = columnRefs;
 		}
@@ -78,7 +78,7 @@ component extends="base"{
 			}
 		}
 		// if no override, use an already set default (i.e. query column type)
-		if( arguments.KeyExists( "defaultType" ) ){
+		if( keyExistsAndIsNotNull( arguments, "defaultType" ) ){
 			getCellHelper().setCellValueAsType( arguments.workbook, arguments.cell, arguments.cellValue, arguments.defaultType );
 			return this;
 		}

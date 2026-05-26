@@ -183,8 +183,8 @@ describe( "addRows", ()=>{
 		var timeValue = CreateObject( "java", "java.util.Date" ).init( JavaCast( "long", 360000999 ) );
 		var dateTimeValue = CreateObject( "java", "java.util.Date" ).init( JavaCast( "long", 1428796800999 ) );
 		var data = QueryNew( "column1,column2", "Time,Timestamp", [ [ timeValue, dateTimeValue ] ] );
-		var expectedTimeValue = data.column1[ 1 ].TimeFormat( "hh:nn:ss:l" );
-		var expectedDateTimeValue = data.column2[ 1 ].DateTimeFormat( "yyyy-mm-dd hh:nn:ss:l" );
+		var expectedTimeValue = data.column1[ 1 ].TimeFormat( "#TIME_WITH_MILLISECONDS_MASK#" );
+		var expectedDateTimeValue = data.column2[ 1 ].DateTimeFormat( "yyyy-mm-dd #TIME_WITH_MILLISECONDS_MASK#" );
 		workbooks.Each( ( wb )=>{
 			s.addRows( wb, data );
 			var actual = s.getSheetHelper().sheetToQuery( wb );
@@ -195,8 +195,8 @@ describe( "addRows", ()=>{
 		var workbooks = [ s.newXls(), s.newXlsx() ];
 		workbooks.Each( ( wb )=>{
 			s.addRows( wb, dataAsArray );
-			expectedTimeValue = data.column1[ 1 ].TimeFormat( "hh:nn:ss:l" );
-			expectedDateTimeValue = data.column2[ 1 ].DateTimeFormat( "yyyy-mm-dd hh:nn:ss:l" );
+			expectedTimeValue = data.column1[ 1 ].TimeFormat( "#TIME_WITH_MILLISECONDS_MASK#" );
+			expectedDateTimeValue = data.column2[ 1 ].DateTimeFormat( "yyyy-mm-dd #TIME_WITH_MILLISECONDS_MASK#" );
 			actual = s.getSheetHelper().sheetToQuery( wb );
 			actualTimeValue = actual.column1[ 1 ];
 			actualDateTimeValue = actual.column2[ 1 ];
@@ -508,21 +508,18 @@ describe( "addRows", ()=>{
 
 	describe( "addRows throws an exception if", ()=>{
 
-		it(
-			title="adding more than 65536 rows to a binary spreadsheet",
-			body=()=>{
-				var xls = workbooks[ 1 ];
-				expect( ()=>{
-					var rows = [];
-					for( var i=1; i <= 65537; i++ ){
-						rows.append( [ i ] );
-					}
-					var data = QueryNew( "ID","Integer",rows );
-					variables.s.addRows( xls, data );
-				}).toThrow( type="cfsimplicity.spreadsheet.tooManyRows" );
-			},
-			skip=!s.getIsLucee()
-		);
+		it( "adding more than 65536 rows to a binary spreadsheet", ()=>{
+			if( !s.getIsLucee() ) skip();
+			var xls = workbooks[ 1 ];
+			expect( ()=>{
+				var rows = [];
+				for( var i=1; i <= 65537; i++ ){
+					rows.append( [ i ] );
+				}
+				var data = QueryNew( "ID","Integer",rows );
+				variables.s.addRows( xls, data );
+			}).toThrow( type="cfsimplicity.spreadsheet.tooManyRows" );
+		})
 
 		it( "row is zero or less", ()=>{
 			workbooks.Each( ( wb )=>{

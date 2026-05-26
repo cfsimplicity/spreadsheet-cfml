@@ -9,16 +9,13 @@ describe( "formatColumn", ()=>{
 		})
 	})
 
-	it(
-		title="can format a column containing more than 4009 rows",
-		body=()=>{
-			var path = getTestFilePath( "4010-rows.xls" );
-			var workbook = s.read( src=path );
-			var format = { italic: "true" };
-			s.formatColumn( workbook, format, 1 );
-		},
-		skip=s.getIsACF()
-	);
+	it( "can format a column containing more than 4009 rows", ()=>{
+		if( s.getIsACF() ) skip()
+		var path = getTestFilePath( "4010-rows.xls" );
+		var workbook = s.read( src=path );
+		var format = { italic: "true" };
+		s.formatColumn( workbook, format, 1 );
+	});
 
 	it( "can preserve the existing format properties other than the one(s) being changed", ()=>{
 		workbooks.Each( ( wb )=>{

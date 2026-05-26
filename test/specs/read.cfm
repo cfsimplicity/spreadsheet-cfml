@@ -47,6 +47,22 @@ describe( "read", ()=>{
     })
   })
 
+	it( "can handle blank trailing cells when reading into an array of structs", ()=>{
+		var columns = [ "name", "number" ];
+		var data = [ [ "Frumpo McNugget" ] ];
+		spreadsheetTypes.Each( ( type )=>{
+			var path = variables[ "temp" & type & "Path" ];
+			s.newChainable( type )
+				.addRow( columns )
+				.addRows( data )
+				.write( path, true );
+			//arry of structs
+			expected = [ [ name: "Frumpo McNugget", number: "" ] ];
+			actual = s.read( src=path, format="arrayOfStructs", headerRow=1 );
+			expect( actual ).toBe( expected );
+		})
+	})
+
 	it( "Returns no data if there are no *visible* sheets", ()=>{
 		spreadsheetTypes.Each( ( type )=>{
 			var path = variables[ "temp" & type & "Path" ];
@@ -130,7 +146,7 @@ describe( "read", ()=>{
 				var actual = s.read( src=path, format="array", headerRow=1 );
 				expect( actual ).toBe( expected );
 				//query
-				expected = QueryNew( "firstColumn,column2", "VarChar,VarChar", [ dataRow1, dataRow2 ] );
+				expected = normalizeExpectedQuery( QueryNew( "firstColumn,column2", "VarChar,VarChar", [ dataRow1, dataRow2 ] ) );
 				actual = s.read( src=path, format="query", headerRow=1 );
 				expect( actual ).toBe( expected );
 			})
@@ -186,7 +202,7 @@ describe( "read", ()=>{
 				var actual = s.read( src=path, format="array", headerRow=1 );
 				expect( actual ).toBe( expected );
 				//query
-				expected = QueryNew( columns.ToList(), "VarChar,VarChar", data );
+				expected = normalizeExpectedQuery( QueryNew( columns.ToList(), "VarChar,VarChar", data ) );
 				actual = s.read( src=path, format="query", headerRow=1 );
 				expect( actual ).toBe( expected );
 			})
@@ -206,7 +222,7 @@ describe( "read", ()=>{
 				var actual = s.read( src=path, format="array", headerRow=1, rows=2 );
 				expect( actual ).toBe( expected );
 				//query
-				expected = QueryNew( columns.ToList(), "VarChar,VarChar", [ data[ 1 ] ] );
+				expected = normalizeExpectedQuery( QueryNew( columns.ToList(), "VarChar,VarChar", [ data[ 1 ] ] ) );
 				actual = s.read( src=path, format="query", headerRow=1, rows=2 );
 				expect( actual ).toBe( expected );
 			})
@@ -667,7 +683,7 @@ describe( "read", ()=>{
 				var actual = s.read( src=path, format="array", columnNames=columnNames );
 				expect( actual ).toBe( expected );
 				//query
-				expected = QueryNew( "firstColumn,column2", "VarChar,VarChar", [ dataRow1, dataRow2 ] );
+				expected = normalizeExpectedQuery( QueryNew( "firstColumn,column2", "VarChar,VarChar", [ dataRow1, dataRow2 ] ) );
 				var actual = s.read( src=path, format="query", columnNames=columnNames );
 				expect( actual ).toBe( expected );
 			})

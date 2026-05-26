@@ -13,6 +13,11 @@ component{
 		return variables.libraryInstance;
 	}
 
+	/* Utility */
+	boolean function keyExistsAndIsNotNull(){
+		return library().keyExistsAndIsNotNull( argumentCollection=arguments );
+	}
+
 	any function getCellHelper(){
 		return library().getCellHelper();
 	}
