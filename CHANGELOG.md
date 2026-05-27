@@ -1,13 +1,13 @@
 ## 5.4.0 - 26 May 2026
 
-	- Enhancements
-		- \#450 Complete Boxlang support (thanks to @lanechase34)
-		- Improve "null support" handling
+- Enhancements
+	- \#450 Complete Boxlang support (thanks to @lanechase34)
+	- Improve "null support" handling
 
-	- Fixes
-		-\#446 Add bounds checking to default missing trailing cells to empty string when reading into an array of structs (thanks to @aliaspooryorik
+- Fixes
+	- \#446 Add bounds checking to default missing trailing cells to empty string when reading into an array of structs (thanks to @aliaspooryorik
 )
-		-\#449 Treat error cell values the same as formula evaluation errors 
+	- \#449 Treat error cell values the same as formula evaluation errors 
 
 ## 5.3.0 - 13 December 2025
 
