@@ -1,12 +1,13 @@
 # Spreadsheet CFML
 
-Standalone library for working with spreadsheets and CSV in CFML ([Lucee](http://lucee.org/) and Adobe ColdFusion), [supporting all of ColdFusion's native spreadsheet functionality](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/ColdFusion-spreadsheet-functionality-support) and [much more](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/Functions-not-available-in-ColdFusion) besides.
+Standalone library for working with spreadsheets and CSV in CFML ([Lucee](http://lucee.org/), [Boxlang](https://boxlang.io/) and Adobe ColdFusion), [supporting all of ColdFusion's native spreadsheet functionality](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/ColdFusion-spreadsheet-functionality-support) and [much more](https://github.com/cfsimplicity/spreadsheet-cfml/wiki/Functions-not-available-in-ColdFusion) besides.
 
 ## Minimum Requirements
 
 - Java 8 or higher
 - Lucee 5.x or higher
 - Adobe ColdFusion 2021 or higher
+- Boxlang 1.13.x or higher
 
 ## Installation
 
@@ -26,6 +27,13 @@ Spreadsheet.cfc
 ```
 helpers/
 javaLoader/
+lib/
+objects/
+Spreadsheet.cfc
+```
+### Boxlang
+```
+helpers/
 lib/
 objects/
 Spreadsheet.cfc
