@@ -122,30 +122,26 @@ component extends="BaseCsv" accessors="true"{
 	}
 
 	private void function printFromArray( required printer ){
+		var printRowFunction = function( row ){
+			printRowFromArray( row, printer );//don't scope
+		};
 		if( useParallelThreads() ){
-			var printRowFunction = function( row ){
-				printRowFromArray( row, printer );//don't scope
-			};
 			printUsingParallelThreads( printRowFunction );
 			return;
 		}
-		for( var row in variables.data ){
-			printRowFromArray( row, arguments.printer );
-		}
+		variables.data.Each( printRowFunction );
 	}
 
 	private void function printFromQuery( required printer ){
 		var columns = variables.library.getQueryHelper()._QueryColumnArray( variables.data );
+		var printRowFunction = function( row ){
+			printRowFromQuery( row, columns, printer );//don't scope
+		};
 		if( useParallelThreads() ){
-			var printRowFunction = function( row ){
-				printRowFromQuery( row, columns, printer );//don't scope
-			};
 			printUsingParallelThreads( printRowFunction );
 			return;
 		}
-		for( var row in variables.data ){
-			printRowFromQuery( row, columns, arguments.printer );
-		}
+		variables.data.Each( printRowFunction );
 	}
 
 	private void function printUsingParallelThreads( required function printRowFunction ){
