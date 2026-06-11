@@ -222,7 +222,9 @@ describe( "addRows", ()=>{
 	})
 
 	it( "Handles empty values correctly", ()=>{
-		var data = QueryNew( "column1,column2,column3,column4,column5", "Date,Time,Timestamp,Bit,Integer",[ [ "", "", "", "", "" ] ] );
+		//Boxlang QueryNew won't accept empty strings with non VarChar columns
+		var dataValues = s.getIsBoxlang()? [ NullValue(), NullValue(), NullValue(), NullValue(), NullValue() ]: [ "", "", "", "", "" ];
+		var data = QueryNew( "column1,column2,column3,column4,column5", "Date,Time,Timestamp,Bit,Integer",[ dataValues ] );
 		workbooks.Each( ( wb )=>{
 			s.addRows( wb, data );
 			expect( s.getCellType( wb, 1, 1 ) ).toBe( "blank" );
