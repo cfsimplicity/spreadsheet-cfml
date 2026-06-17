@@ -170,6 +170,7 @@ component extends="BaseCsv" accessors="true"{
 
 	private array function checkArrayRow( required array row ){
 		var totalColumns = arguments.row.Len();
+		var i = "";
 		cfloop( from=1, to=totalColumns, index="i" ){
 			var value = arguments.row[ i ];
 			if( !IsSimpleValue( value ) )
