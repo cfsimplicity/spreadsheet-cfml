@@ -293,7 +293,7 @@ describe( "readLargeFile", ()=>{
 			s.newChainable( "xlsx" ).addRows( data ).write( tempXlsxPath, true );
 			var q = s.readLargeFile( src=tempXlsxPath, headerRow=1, makeColumnNamesSafe=true );
 			var expected = [ "id", "id2", "A_B", "x_y", "_a_", "A", "Number1", "_a" ];
-			cfloop( from=1, to=expected.Len(), index="i" ){
+			cfloop( from=1, to=expected.Len(), index="local.i" ){
 				expect( q.getColumnNames()[ i ] ).toBe( expected[ i ] );
 			}
 		})
