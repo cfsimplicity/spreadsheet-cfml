@@ -170,8 +170,7 @@ component extends="BaseCsv" accessors="true"{
 
 	private array function checkArrayRow( required array row ){
 		var totalColumns = arguments.row.Len();
-		var i = "";
-		cfloop( from=1, to=totalColumns, index="i" ){
+		cfloop( from=1, to=totalColumns, index="local.i" ){
 			var value = arguments.row[ i ];
 			if( !IsSimpleValue( value ) )
 				Throw( type=variables.library.getExceptionType() & ".invalidDataForCsv", message="Invalid data", detail="Your data contains complex values which cannot be output to CSV" );
@@ -201,7 +200,7 @@ component extends="BaseCsv" accessors="true"{
 
 	private array function _StructValueArray( required struct data ){
 		try{
-			return StructValueArray( arguments.data ); // Lucee 5.3.8.117+
+			return StructValueArray( arguments.data ); // Lucee 5.3.8.117+, ACF 2025
 		}
 		catch( any exception ){
 			if( !exception.message.REFindNoCase( "undefined|no matching function" ) )
