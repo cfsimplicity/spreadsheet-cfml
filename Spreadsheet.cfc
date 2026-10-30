@@ -1,8 +1,8 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="5.4.0-develop" setter="false";
-	property name="osgiLibBundleVersion" default="5.5.1.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="version" default="6.0.0-test" setter="false";
+	property name="osgiLibBundleVersion" default="6.0.0.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
 	//configurable
@@ -952,7 +952,7 @@ component accessors="true"{
 		if( IsNull( cell ) )
 			getExceptionHelper().throwInvalidCellException( arguments.row, arguments.column );
 		var cellStyle = cell.getCellStyle();
-		var cellFont = arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() );
+		var cellFont = arguments.workbook.getFontAt( cellStyle.getFontIndex() );
 		var rgb = getColorHelper().getRGBFromCellFont( arguments.workbook, cellFont );
 		return {
 			alignment: cellStyle.getAlignment().toString()

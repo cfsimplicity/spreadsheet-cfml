@@ -8,5 +8,3 @@ on:
 jobs:
   tests:
     uses: cfsimplicity/spreadsheet-cfml/.github/workflows/tests.yml@develop
-  tests-java-11:
-    uses: cfsimplicity/spreadsheet-cfml/.github/workflows/tests-java-11.yml@develop

@@ -189,7 +189,7 @@ component extends="base"{
 				arguments.cellStyle.setAlignment( alignment );
 			return this;
 			case "bold":
-				font = getFontHelper().cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndexAsInt() ) );
+				font = getFontHelper().cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndex() ) );
 				font.setBold( JavaCast( "boolean", settingValue ) );
 				arguments.cellStyle.setFont( font );
 			return this;
@@ -201,7 +201,7 @@ component extends="base"{
 				arguments.cellStyle.setBottomBorderColor( getColorHelper().getColor( arguments.workbook, settingValue ) );
 			return this;
 			case "color":
-				font = getFontHelper().cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndexAsInt() ) );
+				font = getFontHelper().cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndex() ) );
 				font.setColor( getColorHelper().getColor( arguments.workbook, settingValue ) );
 				arguments.cellStyle.setFont( font );
 			return this;
@@ -225,12 +225,12 @@ component extends="base"{
 				arguments.cellStyle.setFillPattern( fillpattern );
 			return this;
 			case "font":
-				font = getFontHelper().cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndexAsInt() ) );
+				font = getFontHelper().cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndex() ) );
 				font.setFontName( JavaCast( "string", settingValue ) );
 				arguments.cellStyle.setFont( font );
 			return this;
 			case "fontsize":
-				font = getFontHelper().cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndexAsInt() ) );
+				font = getFontHelper().cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndex() ) );
 				font.setFontHeightInPoints( JavaCast( "int", settingValue ) );
 				arguments.cellStyle.setFont( font );
 			return this;
@@ -244,7 +244,7 @@ component extends="base"{
 				arguments.cellStyle.setIndention( JavaCast( "int", indentValue ) );
 			return this;
 			case "italic":
-				font = getFontHelper().cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndexAsInt ( ) ) );
+				font = getFontHelper().cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndex ( ) ) );
 				font.setItalic( JavaCast( "boolean", settingValue ) );
 				arguments.cellStyle.setFont( font );
 			return this;
@@ -273,7 +273,7 @@ component extends="base"{
 				arguments.cellStyle.setRotation( JavaCast( "int", settingValue ) );
 			return this;
 			case "strikeout":
-				font = getFontHelper().cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndexAsInt() ) );
+				font = getFontHelper().cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndex() ) );
 				font.setStrikeout( JavaCast( "boolean", settingValue ) );
 				arguments.cellStyle.setFont( font );
 			return this;
@@ -291,7 +291,7 @@ component extends="base"{
 				var underlineType = underlineIndexFromValue( settingValue );
 				if( underlineType == -1 )
 					return this;
-				font = getFontHelper().cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndexAsInt() ) );
+				font = getFontHelper().cloneFont( arguments.workbook, arguments.workbook.getFontAt( arguments.cellStyle.getFontIndex() ) );
 				font.setUnderline( JavaCast( "byte", underlineType ) );
 				arguments.cellStyle.setFont( font );
 			return this;

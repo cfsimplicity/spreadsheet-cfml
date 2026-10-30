@@ -1,3 +1,18 @@
+## 6.0.0 - 30 October 2026
+
+- Breaking changes
+	- Minimum Java version is now JDK 17 (with POI 6.x )
+	- \#455 Drop support for ACF 2021
+	- \#456 Drop support for Lucee 5.x
+
+- Maintenance
+	- \#452 Upgrade POI to 6.0.0
+	- \#453 Upgrade excel-streaming-reader to 6.0.0
+	- \#454 Upgrade SLF4J to 2.0.20
+
+- Fixes
+	- \#451 Fix loop index initialization in checkArrayRow
+
 ## 5.4.0 - 26 May 2026
 
 - Enhancements
