@@ -10,10 +10,10 @@ jobs:
         cfengine: ["lucee@6", "lucee@7", "adobe@2023", "adobe@2025", "boxlang"]
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v6
         with:
           java-version: "21"
           distribution: "temurin"
