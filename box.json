@@ -1,7 +1,7 @@
 {
     "name" : "Spreadsheet CFML",
     "slug" : "spreadsheet-cfml",
-    "version" : "5.4.0",
+    "version" : "6.0.0",
     "shortDescription" : "CFML spreadsheet library",
     "author" : "Julian Halliwell",
     "location" : "forgeboxStorage",
@@ -14,19 +14,19 @@
         "type" : "git", "URL" : "https://github.com/cfsimplicity/spreadsheet-cfml"
     },
     "engines" : [
-        { "type" : "lucee", "version" : ">=5.x.x" },
-        { "type" : "adobe", "version" : ">=2021.0.0" },
-        { "type" : "boxlang", "version": ">=1.13.0+50" }
+        { "type" : "lucee", "version" : ">=6.x.x" },
+        { "type" : "adobe", "version" : ">=2023.0.0" },
+        { "type" : "boxlang", "version": ">=1.18.0+66" }
     ],
     "defaultEngine" : "lucee",
     "license" : [
         { "type" : "MIT", "URL" : "https://github.com/cfsimplicity/spreadsheet-cfml/blob/main/LICENSE" }
     ],
     "devDependencies" : {
-        "testbox" : ">=5.0.0"
+        "testbox" : ">=7.0.0"
     },
     "type" : "modules",
-    "keywords" : [ "cfspreadsheet", "coldfusion", "lucee", "module", "spreadsheet", "csv" ],
+    "keywords" : [ "cfspreadsheet", "coldfusion", "lucee", "boxlang", "module", "spreadsheet", "csv", "poi" ],
     "private" : "false",
     "ignore" : [ ".github", "build", "src", "test", ".gitattributes", "CHANGELOG.md", "README.md" ],
     "scripts":{

@@ -4,12 +4,12 @@ component{
 
 	property name="classpathDirectories";
 	property name="libPath";
-	property name="minimumSupportedJvmVersion" default="8";//update this as necessary
-	property name="ooxmlVersion" default="5.5.1";
+	property name="minimumSupportedJvmVersion" default="17";//update this as necessary
+	property name="ooxmlVersion" default="6.0.0";
 	property name="rootPath";
 	property name="srcPath";
 	property name="tempDirectoryPath";
-	property name="xmlBeansVersion" default="5.3.0";
+	property name="xmlBeansVersion" default="5.4.1";
 
 	void function run(){
 		variables.tempDirectoryPath = getCWD() & "temp/";

@@ -1,8 +1,8 @@
 component accessors="true"{
 
 	//"static"
-	property name="version" default="5.4.0" setter="false";
-	property name="osgiLibBundleVersion" default="5.5.1.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
+	property name="version" default="6.0.0" setter="false";
+	property name="osgiLibBundleVersion" default="6.0.0.0" setter="false"; //first 3 octets = POI version; increment 4th with other jar updates
 	property name="osgiLibBundleSymbolicName" default="spreadsheet-cfml" setter="false";
 	property name="exceptionType" default="cfsimplicity.spreadsheet" setter="false";
 	//configurable
@@ -80,7 +80,6 @@ component accessors="true"{
 	private string function determineEngine(){
 		if( ( server?.coldfusion?.productname ?: "" ) == "ColdFusion Server" )
 			return "ColdFusion";
-		// PLEASE NOTE: BOXLANG SUPPORT IS CURRENTLY EXPERIMENTAL AND INCOMPLETE (only circa 75% of tests pass). 
 		if( server.KeyExists( "boxlang" ) )
 			return "Boxlang";
 		return "Lucee";
@@ -952,7 +951,7 @@ component accessors="true"{
 		if( IsNull( cell ) )
 			getExceptionHelper().throwInvalidCellException( arguments.row, arguments.column );
 		var cellStyle = cell.getCellStyle();
-		var cellFont = arguments.workbook.getFontAt( cellStyle.getFontIndexAsInt() );
+		var cellFont = arguments.workbook.getFontAt( cellStyle.getFontIndex() );
 		var rgb = getColorHelper().getRGBFromCellFont( arguments.workbook, cellFont );
 		return {
 			alignment: cellStyle.getAlignment().toString()

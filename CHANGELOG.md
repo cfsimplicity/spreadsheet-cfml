@@ -1,13 +1,29 @@
+## 6.0.0 - 30 October 2026
+
+- Breaking changes
+	- Minimum Java version is now JDK 17 (with POI 6.x )
+	- \#455 Drop support for ACF 2021
+	- \#456 Drop support for Lucee 5.x
+	- \#457 Minimum Boxlang version 1.18
+
+- Maintenance
+	- \#452 Upgrade POI to 6.0.0
+	- \#453 Upgrade excel-streaming-reader to 6.0.0
+	- \#454 Upgrade SLF4J to 2.0.20
+
+- Fixes
+	- \#451 Fix loop index initialization in checkArrayRow
+
 ## 5.4.0 - 26 May 2026
 
-	- Enhancements
-		- \#450 Complete Boxlang support (thanks to @lanechase34)
-		- Improve "null support" handling
+- Enhancements
+	- \#450 Complete Boxlang support (thanks to @lanechase34)
+	- Improve "null support" handling
 
-	- Fixes
-		-\#446 Add bounds checking to default missing trailing cells to empty string when reading into an array of structs (thanks to @aliaspooryorik
+- Fixes
+	- \#446 Add bounds checking to default missing trailing cells to empty string when reading into an array of structs (thanks to @aliaspooryorik
 )
-		-\#449 Treat error cell values the same as formula evaluation errors 
+	- \#449 Treat error cell values the same as formula evaluation errors 
 
 ## 5.3.0 - 13 December 2025
 

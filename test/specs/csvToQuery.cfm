@@ -286,9 +286,8 @@ describe( "csvToQuery", ()=>{
 
 		it( "queryColumnTypes is specified as a 'columnName/type' struct, but firstRowIsHeader is not set to true AND columnNames are not provided", ()=>{
 			expect( ()=>{
-				// using 'var' keyword here causes ACF2021 to throw exception
-				local.columnTypes = { col1: "Integer" };
-				local.q = s.csvToQuery( csv="1", queryColumnTypes=columnTypes );
+				var columnTypes = { col1: "Integer" };
+				var q = s.csvToQuery( csv="1", queryColumnTypes=columnTypes );
 			}).toThrow( type="cfsimplicity.spreadsheet.invalidArgumentCombination" );
 		})
 

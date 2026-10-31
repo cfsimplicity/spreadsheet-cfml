@@ -52,11 +52,8 @@ component extends="BaseCsv" accessors="true"{
 			Throw( type=variables.library.getExceptionType() & ".missingDataForCsv", message="Missing data", detail="Please specify the data you want to write using '.fromData( data )'" );
 		var appendable = newAppendableBuffer();
 		printTo( appendable );
-		if( IsNull( variables.filepath ) ) {
-			if( getLibrary().getIsBoxlang() ) // Boxlang somehow modified the .toString() call, this will ensure we aren't trimming whitespace
-				return appendable.substring( JavaCast( "int", 0 ), JavaCast( "int", appendable.length() ) );
+		if( IsNull( variables.filepath ) ) 
 			return appendable.toString();
-		}
 		return this;
 	}
 
@@ -74,13 +71,6 @@ component extends="BaseCsv" accessors="true"{
 			printFromArray( printer );
 		}
 		finally{
-			// Boxlang needs another explicit row call to have a trailing new row at the end of a file
-			if(
-				getLibrary().getIsBoxlang()
-				&& !IsNull( variables.filepath ) 
-				&& local.KeyExists( "printer" )
-			)
-				printRowFromArray( [], printer );
 			if( local.KeyExists( "printer" ) )
 				printer.close( JavaCast( "boolean", true ) );
 		}
@@ -122,30 +112,26 @@ component extends="BaseCsv" accessors="true"{
 	}
 
 	private void function printFromArray( required printer ){
+		var printRowFunction = function( row ){
+			printRowFromArray( row, printer );//don't scope
+		};
 		if( useParallelThreads() ){
-			var printRowFunction = function( row ){
-				printRowFromArray( row, printer );//don't scope
-			};
 			printUsingParallelThreads( printRowFunction );
 			return;
 		}
-		for( var row in variables.data ){
-			printRowFromArray( row, arguments.printer );
-		}
+		variables.data.Each( printRowFunction );
 	}
 
 	private void function printFromQuery( required printer ){
 		var columns = variables.library.getQueryHelper()._QueryColumnArray( variables.data );
+		var printRowFunction = function( row ){
+			printRowFromQuery( row, columns, printer );//don't scope
+		};
 		if( useParallelThreads() ){
-			var printRowFunction = function( row ){
-				printRowFromQuery( row, columns, printer );//don't scope
-			};
 			printUsingParallelThreads( printRowFunction );
 			return;
 		}
-		for( var row in variables.data ){
-			printRowFromQuery( row, columns, arguments.printer );
-		}
+		variables.data.Each( printRowFunction );
 	}
 
 	private void function printUsingParallelThreads( required function printRowFunction ){
@@ -174,7 +160,7 @@ component extends="BaseCsv" accessors="true"{
 
 	private array function checkArrayRow( required array row ){
 		var totalColumns = arguments.row.Len();
-		cfloop( from=1, to=totalColumns, index="i" ){
+		cfloop( from=1, to=totalColumns, index="local.i" ){
 			var value = arguments.row[ i ];
 			if( !IsSimpleValue( value ) )
 				Throw( type=variables.library.getExceptionType() & ".invalidDataForCsv", message="Invalid data", detail="Your data contains complex values which cannot be output to CSV" );
@@ -204,7 +190,7 @@ component extends="BaseCsv" accessors="true"{
 
 	private array function _StructValueArray( required struct data ){
 		try{
-			return StructValueArray( arguments.data ); // Lucee 5.3.8.117+
+			return StructValueArray( arguments.data ); // Lucee 5.3.8.117+, ACF 2025
 		}
 		catch( any exception ){
 			if( !exception.message.REFindNoCase( "undefined|no matching function" ) )
