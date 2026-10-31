@@ -26,7 +26,7 @@
         "testbox" : ">=7.0.0"
     },
     "type" : "modules",
-    "keywords" : [ "cfspreadsheet", "coldfusion", "lucee", "module", "spreadsheet", "csv" ],
+    "keywords" : [ "cfspreadsheet", "coldfusion", "lucee", "boxlang", "module", "spreadsheet", "csv", "poi" ],
     "private" : "false",
     "ignore" : [ ".github", "build", "src", "test", ".gitattributes", "CHANGELOG.md", "README.md" ],
     "scripts":{

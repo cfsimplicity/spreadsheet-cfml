@@ -4,6 +4,7 @@
 	- Minimum Java version is now JDK 17 (with POI 6.x )
 	- \#455 Drop support for ACF 2021
 	- \#456 Drop support for Lucee 5.x
+	- \#457 Minimum Boxlang version 1.18
 
 - Maintenance
 	- \#452 Upgrade POI to 6.0.0
