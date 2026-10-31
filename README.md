@@ -7,7 +7,7 @@ Standalone library for working with spreadsheets and CSV in CFML ([Lucee](http:/
 - Java 17 or higher
 - Lucee 6.x or higher
 - Adobe ColdFusion 2023 or higher
-- Boxlang 1.13.x or higher
+- Boxlang 1.18.x or higher
 
 ## Installation
 

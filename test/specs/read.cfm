@@ -423,8 +423,8 @@ describe( "read", ()=>{
 				var expected = { columns: columns, data: data };
 				var actual = s.read( src=path, format="array", columnNames=columns );
 				expect( actual ).toBe( expected );
-				//query
-				expected = QueryNew( columns.ToList(), "Integer,Integer,Decimal,Bit,Date,VarChar", [ [ numericValue, 0, rawDecimalValue, true, dateValue, leadingZeroValue ] ] );
+				//query - boxlang treats booleans as numeric so use _QueryNew()
+				expected = s.getQueryHelper()._QueryNew( columns, "Integer,Integer,Decimal,Bit,Date,VarChar", [ [ numericValue, 0, rawDecimalValue, true, dateValue, leadingZeroValue ] ] );
 				actual = s.read( src=path, format="query", columnNames=columns );
 				expect( actual ).toBe( expected );
 			})

@@ -112,7 +112,8 @@ describe( "addRows", ()=>{
 	})
 
 	it( "Adds boolean values correctly", ()=>{
-		var data = QueryNew( "column1", "Bit", [ [ true ] ] );
+		//boxlang treats booleans as numeric so use _QueryNew()
+		var data = s.getQueryHelper()._QueryNew( [ "column1" ], "Bit", [ [ true ] ] );
 		var expected = data;
 			workbooks.Each( ( wb )=>{
 			s.addRows( wb, data );
