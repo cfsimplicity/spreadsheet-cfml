@@ -20,13 +20,18 @@ component extends="base"{
 
 	any function getColor( required workbook, required string colorValue ){
 		/*
-			if colorValue is a preset name, returns the index
+			if colorValue is a preset name, returns the index for xls and the color object for xlsx
 			if colorValue is hex it will be converted to RGB
 			if colorValue is an RGB Triplet eg. "255,255,255" then the exact color object is returned for xlsx, or the nearest color's index if xls
 		*/
 		var isRGB = ListLen( arguments.colorValue ) == 3;
-		if( !isRGB && !isHexColor( arguments.colorValue ) )
-			return getColorIndex( arguments.colorValue );
+		var isPresetColor = !isRGB && !isHexColor( arguments.colorValue );
+		if( isPresetColor ){
+			var presetColor = getPresetColor( arguments.colorValue );
+			if( library().isBinaryFormat( arguments.workbook ) )
+				return presetColor.getIndex();
+			return getColorForXlsx( presetColor.getTriplet() );
+		}
 		if( !isRGB && isHexColor( arguments.colorValue ) )
 			arguments.colorValue = hexToRGB( arguments.colorValue );
 		var rgb = ListToArray( arguments.colorValue );
@@ -101,16 +106,15 @@ component extends="base"{
 		}
 	}
 
-	private numeric function getColorIndex( required string colorName ){
+	private any function getPresetColor( required string colorName ){
 		var findColor = arguments.colorName.Trim().UCase();
 		//check for 9 extra colours from old org.apache.poi.ss.usermodel.IndexedColors and map
 		var deprecatedNames = [ "BLACK1", "WHITE1", "RED1", "BRIGHT_GREEN1", "BLUE1", "YELLOW1", "PINK1", "TURQUOISE1", "LIGHT_TURQUOISE1" ];
 		if( ArrayFind( deprecatedNames, findColor ) )
 			findColor = findColor.Left( findColor.Len() - 1 );
-		var indexedColors = library().createJavaObject( "org.apache.poi.hssf.util.HSSFColor$HSSFColorPredefined" );
+		var presetColors = library().createJavaObject( "org.apache.poi.hssf.util.HSSFColor$HSSFColorPredefined" );
 		try{
-			var color = indexedColors.valueOf( JavaCast( "string", findColor ) );
-			return color.getIndex();
+			return presetColors.valueOf( JavaCast( "string", findColor ) );
 		}
 		catch( any exception ){
 			Throw( type=library().getExceptionType() & ".invalidColor", message="Invalid Color", detail="The color provided (#arguments.colorName#) is not valid. Use getPresetColorNames() for a list of valid color names" );
