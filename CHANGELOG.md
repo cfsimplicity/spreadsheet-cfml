@@ -1,3 +1,9 @@
+## 6.0.1 - 16 November 2026
+
+- Fixes
+	- \#458 Remove reliance on unnecessary Lucee byte casting
+	- \#459 Using a pre-defined color name has no effect when formatting fonts in an XLSX sheet
+
 ## 6.0.0 - 30 October 2026
 
 - Breaking changes
